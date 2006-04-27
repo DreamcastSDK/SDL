@@ -15,12 +15,6 @@
 /* Define this to be the name of the logo image to use with -logo */
 #define LOGO_FILE	"icon.bmp"
 
-/* The SDL_OPENGLBLIT interface is deprecated.
-   The code is still available for benchmark purposes though.
-*/
-
-static SDL_bool USE_DEPRECATED_OPENGLBLIT = SDL_FALSE;
-
 static SDL_Surface *global_image = NULL;
 static GLuint global_texture = 0;
 static GLuint cursor_texture = 0;
@@ -366,84 +360,6 @@ void DrawLogoTexture(void)
 	SDL_GL_Leave2DMode();
 }
 
-/* This code is deprecated, but available for speed comparisons */
-void DrawLogoBlit(void)
-{
-	static int x = 0;
-	static int y = 0;
-	static int w, h;
-	static int delta_x = 1;
-	static int delta_y = 1;
-
-	SDL_Rect dst;
-	SDL_Surface *screen = SDL_GetVideoSurface();
-
-	if ( global_image == NULL ) {
-		SDL_Surface *temp;
-
-		/* Load the image (could use SDL_image library here) */
-		temp = SDL_LoadBMP(LOGO_FILE);
-		if ( temp == NULL ) {
-			return;
-		}
-		w = temp->w;
-		h = temp->h;
-
-		/* Convert the image into the screen format */
-		global_image = SDL_CreateRGBSurface(
-				SDL_SWSURFACE,
-				w, h,
-				screen->format->BitsPerPixel,
-				screen->format->Rmask,
-				screen->format->Gmask,
-				screen->format->Bmask,
-				screen->format->Amask);
-		if ( global_image ) {
-			SDL_BlitSurface(temp, NULL, global_image, NULL);
-		}
-		SDL_FreeSurface(temp);
-
-		/* Make sure that the texture conversion is okay */
-		if ( ! global_image ) {
-			return;
-		}
-	}
-
-	/* Move the image around
-           Note that we do not clear the old position.  This is because we
-           perform a glClear() which clears the framebuffer and then only
-           update the new area.
-           Note that you can also achieve interesting effects by modifying
-           the screen surface alpha channel.  It's set to 255 by default..
-         */
-	x += delta_x;
-	if ( x < 0 ) {
-		x = 0;
-		delta_x = -delta_x;
-	} else
-	if ( (x+w) > screen->w ) {
-		x = screen->w-w;
-		delta_x = -delta_x;
-	}
-	y += delta_y;
-	if ( y < 0 ) {
-		y = 0;
-		delta_y = -delta_y;
-	} else
-	if ( (y+h) > screen->h ) {
-		y = screen->h-h;
-		delta_y = -delta_y;
-	}
-	dst.x = x;
-	dst.y = y;
-	dst.w = w;
-	dst.h = h;
-	SDL_BlitSurface(global_image, NULL, screen, &dst);
-
-	/* Show the image on the screen */
-	SDL_UpdateRects(screen, 1, &dst);
-}
-
 int RunGLTest( int argc, char* argv[],
                int logo, int logocursor, int slowly, int bpp, float gamma, int noframe, int fsaa )
 {
@@ -488,11 +404,7 @@ int RunGLTest( int argc, char* argv[],
 	}
 
 	/* Set the flags we want to use for setting the video mode */
-	if ( logo && USE_DEPRECATED_OPENGLBLIT ) {
-		video_flags = SDL_OPENGLBLIT;
-	} else {
-		video_flags = SDL_OPENGL;
-	}
+	video_flags = SDL_OPENGL;
 	for ( i=1; argv[i]; ++i ) {
 		if ( strcmp(argv[i], "-fullscreen") == 0 ) {
 			video_flags |= SDL_FULLSCREEN;
@@ -698,11 +610,7 @@ int RunGLTest( int argc, char* argv[],
 
 		/* Draw 2D logo onto the 3D display */
 		if ( logo ) {
-			if ( USE_DEPRECATED_OPENGLBLIT ) {
-				DrawLogoBlit();
-			} else {
-				DrawLogoTexture();
-			}
+			DrawLogoTexture();
 		}
 		if ( logocursor ) {
 			DrawLogoCursor();
@@ -780,11 +688,6 @@ int main(int argc, char *argv[])
 		}
 		if ( strcmp(argv[i], "-logo") == 0 ) {
 			logo = 1;
-			USE_DEPRECATED_OPENGLBLIT = SDL_FALSE;
-		}
-		if ( strcmp(argv[i], "-logoblit") == 0 ) {
-			logo = 1;
-			USE_DEPRECATED_OPENGLBLIT = SDL_TRUE;
 		}
 		if ( strcmp(argv[i], "-logocursor") == 0 ) {
 			logocursor = 1;

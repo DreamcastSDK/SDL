@@ -1353,10 +1353,7 @@ static void QZ_DrawResizeIcon (_THIS, RgnHandle dirtyRegion) {
 
 static void QZ_UpdateRects (_THIS, int numRects, SDL_Rect *rects) {
 
-    if (SDL_VideoSurface->flags & SDL_OPENGLBLIT) {
-        QZ_GL_SwapBuffers (this);
-    }
-    else if ( [ qz_window isMiniaturized ] ) {
+    if ( [ qz_window isMiniaturized ] ) {
     
         /* Do nothing if miniaturized */
     }

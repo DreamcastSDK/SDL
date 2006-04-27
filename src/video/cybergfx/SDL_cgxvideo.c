@@ -598,7 +598,7 @@ void CGX_DestroyWindow(_THIS, SDL_Surface *screen)
 
 		/* Clean up OpenGL */
 		if ( screen ) {
-		screen->flags &= ~(SDL_OPENGL|SDL_OPENGLBLIT);
+		screen->flags &= ~SDL_OPENGL;
 		}
 
 		if ( screen && (screen->flags & SDL_FULLSCREEN) ) {

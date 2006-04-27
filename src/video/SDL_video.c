@@ -131,12 +131,8 @@ SDL_VideoDevice *current_video = NULL;
 /* Various local functions */
 int SDL_VideoInit(const char *driver_name, Uint32 flags);
 void SDL_VideoQuit(void);
-void SDL_GL_UpdateRectsLock(SDL_VideoDevice* this, int numrects, SDL_Rect* rects);
 
 static SDL_GrabMode SDL_WM_GrabInputOff(void);
-#if SDL_VIDEO_OPENGL
-static int lock_count = 0;
-#endif
 
 
 /*
@@ -577,6 +573,12 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	int is_opengl;
 	SDL_GrabMode saved_grab;
 
+	/* Handle obsolete flags */
+	if ( (flags & SDL_OPENGLBLIT_OBSOLETE) == SDL_OPENGLBLIT_OBSOLETE ) {
+		SDL_SetError("SDL_OPENGLBLIT is no longer supported");
+		return(NULL);
+	}
+
 	/* Start up the video driver, if necessary..
 	   WARNING: This is the only function protected this way!
 	 */
@@ -748,7 +750,7 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 
 #if SDL_VIDEO_OPENGL
 	/* Load GL symbols (before MakeCurrent, where we need glGetString). */
-	if ( flags & (SDL_OPENGL | SDL_OPENGLBLIT) ) {
+	if ( flags & SDL_OPENGL ) {
 
 #if defined(__QNXNTO__) && (_NTO_VERSION < 630)
 #define __SDL_NOGETPROCADDR__
@@ -780,89 +782,6 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 		if ( video->GL_MakeCurrent(this) < 0 ) {
 			return(NULL);
 		}
-	}
-
-	/* Set up a fake SDL surface for OpenGL "blitting" */
-	if ( (flags & SDL_OPENGLBLIT) == SDL_OPENGLBLIT ) {
-		/* Load GL functions for performing the texture updates */
-#if SDL_VIDEO_OPENGL
-
-		/* Create a software surface for blitting */
-#ifdef GL_VERSION_1_2
-		/* If the implementation either supports the packed pixels
-		   extension, or implements the core OpenGL 1.2 API, it will
-		   support the GL_UNSIGNED_SHORT_5_6_5 texture format.
-		 */
-		if ( (bpp == 16) &&
-		     (SDL_strstr((const char *)video->glGetString(GL_EXTENSIONS), "GL_EXT_packed_pixels") ||
-		     (SDL_atof((const char *)video->glGetString(GL_VERSION)) >= 1.2f))
-		   ) {
-			video->is_32bit = 0;
-			SDL_VideoSurface = SDL_CreateRGBSurface(
-				flags, 
-				width, 
-				height,  
-				16,
-				31 << 11,
-				63 << 5,
-				31,
-				0
-				);
-		}
-		else
-#endif /* OpenGL 1.2 */
-		{
-			video->is_32bit = 1;
-			SDL_VideoSurface = SDL_CreateRGBSurface(
-				flags, 
-				width, 
-				height, 
-				32, 
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-				0x000000FF,
-				0x0000FF00,
-				0x00FF0000,
-				0xFF000000
-#else
-				0xFF000000,
-				0x00FF0000,
-				0x0000FF00,
-				0x000000FF
-#endif
-				);
-		}
-		if ( ! SDL_VideoSurface ) {
-			return(NULL);
-		}
-		SDL_VideoSurface->flags = mode->flags | SDL_OPENGLBLIT;
-
-		/* Free the original video mode surface (is this safe?) */
-		SDL_FreeSurface(mode);
-
-		/* Set the surface completely opaque & white by default */
-		SDL_memset( SDL_VideoSurface->pixels, 255, SDL_VideoSurface->h * SDL_VideoSurface->pitch );
-		video->glGenTextures( 1, &video->texture );
-		video->glBindTexture( GL_TEXTURE_2D, video->texture );
-		video->glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			video->is_32bit ? GL_RGBA : GL_RGB,
-			256,
-			256,
-			0,
-			video->is_32bit ? GL_RGBA : GL_RGB,
-#ifdef GL_VERSION_1_2
-			video->is_32bit ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT_5_6_5,
-#else
-			GL_UNSIGNED_BYTE,
-#endif
-			NULL);
-
-		video->UpdateRects = SDL_GL_UpdateRectsLock;
-#else
-		SDL_SetError("Somebody forgot to #define SDL_VIDEO_OPENGL");
-		return(NULL);
-#endif
 	}
 
 	/* Create a shadow surface if necessary */
@@ -1509,155 +1428,6 @@ void SDL_GL_SwapBuffers(void)
 	} else {
 		SDL_SetError("OpenGL video mode has not been set");
 	}
-}
-
-/* Update rects with locking */
-void SDL_GL_UpdateRectsLock(SDL_VideoDevice* this, int numrects, SDL_Rect *rects)
-{
-	SDL_GL_Lock();
- 	SDL_GL_UpdateRects(numrects, rects);
-	SDL_GL_Unlock();
-}
-
-/* Update rects without state setting and changing (the caller is responsible for it) */
-void SDL_GL_UpdateRects(int numrects, SDL_Rect *rects)
-{
-#if SDL_VIDEO_OPENGL
-	SDL_VideoDevice *this = current_video;
-	SDL_Rect update, tmp;
-	int x, y, i;
-
-	for ( i = 0; i < numrects; i++ )
-	{
-		tmp.y = rects[i].y;
-		tmp.h = rects[i].h;
-		for ( y = 0; y <= rects[i].h / 256; y++ )
-		{
-			tmp.x = rects[i].x;
-			tmp.w = rects[i].w;
-			for ( x = 0; x <= rects[i].w / 256; x++ )
-			{
-				update.x = tmp.x;
-				update.y = tmp.y;
-				update.w = tmp.w;
-				update.h = tmp.h;
-
-				if ( update.w > 256 )
-					update.w = 256;
-
-				if ( update.h > 256 )
-					update.h = 256;
-			
-				this->glFlush();
-				this->glTexSubImage2D( 
-					GL_TEXTURE_2D, 
-					0, 
-					0, 
-					0, 
-					update.w, 
-					update.h, 
-					this->is_32bit? GL_RGBA : GL_RGB,
-#ifdef GL_VERSION_1_2
-					this->is_32bit ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT_5_6_5,
-#else
-					GL_UNSIGNED_BYTE,
-#endif
-					(Uint8 *)this->screen->pixels + 
-						this->screen->format->BytesPerPixel * update.x + 
-						update.y * this->screen->pitch );
-	
-				this->glFlush();
-				/*
-				* Note the parens around the function name:
-				* This is because some OpenGL implementations define glTexCoord etc 
-				* as macros, and we don't want them expanded here.
-				*/
-				this->glBegin(GL_TRIANGLE_STRIP);
-					(this->glTexCoord2f)( 0.0, 0.0 );	
-					(this->glVertex2i)( update.x, update.y );
-					(this->glTexCoord2f)( (float)(update.w / 256.0), 0.0 );	
-					(this->glVertex2i)( update.x + update.w, update.y );
-					(this->glTexCoord2f)( 0.0, (float)(update.h / 256.0) );
-					(this->glVertex2i)( update.x, update.y + update.h );
-					(this->glTexCoord2f)( (float)(update.w / 256.0), (float)(update.h / 256.0) );	
-					(this->glVertex2i)( update.x + update.w	, update.y + update.h );
-				this->glEnd();	
-			
-				tmp.x += 256;
-				tmp.w -= 256;
-			}
-			tmp.y += 256;
-			tmp.h -= 256;
-		}
-	}
-#endif
-}
-
-/* Lock == save current state */
-void SDL_GL_Lock()
-{
-#if SDL_VIDEO_OPENGL
-	lock_count--;
-	if (lock_count==-1)
-	{
-		SDL_VideoDevice *this = current_video;
-
-		this->glPushAttrib( GL_ALL_ATTRIB_BITS );	/* TODO: narrow range of what is saved */
-#ifdef GL_CLIENT_PIXEL_STORE_BIT
-		this->glPushClientAttrib( GL_CLIENT_PIXEL_STORE_BIT );
-#endif
-
-		this->glEnable(GL_TEXTURE_2D);
-		this->glEnable(GL_BLEND);
-		this->glDisable(GL_FOG);
-		this->glDisable(GL_ALPHA_TEST);
-		this->glDisable(GL_DEPTH_TEST);
-		this->glDisable(GL_SCISSOR_TEST);	
-		this->glDisable(GL_STENCIL_TEST);
-		this->glDisable(GL_CULL_FACE);
-
-		this->glBindTexture( GL_TEXTURE_2D, this->texture );
-		this->glTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		this->glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-		this->glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-		this->glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		this->glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-
-		this->glPixelStorei( GL_UNPACK_ROW_LENGTH, this->screen->pitch / this->screen->format->BytesPerPixel );
-		this->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		(this->glColor4f)(1.0, 1.0, 1.0, 1.0);		/* Solaris workaround */
-
-		this->glViewport(0, 0, this->screen->w, this->screen->h);
-		this->glMatrixMode(GL_PROJECTION);
-		this->glPushMatrix();
-		this->glLoadIdentity();
-
-		this->glOrtho(0.0, (GLdouble) this->screen->w, (GLdouble) this->screen->h, 0.0, 0.0, 1.0);
-
-		this->glMatrixMode(GL_MODELVIEW);
-		this->glPushMatrix();
-		this->glLoadIdentity();
-	}
-#endif
-}
-
-/* Unlock == restore saved state */
-void SDL_GL_Unlock()
-{
-#if SDL_VIDEO_OPENGL
-	lock_count++;
-	if (lock_count==0)
-	{
-		SDL_VideoDevice *this = current_video;
-
-		this->glPopMatrix();
-		this->glMatrixMode(GL_PROJECTION);
-		this->glPopMatrix();
-
-		this->glPopClientAttrib();
-		this->glPopAttrib();
-	}
-#endif
 }
 
 /*

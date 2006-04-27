@@ -585,7 +585,7 @@ static void X11_DestroyWindow(_THIS, SDL_Surface *screen)
 {
 	/* Clean up OpenGL */
 	if ( screen ) {
-		screen->flags &= ~(SDL_OPENGL|SDL_OPENGLBLIT);
+		screen->flags &= ~SDL_OPENGL;
 	}
 	X11_GL_Shutdown(this);
 
