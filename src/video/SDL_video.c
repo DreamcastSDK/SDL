@@ -936,7 +936,7 @@ void SDL_UpdateRects (SDL_Surface *screen, int numrects, SDL_Rect *rects)
 	SDL_VideoDevice *video = current_video;
 	SDL_VideoDevice *this = current_video;
 
-	if ( (screen->flags & (SDL_OPENGL | SDL_OPENGLBLIT)) == SDL_OPENGL ) {
+	if ( screen->flags & SDL_OPENGL ) {
 		SDL_SetError("OpenGL active, use SDL_GL_SwapBuffers()");
 		return;
 	}
