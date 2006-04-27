@@ -361,7 +361,7 @@ void DrawLogoTexture(void)
 }
 
 int RunGLTest( int argc, char* argv[],
-               int logo, int logocursor, int slowly, int bpp, float gamma, int noframe, int fsaa )
+               int logo, int logocursor, int slowly, int bpp, float gamma, int noframe, int fsaa, int sync, int accel )
 {
 	int i;
 	int rgb_size[3];
@@ -443,6 +443,14 @@ int RunGLTest( int argc, char* argv[],
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1 );
 		SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, fsaa );
 	}
+	if ( accel ) {
+		SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+	}
+	if ( sync ) {
+		SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
+	} else {
+		SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 0 );
+	}
 	if ( SDL_SetVideoMode( w, h, bpp, video_flags ) == NULL ) {
 		fprintf(stderr, "Couldn't set GL mode: %s\n", SDL_GetError());
 		SDL_Quit();
@@ -469,9 +477,17 @@ int RunGLTest( int argc, char* argv[],
 	printf( "SDL_GL_DOUBLEBUFFER: requested 1, got %d\n", value );
 	if ( fsaa ) {
 		SDL_GL_GetAttribute( SDL_GL_MULTISAMPLEBUFFERS, &value );
-		printf( "SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value );
+		printf("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value );
 		SDL_GL_GetAttribute( SDL_GL_MULTISAMPLESAMPLES, &value );
-		printf( "SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa, value );
+		printf("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa, value );
+	}
+	if ( accel ) {
+		SDL_GL_GetAttribute( SDL_GL_ACCELERATED_VISUAL, &value );
+		printf( "SDL_GL_ACCELERATED_VISUAL: requested 1, got %d\n", value );
+	}
+	if ( sync ) {
+		SDL_GL_GetAttribute( SDL_GL_SWAP_CONTROL, &value );
+		printf( "SDL_GL_SWAP_CONTROL: requested 1, got %d\n", value );
 	}
 
 	/* Set the window manager title bar */
@@ -678,6 +694,8 @@ int main(int argc, char *argv[])
 	float gamma = 0.0;
 	int noframe = 0;
 	int fsaa = 0;
+	int accel = 0;
+	int sync = 0;
 
 	logo = 0;
 	slowly = 0;
@@ -707,6 +725,12 @@ int main(int argc, char *argv[])
 		if ( strcmp(argv[i], "-fsaa") == 0 ) {
  		       ++fsaa;
 		}
+		if ( strcmp(argv[i], "-accel") == 0 ) {
+ 		       ++accel;
+		}
+		if ( strcmp(argv[i], "-sync") == 0 ) {
+ 		       ++sync;
+		}
 		if ( strncmp(argv[i], "-h", 2) == 0 ) {
  		       printf(
 "Usage: %s [-twice] [-logo] [-logocursor] [-slow] [-bpp n] [-gamma n] [-noframe] [-fsaa] [-fullscreen]\n",
@@ -715,7 +739,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	for ( i=0; i<numtests; ++i ) {
- 		RunGLTest(argc, argv, logo, logocursor, slowly, bpp, gamma, noframe, fsaa);
+ 		RunGLTest(argc, argv, logo, logocursor, slowly, bpp, gamma, noframe, fsaa, sync, accel);
 	}
 	return 0;
 }

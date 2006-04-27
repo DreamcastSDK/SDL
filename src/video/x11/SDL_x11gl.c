@@ -43,6 +43,47 @@
 #define GLX_SAMPLES_ARB                    100001
 #endif
 
+#ifndef GLX_EXT_visual_rating
+#define GLX_EXT_visual_rating
+#define GLX_VISUAL_CAVEAT_EXT              0x20
+#define GLX_SLOW_VISUAL_EXT                0x8001
+#define GLX_NON_CONFORMANT_VISUAL_EXT      0x800D
+#endif
+
+#if SDL_VIDEO_OPENGL_GLX
+static int glXExtensionSupported(_THIS, const char *extension)
+{
+	const char *extensions;
+	const char *start;
+	const char *where, *terminator;
+
+	/* Extension names should not have spaces. */
+	where = SDL_strchr(extension, ' ');
+	if ( where || *extension == '\0' ) {
+	      return 0;
+	}
+
+	extensions = this->gl_data->glXQueryExtensionsString(GFX_Display,SDL_Screen);
+	/* It takes a bit of care to be fool-proof about parsing the
+	 * OpenGL extensions string. Don't be fooled by sub-strings, etc.
+	 */
+	
+	start = extensions;
+	
+	for (;;) {
+		where = SDL_strstr(start, extension);
+		if (!where) break;
+		
+		terminator = where + strlen(extension);
+		if (where == start || *(where - 1) == ' ')
+	        if (*terminator == ' ' || *terminator == '\0') return 1;
+						  
+		start = terminator;
+	}
+	return 0;
+}
+#endif /* SDL_VIDEO_OPENGL_GLX */
+
 XVisualInfo *X11_GL_GetVisual(_THIS)
 {
 #if SDL_VIDEO_OPENGL_GLX
@@ -138,6 +179,12 @@ XVisualInfo *X11_GL_GetVisual(_THIS)
 		attribs[i++] = this->gl_config.multisamplesamples;
 	}
 
+	if( this->gl_config.accelerated >= 0 &&
+	    glXExtensionSupported(this, "GLX_EXT_visual_rating") ) {
+		attribs[i++] = GLX_VISUAL_CAVEAT_EXT;
+		attribs[i++] = this->gl_config.accelerated ? GLX_NONE : GLX_DONT_CARE;
+	}
+
 #ifdef GLX_DIRECT_COLOR /* Try for a DirectColor visual for gamma support */
 	if ( !SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR") ) {
 		attribs[i++] = GLX_X_VISUAL_TYPE;
@@ -205,18 +252,36 @@ int X11_GL_CreateContext(_THIS)
 {
 	int retval;
 #if SDL_VIDEO_OPENGL_GLX
+
 	/* We do this to create a clean separation between X and GLX errors. */
 	XSync( SDL_Display, False );
 	glx_context = this->gl_data->glXCreateContext(GFX_Display, 
 				     glx_visualinfo, NULL, True);
 	XSync( GFX_Display, False );
 
-	if (glx_context == NULL) {
+	if ( glx_context == NULL ) {
 		SDL_SetError("Could not create GL context");
-		return -1;
+		return(-1);
 	}
-
+	if ( X11_GL_MakeCurrent(this) < 0 ) {
+		return(-1);
+	}
 	gl_active = 1;
+
+	if ( !glXExtensionSupported(this, "SGI_swap_control") ) {
+		this->gl_data->glXSwapIntervalSGI = NULL;
+	}
+	if ( !glXExtensionSupported(this, "GLX_MESA_swap_control") ) {
+		this->gl_data->glXSwapIntervalMESA = NULL;
+		this->gl_data->glXGetSwapIntervalMESA = NULL;
+	}
+	if ( this->gl_config.swap_control >= 0 ) {
+		if ( this->gl_data->glXSwapIntervalMESA ) {
+			this->gl_data->glXSwapIntervalMESA(this->gl_config.swap_control);
+		} else if ( this->gl_data->glXSwapIntervalSGI ) {
+			this->gl_data->glXSwapIntervalSGI(this->gl_config.swap_control);
+		}
+	}
 #else
 	SDL_SetError("X11 driver not configured with OpenGL");
 #endif
@@ -319,6 +384,27 @@ int X11_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value)
  	    case SDL_GL_MULTISAMPLESAMPLES:
  		glx_attrib = GLX_SAMPLES_ARB;
  		break;
+ 	    case SDL_GL_ACCELERATED_VISUAL:
+		if ( glXExtensionSupported(this, "GLX_EXT_visual_rating") ) {
+			glx_attrib = GLX_VISUAL_CAVEAT_EXT;
+			retval = this->gl_data->glXGetConfig(GFX_Display, glx_visualinfo, glx_attrib, value);
+			if ( *value == GLX_SLOW_VISUAL_EXT ) {
+				*value = SDL_FALSE;
+			} else {
+				*value = SDL_TRUE;
+			}
+			return retval;
+		} else {
+			return(-1);
+		}
+		break;
+	    case SDL_GL_SWAP_CONTROL:
+		if ( this->gl_data->glXGetSwapIntervalMESA ) {
+			return this->gl_data->glXGetSwapIntervalMESA();
+		} else {
+			return(-1)/*(this->gl_config.swap_control > 0)*/;
+		}
+		break;
 	    default:
 		return(-1);
 	}
@@ -348,6 +434,9 @@ void X11_GL_UnloadLibrary(_THIS)
 		this->gl_data->glXDestroyContext = NULL;
 		this->gl_data->glXMakeCurrent = NULL;
 		this->gl_data->glXSwapBuffers = NULL;
+		this->gl_data->glXSwapIntervalSGI = NULL;
+		this->gl_data->glXSwapIntervalMESA = NULL;
+		this->gl_data->glXGetSwapIntervalMESA = NULL;
 
 		this->gl_config.dll_handle = NULL;
 		this->gl_config.driver_loaded = 0;
@@ -400,7 +489,12 @@ int X11_GL_LoadLibrary(_THIS, const char* path)
 		(int (*)(Display *, XVisualInfo *, int, int *)) SDL_LoadFunction(handle, "glXGetConfig");
 	this->gl_data->glXQueryExtensionsString =
 		(const char *(*)(Display *, int)) SDL_LoadFunction(handle, "glXQueryExtensionsString");
-	
+	this->gl_data->glXSwapIntervalSGI =
+		(int (*)(int)) SDL_LoadFunction(handle, "glXSwapIntervalSGI");
+	this->gl_data->glXSwapIntervalMESA =
+		(GLint (*)(unsigned)) SDL_LoadFunction(handle, "glXSwapIntervalMESA");
+	this->gl_data->glXGetSwapIntervalMESA =
+		(GLint (*)(void)) SDL_LoadFunction(handle, "glXGetSwapIntervalMESA");
 
 	if ( (this->gl_data->glXChooseVisual == NULL) || 
 	     (this->gl_data->glXCreateContext == NULL) ||
