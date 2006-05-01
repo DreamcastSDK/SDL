@@ -281,7 +281,7 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 				video->CheckHWBlit(this, surface, surface->map->dst);
 			}
 	}
-
+	
 	/* Get the blit function index, based on surface mode */
 	/* { 0 = nothing, 1 = colorkey, 2 = alpha, 3 = colorkey+alpha } */
 	blit_index = 0;

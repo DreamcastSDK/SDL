@@ -155,6 +155,9 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_DRIVER_DDRAW	1
 #endif
 #define SDL_VIDEO_DRIVER_DUMMY	1
+#ifndef _WIN32_WCE
+#define SDL_VIDEO_DRIVER_GLSDL	1
+#endif
 #define SDL_VIDEO_DRIVER_WINDIB	1
 
 /* Enable OpenGL support */

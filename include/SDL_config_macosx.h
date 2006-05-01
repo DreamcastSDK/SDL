@@ -116,6 +116,7 @@
 
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_DUMMY	1
+#define SDL_VIDEO_DRIVER_GLSDL	1
 #define SDL_VIDEO_DRIVER_QUARTZ	1
 
 /* Enable OpenGL support */

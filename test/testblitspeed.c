@@ -116,7 +116,6 @@ static void output_surface_details(const char *name, SDL_Surface *surface)
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_DOUBLEBUF);
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_FULLSCREEN);
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_OPENGL);
-        append_sdl_surface_flag(surface, f, sizeof (f), SDL_OPENGLBLIT);
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_RESIZABLE);
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_NOFRAME);
         append_sdl_surface_flag(surface, f, sizeof (f), SDL_HWACCEL);

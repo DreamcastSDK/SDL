@@ -315,7 +315,7 @@ int ph_SetupOpenGLImage(_THIS, SDL_Surface* screen)
 
     if (ph_SetupOpenGLContext(this, screen->w, screen->h, screen->format->BitsPerPixel, screen->flags)!=0)
     {
-        screen->flags &= ~SDL_OPENGL;
+        screen->flags &= ~SDL_INTERNALOPENGL;
         return -1;
     }
    
@@ -328,7 +328,7 @@ void ph_DestroyImage(_THIS, SDL_Surface* screen)
 {
 
 #if SDL_VIDEO_OPENGL
-    if ((screen->flags & SDL_OPENGL)==SDL_OPENGL)
+    if (screen->flags & SDL_INTERNALOPENGL)
     {
         if (oglctx)
         {
@@ -486,7 +486,7 @@ int ph_SetupUpdateFunction(_THIS, SDL_Surface* screen, Uint32 flags)
     ph_DestroyImage(this, screen);
     
 #if SDL_VIDEO_OPENGL
-    if ((flags & SDL_OPENGL)==SDL_OPENGL)
+    if (flags & SDL_INTERNALOPENGL)
     {
         setupresult=ph_SetupOpenGLImage(this, screen);
     }

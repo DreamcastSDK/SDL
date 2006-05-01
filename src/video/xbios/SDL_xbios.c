@@ -574,7 +574,7 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	XBIOS_screens[0]=(void *) (( (long) XBIOS_screensmem[0]+256) & 0xFFFFFF00UL);
 
 #if SDL_VIDEO_OPENGL
-	if (flags & SDL_OPENGL) {
+	if (flags & SDL_INTERNALOPENGL) {
 		if (this->gl_config.double_buffer) {
 			flags |= SDL_DOUBLEBUF;
 		}
@@ -618,14 +618,14 @@ static SDL_Surface *XBIOS_SetVideoMode(_THIS, SDL_Surface *current,
 	XBIOS_fbnum = 0;
 
 #if SDL_VIDEO_OPENGL
-	if (flags & SDL_OPENGL) {
+	if (flags & SDL_INTERNALOPENGL) {
 		if (!SDL_AtariGL_Init(this, current)) {
 			XBIOS_FreeBuffers(this);
 			SDL_SetError("Can not create OpenGL context");
 			return NULL;
 		}
 
-		modeflags |= SDL_OPENGL;
+		modeflags |= SDL_INTERNALOPENGL;
 	}
 #endif
 

@@ -309,7 +309,7 @@ int ph_EnterFullScreen(_THIS, SDL_Surface* screen, int fmode)
 
         if (this->screen)
         {
-            if ((this->screen->flags & SDL_OPENGL)==SDL_OPENGL)
+            if (this->screen->flags & SDL_INTERNALOPENGL)
             {
 #if !SDL_VIDEO_OPENGL || (_NTO_VERSION < 630)
                 return 0; /* 6.3.0 */
@@ -345,7 +345,7 @@ int ph_LeaveFullScreen(_THIS)
        
     if (currently_fullscreen)
     {
-        if ((this->screen) && ((this->screen->flags & SDL_OPENGL)==SDL_OPENGL))
+        if ((this->screen) && (this->screen->flags & SDL_INTERNALOPENGL))
         {
 #if !SDL_VIDEO_OPENGL || (_NTO_VERSION < 630)
             return 0;

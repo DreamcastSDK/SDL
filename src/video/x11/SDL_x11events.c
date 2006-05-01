@@ -562,7 +562,7 @@ printf("ConfigureNotify! (resize: %dx%d)\n", xevent.xconfigure.width, xevent.xco
 			}
 		    } else {
 			/* OpenGL windows need to know about the change */
-			if ( SDL_VideoSurface->flags & SDL_OPENGL ) {
+			if ( SDL_VideoSurface->flags & SDL_INTERNALOPENGL ) {
 				SDL_PrivateExpose();
 			}
 		    }

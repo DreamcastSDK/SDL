@@ -135,7 +135,7 @@ int CGX_ResizeImage(_THIS, SDL_Surface *screen, Uint32 flags)
 
 	CGX_DestroyImage(this, screen);
 
-	if ( flags & SDL_OPENGL ) {  /* No image when using GL */
+	if ( flags & SDL_INTERNALOPENGL ) {  /* No image when using GL */
         	retval = 0;
 	} else {
 		retval = CGX_SetupImage(this, screen);

@@ -1459,6 +1459,20 @@ CheckMacGL()
     fi
 }
 
+dnl Find glSDL
+CheckglSDL()
+{
+    AC_ARG_ENABLE(video-glsdl,
+[  --enable-video-glsdl    use glSDL video driver [default=yes]],
+                  , enable_video_glsdl=yes)
+    AC_MSG_CHECKING(for glSDL support)
+    AC_MSG_RESULT($video_opengl)
+    if test x$video_opengl = xyes -a x$enable_video_glsdl = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_GLSDL)
+        SOURCES="$SOURCES $srcdir/src/video/glsdl/*.c"
+    fi
+}
+
 dnl Check for Mesa offscreen rendering
 CheckAtariOSMesa()
 {
@@ -2080,6 +2094,7 @@ case "$host" in
         CheckQtopia
         CheckPicoGUI
         CheckOpenGLX11
+        CheckglSDL
         CheckInputEvents
         CheckTslib
         CheckUSBHID
@@ -2178,6 +2193,7 @@ case "$host" in
         CheckPHOTON
         CheckX11
         CheckOpenGLX11
+        CheckglSDL
         CheckPTHREAD
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -2215,6 +2231,7 @@ case "$host" in
         CheckDummyAudio
         CheckWIN32
         CheckWIN32GL
+        CheckglSDL
         CheckDIRECTX
         CheckNASM
         # Set up files for the audio library
@@ -2279,6 +2296,7 @@ case "$host" in
         CheckNASM
         CheckBWINDOW
         CheckBeGL
+        CheckglSDL
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_BAUDIO)
@@ -2356,6 +2374,7 @@ case "$host" in
         CheckX11
         CheckMacGL
         CheckOpenGLX11
+        CheckglSDL
         CheckPTHREAD
         CheckAltivec
 
@@ -2417,6 +2436,7 @@ case "$host" in
         CheckAtariAudio
         CheckAtariLdg
         CheckAtariOSMesa
+        CheckglSDL
         CheckPTH
         # Set up files for the audio library
         if test x$enable_threads = xyes -a x$enable_pth = xyes; then

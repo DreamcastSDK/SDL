@@ -804,14 +804,14 @@ SDL_Surface *GEM_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 #if SDL_VIDEO_OPENGL
-	if (flags & SDL_OPENGL) {
+	if (flags & SDL_INTERNALOPENGL) {
 		if (!SDL_AtariGL_Init(this, current)) {
 			GEM_FreeBuffers(this);
 			SDL_SetError("Can not create OpenGL context");
 			return NULL;
 		}
 
-		modeflags |= SDL_OPENGL;
+		modeflags |= SDL_INTERNALOPENGL;
 	}
 #endif
 

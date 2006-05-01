@@ -123,6 +123,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_DUMMY
 	&DUMMY_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_GLSDL
+	&glSDL_bootstrap,
+#endif
 	NULL
 };
 
@@ -575,12 +578,6 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	int is_opengl;
 	SDL_GrabMode saved_grab;
 
-	/* Handle obsolete flags */
-	if ( (flags & SDL_OPENGLBLIT_OBSOLETE) == SDL_OPENGLBLIT_OBSOLETE ) {
-		SDL_SetError("SDL_OPENGLBLIT is no longer supported");
-		return(NULL);
-	}
-
 	/* Start up the video driver, if necessary..
 	   WARNING: This is the only function protected this way!
 	 */
@@ -613,8 +610,12 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	}
 
 	/* Check the requested flags */
-	/* There's no palette in > 8 bits-per-pixel mode */
+	if ( flags & SDL_INTERNALOPENGL ) {
+		SDL_SetError("SDL_INTERNALOPENGL is for internal use only");
+		return(NULL);
+	}
 	if ( video_bpp > 8 ) {
+		/* There's no palette in > 8 bits-per-pixel mode */
 		flags &= ~SDL_HWPALETTE;
 	}
 #if 0
@@ -632,6 +633,8 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 	if ( is_opengl ) {
 		/* These flags are for 2D video modes only */
 		flags &= ~(SDL_HWSURFACE|SDL_DOUBLEBUF);
+		/* This flag tells the backends to treat the surface accordingly */
+		flags |= SDL_INTERNALOPENGL;
 	}
 
 	/* Reset the keyboard here so event callbacks can run */
@@ -674,7 +677,7 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 #endif
 
 	    /* Sam - If we asked for OpenGL mode, and didn't get it, fail */
-	    if ( is_opengl && !(mode->flags & SDL_OPENGL) ) {
+	    if ( is_opengl && !(mode->flags & SDL_INTERNALOPENGL) ) {
 		mode = NULL;
 		SDL_SetError("OpenGL not available");
 	    }
@@ -752,7 +755,7 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 
 #if SDL_VIDEO_OPENGL
 	/* Load GL symbols (before MakeCurrent, where we need glGetString). */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 
 #if defined(__QNXNTO__) && (_NTO_VERSION < 630)
 #define __SDL_NOGETPROCADDR__
@@ -779,7 +782,7 @@ SDL_Surface * SDL_SetVideoMode (int width, int height, int bpp, Uint32 flags)
 #endif /* SDL_VIDEO_OPENGL */
 
 	/* If we're running OpenGL, make the context current */
-	if ( (video->screen->flags & SDL_OPENGL) &&
+	if ( (video->screen->flags & SDL_INTERNALOPENGL) &&
 	      video->GL_MakeCurrent ) {
 		if ( video->GL_MakeCurrent(this) < 0 ) {
 			return(NULL);
@@ -1431,7 +1434,7 @@ void SDL_GL_SwapBuffers(void)
 	SDL_VideoDevice *video = current_video;
 	SDL_VideoDevice *this = current_video;
 
-	if ( video->screen->flags & SDL_OPENGL ) {
+	if ( video->screen->flags & SDL_INTERNALOPENGL ) {
 		video->GL_SwapBuffers(this);
 	} else {
 		SDL_SetError("OpenGL video mode has not been set");

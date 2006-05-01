@@ -185,7 +185,7 @@ int X11_ResizeImage(_THIS, SDL_Surface *screen, Uint32 flags)
 	int retval;
 
 	X11_DestroyImage(this, screen);
-        if ( flags & SDL_OPENGL ) {  /* No image when using GL */
+        if ( flags & SDL_INTERNALOPENGL ) {  /* No image when using GL */
         	retval = 0;
         } else {
 		retval = X11_SetupImage(this, screen);

@@ -126,10 +126,10 @@ int ph_ShowWMCursor(_THIS, WMcursor* cursor)
     }
 
     /* looks like photon can't draw mouse cursor in direct mode */
-    if ((this->screen->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)
+    if (this->screen->flags & SDL_FULLSCREEN)
     {
          /* disable the fake mouse in the fullscreen OpenGL mode */
-         if ((this->screen->flags & SDL_OPENGL) == SDL_OPENGL)
+         if (this->screen->flags & SDL_INTERNALOPENGL)
          {
              cursor=NULL;
          }

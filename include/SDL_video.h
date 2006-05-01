@@ -124,7 +124,7 @@ typedef struct SDL_Surface {
 #define SDL_DOUBLEBUF	0x40000000	/* Set up double-buffered video mode */
 #define SDL_FULLSCREEN	0x80000000	/* Surface is a full screen display */
 #define SDL_OPENGL      0x00000002      /* Create an OpenGL rendering context */
-#define SDL_OPENGLBLIT_OBSOLETE 0x0000000A /* Obsolete, do not use! */
+#define SDL_INTERNALOPENGL 0x00000008   /* SDL uses OpenGL internally for this window */
 #define SDL_RESIZABLE	0x00000010	/* This video mode may be resized */
 #define SDL_NOFRAME	0x00000020	/* No window caption or edge frame */
 /* Used internally (read-only) */

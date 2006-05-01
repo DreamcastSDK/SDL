@@ -585,7 +585,7 @@ static void X11_DestroyWindow(_THIS, SDL_Surface *screen)
 {
 	/* Clean up OpenGL */
 	if ( screen ) {
-		screen->flags &= ~SDL_OPENGL;
+		screen->flags &= ~SDL_INTERNALOPENGL;
 	}
 	X11_GL_Shutdown(this);
 
@@ -791,7 +791,7 @@ static int X11_CreateWindow(_THIS, SDL_Surface *screen,
 	}
 
 	/* find out which visual we are going to use */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 		XVisualInfo *vi;
 
 		vi = X11_GL_GetVisual(this);
@@ -904,7 +904,7 @@ static int X11_CreateWindow(_THIS, SDL_Surface *screen,
 
 	/* Create (or use) the X11 display window */
 	if ( !SDL_windowid ) {
-		if ( flags & SDL_OPENGL ) {
+		if ( flags & SDL_INTERNALOPENGL ) {
 			if ( X11_GL_CreateWindow(this, w, h) < 0 ) {
 				return(-1);
 			}
@@ -927,11 +927,11 @@ static int X11_CreateWindow(_THIS, SDL_Surface *screen,
 					| PointerMotionMask | ExposureMask ));
 	}
 	/* Create the graphics context here, once we have a window */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 		if ( X11_GL_CreateContext(this) < 0 ) {
 			return(-1);
 		} else {
-			screen->flags |= SDL_OPENGL;
+			screen->flags |= SDL_INTERNALOPENGL;
 		}
 	} else {
 		XGCValues gcv;
@@ -946,7 +946,7 @@ static int X11_CreateWindow(_THIS, SDL_Surface *screen,
 	}
 
 	/* Set our colormaps when not setting a GL mode */
-	if ( ! (flags & SDL_OPENGL) ) {
+	if ( ! (flags & SDL_INTERNALOPENGL) ) {
 		XSetWindowColormap(SDL_Display, SDL_Window, SDL_XColorMap);
 		if( !SDL_windowid ) {
 		    XSetWindowColormap(SDL_Display, FSwindow, SDL_XColorMap);
@@ -1063,7 +1063,7 @@ SDL_Surface *X11_SetVideoMode(_THIS, SDL_Surface *current,
 
 	/* Set up the X11 window */
 	saved_flags = current->flags;
-	if ( (SDL_Window) && ((saved_flags&SDL_OPENGL) == (flags&SDL_OPENGL))
+	if ( (SDL_Window) && ((saved_flags&SDL_INTERNALOPENGL) == (flags&SDL_INTERNALOPENGL))
 	      && (bpp == current->format->BitsPerPixel)
           && ((saved_flags&SDL_NOFRAME) == (flags&SDL_NOFRAME)) ) {
 		if (X11_ResizeWindow(this, current, width, height, flags) < 0) {
@@ -1079,7 +1079,7 @@ SDL_Surface *X11_SetVideoMode(_THIS, SDL_Surface *current,
 
 	/* Set up the new mode framebuffer */
 	if ( ((current->w != width) || (current->h != height)) ||
-             ((saved_flags&SDL_OPENGL) != (flags&SDL_OPENGL)) ) {
+             ((saved_flags&SDL_INTERNALOPENGL) != (flags&SDL_INTERNALOPENGL)) ) {
 		current->w = width;
 		current->h = height;
 		current->pitch = SDL_CalculatePitch(current);

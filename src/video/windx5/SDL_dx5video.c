@@ -1031,19 +1031,19 @@ SDL_Surface *DX5_SetVideoMode(_THIS, SDL_Surface *current,
 
 #ifndef NO_CHANGEDISPLAYSETTINGS
 	/* Unset any previous OpenGL fullscreen mode */
-	if ( (current->flags & (SDL_OPENGL|SDL_FULLSCREEN)) ==
-	                       (SDL_OPENGL|SDL_FULLSCREEN) ) {
+	if ( (current->flags & (SDL_INTERNALOPENGL|SDL_FULLSCREEN)) ==
+	                       (SDL_INTERNALOPENGL|SDL_FULLSCREEN) ) {
 		ChangeDisplaySettings(NULL, 0);
 	}
 #endif
 
 	/* Clean up any GL context that may be hanging around */
-	if ( current->flags & SDL_OPENGL ) {
+	if ( current->flags & SDL_INTERNALOPENGL ) {
 		WIN_GL_ShutDown(this);
 	}
 
 	/* If we are setting a GL mode, use GDI, not DirectX (yuck) */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 		Uint32 Rmask, Gmask, Bmask;
 
 		/* Recalculate the bitmasks if necessary */
@@ -1215,7 +1215,7 @@ SDL_Surface *DX5_SetVideoMode(_THIS, SDL_Surface *current,
 		if ( WIN_GL_SetupWindow(this) < 0 ) {
 			return(NULL);
 		}
-		video->flags |= SDL_OPENGL;
+		video->flags |= SDL_INTERNALOPENGL;
 		return(video);
 	}
 
@@ -2361,13 +2361,13 @@ void DX5_VideoQuit(_THIS)
 	/* If we're fullscreen GL, we need to reset the display */
 	if ( this->screen != NULL ) {
 #ifndef NO_CHANGEDISPLAYSETTINGS
-		if ( (this->screen->flags & (SDL_OPENGL|SDL_FULLSCREEN)) ==
-		                            (SDL_OPENGL|SDL_FULLSCREEN) ) {
+		if ( (this->screen->flags & (SDL_INTERNALOPENGL|SDL_FULLSCREEN)) ==
+		                            (SDL_INTERNALOPENGL|SDL_FULLSCREEN) ) {
 			ChangeDisplaySettings(NULL, 0);
 			ShowWindow(SDL_Window, SW_HIDE);
 		}
 #endif
-		if ( this->screen->flags & SDL_OPENGL ) {
+		if ( this->screen->flags & SDL_INTERNALOPENGL ) {
 			WIN_GL_ShutDown(this);
 		}
 	}

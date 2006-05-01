@@ -296,7 +296,7 @@ extern "C" {
     } else {
       SDL_SetError("Unsupported resolution, %dx%d\n", width, height);
     }
-    if ( flags & SDL_OPENGL ) {
+    if ( flags & SDL_INTERNALOPENGL ) {
       SDL_SetError("OpenGL not supported");
       return(NULL);
     } 

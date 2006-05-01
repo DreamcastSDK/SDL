@@ -684,7 +684,7 @@ LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			hdc = BeginPaint(SDL_Window, &ps);
 			if ( current_video->screen &&
-			     !(current_video->screen->flags & SDL_OPENGL) ) {
+			     !(current_video->screen->flags & SDL_INTERNALOPENGL) ) {
 				WIN_WinPAINT(current_video, hdc);
 			}
 			EndPaint(SDL_Window, &ps);

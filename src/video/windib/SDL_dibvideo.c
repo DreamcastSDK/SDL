@@ -484,7 +484,7 @@ SDL_Surface *DIB_SetVideoMode(_THIS, SDL_Surface *current,
 	Uint32 Rmask, Gmask, Bmask;
 
 	/* Clean up any GL context that may be hanging around */
-	if ( current->flags & SDL_OPENGL ) {
+	if ( current->flags & SDL_INTERNALOPENGL ) {
 		WIN_GL_ShutDown(this);
 	}
 	SDL_resizing = 1;
@@ -686,7 +686,7 @@ SDL_Surface *DIB_SetVideoMode(_THIS, SDL_Surface *current,
 	if ( screen_bmp != NULL ) {
 		DeleteObject(screen_bmp);
 	}
-	if ( ! (flags & SDL_OPENGL) ) {
+	if ( ! (flags & SDL_INTERNALOPENGL) ) {
 		BOOL is16bitmode = (video->format->BytesPerPixel == 2);
 
 		/* Suss out the bitmap info header */
@@ -814,11 +814,11 @@ SDL_Surface *DIB_SetVideoMode(_THIS, SDL_Surface *current,
 	SDL_resizing = 0;
 
 	/* Set up for OpenGL */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 		if ( WIN_GL_SetupWindow(this) < 0 ) {
 			return(NULL);
 		}
-		video->flags |= SDL_OPENGL;
+		video->flags |= SDL_INTERNALOPENGL;
 	}
 
 	/* JC 14 Mar 2006
@@ -1035,7 +1035,7 @@ void DIB_VideoQuit(_THIS)
 				ShowWindow(SDL_Window, SW_HIDE);
 			}
 #endif
-			if ( this->screen->flags & SDL_OPENGL ) {
+			if ( this->screen->flags & SDL_INTERNALOPENGL ) {
 				WIN_GL_ShutDown(this);
 			}
 			this->screen->pixels = NULL;

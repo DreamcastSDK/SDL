@@ -583,9 +583,9 @@ static SDL_Surface *ROM_SetVideoMode(_THIS, SDL_Surface *current,
 	SelectWindow(SDL_Window);
 
 	/* Handle OpenGL support */
-	if ( flags & SDL_OPENGL ) {
+	if ( flags & SDL_INTERNALOPENGL ) {
 		if ( Mac_GL_Init(this) == 0 ) {
-			current->flags |= SDL_OPENGL;
+			current->flags |= SDL_INTERNALOPENGL;
 		} else {
 			current = NULL;
 		}

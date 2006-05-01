@@ -598,7 +598,7 @@ void CGX_DestroyWindow(_THIS, SDL_Surface *screen)
 
 		/* Clean up OpenGL */
 		if ( screen ) {
-		screen->flags &= ~SDL_OPENGL;
+		screen->flags &= ~SDL_INTERNALOPENGL;
 		}
 
 		if ( screen && (screen->flags & SDL_FULLSCREEN) ) {
@@ -687,7 +687,7 @@ int CGX_CreateWindow(_THIS, SDL_Surface *screen,
 /* questo l'ho spostato nell'apertura dello schermo, in quanto su Amiga le finestre
    hanno il pixel mode degli schermi.
  */
-	/*if ( flags & SDL_OPENGL ) {
+	/*if ( flags & SDL_INTERNALOPENGL ) {
 		SDL_SetError("OpenGL not supported by the Amiga SDL!");
 		return -1;
 	}
@@ -800,7 +800,7 @@ int CGX_CreateWindow(_THIS, SDL_Surface *screen,
 			{
 				/* Create GimmeZeroZero window when OpenGL is used */
 				unsigned long gzz = FALSE;
-				if( flags & SDL_OPENGL ) {
+				if( flags & SDL_INTERNALOPENGL ) {
 					gzz = TRUE;
 				}
 
@@ -840,7 +840,7 @@ int CGX_CreateWindow(_THIS, SDL_Surface *screen,
 
 	/* Set our colormaps when not setting a GL mode */
 /*
-	if ( ! (flags & SDL_OPENGL) ) {
+	if ( ! (flags & SDL_INTERNALOPENGL) ) {
 		XSetWindowColormap(SDL_Display, SDL_Window, SDL_XColorMap);
 	}
 */
@@ -861,18 +861,18 @@ int CGX_CreateWindow(_THIS, SDL_Surface *screen,
 	CGX_ResizeImage(this, screen, flags);
 
 	/* Make OpenGL Context if needed*/
-	if(flags & SDL_OPENGL) {
+	if(flags & SDL_INTERNALOPENGL) {
 		if(this->gl_data->gl_active == 0) {
 			if(CGX_GL_Init(this) < 0)
 				return -1;
 			else
-				screen->flags |= SDL_OPENGL;
+				screen->flags |= SDL_INTERNALOPENGL;
 		}
 		else {
 			if(CGX_GL_Update(this) < 0)
 				return -1;
 			else
-				screen->flags |= SDL_OPENGL;
+				screen->flags |= SDL_INTERNALOPENGL;
 		}
 	}
 }
@@ -1066,7 +1066,7 @@ buildnewscreen:
 	/* Set up the X11 window */
 	saved_flags = current->flags;
 
-	if (SDL_Window && (saved_flags&SDL_OPENGL) == (flags&SDL_OPENGL)
+	if (SDL_Window && (saved_flags&SDL_INTERNALOPENGL) == (flags&SDL_INTERNALOPENGL)
 	    && bpp == current->format->BitsPerPixel && !needcreate) {
 		if (CGX_ResizeWindow(this, current, width, height, flags) < 0) {
 			current = NULL;
@@ -1082,7 +1082,7 @@ buildnewscreen:
 #if 0
 	/* Set up the new mode framebuffer */
 	if ( ((current->w != width) || (current->h != height)) ||
-             ((saved_flags&SDL_OPENGL) != (flags&SDL_OPENGL)) ) {
+             ((saved_flags&SDL_INTERNALOPENGL) != (flags&SDL_INTERNALOPENGL)) ) {
 		current->w = width;
 		current->h = height;
 		current->pitch = SDL_CalculatePitch(current);

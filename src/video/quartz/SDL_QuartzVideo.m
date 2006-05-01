@@ -379,7 +379,7 @@ static void QZ_UnsetVideoMode (_THIS, BOOL to_desktop) {
             Release the OpenGL context
             Do this first to avoid trash on the display before fade
         */
-        if ( mode_flags & SDL_OPENGL ) {
+        if ( mode_flags & SDL_INTERNALOPENGL ) {
         
             QZ_TearDownOpenGL (this);
             CGLSetFullScreen (NULL);
@@ -406,7 +406,7 @@ static void QZ_UnsetVideoMode (_THIS, BOOL to_desktop) {
         window_view = nil;
 
         /* Release the OpenGL context */
-        if ( mode_flags & SDL_OPENGL )
+        if ( mode_flags & SDL_INTERNALOPENGL )
             QZ_TearDownOpenGL (this);
     }
 
@@ -512,7 +512,7 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
         current->flags |= SDL_HWPALETTE;
 
     /* Setup OpenGL for a fullscreen context */
-    if (flags & SDL_OPENGL) {
+    if (flags & SDL_INTERNALOPENGL) {
 
         CGLError err;
         CGLContextObj ctx;
@@ -535,7 +535,7 @@ static SDL_Surface* QZ_SetVideoFullScreen (_THIS, SDL_Surface *current, int widt
 
         [ gl_context flushBuffer ];
 
-        current->flags |= SDL_OPENGL;
+        current->flags |= SDL_INTERNALOPENGL;
     }
 
     /* If we don't hide menu bar, it will get events and interrupt the program */
@@ -609,8 +609,8 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
             QZ_UnsetVideoMode (this, TRUE);
         }
         else if ( ((mode_flags ^ flags) & (SDL_NOFRAME|SDL_RESIZABLE)) ||
-                  (mode_flags & SDL_OPENGL) || 
-                  (flags & SDL_OPENGL) ) {
+                  (mode_flags & SDL_INTERNALOPENGL) || 
+                  (flags & SDL_INTERNALOPENGL) ) {
             QZ_UnsetVideoMode (this, TRUE);
         }
     }
@@ -708,7 +708,7 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
     }
 
     /* For OpenGL, we bind the context to a subview */
-    if ( flags & SDL_OPENGL ) {
+    if ( flags & SDL_INTERNALOPENGL ) {
 
         if ( ! QZ_SetupOpenGL (this, *bpp, flags) ) {
             if (fade_token != kCGDisplayFadeReservationInvalidToken) {
@@ -725,7 +725,7 @@ static SDL_Surface* QZ_SetVideoWindowed (_THIS, SDL_Surface *current, int width,
         [ window_view release ];
         [ gl_context makeCurrentContext];
         [ qz_window makeKeyAndOrderFront:nil ];
-        current->flags |= SDL_OPENGL;
+        current->flags |= SDL_INTERNALOPENGL;
     }
     /* For 2D, we set the subview to an NSQuickDrawView */
     else {

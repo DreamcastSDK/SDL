@@ -722,7 +722,7 @@ static void DSp_UnsetVideoMode(_THIS, SDL_Surface *current)
 {
 			
 		
-	 if ( current->flags & SDL_OPENGL )  { 
+	 if ( current->flags & SDL_INTERNALOPENGL )  { 
 	   Mac_GL_Quit (this);	   	
 	}
 		
@@ -918,14 +918,14 @@ rebuild:
 	}
 	
     
-	if ( (current->flags & SDL_HWSURFACE) || (current->flags & SDL_OPENGL) )
+	if ( (current->flags & SDL_HWSURFACE) || (current->flags & SDL_INTERNALOPENGL) )
 		DSpContext_SetVBLProc (dsp_context, DSp_VBLProc, NULL);
     #endif
 	
 	if (bpp == 8)	
 	   current->flags |= SDL_HWPALETTE;
 	
-	if (flags & SDL_OPENGL) {
+	if (flags & SDL_INTERNALOPENGL) {
 		   
 	   Rect rect;
 	   RGBColor rgb = { 0.0, 0.0, 0.0 };
@@ -960,7 +960,7 @@ rebuild:
 	      return NULL;
 	   }
 	   	   	   	   
-	   current->flags |= SDL_OPENGL;	
+	   current->flags |= SDL_INTERNALOPENGL;	
 	}
 	
 	return current; 

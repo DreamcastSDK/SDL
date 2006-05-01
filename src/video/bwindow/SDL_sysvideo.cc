@@ -525,7 +525,7 @@ SDL_Surface *BE_SetVideoMode(_THIS, SDL_Surface *current,
 		current->flags |= SDL_NOFRAME;
 		SDL_Win->SetLook(B_NO_BORDER_WINDOW_LOOK);
 	} else {
-		if ( (flags & SDL_RESIZABLE) && !(flags & SDL_OPENGL) )  {
+		if ( (flags & SDL_RESIZABLE) && !(flags & SDL_INTERNALOPENGL) )  {
 			current->flags |= SDL_RESIZABLE;
 			/* We don't want opaque resizing (TM). :-) */
 			SDL_Win->SetFlags(B_OUTLINE_RESIZE);
@@ -534,8 +534,8 @@ SDL_Surface *BE_SetVideoMode(_THIS, SDL_Surface *current,
 		}
 	}
 
-	if ( flags & SDL_OPENGL ) {
-		current->flags |= SDL_OPENGL;
+	if ( flags & SDL_INTERNALOPENGL ) {
+		current->flags |= SDL_INTERNALOPENGL;
 		current->pitch = 0;
 		current->pixels = NULL;
 		_this->UpdateRects = NULL;

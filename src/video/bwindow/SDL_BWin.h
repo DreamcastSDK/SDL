@@ -219,7 +219,7 @@ public:
 
 		retval = 0;
 		Lock();
-		if ( flags & SDL_OPENGL ) {
+		if ( flags & SDL_INTERNALOPENGL ) {
 #if SDL_VIDEO_OPENGL
 			if ( SDL_GLView == NULL ) {
 				SDL_GLView = new BGLView(Bounds(), "SDL GLView",

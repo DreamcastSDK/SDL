@@ -119,7 +119,7 @@ struct SDL_VideoDevice {
 
 	/* The pixel format used when SDL_CreateRGBSurface creates SDL_HWSURFACEs with alpha */
 	SDL_PixelFormat* displayformatalphapixel;
-	
+
 	/* Allocates a surface in video memory */
 	int (*AllocHWSurface)(_THIS, SDL_Surface *surface);
 
@@ -406,6 +406,9 @@ extern VideoBootStrap AALIB_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
 extern VideoBootStrap DUMMY_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_GLSDL
+extern VideoBootStrap glSDL_bootstrap;
 #endif
 
 /* This is the current video device */

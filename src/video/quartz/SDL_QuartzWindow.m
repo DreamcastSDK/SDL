@@ -55,7 +55,7 @@ static void QZ_SetPortAlphaOpaque () {
 /* we override these methods to fix the miniaturize animation/dock icon bug */
 - (void)miniaturize:(id)sender
 {
-    if (SDL_VideoSurface->flags & SDL_OPENGL) {
+    if (SDL_VideoSurface->flags & SDL_INTERNALOPENGL) {
     
         /* 
             Future: Grab framebuffer and put into NSImage
@@ -86,7 +86,7 @@ static void QZ_SetPortAlphaOpaque () {
      SDL_VideoDevice *this = (SDL_VideoDevice*)current_video;
     
     /* make sure pixels are fully opaque */
-    if (! ( SDL_VideoSurface->flags & SDL_OPENGL ) )
+    if (! ( SDL_VideoSurface->flags & SDL_INTERNALOPENGL ) )
         QZ_SetPortAlphaOpaque ();
     
     /* save current visible SDL surface */
@@ -126,7 +126,7 @@ static void QZ_SetPortAlphaOpaque () {
         SDL_PrivateResize (newViewFrame.size.width, newViewFrame.size.height);
 
         /* If not OpenGL, we have to update the pixels and pitch */
-        if ( ! ( SDL_VideoSurface->flags & SDL_OPENGL ) ) {
+        if ( ! ( SDL_VideoSurface->flags & SDL_INTERNALOPENGL ) ) {
             
             CGrafPtr thePort = [ window_view qdPort ];
             LockPortBits ( thePort );
@@ -164,7 +164,7 @@ static void QZ_SetPortAlphaOpaque () {
     if ( this ) {
     
         /* make sure pixels are fully opaque */
-        if (! ( SDL_VideoSurface->flags & SDL_OPENGL ) )
+        if (! ( SDL_VideoSurface->flags & SDL_INTERNALOPENGL ) )
             QZ_SetPortAlphaOpaque ();
           
         /* save current visible SDL surface */

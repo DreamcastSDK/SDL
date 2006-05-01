@@ -51,17 +51,17 @@
 #define WINDIB_FULLSCREEN()						\
 (									\
 	SDL_VideoSurface &&						\
-	((SDL_VideoSurface->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) && \
-	(((SDL_VideoSurface->flags & SDL_OPENGL   ) == SDL_OPENGL    ) || \
-	((SDL_strcmp(this->name, "windib") == 0) || \
-	 (SDL_strcmp(this->name, "gapi") == 0))) \
+	(SDL_VideoSurface->flags & SDL_FULLSCREEN) &&			\
+	((SDL_VideoSurface->flags & SDL_INTERNALOPENGL) ||		\
+	((SDL_strcmp(this->name, "windib") == 0) ||			\
+	 (SDL_strcmp(this->name, "gapi") == 0)))			\
 )
 #define DDRAW_FULLSCREEN() 						\
 (									\
 	SDL_VideoSurface &&						\
-	((SDL_VideoSurface->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) && \
-	((SDL_VideoSurface->flags & SDL_OPENGL    ) != SDL_OPENGL    ) && \
-	(SDL_strcmp(this->name, "directx") == 0)				\
+	(SDL_VideoSurface->flags & SDL_FULLSCREEN) &&			\
+	(SDL_VideoSurface->flags & SDL_INTERNALOPENGL) &&		\
+	(SDL_strcmp(this->name, "directx") == 0)			\
 )
 
 #define DINPUT_FULLSCREEN()	DDRAW_FULLSCREEN()

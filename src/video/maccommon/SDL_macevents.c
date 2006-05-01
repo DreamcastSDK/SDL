@@ -382,7 +382,7 @@ static int Mac_HandleEvents(_THIS, int wait4it)
 	  case updateEvt: {
 		BeginUpdate(SDL_Window);
 	#if SDL_VIDEO_OPENGL
-		if (SDL_VideoSurface->flags & SDL_OPENGL)
+		if (SDL_VideoSurface->flags & SDL_INTERNALOPENGL)
 			SDL_GL_SwapBuffers();
 		else
 	#endif

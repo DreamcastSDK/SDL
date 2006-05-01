@@ -167,7 +167,7 @@ SDL_Rect **DC_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 	case 16:
 		return &vid_modes;
 	case 32:
-		if (!(flags & SDL_OPENGL))
+		if (!(flags & SDL_INTERNALOPENGL))
 		return &vid_modes;
 	default:
 		return NULL;
@@ -220,7 +220,7 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 		Gmask = 0x0000ff00;
 		Bmask = 0x000000ff;
 #if SDL_VIDEO_OPENGL
-		if (!(flags & SDL_OPENGL))
+		if (!(flags & SDL_INTERNALOPENGL))
 #endif
 		break;
 	default:
@@ -252,9 +252,9 @@ SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface *current,
 	current->pixels = vram_s;
 
 #if SDL_VIDEO_OPENGL
-	if (flags & SDL_OPENGL) {
+	if (flags & SDL_INTERNALOPENGL) {
 		this->gl_config.driver_loaded = 1;
-		current->flags = SDL_FULLSCREEN | SDL_OPENGL;
+		current->flags = SDL_FULLSCREEN | SDL_INTERNALOPENGL;
 		current->pixels = NULL;
 		pvr_inited = 1;
 		pvr_init(&params);
