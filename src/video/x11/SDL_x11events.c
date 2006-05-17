@@ -291,11 +291,10 @@ printf("Mode: NotifyUngrab\n");
 		     (xevent.xcrossing.mode != NotifyUngrab) ) {
 			if ( this->input_grab == SDL_GRAB_OFF ) {
 				posted = SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
-			} else {
-				posted = SDL_PrivateMouseMotion(0, 0,
-						xevent.xcrossing.x,
-						xevent.xcrossing.y);
 			}
+			posted = SDL_PrivateMouseMotion(0, 0,
+					xevent.xcrossing.x,
+					xevent.xcrossing.y);
 		}
 	    }
 	    break;
@@ -1118,3 +1117,57 @@ void X11_InitOSKeymap(_THIS)
 	X11_InitKeymap();
 }
 
+void X11_SaveScreenSaver(Display *display, int *saved_timeout, BOOL *dpms)
+{
+	int timeout, interval, prefer_blank, allow_exp;
+	XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
+	*saved_timeout = timeout;
+
+#if SDL_VIDEO_DRIVER_X11_DPMS
+	if ( SDL_X11_HAVE_DPMS ) {
+		int dummy;
+	  	if ( DPMSQueryExtension(display, &dummy, &dummy) ) {
+			CARD16 state;
+			DPMSInfo(display, &state, dpms);
+		}
+	}
+#else
+	*dpms = 0;
+#endif /* SDL_VIDEO_DRIVER_X11_DPMS */
+}
+
+void X11_DisableScreenSaver(Display *display)
+{
+	int timeout, interval, prefer_blank, allow_exp;
+	XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
+	timeout = 0;
+	XSetScreenSaver(display, timeout, interval, prefer_blank, allow_exp);
+
+#if SDL_VIDEO_DRIVER_X11_DPMS
+	if ( SDL_X11_HAVE_DPMS ) {
+		int dummy;
+	  	if ( DPMSQueryExtension(display, &dummy, &dummy) ) {
+			DPMSDisable(display);
+		}
+	}
+#endif /* SDL_VIDEO_DRIVER_X11_DPMS */
+}
+
+void X11_RestoreScreenSaver(Display *display, int saved_timeout, BOOL dpms)
+{
+	int timeout, interval, prefer_blank, allow_exp;
+	XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
+	timeout = saved_timeout;
+	XSetScreenSaver(display, timeout, interval, prefer_blank, allow_exp);
+
+#if SDL_VIDEO_DRIVER_X11_DPMS
+	if ( SDL_X11_HAVE_DPMS ) {
+		int dummy;
+	  	if ( DPMSQueryExtension(display, &dummy, &dummy) ) {
+			if ( dpms ) {
+				DPMSEnable(display);
+			}
+		}
+	}
+#endif /* SDL_VIDEO_DRIVER_X11_DPMS */
+}

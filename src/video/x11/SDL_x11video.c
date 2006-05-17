@@ -197,7 +197,7 @@ static int x_errhandler(Display *d, XErrorEvent *e)
 	     (((e->error_code == BadRequest)&&(e->request_code == vm_error)) ||
 	      ((e->error_code > vm_error) &&
 	       (e->error_code <= (vm_error+XF86VidModeNumberErrors)))) ) {
-#ifdef XFREE86_DEBUG
+#ifdef X11_DEBUG
 { char errmsg[1024];
   XGetErrorText(d, e->error_code, errmsg, sizeof(errmsg));
 printf("VidMode error: %s\n", errmsg);
@@ -212,7 +212,7 @@ printf("VidMode error: %s\n", errmsg);
         if ( (dga_error >= 0) &&
 	     ((e->error_code > dga_error) &&
 	      (e->error_code <= (dga_error+XF86DGANumberErrors))) ) {
-#ifdef XFREE86_DEBUG
+#ifdef X11_DEBUG
 { char errmsg[1024];
   XGetErrorText(d, e->error_code, errmsg, sizeof(errmsg));
 printf("DGA error: %s\n", errmsg);
@@ -244,7 +244,7 @@ static int xio_errhandler(Display *d)
 static int (*Xext_handler)(Display *, _Xconst char *, _Xconst char *) = NULL;
 static int xext_errhandler(Display *d, _Xconst char *ext, _Xconst char *reason)
 {
-#ifdef XFREE86_DEBUG
+#ifdef X11_DEBUG
 	printf("Xext error inside SDL (may be harmless):\n");
 	printf("  Extension \"%s\" %s on display \"%s\".\n",
 	       ext, reason, XDisplayString(d));
@@ -310,18 +310,14 @@ static char *get_classname(char *classname, int maxlen)
 /* Create auxiliary (toplevel) windows with the current visual */
 static void create_aux_windows(_THIS)
 {
-    Atom _NET_WM_NAME;
-    Atom _NET_WM_ICON_NAME;
+    int x = 0, y = 0;
     char classname[1024];
     XSetWindowAttributes xattr;
     XWMHints *hints;
-    XTextProperty titleprop, titlepropUTF8, iconprop, iconpropUTF8;
     int def_vis = (SDL_Visual == DefaultVisual(SDL_Display, SDL_Screen));
 
     /* Look up some useful Atoms */
     WM_DELETE_WINDOW = XInternAtom(SDL_Display, "WM_DELETE_WINDOW", False);
-    _NET_WM_NAME = XInternAtom(SDL_Display, "_NET_WM_NAME", False);
-    _NET_WM_ICON_NAME = XInternAtom(SDL_Display, "_NET_WM_ICON_NAME", False);
 
     /* Don't create any extra windows if we are being managed */
     if ( SDL_windowid ) {
@@ -333,13 +329,19 @@ static void create_aux_windows(_THIS)
     if(FSwindow)
 	XDestroyWindow(SDL_Display, FSwindow);
 
+#if SDL_VIDEO_DRIVER_X11_VIDMODE
+    if ( use_xinerama ) {
+        x = xinerama_info.x_org;
+        y = xinerama_info.y_org;
+    }
+#endif
     xattr.override_redirect = True;
     xattr.background_pixel = def_vis ? BlackPixel(SDL_Display, SDL_Screen) : 0;
     xattr.border_pixel = 0;
     xattr.colormap = SDL_XColorMap;
 
     FSwindow = XCreateWindow(SDL_Display, SDL_Root,
-                             xinerama_x, xinerama_y, 32, 32, 0,
+                             x, y, 32, 32, 0,
 			     this->hidden->depth, InputOutput, SDL_Visual,
 			     CWOverrideRedirect | CWBackPixel | CWBorderPixel
 			     | CWColormap,
@@ -365,21 +367,16 @@ static void create_aux_windows(_THIS)
     }
 
     hints = NULL;
-    titleprop.value = titlepropUTF8.value = NULL;
-    iconprop.value = iconpropUTF8.value = NULL;
     if(WMwindow) {
 	/* All window attributes must survive the recreation */
 	hints = XGetWMHints(SDL_Display, WMwindow);
-	XGetTextProperty(SDL_Display, WMwindow, &titleprop, XA_WM_NAME);
-	XGetTextProperty(SDL_Display, WMwindow, &titlepropUTF8, _NET_WM_NAME);
-	XGetTextProperty(SDL_Display, WMwindow, &iconprop, XA_WM_ICON_NAME);
-	XGetTextProperty(SDL_Display, WMwindow, &iconpropUTF8, _NET_WM_ICON_NAME);
 	XDestroyWindow(SDL_Display, WMwindow);
     }
 
     /* Create the window for windowed management */
     /* (reusing the xattr structure above) */
-    WMwindow = XCreateWindow(SDL_Display, SDL_Root, 0, 0, 32, 32, 0,
+    WMwindow = XCreateWindow(SDL_Display, SDL_Root,
+                             x, y, 32, 32, 0,
 			     this->hidden->depth, InputOutput, SDL_Visual,
 			     CWBackPixel | CWBorderPixel | CWColormap,
 			     &xattr);
@@ -392,22 +389,7 @@ static void create_aux_windows(_THIS)
     }
     XSetWMHints(SDL_Display, WMwindow, hints);
     XFree(hints);
-    if(titleprop.value) {
-	XSetTextProperty(SDL_Display, WMwindow, &titleprop, XA_WM_NAME);
-	XFree(titleprop.value);
-    }
-    if(titlepropUTF8.value) {
-	XSetTextProperty(SDL_Display, WMwindow, &titlepropUTF8, _NET_WM_NAME);
-	XFree(titlepropUTF8.value);
-    }
-    if(iconprop.value) {
-	XSetTextProperty(SDL_Display, WMwindow, &iconprop, XA_WM_ICON_NAME);
-	XFree(iconprop.value);
-    }
-    if(iconpropUTF8.value) {
-	XSetTextProperty(SDL_Display, WMwindow, &iconpropUTF8, _NET_WM_ICON_NAME);
-	XFree(iconpropUTF8.value);
-    }
+    X11_SetCaptionNoLock(this, this->wm_title, this->wm_icon);
 
     XSelectInput(SDL_Display, WMwindow,
 		 FocusChangeMask | KeyPressMask | KeyReleaseMask
@@ -561,6 +543,10 @@ static int X11_VideoInit(_THIS, SDL_PixelFormat *vformat)
 		vformat->Amask = (0xFFFFFFFF & ~(vformat->Rmask|vformat->Gmask|vformat->Bmask));
 	}
 	X11_SaveVidModeGamma(this);
+
+	/* Save DPMS and screensaver settings */
+	X11_SaveScreenSaver(SDL_Display, &screensaver_timeout, &dpms_enabled);
+	X11_DisableScreenSaver(SDL_Display);
 
 	/* See if we have been passed a window to use */
 	SDL_windowid = SDL_getenv("SDL_WINDOWID");
@@ -1382,10 +1368,14 @@ void X11_VideoQuit(_THIS)
 			SDL_free(SDL_iconcolors);
 			SDL_iconcolors = NULL;
 		} 
+
 		/* Restore gamma settings if they've changed */
 		if ( SDL_GetAppState() & SDL_APPACTIVE ) {
 			X11_SwapVidModeGamma(this);
 		}
+
+		/* Restore DPMS and screensaver settings */
+		X11_RestoreScreenSaver(SDL_Display, screensaver_timeout, dpms_enabled);
 
 		/* Free that blank cursor */
 		if ( SDL_BlankCursor != NULL ) {

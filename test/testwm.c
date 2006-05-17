@@ -168,7 +168,7 @@ void HotKey_Quit(void)
 	SDL_PushEvent(&event);
 }
 
-int FilterEvents(const SDL_Event *event)
+int SDLCALL FilterEvents(const SDL_Event *event)
 {
 	static int reallyquit = 0;
 
@@ -180,10 +180,10 @@ int FilterEvents(const SDL_Event *event)
 				event->active.gain ? "gained" : "lost");
 			if ( event->active.state & SDL_APPACTIVE )
 				printf("active ");
-			if ( event->active.state & SDL_APPMOUSEFOCUS )
-				printf("mouse ");
 			if ( event->active.state & SDL_APPINPUTFOCUS )
 				printf("input ");
+			if ( event->active.state & SDL_APPMOUSEFOCUS )
+				printf("mouse ");
 			printf("focus\n");
 
 			/* See if we are iconified or restored */

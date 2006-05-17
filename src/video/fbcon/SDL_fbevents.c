@@ -55,6 +55,8 @@
 #define GPM_NODE_FIFO	"/dev/gpmdata"
 #endif
 
+/*#define DEBUG_KEYBOARD*/
+/*#define DEBUG_MOUSE*/
 
 /* The translation tables from a console scancode to a SDL keysym */
 #define NUM_VGAKEYMAPS	(1<<KG_CAPSSHIFT)
@@ -207,6 +209,8 @@ int FB_EnterGraphicsMode(_THIS)
 			SDL_SetError("Unable to set keyboard in graphics mode");
 			return(-1);
 		}
+		/* Prevent switching the virtual terminal */
+		ioctl(keyboard_fd, VT_LOCKSWITCH, 1);
 	}
 	return(keyboard_fd);
 }
@@ -220,6 +224,7 @@ void FB_LeaveGraphicsMode(_THIS)
 		saved_kbd_mode = -1;
 
 		/* Head back over to the original virtual terminal */
+		ioctl(keyboard_fd, VT_UNLOCKSWITCH, 1);
 		if ( saved_vt > 0 ) {
 			ioctl(keyboard_fd, VT_ACTIVATE, saved_vt);
 		}
@@ -280,8 +285,15 @@ int FB_OpenKeyboard(_THIS)
 		}
  		if ( keyboard_fd < 0 ) {
 			/* Last resort, maybe our tty is a usable VT */
-			current_vt = 0;
+			struct vt_stat vtstate;
+
 			keyboard_fd = open("/dev/tty", O_RDWR);
+
+			if ( ioctl(keyboard_fd, VT_GETSTATE, &vtstate) == 0 ) {
+				current_vt = vtstate.v_active;
+			} else {
+				current_vt = 0;
+			}
  		}
 #ifdef DEBUG_KEYBOARD
 		fprintf(stderr, "Current VT: %d\n", current_vt);
@@ -360,7 +372,7 @@ static int find_pid(DIR *proc, const char *wanted_name)
 }
 
 /* Returns true if /dev/gpmdata is being written to by gpm */
-static int gpm_available(void)
+static int gpm_available(char *proto, size_t protolen)
 {
 	int available;
 	DIR *proc;
@@ -370,6 +382,9 @@ static int gpm_available(void)
 	char args[PATH_MAX], *arg;
 
 	/* Don't bother looking if the fifo isn't there */
+#ifdef DEBUG_MOUSE 
+	fprintf(stderr,"testing gpm\n");
+#endif
 	if ( access(GPM_NODE_FIFO, F_OK) < 0 ) {
 		return(0);
 	}
@@ -377,17 +392,37 @@ static int gpm_available(void)
 	available = 0;
 	proc = opendir("/proc");
 	if ( proc ) {
-		while ( (pid=find_pid(proc, "gpm")) > 0 ) {
+		char raw_proto[10] = { '\0' };
+		char repeat_proto[10] = { '\0' };
+		while ( !available && (pid=find_pid(proc, "gpm")) > 0 ) {
 			SDL_snprintf(path, SDL_arraysize(path), "/proc/%d/cmdline", pid);
 			cmdline = open(path, O_RDONLY, 0);
 			if ( cmdline >= 0 ) {
 				len = read(cmdline, args, sizeof(args));
 				arg = args;
 				while ( len > 0 ) {
-					if ( SDL_strcmp(arg, "-R") == 0 ) {
-						available = 1;
-					}
 					arglen = SDL_strlen(arg)+1;
+#ifdef DEBUG_MOUSE 
+				        fprintf(stderr,"gpm arg %s len %d\n",arg,arglen);
+#endif
+					if ( SDL_strcmp(arg, "-t") == 0) {
+						/* protocol string, keep it for later */
+						char *t, *s;
+						t = arg + arglen;
+						s = SDL_strchr(t, ' ');
+						if (s) *s = 0;
+						SDL_strlcpy(raw_proto, t, SDL_arraysize(raw_proto));
+						if (s) *s = ' ';
+					}
+					if ( SDL_strncmp(arg, "-R", 2) == 0 ) {
+						char *t, *s;
+						available = 1;
+						t = arg + 2;
+						s = SDL_strchr(t, ' ');
+						if (s) *s = 0;
+						SDL_strlcpy(repeat_proto, t, SDL_arraysize(repeat_proto));
+						if (s) *s = ' ';
+					}
 					len -= arglen;
 					arg += arglen;
 				}
@@ -395,6 +430,16 @@ static int gpm_available(void)
 			}
 		}
 		closedir(proc);
+
+		if ( available ) {
+			if ( SDL_strcmp(repeat_proto, "raw") == 0 ) {
+				SDL_strlcpy(proto, raw_proto, protolen);
+			} else if ( *repeat_proto ) {
+				SDL_strlcpy(proto, repeat_proto, protolen);
+			} else {
+				SDL_strlcpy(proto, "msc", protolen);
+			}
+		}
 	}
 	return available;
 }
@@ -414,7 +459,7 @@ static int set_imps2_mode(int fd)
 			{0xFF}
 	*/
 	Uint8 set_imps2[] = {0xf3, 200, 0xf3, 100, 0xf3, 80};
-	Uint8 reset = 0xff;
+	/*Uint8 reset = 0xff;*/
 	fd_set fdset;
 	struct timeval tv;
 	int retval = 0;
@@ -552,14 +597,35 @@ fprintf(stderr, "Using ELO touchscreen\n");
 		};
 		/* First try to use GPM in repeater mode */
 		if ( mouse_fd < 0 ) {
-			if ( gpm_available() ) {
+			char proto[10];
+			if ( gpm_available(proto, SDL_arraysize(proto)) ) {
 				mouse_fd = open(GPM_NODE_FIFO, O_RDONLY, 0);
 				if ( mouse_fd >= 0 ) {
+					if ( SDL_strcmp(proto, "msc") == 0 ) {
+						mouse_drv = MOUSE_MSC;
+					} else if ( SDL_strcmp(proto, "ps2") == 0 ) {
+						mouse_drv = MOUSE_PS2;
+					} else if ( SDL_strcmp(proto, "imps2") == 0 ) {
+						mouse_drv = MOUSE_IMPS2;
+					} else if ( SDL_strcmp(proto, "ms") == 0 ||
+					            SDL_strcmp(proto, "bare") == 0 ) {
+						mouse_drv = MOUSE_MS;
+					} else if ( SDL_strcmp(proto, "bm") == 0 ) {
+						mouse_drv = MOUSE_BM;
+					} else {
+						/* Unknown protocol... */
 #ifdef DEBUG_MOUSE
-fprintf(stderr, "Using GPM mouse\n");
+						fprintf(stderr, "GPM mouse using unknown protocol = %s\n", proto);
 #endif
-					mouse_drv = MOUSE_MSC;
+						close(mouse_fd);
+						mouse_fd = -1;
+					}
 				}
+#ifdef DEBUG_MOUSE
+				if ( mouse_fd >= 0 ) {
+					fprintf(stderr, "Using GPM mouse, protocol = %s\n", proto);
+				}
+#endif /* DEBUG_MOUSE */
 			}
 		}
 		/* Now try to use a modern PS/2 mouse */
@@ -853,65 +919,65 @@ static void handle_mouse(_THIS)
 	return;
 }
 
-/* Handle switching to another VC, returns when our VC is back.
-   This isn't necessarily the best solution.  For SDL 1.3 we need
-   a way of notifying the application when we lose access to the
-   video hardware and when we regain it.
- */
+/* Handle switching to another VC, returns when our VC is back */
+static void switch_vt_prep(_THIS)
+{
+	SDL_Surface *screen = SDL_VideoSurface;
+
+	SDL_PrivateAppActive(0, (SDL_APPACTIVE|SDL_APPINPUTFOCUS|SDL_APPMOUSEFOCUS));
+
+	/* Save the contents of the screen, and go to text mode */
+	wait_idle(this);
+	screen_arealen = ((screen->h + (2*this->offset_y)) * screen->pitch);
+	screen_contents = (Uint8 *)SDL_malloc(screen_arealen);
+	if ( screen_contents ) {
+		SDL_memcpy(screen_contents, screen->pixels, screen_arealen);
+	}
+	FB_SavePaletteTo(this, 256, screen_palette);
+	ioctl(console_fd, FBIOGET_VSCREENINFO, &screen_vinfo);
+	ioctl(keyboard_fd, KDSETMODE, KD_TEXT);
+	ioctl(keyboard_fd, VT_UNLOCKSWITCH, 1);
+}
+static void switch_vt_done(_THIS)
+{
+	SDL_Surface *screen = SDL_VideoSurface;
+
+	/* Restore graphics mode and the contents of the screen */
+	ioctl(keyboard_fd, VT_LOCKSWITCH, 1);
+	ioctl(keyboard_fd, KDSETMODE, KD_GRAPHICS);
+	ioctl(console_fd, FBIOPUT_VSCREENINFO, &screen_vinfo);
+	FB_RestorePaletteFrom(this, 256, screen_palette);
+	if ( screen_contents ) {
+		SDL_memcpy(screen->pixels, screen_contents, screen_arealen);
+		SDL_free(screen_contents);
+		screen_contents = NULL;
+	}
+
+	/* Get updates to the shadow surface while switched away */
+	if ( SDL_ShadowSurface ) {
+		SDL_UpdateRect(SDL_ShadowSurface, 0, 0, 0, 0);
+	}
+
+	SDL_PrivateAppActive(1, (SDL_APPACTIVE|SDL_APPINPUTFOCUS|SDL_APPMOUSEFOCUS));
+}
 static void switch_vt(_THIS, unsigned short which)
 {
-	struct fb_var_screeninfo vinfo;
 	struct vt_stat vtstate;
-	unsigned short v_active;
-	__u16 saved_pal[3*256];
-	SDL_Surface *screen;
-	Uint32 screen_arealen;
-	Uint8 *screen_contents = NULL;
 
 	/* Figure out whether or not we're switching to a new console */
 	if ( (ioctl(keyboard_fd, VT_GETSTATE, &vtstate) < 0) ||
 	     (which == vtstate.v_active) ) {
 		return;
 	}
-	v_active = vtstate.v_active;
-
-	/* Save the contents of the screen, and go to text mode */
-	SDL_mutexP(hw_lock);
-	wait_idle(this);
-	screen = SDL_VideoSurface;
-	if ( !SDL_ShadowSurface ) {
-		screen_arealen = (screen->h*screen->pitch);
-		screen_contents = (Uint8 *)SDL_malloc(screen_arealen);
-		if ( screen_contents ) {
-			SDL_memcpy(screen_contents, (Uint8 *)screen->pixels + screen->offset, screen_arealen);
-		}
-	}
-	FB_SavePaletteTo(this, 256, saved_pal);
-	ioctl(console_fd, FBIOGET_VSCREENINFO, &vinfo);
-	ioctl(keyboard_fd, KDSETMODE, KD_TEXT);
 
 	/* New console, switch to it */
+	SDL_mutexP(hw_lock);
+	switch_vt_prep(this);
 	if ( ioctl(keyboard_fd, VT_ACTIVATE, which) == 0 ) {
-		/* Wait for our console to be activated again */
 		ioctl(keyboard_fd, VT_WAITACTIVE, which);
-		while ( ioctl(keyboard_fd, VT_WAITACTIVE, v_active) < 0 ) {
-			if ( (errno != EINTR) && (errno != EAGAIN) ) {
-				/* Unknown VT error - cancel this */
-				break;
-			}
-			SDL_Delay(500);
-		}
-	}
-
-	/* Restore graphics mode and the contents of the screen */
-	ioctl(keyboard_fd, KDSETMODE, KD_GRAPHICS);
-	ioctl(console_fd, FBIOPUT_VSCREENINFO, &vinfo);
-	FB_RestorePaletteFrom(this, 256, saved_pal);
-	if ( screen_contents ) {
-		SDL_memcpy((Uint8 *)screen->pixels + screen->offset, screen_contents, screen_arealen);
-		SDL_free(screen_contents);
+		switched_away = 1;
 	} else {
-		SDL_UpdateRect(screen, 0, 0, 0, 0);
+		switch_vt_done(this);
 	}
 	SDL_mutexV(hw_lock);
 }
@@ -969,6 +1035,18 @@ void FB_PumpEvents(_THIS)
 	static struct timeval zero;
 
 	do {
+		if ( switched_away ) {
+			struct vt_stat vtstate;
+
+			SDL_mutexP(hw_lock);
+			if ( (ioctl(keyboard_fd, VT_GETSTATE, &vtstate) == 0) &&
+			     vtstate.v_active == current_vt ) {
+				switched_away = 0;
+				switch_vt_done(this);
+			}
+			SDL_mutexV(hw_lock);
+		}
+
 		posted = 0;
 
 		FD_ZERO(&fdset);
@@ -1036,6 +1114,12 @@ void FB_InitOSKeymap(_THIS)
 	    break;
 	  case SCANCODE_LEFTWIN:
 	    keymap[i] = SDLK_LSUPER;
+	    break;
+	  case SCANCODE_LEFTALT:
+	    keymap[i] = SDLK_LALT;
+	    break;
+	  case SCANCODE_RIGHTALT:
+	    keymap[i] = SDLK_RALT;
 	    break;
 	  case 127:
 	    keymap[i] = SDLK_MENU;
@@ -1138,10 +1222,10 @@ static SDL_keysym *TranslateKey(int scancode, SDL_keysym *keysym)
 		if ( modstate & KMOD_CTRL ) {
 			map |= (1<<KG_CTRL);
 		}
-		if ( modstate & KMOD_ALT ) {
+		if ( modstate & KMOD_LALT ) {
 			map |= (1<<KG_ALT);
 		}
-		if ( modstate & KMOD_MODE ) {
+		if ( modstate & KMOD_RALT ) {
 			map |= (1<<KG_ALTGR);
 		}
 		if ( KTYP(vga_keymap[map][scancode]) == KT_LETTER ) {

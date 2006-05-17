@@ -38,7 +38,7 @@ SDLMAIN_TARGET = libSDLmain.a
 SDLMAIN_SOURCES = @SDLMAIN_SOURCES@
 SDLMAIN_OBJECTS = @SDLMAIN_OBJECTS@
 
-DIST = acinclude.m4 autogen.sh Borland.html Borland.zip BUGS build-scripts configure configure.in COPYING CREDITS CWprojects.sea.bin docs docs.html EpocBuildFiles.zip include INSTALL Makefile.dc Makefile.minimal Makefile.in MPWmake.sea.bin README* sdl-config.in sdl.m4 SDL.qpg.in SDL.spec SDL.spec.in src test TODO VisualCE.zip VisualC.html VisualC.zip Watcom-OS2.zip WhatsNew Xcode.tar.gz
+DIST = acinclude.m4 autogen.sh Borland.html Borland.zip BUGS build-scripts configure configure.in COPYING CREDITS CWprojects.sea.bin docs docs.html EpocBuildFiles.zip include INSTALL Makefile.dc Makefile.minimal Makefile.in MPWmake.sea.bin README* sdl-config.in sdl.m4 SDL.qpg.in SDL.spec SDL.spec.in src test TODO VisualCE.zip VisualC.html VisualC.zip Watcom-OS2.zip Watcom-Win32.zip WhatsNew Xcode.tar.gz
 
 LT_AGE      = @LT_AGE@
 LT_CURRENT  = @LT_CURRENT@
@@ -78,7 +78,7 @@ $(objects)/$(SDLMAIN_TARGET): $(SDLMAIN_OBJECTS)
 	$(AR) cru $@ $(SDLMAIN_OBJECTS)
 	$(RANLIB) $@
 
-install: install-bin install-hdrs install-lib install-data install-man
+install: all install-bin install-hdrs install-lib install-data install-man
 install-bin:
 	$(SHELL) $(auxdir)/mkinstalldirs $(bindir)
 	$(INSTALL) -m 755 sdl-config $(bindir)/sdl-config
@@ -131,7 +131,6 @@ clean:
 
 distclean: clean
 	rm -f Makefile include/SDL_config.h sdl-config
-	rm -f include/SDL_config.h sdl-config
 	rm -f SDL.qpg
 	rm -f config.status config.cache config.log libtool $(depend)
 	rm -rf $(srcdir)/autom4te*
@@ -151,8 +150,15 @@ dist $(distfile):
 	tar cf - $(DIST) | (cd $(distdir); tar xf -)
 	cp $(distdir)/include/SDL_config.h.default $(distdir)/include/SDL_config.h
 	rm -rf `find $(distdir) -name .svn`
-	rm -f `find $(distdir) -name '.#*'`
-	rmdir `find $(distdir) -type d -empty`
+	find $(distdir) \( \
+	    -name '*~' -o \
+	    -name '*.bak' -o \
+	    -name '*.old' -o \
+	    -name '*.rej' -o \
+	    -name '*.orig' -o \
+	    -name '.#*' \) \
+	    -exec rm -f {} \;
+	if test -f $(distdir)/test/Makefile; then (cd $(distdir)/test && make distclean); fi
 	tar cvf - $(distdir) | gzip --best >$(distfile)
 	rm -rf $(distdir)
 

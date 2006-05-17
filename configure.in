@@ -74,14 +74,15 @@ BUILD_CFLAGS="$CFLAGS $CPPFLAGS"
 EXTRA_CFLAGS="$INCLUDE $BASE_CFLAGS"
 BUILD_LDFLAGS="$LDFLAGS"
 EXTRA_LDFLAGS="$BASE_LDFLAGS"
-for path in /usr/local; do
-    if test -d $path/include; then
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -I$path/include"
-    fi
-    if test -d $path/lib; then
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$path/lib"
-    fi
-done
+# I can't remember why I added this.  I'm sure it'll come to me...
+#for path in /usr/local; do
+#    if test -d $path/include; then
+#        EXTRA_CFLAGS="$EXTRA_CFLAGS -I$path/include"
+#    fi
+#    if test -d $path/lib; then
+#        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L$path/lib"
+#    fi
+#done
 SDL_CFLAGS="$BASE_CFLAGS"
 SDL_LIBS="-lSDL $BASE_LDFLAGS"
 CPPFLAGS="$CPPFLAGS $EXTRA_CFLAGS"
@@ -715,7 +716,9 @@ CheckVisibilityHidden()
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS $visibility_CFLAGS"
     AC_TRY_COMPILE([
-        int placeholder = 1;
+    #if !defined(__GNUC__) || __GNUC__ < 4
+    #error SDL only uses visibility attributes in GCC 4 or newer
+    #endif
     ],[
     ],[
     have_gcc_fvisibility=yes
@@ -786,6 +789,15 @@ CheckX11()
 AC_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
                   , enable_video_x11=yes)
     if test x$enable_video = xyes -a x$enable_video_x11 = xyes; then
+        case "$host" in
+            *-*-darwin*)
+                # This isn't necessary for X11, but fixes GLX detection
+                if test "x$x_includes" = xNONE && test "x$x_libraries" = xNONE; then
+                    x_includes="/usr/X11R6/include"
+                    x_libraries="/usr/X11R6/lib"
+                fi
+                ;;
+        esac
         AC_PATH_X
         AC_PATH_XTRA
         if test x$have_x = xyes; then
@@ -813,15 +825,27 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ye
                     for path in $x11_lib_path /usr/lib /usr/X11/lib /usr/X11R6/lib; do
                         if test "x$x11_lib" = "x"; then
                             x11_lib=[`ls -- $path/libX11.so.[0-9] 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							if test "x$x11_lib" = "x"; then
+								x11_lib=[`ls -- $path/libX11.so.[0-9]* 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							fi
                         fi
                         if test "x$x11ext_lib" = "x"; then
                             x11ext_lib=[`ls -- $path/libXext.so.[0-9] 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							if test "x$x11ext_lib" = "x"; then
+								x11ext_lib=[`ls -- $path/libXext.so.[0-9]* 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							fi
                         fi
                         if test "x$xrender_lib" = "x"; then
                             xrender_lib=[`ls -- $path/libXrender.so.[0-9] 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							if test "x$xrender_lib" = "x"; then
+								xrender_lib=[`ls -- $path/libXrender.so.[0-9]* 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							fi
                         fi
                         if test "x$xrandr_lib" = "x"; then
                             xrandr_lib=[`ls -- $path/libXrandr.so.[0-9] 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							if test "x$xrandr_lib" = "x"; then
+								xrandr_lib=[`ls -- $path/libXrandr.so.[0-9]* 2>/dev/null | sort -r | sed 's/.*\/\(.*\)/\1/; q'`]
+							fi
                         fi
                     done
                     ;;
@@ -831,6 +855,8 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ye
             if test x$ac_cv_func_shmat != xyes; then
                 X_CFLAGS="$X_CFLAGS -DNO_SHARED_MEMORY"
             fi
+            CFLAGS="$CFLAGS $X_CFLAGS"
+            LDFLAGS="$LDFLAGS $X_LIBS"
 
             AC_DEFINE(SDL_VIDEO_DRIVER_X11)
             SOURCES="$SOURCES $srcdir/src/video/x11/*.c"
@@ -925,9 +951,21 @@ AC_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for ful
                     fi
                 fi
             fi
-
             if test x$definitely_enable_video_x11_xrandr = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XRANDR)
+            fi
+            AC_ARG_ENABLE(video-x11-dpms,
+AC_HELP_STRING([--enable-video-x11-dpms], [enable X11 DPMS extension [[default=yes]]]),
+                            , enable_video_x11_dpms=yes)
+            if test x$enable_video_x11_dpms = xyes; then
+                AC_CHECK_HEADER(X11/extensions/dpms.h,
+                                have_dpms_h_hdr=yes,
+                                have_dpms_h_hdr=no,
+                                [#include <X11/Xlib.h>
+                                ])
+                if test x$have_dpms_h_hdr = xyes; then
+                    AC_DEFINE(SDL_VIDEO_DRIVER_X11_DPMS)
+                fi
             fi
         fi
     fi
@@ -1197,6 +1235,8 @@ AC_HELP_STRING([--enable-video-vgl], [use VGL video driver [[default=yes]]]),
          #include <vgl.h>
         ],[
          VGLBitmap bitmap;
+         bitmap.Type = VIDBUF32;
+         bitmap.PixelBytes = 4;
          exit(bitmap.Bitmap);
         ],[
         video_vgl=yes
@@ -1359,7 +1399,7 @@ AC_HELP_STRING([--enable-video-gem], [use Atari Gem video driver [[default=yes]]
             video_gem=yes
             AC_DEFINE(SDL_VIDEO_DRIVER_GEM)
             SOURCES="$SOURCES $srcdir/src/video/gem/*.c"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lgem"
+            SDL_LIBS="$SDL_LIBS -lgem"
             have_video=yes
         fi
     fi
@@ -1494,8 +1534,8 @@ CheckAtariOSMesa()
         fi
         AC_DEFINE(SDL_VIDEO_OPENGL)
         AC_DEFINE(SDL_VIDEO_OPENGL_OSMESA)
-        EXTRA_CFLAGS="$EXTRA_CFLAGS $OSMESA_CFLAGS"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $OSMESA_LIBS"
+        SDL_CFLAGS="$SDL_CFLAGS $OSMESA_CFLAGS"
+        SDL_LIBS="$SDL_LIBS $OSMESA_LIBS"
 
         AC_ARG_ENABLE(osmesa-shared,
 AC_HELP_STRING([--enable-osmesa-shared], [dynamically load OSMesa OpenGL support [[default=yes]]]),
@@ -1597,7 +1637,7 @@ AC_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [[def
 AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
                   , enable_pthread_sem=yes)
     case "$host" in
-        *-*-linux*)
+        *-*-linux*|*-*-uclinux*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
             ;;
@@ -1865,7 +1905,7 @@ AC_HELP_STRING([--enable-atari-ldg], [use Atari LDG for shared object loading [[
         if test x$have_ldg_hdr = xyes -a x$have_ldg_lib = xyes; then
             AC_DEFINE(SDL_LOADSO_LDG)
             SOURCES="$SOURCES $srcdir/src/loadso/mint/*.c"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lldg -lgem"
+            SDL_LIBS="$SDL_LIBS -lldg -lgem"
             have_loadso=yes
         fi
     fi
@@ -2048,9 +2088,10 @@ case "$host" in
             have_timers=yes
         fi
         ;;
-    *-*-linux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-irix*|*-*-aix*|*-*-osf*)
+    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-irix*|*-*-aix*|*-*-osf*)
         case "$host" in
             *-*-linux*)         ARCH=linux ;;
+            *-*-uclinux*)       ARCH=linux ;;
             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
             *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
             *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
@@ -2569,9 +2610,6 @@ case "$ARCH" in
     fi
     if test x$enable_video = xyes -a x$enable_video_carbon = xyes; then
       SDL_LIBS="$SDL_LIBS -Wl,-framework,Carbon"
-    fi
-    if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
-      SDL_LIBS="$SDL_LIBS -Wl,-framework,OpenGL"
     fi
     # Evil hack to allow static linking on Mac OS X
     SDL_STATIC_LIBS="\${exec_prefix}/lib/libSDLmain.a \${exec_prefix}/lib/libSDL.a $EXTRA_LDFLAGS"

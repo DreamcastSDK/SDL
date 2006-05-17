@@ -30,9 +30,6 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <limits.h>		/* For the definition of PATH_MAX */
-#ifdef __arm__
-#include <linux/limits.h> /* Arm cross-compiler needs this */
-#endif
 #include <linux/joystick.h>
 #if SDL_INPUT_LINUXEV
 #include <linux/input.h>
@@ -980,7 +977,8 @@ static __inline__ void JS_HandleEvents(SDL_Joystick *joystick)
 #ifndef NO_LOGICAL_JOYSTICKS
 	if (SDL_joylist[joystick->index].fname == NULL) {
 		SDL_joylist_head(i, joystick->index);
-		return JS_HandleEvents(SDL_joylist[i].joy);
+		JS_HandleEvents(SDL_joylist[i].joy);
+		return;
 	}
 #endif
 

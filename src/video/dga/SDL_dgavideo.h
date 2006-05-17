@@ -25,10 +25,15 @@
 #define _SDL_dgavideo_h
 
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>
 
 #include "SDL_mouse.h"
 #include "SDL_mutex.h"
 #include "../SDL_sysvideo.h"
+
+#if SDL_VIDEO_DRIVER_X11_DPMS
+#include <X11/extensions/dpms.h>
+#endif
 
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
@@ -86,6 +91,10 @@ struct SDL_PrivateVideoData {
 #ifdef LOCK_DGA_DISPLAY
 	SDL_mutex *event_lock;
 #endif
+
+	/* Screensaver settings */
+	int screensaver_timeout;
+	BOOL dpms_enabled;
 };
 /* Old variable names */
 #define DGA_Display		(this->hidden->DGA_Display)
@@ -107,5 +116,7 @@ struct SDL_PrivateVideoData {
 #define hw_lock			(this->hidden->hw_lock)
 #define DGA_event_base		(this->hidden->event_base)
 #define event_lock		(this->hidden->event_lock)
+#define screensaver_timeout	(this->hidden->screensaver_timeout)
+#define dpms_enabled		(this->hidden->dpms_enabled)
 
 #endif /* _SDL_dgavideo_h */

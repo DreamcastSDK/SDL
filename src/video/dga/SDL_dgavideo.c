@@ -41,6 +41,13 @@
 /* get function pointers... */
 #include "../x11/SDL_x11dyn.h"
 
+/*#define DGA_DEBUG*/
+
+/* Heheh we're using X11 event code */
+extern void X11_SaveScreenSaver(Display *display, int *saved_timeout, BOOL *dpms);
+extern void X11_DisableScreenSaver(Display *display);
+extern void X11_RestoreScreenSaver(Display *display, int saved_timeout, BOOL dpms);
+
 /* Initialization/Query functions */
 static int DGA_VideoInit(_THIS, SDL_PixelFormat *vformat);
 static SDL_Rect **DGA_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
@@ -169,7 +176,7 @@ VideoBootStrap DGA_bootstrap = {
 static int DGA_AddMode(_THIS, int bpp, int w, int h)
 {
 	SDL_Rect *mode;
-	int i, index;
+	int index;
 	int next_mode;
 
 	/* Check to see if we already have this mode */
@@ -177,8 +184,8 @@ static int DGA_AddMode(_THIS, int bpp, int w, int h)
 		return(0);
 	}
 	index = ((bpp+7)/8)-1;
-	for ( i=0; i<SDL_nummodes[index]; ++i ) {
-		mode = SDL_modelist[index][i];
+	if ( SDL_nummodes[index] > 0 ) {
+		mode = SDL_modelist[index][SDL_nummodes[index]-1];
 		if ( (mode->w == w) && (mode->h == h) ) {
 			return(0);
 		}
@@ -281,14 +288,21 @@ static int cmpmodes(const void *va, const void *vb)
     const SDL_NAME(XDGAMode) *a = (const SDL_NAME(XDGAMode) *)va;
     const SDL_NAME(XDGAMode) *b = (const SDL_NAME(XDGAMode) *)vb;
 
-    /* Prefer DirectColor visuals for otherwise equal modes */
     if ( (a->viewportWidth == b->viewportWidth) &&
          (b->viewportHeight == a->viewportHeight) ) {
-        if ( a->visualClass == DirectColor )
+        /* Prefer 32 bpp over 24 bpp, 16 bpp over 15 bpp */
+        int a_bpp = a->depth == 24 ? a->bitsPerPixel : a->depth;
+        int b_bpp = b->depth == 24 ? b->bitsPerPixel : b->depth;
+        if ( a_bpp != b_bpp ) {
+            return b_bpp - a_bpp;
+        }
+        /* Prefer DirectColor visuals, for gamma support */
+        if ( a->visualClass == DirectColor && b->visualClass != DirectColor )
             return -1;
-        if ( b->visualClass == DirectColor )
+        if ( b->visualClass == DirectColor && a->visualClass != DirectColor )
             return 1;
-        return 0;
+        /* Maintain server refresh rate sorting */
+        return a->num - b->num;
     } else if ( a->viewportWidth == b->viewportWidth ) {
         return b->viewportHeight - a->viewportHeight;
     } else {
@@ -387,16 +401,21 @@ static int DGA_VideoInit(_THIS, SDL_PixelFormat *vformat)
 		return(-1);
 	}
 
+	/* Save DPMS and screensaver settings */
+	X11_SaveScreenSaver(DGA_Display, &screensaver_timeout, &dpms_enabled);
+	X11_DisableScreenSaver(DGA_Display);
+
 	/* Query for the list of available video modes */
 	modes = SDL_NAME(XDGAQueryModes)(DGA_Display, DGA_Screen, &num_modes);
 	SDL_qsort(modes, num_modes, sizeof *modes, cmpmodes);
 	for ( i=0; i<num_modes; ++i ) {
+		if ( ((modes[i].visualClass == PseudoColor) ||
+		      (modes[i].visualClass == DirectColor) ||
+		      (modes[i].visualClass == TrueColor)) && 
+		     !(modes[i].flags & (XDGAInterlaced|XDGADoublescan)) ) {
 #ifdef DGA_DEBUG
-		PrintMode(&modes[i]);
+			PrintMode(&modes[i]);
 #endif
-		if ( (modes[i].visualClass == PseudoColor) ||
-		     (modes[i].visualClass == DirectColor) ||
-		     (modes[i].visualClass == TrueColor) ) {
 			DGA_AddMode(this, modes[i].bitsPerPixel,
 			            modes[i].viewportWidth,
 			            modes[i].viewportHeight);
@@ -452,7 +471,6 @@ SDL_Surface *DGA_SetVideoMode(_THIS, SDL_Surface *current,
 	for ( i=0; i<num_modes; ++i ) {
 		int depth;
 
-		
 		depth = modes[i].depth;
 		if ( depth == 24 ) { /* Distinguish between 24 and 32 bpp */
 			depth = modes[i].bitsPerPixel;
@@ -462,7 +480,8 @@ SDL_Surface *DGA_SetVideoMode(_THIS, SDL_Surface *current,
 		     (modes[i].viewportHeight == height) &&
 		     ((modes[i].visualClass == PseudoColor) ||
 		      (modes[i].visualClass == DirectColor) ||
-		      (modes[i].visualClass == TrueColor)) ) {
+		      (modes[i].visualClass == TrueColor)) &&
+		     !(modes[i].flags & (XDGAInterlaced|XDGADoublescan)) ) {
 			break;
 		}
 	}
@@ -470,6 +489,9 @@ SDL_Surface *DGA_SetVideoMode(_THIS, SDL_Surface *current,
 		SDL_SetError("No matching video mode found");
 		return(NULL);
 	}
+#ifdef DGA_DEBUG
+	PrintMode(&modes[i]);
+#endif
 
 	/* Set the video mode */
 	mode = SDL_NAME(XDGASetMode)(DGA_Display, DGA_Screen, modes[i].num);
@@ -748,6 +770,13 @@ done:
 static void DGA_FreeHWSurface(_THIS, SDL_Surface *surface)
 {
 	vidmem_bucket *bucket, *freeable;
+
+	/* Wait for any pending operations involving this surface */
+	if ( DGA_IsSurfaceBusy(surface) ) {
+		LOCK_DISPLAY();
+		DGA_WaitBusySurfaces(this);
+		UNLOCK_DISPLAY();
+	}
 
 	/* Look for the bucket in the current list */
 	for ( bucket=&surfaces; bucket; bucket=bucket->next ) {
@@ -1032,7 +1061,7 @@ void DGA_VideoQuit(_THIS)
 		SDL_NAME(XDGACloseFramebuffer)(DGA_Display, DGA_Screen);
 		if ( this->screen ) {
 			/* Tell SDL not to free the pixels */
-			this->screen->pixels = NULL;
+			DGA_FreeHWSurface(this, this->screen);
 		}
 		SDL_NAME(XDGASetMode)(DGA_Display, DGA_Screen, 0);
 
@@ -1048,7 +1077,6 @@ void DGA_VideoQuit(_THIS)
 		}
 #endif /* LOCK_DGA_DISPLAY */
 
-
 		/* Clean up defined video modes */
 		for ( i=0; i<NUM_MODELISTS; ++i ) {
 			if ( SDL_modelist[i] != NULL ) {
@@ -1062,6 +1090,9 @@ void DGA_VideoQuit(_THIS)
 
 		/* Clean up the memory bucket list */
 		DGA_FreeHWSurfaces(this);
+
+		/* Restore DPMS and screensaver settings */
+		X11_RestoreScreenSaver(DGA_Display, screensaver_timeout, dpms_enabled);
 
 		/* Close up the display */
 		XCloseDisplay(DGA_Display);
