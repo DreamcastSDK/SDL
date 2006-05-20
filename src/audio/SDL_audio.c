@@ -330,6 +330,19 @@ static Uint16 SDL_ParseAudioFormat(const char *string)
 	return format;
 }
 
+int SDL_GetNumAudioDrivers(void)
+{
+	return(SDL_arraysize(bootstrap)-1);
+}
+
+const char *SDL_GetAudioDriver(int index)
+{
+	if ( index >= 0 && index < SDL_GetNumAudioDrivers() ) {
+		return(bootstrap[index]->name);
+	}
+	return(NULL);
+}
+
 int SDL_AudioInit(const char *driver_name)
 {
 	SDL_AudioDevice *audio;
@@ -419,11 +432,10 @@ int SDL_AudioInit(const char *driver_name)
 	return(0);
 }
 
-char *SDL_AudioDriverName(char *namebuf, int maxlen)
+const char *SDL_GetCurrentAudioDriver()
 {
-	if ( current_audio != NULL ) {
-		SDL_strlcpy(namebuf, current_audio->name, maxlen);
-		return(namebuf);
+	if ( current_audio ) {
+		return current_audio->name;
 	}
 	return(NULL);
 }

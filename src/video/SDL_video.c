@@ -137,6 +137,18 @@ void SDL_VideoQuit(void);
 
 static SDL_GrabMode SDL_WM_GrabInputOff(void);
 
+int SDL_GetNumVideoDrivers(void)
+{
+	return(SDL_arraysize(bootstrap)-1);
+}
+
+const char *SDL_GetVideoDriver(int index)
+{
+	if ( index >= 0 && index < SDL_GetNumVideoDrivers() ) {
+		return(bootstrap[index]->name);
+	}
+	return(NULL);
+}
 
 /*
  * Initialize the video and event subsystems -- determine native pixel format
@@ -278,11 +290,10 @@ int SDL_VideoInit (const char *driver_name, Uint32 flags)
 	return(0);
 }
 
-char *SDL_VideoDriverName(char *namebuf, int maxlen)
+const char *SDL_GetCurrentVideoDriver()
 {
-	if ( current_video != NULL ) {
-		SDL_strlcpy(namebuf, current_video->name, maxlen);
-		return(namebuf);
+	if ( current_video ) {
+		return current_video->name;
 	}
 	return(NULL);
 }

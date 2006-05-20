@@ -95,6 +95,12 @@ typedef struct SDL_AudioCVT {
 
 /* Function prototypes */
 
+/* These functions return the list of built in video drivers, in the 
+ * order that they are normally initialized by default.
+ */
+extern DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
+extern DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
+
 /* These functions are used internally, and should not be used unless you
  * have a specific need to specify the audio driver you want to use.
  * You should normally use SDL_Init() or SDL_InitSubSystem().
@@ -102,11 +108,10 @@ typedef struct SDL_AudioCVT {
 extern DECLSPEC int SDLCALL SDL_AudioInit(const char *driver_name);
 extern DECLSPEC void SDLCALL SDL_AudioQuit(void);
 
-/* This function fills the given character buffer with the name of the
- * current audio driver, and returns a pointer to it if the audio driver has
- * been initialized.  It returns NULL if no driver has been initialized.
+/* This function returns the name of the current audio driver, or NULL
+ * if no driver has been initialized.
  */
-extern DECLSPEC char * SDLCALL SDL_AudioDriverName(char *namebuf, int maxlen);
+extern DECLSPEC const char * SDLCALL SDL_GetCurrentAudioDriver(void);
 
 /*
  * This function opens the audio device with the desired parameters, and

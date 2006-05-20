@@ -224,6 +224,12 @@ typedef enum {
 
 /* Function prototypes */
 
+/* These functions return the list of built in video drivers, in the 
+ * order that they are normally initialized by default.
+ */
+extern DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
+extern DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
+
 /* These functions are used internally, and should not be used unless you
  * have a specific need to specify the video driver you want to use.
  * You should normally use SDL_Init() or SDL_InitSubSystem().
@@ -240,11 +246,10 @@ typedef enum {
 extern DECLSPEC int SDLCALL SDL_VideoInit(const char *driver_name, Uint32 flags);
 extern DECLSPEC void SDLCALL SDL_VideoQuit(void);
 
-/* This function fills the given character buffer with the name of the
- * video driver, and returns a pointer to it if the video driver has
- * been initialized.  It returns NULL if no driver has been initialized.
+/* This function returns the name of the current video driver, or NULL
+ * if no driver has been initialized.
  */
-extern DECLSPEC char * SDLCALL SDL_VideoDriverName(char *namebuf, int maxlen);
+extern DECLSPEC const char * SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /*
  * This function returns a pointer to the current display surface.

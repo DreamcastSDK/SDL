@@ -62,7 +62,22 @@ void poked(int sig)
 
 int main(int argc, char *argv[])
 {
-	char name[32];
+	int i, n;
+
+	/* Print available audio drivers */
+	n = SDL_GetNumAudioDrivers();
+	if ( n == 0 ) {
+		printf("No built-in audio drivers\n");
+	} else {
+		printf("Built-in audio drivers:");
+		for ( i = 0; i < n; ++i ) {
+			if ( i > 0 ) {
+				printf(",");
+			}
+			printf(" %s", SDL_GetAudioDriver(i));
+		}
+		printf("\n");
+	}
 
 	/* Load the SDL library */
 	if ( SDL_Init(SDL_INIT_AUDIO) < 0 ) {
@@ -102,7 +117,7 @@ int main(int argc, char *argv[])
 	SDL_PauseAudio(0);
 
 	/* Let the audio run */
-	printf("Using audio driver: %s\n", SDL_AudioDriverName(name, 32));
+	printf("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 	while ( ! done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING) )
 		SDL_Delay(1000);
 

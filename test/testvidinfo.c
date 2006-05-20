@@ -386,16 +386,32 @@ void RunVideoTests()
 int main(int argc, char *argv[])
 {
 	const SDL_VideoInfo *info;
-	int i;
+	int i, n;
 	SDL_Rect **modes;
-	char driver[128];
+	const char *driver;
+
+	/* Print available video drivers */
+	n = SDL_GetNumVideoDrivers();
+	if ( n == 0 ) {
+		printf("No built-in video drivers\n");
+	} else {
+		printf("Built-in video drivers:");
+		for ( i = 0; i < n; ++i ) {
+			if ( i > 0 ) {
+				printf(",");
+			}
+			printf(" %s", SDL_GetVideoDriver(i));
+		}
+		printf("\n");
+	}
 
 	if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
 		fprintf(stderr,
 			"Couldn't initialize SDL: %s\n", SDL_GetError());
 		exit(1);
 	}
-	if ( SDL_VideoDriverName(driver, sizeof(driver)) ) {
+	driver = SDL_GetCurrentVideoDriver();
+	if ( driver ) {
 		printf("Video driver: %s\n", driver);
 	}
 	info = SDL_GetVideoInfo();
