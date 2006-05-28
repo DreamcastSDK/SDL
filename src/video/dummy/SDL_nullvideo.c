@@ -51,7 +51,8 @@
 /* Initialization/Query functions */
 static int DUMMY_VideoInit (_THIS);
 static int DUMMY_SetDisplayMode (_THIS, const SDL_DisplayMode * mode);
-static SDL_Surface *DUMMY_CreateWindowSurface (_THIS, SDL_Window * window);
+static void DUMMY_CreateWindowSurface (_THIS, SDL_Window * window,
+                                       Uint32 flags);
 static void DUMMY_VideoQuit (_THIS);
 
 /* DUMMY driver bootstrap functions */
@@ -98,6 +99,7 @@ DUMMY_CreateDevice (int devindex)
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
     device->SetDisplayMode = DUMMY_SetDisplayMode;
+    device->CreateWindowSurface = DUMMY_CreateWindowSurface;
     device->VideoQuit = DUMMY_VideoQuit;
     device->InitOSKeymap = DUMMY_InitOSKeymap;
     device->PumpEvents = DUMMY_PumpEvents;
@@ -128,93 +130,17 @@ DUMMY_SetDisplayMode (_THIS, const SDL_DisplayMode * mode)
     return 0;
 }
 
-static SDL_Surface *
-DUMMY_CreateWindowSurface (_THIS, SDL_Window * window)
+static void
+DUMMY_CreateWindowSurface (_THIS, SDL_Window * window, Uint32 flags)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
 
-    if (_this->hidden->buffer) {
-        SDL_free (_this->hidden->buffer);
-    }
-
-    _this->hidden->buffer =
-        SDL_malloc (mode->w * mode->h * SDL_BYTESPERPIXEL (mode->format));
-    if (!_this->hidden->buffer) {
-        SDL_SetError ("Couldn't allocate buffer for requested mode");
-        return (NULL);
-    }
-
-/* 	printf("Setting mode %dx%d\n", width, height); */
-
-    SDL_memset (_this->hidden->buffer, 0,
-                mode->w * mode->h * SDL_BYTESPERPIXEL (mode->format));
-
-    /* Allocate the new pixel format for the screen */
-    SDL_PixelFormatEnumToMasks (mode->format, &bpp, &Rmask, &Gmask, &Bmask,
-                                &Amask);
-    if (!SDL_ReallocFormat (current, bpp, Rmask, Gmask, Bmask, Amask)) {
-        SDL_free (_this->hidden->buffer);
-        _this->hidden->buffer = NULL;
-        SDL_SetError
-            ("Couldn't allocate new pixel format for requested mode");
-        return (NULL);
-    }
-
-    /* Set up the new mode framebuffer */
-    current->flags = flags & SDL_FULLSCREEN;
-    _this->hidden->w = current->w = mode->w;
-    _this->hidden->h = current->h = mode->h;
-    current->pitch = current->w * SDL_BYTESPERPIXEL (mode->format);
-    current->pixels = _this->hidden->buffer;
-
-    /* We're done */
-    return (current);
-}
-
-SDL_Surface *
-DUMMY_SetVideoMode (_THIS, SDL_Surface * current,
-                    const SDL_DisplayMode * mode, Uint32 flags)
-{
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
-
-    if (_this->hidden->buffer) {
-        SDL_free (_this->hidden->buffer);
-    }
-
-    _this->hidden->buffer =
-        SDL_malloc (mode->w * mode->h * SDL_BYTESPERPIXEL (mode->format));
-    if (!_this->hidden->buffer) {
-        SDL_SetError ("Couldn't allocate buffer for requested mode");
-        return (NULL);
-    }
-
-/* 	printf("Setting mode %dx%d\n", width, height); */
-
-    SDL_memset (_this->hidden->buffer, 0,
-                mode->w * mode->h * SDL_BYTESPERPIXEL (mode->format));
-
-    /* Allocate the new pixel format for the screen */
-    SDL_PixelFormatEnumToMasks (mode->format, &bpp, &Rmask, &Gmask, &Bmask,
-                                &Amask);
-    if (!SDL_ReallocFormat (current, bpp, Rmask, Gmask, Bmask, Amask)) {
-        SDL_free (_this->hidden->buffer);
-        _this->hidden->buffer = NULL;
-        SDL_SetError
-            ("Couldn't allocate new pixel format for requested mode");
-        return (NULL);
-    }
-
-    /* Set up the new mode framebuffer */
-    current->flags = flags & SDL_FULLSCREEN;
-    _this->hidden->w = current->w = mode->w;
-    _this->hidden->h = current->h = mode->h;
-    current->pitch = current->w * SDL_BYTESPERPIXEL (mode->format);
-    current->pixels = _this->hidden->buffer;
-
-    /* We're done */
-    return (current);
+    SDL_PixelFormatEnumToMasks (SDL_GetCurrentDisplayMode ()->format, &bpp,
+                                &Rmask, &Gmask, &Bmask, &Amask);
+    window->surface =
+        SDL_CreateRGBSurface (flags, window->w, window->h, bpp, Rmask, Gmask,
+                              Bmask, Amask);
 }
 
 /* Note:  If we are terminated, this could be called in the middle of
@@ -223,9 +149,6 @@ DUMMY_SetVideoMode (_THIS, SDL_Surface * current,
 void
 DUMMY_VideoQuit (_THIS)
 {
-    if (_this->hidden->buffer) {
-        SDL_free (_this->hidden->buffer);
-    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

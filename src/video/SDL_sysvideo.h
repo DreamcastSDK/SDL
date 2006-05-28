@@ -122,7 +122,7 @@ struct SDL_VideoDevice
     void (*SetWindowGrab) (_THIS, SDL_Window * window);
     void (*DestroyWindow) (_THIS, SDL_Window * window);
 
-    SDL_Surface *(*CreateWindowSurface) (_THIS, SDL_Window * window);
+    void (*CreateWindowSurface) (_THIS, SDL_Window * window, Uint32 flags);
     void (*UpdateWindowSurface) (_THIS, SDL_Window * window, int numrects,
                                  SDL_Rect * rects);
     void (*FlipWindowSurface) (_THIS, SDL_Window * window);

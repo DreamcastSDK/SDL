@@ -156,7 +156,6 @@ FastestFlags (Uint32 flags, int width, int height, int bpp)
 int
 main (int argc, char *argv[])
 {
-    SDL_DisplayMode mode;
     SDL_Surface *screen;
     Uint8 *mem;
     int width, height;
@@ -212,11 +211,7 @@ main (int argc, char *argv[])
     }
 
     /* Set video mode */
-    mode.format = 0;            /* FIXME */
-    mode.w = width;
-    mode.h = height;
-    mode.refresh_rate = 0;
-    screen = SDL_SetDisplayMode (&mode, videoflags);
+    screen = SDL_SetVideoMode (width, height, video_bpp, videoflags);
     if (!screen) {
         fprintf (stderr, "Couldn't set %dx%d video mode: %s\n",
                  width, height, SDL_GetError ());

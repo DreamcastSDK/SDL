@@ -896,12 +896,7 @@ SDL_ConvertSurface (SDL_Surface * surface,
 void
 SDL_FreeSurface (SDL_Surface * surface)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
-
-    /* Free anything that's not NULL, and not the screen surface */
-    if ((surface == NULL) ||
-        (_this &&
-         ((surface == SDL_ShadowSurface) || (surface == SDL_VideoSurface)))) {
+    if (surface == NULL) {
         return;
     }
     if (--surface->refcount > 0) {

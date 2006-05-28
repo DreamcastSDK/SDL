@@ -219,7 +219,6 @@ SDL_StopEventLoop (void)
     SDL_StopEventThread ();
 
     /* Shutdown event handlers */
-    SDL_AppActiveQuit ();
     SDL_KeyboardQuit ();
     SDL_MouseQuit ();
     SDL_QuitQuit ();
@@ -251,7 +250,6 @@ SDL_StartEventLoop (Uint32 flags)
 
     /* Initialize event handlers */
     retcode = 0;
-    retcode += SDL_AppActiveInit ();
     retcode += SDL_KeyboardInit ();
     retcode += SDL_MouseInit ();
     retcode += SDL_QuitInit ();

@@ -997,10 +997,8 @@ SDL_Surface *
 SDL_CreateWindowSurface (SDL_WindowID windowID, Uint32 format, Uint32 flags)
 {
     SDL_Window *window = SDL_GetWindowFromID (windowID);
-    SDL_Surface *surface;
-    SDL_Surface *shadow;
-    Uint32 surface_format;
     Uint32 black;
+    SDL_Surface *surface;
 
     if (!window) {
         return NULL;
@@ -1011,54 +1009,50 @@ SDL_CreateWindowSurface (SDL_WindowID windowID, Uint32 format, Uint32 flags)
     }
 
     if (!window->surface) {
-        window->surface = _this->CreateWindowSurface (_this, window);
+        _this->CreateWindowSurface (_this, window, flags);
         if (!window->surface) {
             return NULL;
         }
+        window->surface->flags |= SDL_SCREEN_SURFACE;
     }
+    surface = window->surface;
 
     if (window->shadow) {
         SDL_FreeSurface (window->shadow);
         window->shadow = NULL;
     }
 
-    surface = window->surface;
-    surface_format =
-        SDL_MasksToPixelFormatEnum (surface->format->BitsPerPixel,
-                                    surface->format->Rmask,
-                                    surface->format->Gmask,
-                                    surface->format->Bmask,
-                                    surface->format->Amask);
-
     /* Create a shadow surface if necessary */
-    if ((!(flags & SDL_ANYFORMAT) && (surface_format != format)) ||
-        ((flags & SDL_HWPALETTE)
-         && !(window->surface->flags & SDL_HWPALETTE))) {
+    if ((!(flags & SDL_ANYFORMAT)
+         && (format != SDL_GetCurrentDisplayMode ()->format))
+        || ((flags & SDL_HWPALETTE)
+            && !(window->surface->flags & SDL_HWPALETTE))) {
         int bpp;
         Uint32 Rmask, Gmask, Bmask, Amask;
 
-        SDL_PixelFormatEnumToMasks (format, &bpp, &Rmask, &Gmask, &Bmask,
+        SDL_PixelFormatEnumToMasks (format, &bpp, &Amask, &Gmask, &Bmask,
                                     &Amask);
-        shadow =
-            SDL_CreateRGBSurface (SDL_SWSURFACE, surface->w, surface->h,
-                                  bpp, Rmask, Gmask, Bmask, Amask);
-        if (shadow == NULL) {
+        window->shadow =
+            SDL_CreateRGBSurface (SDL_SWSURFACE, surface->w, surface->h, bpp,
+                                  Rmask, Gmask, Bmask, Amask);
+        if (window->shadow == NULL) {
             return NULL;
         }
+        window->shadow->flags |= SDL_SHADOW_SURFACE;
+        surface = window->shadow;
 
         /* 8-bit shadow surfaces report that they have exclusive palette */
-        if (shadow->format->palette) {
-            shadow->flags |= SDL_HWPALETTE;
-            if (format == surface_format) {
-                SDL_memcpy (shadow->format->palette->colors,
-                            surface->format->palette->colors,
-                            surface->format->palette->ncolors *
+        if (surface->format->palette) {
+            surface->flags |= SDL_HWPALETTE;
+            if (format == SDL_GetCurrentDisplayMode ()->format) {
+                SDL_memcpy (surface->format->palette->colors,
+                            window->surface->format->palette->colors,
+                            window->surface->format->palette->ncolors *
                             sizeof (SDL_Color));
             } else {
-                SDL_DitherColors (shadow->format->palette->colors, bpp);
+                SDL_DitherColors (surface->format->palette->colors, bpp);
             }
         }
-        surface = window->shadow = shadow;
     }
 
     /* Clear the surface for display */
