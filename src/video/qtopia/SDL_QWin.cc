@@ -662,6 +662,7 @@ SDL_QWin::enableFullscreen ()
     }
 }
 
+/* *INDENT-OFF* */
 bool
 SDL_QWin::lockScreen (bool force)
 {
@@ -675,6 +676,7 @@ SDL_QWin::lockScreen (bool force)
     my_locked++;                // Increate lock refcount
     return true;
 }
+/* *INDENT-ON* */
 
 void
 SDL_QWin::unlockScreen ()
