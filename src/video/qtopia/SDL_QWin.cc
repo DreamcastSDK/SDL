@@ -265,12 +265,12 @@ gs_fastRotateBlit_1 (unsigned short *fb,
 }
 
 // desktop, SL-A300 etc
-bool
-SDL_QWin::repaintRotation0 (const QRect & rect)
+/* *INDENT-OFF* */
+bool SDL_QWin::repaintRotation0 (const QRect & rect)
 {
     if (my_image->width () == width ()) {
-        uchar *fb = (uchar *) my_painter->frameBuffer ();
-        uchar *buf = (uchar *) my_image->bits ();
+        uchar * fb = (uchar *) my_painter->frameBuffer ();
+        uchar * buf = (uchar *) my_image->bits ();
         if (rect == my_image->rect ()) {
             SDL_memcpy (fb, buf, width () * height () * 2);
         } else {
@@ -279,8 +279,7 @@ SDL_QWin::repaintRotation0 (const QRect & rect)
             int fblineadd = my_painter->lineStep ();
             int buflineadd = my_image->bytesPerLine ();
             fb += (rect.left () << 1) + rect.top () * my_painter->lineStep ();
-            buf +=
-                (rect.left () << 1) + rect.top () * my_image->bytesPerLine ();
+            buf += (rect.left () << 1) + rect.top () * my_image->bytesPerLine ();
             while (h--) {
                 SDL_memcpy (fb, buf, wd);
                 fb += fblineadd;
@@ -295,21 +294,22 @@ SDL_QWin::repaintRotation0 (const QRect & rect)
 #endif
     return true;
 }
+/* *INDENT-ON* */
 
 
 // Sharp Zaurus SL-5500 etc 
-bool
-SDL_QWin::repaintRotation3 (const QRect & rect)
+/* *INDENT-OFF* */
+bool SDL_QWin::repaintRotation3 (const QRect & rect)
 {
     if (my_image->width () == width ()) {
-        ushort *fb = (ushort *) my_painter->frameBuffer ();
-        ushort *buf = (ushort *) my_image->bits ();
+        ushort * fb = (ushort *) my_painter->frameBuffer ();
+        ushort * buf = (ushort *) my_image->bits ();
         gs_fastRotateBlit_3 (fb, buf, rect);
     } else {
         // landscape mode
         if (screenRotation == SDL_QT_ROTATION_90) {
-            uchar *fb = (uchar *) my_painter->frameBuffer ();
-            uchar *buf = (uchar *) my_image->bits ();
+            uchar * fb = (uchar *) my_painter->frameBuffer ();
+            uchar * buf = (uchar *) my_image->bits ();
             if (rect == my_image->rect ()) {
                 SDL_memcpy (fb, buf, width () * height () * 2);
             } else {
@@ -336,8 +336,8 @@ SDL_QWin::repaintRotation3 (const QRect & rect)
             int buflineadd = my_image->bytesPerLine () - (rect.width () << 1);
             int w;
 
-            uchar *fb = (uchar *) my_painter->frameBuffer ();
-            uchar *buf = (uchar *) my_image->bits ();
+            uchar * fb = (uchar *) my_painter->frameBuffer ();
+            uchar * buf = (uchar *) my_image->bits ();
 
             fb +=
                 ((my_painter->width () -
@@ -363,10 +363,11 @@ SDL_QWin::repaintRotation3 (const QRect & rect)
     }
     return true;
 }
+/* *INDENT-ON* */
 
 // ipaq 3800...
-bool
-SDL_QWin::repaintRotation1 (const QRect & rect)
+/* *INDENT-OFF* */
+bool SDL_QWin::repaintRotation1 (const QRect & rect)
 {
     if (my_image->width () == width ()) {
         ushort *fb = (ushort *) my_painter->frameBuffer ();
@@ -377,6 +378,7 @@ SDL_QWin::repaintRotation1 (const QRect & rect)
     }
     return true;
 }
+/* *INDENT-ON* */
 
 void
 SDL_QWin::repaintRect (const QRect & rect)

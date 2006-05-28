@@ -130,8 +130,7 @@ indent:
 	find . \( \
 	    -name '*.h' -o \
 	    -name '*.c' -o \
-	    -name '*.cc' -o \
-	    -name '*.m' \) \
+	    -name '*.cc' \) \
 	    -exec indent {} \;
 
 clean:
