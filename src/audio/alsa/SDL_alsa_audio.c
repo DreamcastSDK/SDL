@@ -93,27 +93,24 @@ static int (*SDL_NAME (snd_pcm_hw_params_set_channels)) (snd_pcm_t * pcm,
 static int (*SDL_NAME (snd_pcm_hw_params_get_channels)) (const
                                                          snd_pcm_hw_params_t *
                                                          params);
-static unsigned int (*SDL_NAME (snd_pcm_hw_params_set_rate_near)) (snd_pcm_t *
-                                                                   pcm,
-                                                                   snd_pcm_hw_params_t
-                                                                   * params,
-                                                                   unsigned
-                                                                   int val,
-                                                                   int *dir);
-static snd_pcm_uframes_t (*SDL_NAME (snd_pcm_hw_params_set_period_size_near))
-
-
-
-
-
-
- 
-    (snd_pcm_t * pcm, snd_pcm_hw_params_t * params, snd_pcm_uframes_t val,
-   int *dir);
+static unsigned int
+    (*SDL_NAME (snd_pcm_hw_params_set_rate_near)) (snd_pcm_t *
+                                                   pcm,
+                                                   snd_pcm_hw_params_t
+                                                   * params,
+                                                   unsigned
+                                                   int val, int *dir);
+static snd_pcm_uframes_t
+    (*SDL_NAME (snd_pcm_hw_params_set_period_size_near)) (snd_pcm_t * pcm,
+                                                          snd_pcm_hw_params_t
+                                                          * params,
+                                                          snd_pcm_uframes_t
+                                                          val, int *dir);
 static
-snd_pcm_sframes_t (*SDL_NAME (snd_pcm_hw_params_get_period_size)) (const
-                                                                   snd_pcm_hw_params_t
-                                                                   * params);
+    snd_pcm_sframes_t (*SDL_NAME (snd_pcm_hw_params_get_period_size)) (const
+                                                                       snd_pcm_hw_params_t
+                                                                       *
+                                                                       params);
 static unsigned
     int (*SDL_NAME (snd_pcm_hw_params_set_periods_near)) (snd_pcm_t * pcm,
                                                           snd_pcm_hw_params_t

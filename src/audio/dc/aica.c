@@ -9,7 +9,9 @@
 #include <arch/irq.h>
 #include <dc/spu.h>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 /* #define dc_snd_base ((volatile unsigned char *)0x00800000) *//* arm side */
+#if 0
+#define dc_snd_base ((volatile unsigned char *)0x00800000)      /* arm side */
+#endif
 #define dc_snd_base ((volatile unsigned char *)0xa0700000)      /* dc side */
 
 /* Some convienence macros */

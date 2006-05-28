@@ -76,7 +76,8 @@
 #if SDL_USE_NIB_FILE
 /* A helper category for NSString */
 @interface NSString (ReplaceSubString) - (NSString *) stringByReplacingRange:(NSRange)
-aRange with:(NSString *)
+     aRange
+     with:(NSString *)
     aString;
 @end
 #endif
@@ -114,8 +115,10 @@ aRange with:(NSString *)
 
 /* Fix menu to contain the real app name instead of "SDL App" */
 -(void) fixMenu:(NSMenu *)
-aMenu withAppName:(NSString *)
-    appName {
+     aMenu
+     withAppName:(NSString *)
+    appName
+{
     NSRange aRange;
     NSEnumerator *enumerator;
     NSMenuItem *menuItem;
@@ -322,7 +325,8 @@ CustomApplicationMain (int argc, char **argv)
 }
 
 @end @ implementation NSString (ReplaceSubString) - (NSString *) stringByReplacingRange:(NSRange)
-aRange with:(NSString *)
+     aRange
+     with:(NSString *)
     aString
 {
     unsigned int bufferSize;

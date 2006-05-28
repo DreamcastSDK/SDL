@@ -45,7 +45,9 @@
 #define PITCH_WORKAROUND
 
 /* Fix for the NVidia GeForce 2 - use the last available adaptor */
-                                                                                                                                                                                                                                        /*#define USE_LAST_ADAPTOR *//* Apparently the NVidia drivers are fixed */
+#if 0                           /* Apparently the NVidia drivers are fixed */
+#define USE_LAST_ADAPTOR
+#endif
 
 /* The functions used to manipulate software video overlays */
 static struct private_yuvhwfuncs x11_yuvfuncs = {
