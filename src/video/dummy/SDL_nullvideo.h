@@ -27,14 +27,16 @@
 #include "../SDL_sysvideo.h"
 
 /* Hidden "this" pointer for the video functions */
-#define _THIS	SDL_VideoDevice *this
+#define _THIS	SDL_VideoDevice *_this
 
 
 /* Private display data */
 
-struct SDL_PrivateVideoData {
+struct SDL_PrivateVideoData
+{
     int w, h;
     void *buffer;
 };
 
 #endif /* _SDL_nullvideo_h */
+/* vi: set ts=4 sw=4 expandtab: */

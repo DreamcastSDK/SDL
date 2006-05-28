@@ -37,10 +37,11 @@ extern SDL_TimerCallback SDL_alarm_callback;
 /* Set whether or not the timer should use a thread.
    This should be called while the timer subsystem is running.
 */
-extern int SDL_SetTimerThreaded(int value);
+extern int SDL_SetTimerThreaded (int value);
 
-extern int SDL_TimerInit(void);
-extern void SDL_TimerQuit(void);
+extern int SDL_TimerInit (void);
+extern void SDL_TimerQuit (void);
 
 /* This function is called from the SDL event thread if it is available */
-extern void SDL_ThreadedTimerCheck(void);
+extern void SDL_ThreadedTimerCheck (void);
+/* vi: set ts=4 sw=4 expandtab: */

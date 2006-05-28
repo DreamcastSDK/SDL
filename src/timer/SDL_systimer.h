@@ -28,13 +28,14 @@
 
 
 /* Initialize the system dependent timer subsystem */
-extern int SDL_SYS_TimerInit(void);
+extern int SDL_SYS_TimerInit (void);
 
 /* Quit the system dependent timer subsystem */
-extern void SDL_SYS_TimerQuit(void);
+extern void SDL_SYS_TimerQuit (void);
 
 /* Start a timer set up by SDL_SetTimer() */
-extern int SDL_SYS_StartTimer(void);
+extern int SDL_SYS_StartTimer (void);
 
 /* Stop a previously started timer */
-extern void SDL_SYS_StopTimer(void);
+extern void SDL_SYS_StopTimer (void);
+/* vi: set ts=4 sw=4 expandtab: */

@@ -29,9 +29,12 @@
 #ifndef _THIS
 #define _THIS	SDL_VideoDevice *_this
 #endif
-struct private_yuvhwfuncs {
-	int (*Lock)(_THIS, SDL_Overlay *overlay);
-	void (*Unlock)(_THIS, SDL_Overlay *overlay);
-	int (*Display)(_THIS, SDL_Overlay *overlay, SDL_Rect *src, SDL_Rect *dst);
-	void (*FreeHW)(_THIS, SDL_Overlay *overlay);
+struct private_yuvhwfuncs
+{
+    int (*Lock) (_THIS, SDL_Overlay * overlay);
+    void (*Unlock) (_THIS, SDL_Overlay * overlay);
+    int (*Display) (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
+                    SDL_Rect * dst);
+    void (*FreeHW) (_THIS, SDL_Overlay * overlay);
 };
+/* vi: set ts=4 sw=4 expandtab: */

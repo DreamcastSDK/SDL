@@ -25,25 +25,23 @@
 #include "SDL_events.h"
 
 /* Start and stop the event processing loop */
-extern int SDL_StartEventLoop(Uint32 flags);
-extern void SDL_StopEventLoop(void);
-extern void SDL_QuitInterrupt(void);
+extern int SDL_StartEventLoop (Uint32 flags);
+extern void SDL_StopEventLoop (void);
+extern void SDL_QuitInterrupt (void);
 
-extern void SDL_Lock_EventThread(void);
-extern void SDL_Unlock_EventThread(void);
-extern Uint32 SDL_EventThreadID(void);
+extern void SDL_Lock_EventThread (void);
+extern void SDL_Unlock_EventThread (void);
+extern Uint32 SDL_EventThreadID (void);
 
 /* Event handler init routines */
-extern int  SDL_AppActiveInit(void);
-extern int  SDL_KeyboardInit(void);
-extern int  SDL_MouseInit(void);
-extern int  SDL_QuitInit(void);
+extern int SDL_KeyboardInit (void);
+extern int SDL_MouseInit (void);
+extern int SDL_QuitInit (void);
 
 /* Event handler quit routines */
-extern void SDL_AppActiveQuit(void);
-extern void SDL_KeyboardQuit(void);
-extern void SDL_MouseQuit(void);
-extern void SDL_QuitQuit(void);
+extern void SDL_KeyboardQuit (void);
+extern void SDL_MouseQuit (void);
+extern void SDL_QuitQuit (void);
 
 /* The event filter function */
 extern SDL_EventFilter SDL_EventOK;
@@ -52,29 +50,31 @@ extern SDL_EventFilter SDL_EventOK;
 extern Uint8 SDL_ProcessEvents[SDL_NUMEVENTS];
 
 /* Internal event queueing functions
-   (from SDL_active.c, SDL_mouse.c, SDL_keyboard.c, SDL_quit.c, SDL_events.c)
+   (from SDL_mouse.c, SDL_keyboard.c, SDL_quit.c, SDL_events.c, SDL_windowevents.c)
  */
-extern int SDL_PrivateAppActive(Uint8 gain, Uint8 state);
-extern int SDL_PrivateMouseMotion(Uint8 buttonstate, int relative,
-						Sint16 x, Sint16 y);
-extern int SDL_PrivateMouseButton(Uint8 state, Uint8 button,Sint16 x,Sint16 y);
-extern int SDL_PrivateKeyboard(Uint8 state, SDL_keysym *key);
-extern int SDL_PrivateResize(int w, int h);
-extern int SDL_PrivateExpose(void);
-extern int SDL_PrivateQuit(void);
-extern int SDL_PrivateSysWMEvent(SDL_SysWMmsg *message);
+extern int SDL_PrivateWindowEvent (SDL_WindowID windowID, Uint8 windowevent,
+                                   int data1, int data2);
+extern int SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x,
+                                   Sint16 y);
+extern int SDL_PrivateMouseButton (Uint8 state, Uint8 button, Sint16 x,
+                                   Sint16 y);
+extern int SDL_PrivateKeyboard (Uint8 state, SDL_keysym * key);
+extern int SDL_PrivateQuit (void);
+extern int SDL_PrivateSysWMEvent (SDL_SysWMmsg * message);
 
 /* Used by the activity event handler to remove mouse focus */
-extern void SDL_ResetMouse(void);
+extern void SDL_ResetMouse (void);
 
 /* Used by the activity event handler to remove keyboard focus */
-extern void SDL_ResetKeyboard(void);
+extern void SDL_ResetKeyboard (void);
 
 /* Used by the event loop to queue pending keyboard repeat events */
-extern void SDL_CheckKeyRepeat(void);
+extern void SDL_CheckKeyRepeat (void);
 
 /* Used by the OS keyboard code to detect whether or not to do UNICODE */
 #ifndef DEFAULT_UNICODE_TRANSLATION
-#define DEFAULT_UNICODE_TRANSLATION 0	/* Default off because of overhead */
+#define DEFAULT_UNICODE_TRANSLATION 0   /* Default off because of overhead */
 #endif
 extern int SDL_TranslateUNICODE;
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,11 @@
     slouken@libsdl.org
 */
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* CPU feature detection for SDL                                       */
+/**
+ * \file SDL_cpuinfo.h
+ *
+ * CPU feature detection for SDL
+ */
 
 #ifndef _SDL_cpuinfo_h
 #define _SDL_cpuinfo_h
@@ -31,45 +34,51 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
+/* *INDENT-OFF* */
 extern "C" {
+/* *INDENT-ON* */
 #endif
 
 /* This function returns true if the CPU has the RDTSC instruction
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasRDTSC(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasRDTSC (void);
 
 /* This function returns true if the CPU has MMX features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasMMX (void);
 
 /* This function returns true if the CPU has MMX Ext. features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasMMXExt(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasMMXExt (void);
 
 /* This function returns true if the CPU has 3DNow features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNow(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNow (void);
 
 /* This function returns true if the CPU has 3DNow! Ext. features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNowExt(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_Has3DNowExt (void);
 
 /* This function returns true if the CPU has SSE features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE (void);
 
 /* This function returns true if the CPU has SSE2 features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasSSE2 (void);
 
 /* This function returns true if the CPU has AltiVec features
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec(void);
+extern DECLSPEC SDL_bool SDLCALL SDL_HasAltiVec (void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
+/* *INDENT-OFF* */
 }
+/* *INDENT-ON* */
 #endif
 #include "close_code.h"
 
 #endif /* _SDL_cpuinfo_h */
+
+/* vi: set ts=4 sw=4 expandtab: */

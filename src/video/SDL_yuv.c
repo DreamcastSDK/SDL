@@ -29,109 +29,119 @@
 #include "SDL_yuv_sw_c.h"
 
 
-SDL_Overlay *SDL_CreateYUVOverlay(int w, int h, Uint32 format,
-                                  SDL_Surface *display)
+SDL_Overlay *
+SDL_CreateYUVOverlay (int w, int h, Uint32 format, SDL_Surface * display)
 {
-	SDL_VideoDevice *video = current_video;
-	SDL_VideoDevice *this  = current_video;
-	const char *yuv_hwaccel;
-	SDL_Overlay *overlay;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_Window *window;
+    const char *yuv_hwaccel;
+    SDL_Overlay *overlay;
 
-	if ( (display->flags & SDL_OPENGL) == SDL_OPENGL ) {
-		SDL_SetError("YUV overlays are not supported in OpenGL mode");
-		return NULL;
-	}
+    window = SDL_GetWindowFromSurface (display);
+    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
+        SDL_SetError ("YUV overlays are not supported in OpenGL mode");
+        return NULL;
+    }
 
-	/* Display directly on video surface, if possible */
-	if ( SDL_getenv("SDL_VIDEO_YUV_DIRECT") ) {
-		if ( (display == SDL_PublicSurface) &&
-		     ((SDL_VideoSurface->format->BytesPerPixel == 2) ||
-		      (SDL_VideoSurface->format->BytesPerPixel == 4)) ) {
-			display = SDL_VideoSurface;
-		}
-	}
-	overlay = NULL;
-        yuv_hwaccel = SDL_getenv("SDL_VIDEO_YUV_HWACCEL");
-	if ( ((display == SDL_VideoSurface) && video->CreateYUVOverlay) &&
-	     (!yuv_hwaccel || (SDL_atoi(yuv_hwaccel) > 0)) ) {
-		overlay = video->CreateYUVOverlay(this, w, h, format, display);
-	}
-	/* If hardware YUV overlay failed ... */
-	if ( overlay == NULL ) {
-		overlay = SDL_CreateYUV_SW(this, w, h, format, display);
-	}
-	return overlay;
+    /* Display directly on video surface, if possible */
+    if (SDL_getenv ("SDL_VIDEO_YUV_DIRECT")) {
+        if (window &&
+            ((window->surface->format->BytesPerPixel == 2) ||
+             (window->surface->format->BytesPerPixel == 4))) {
+            display = window->surface;
+        }
+    }
+    overlay = NULL;
+    yuv_hwaccel = SDL_getenv ("SDL_VIDEO_YUV_HWACCEL");
+    if (((display->flags & SDL_SCREEN_SURFACE) && _this->CreateYUVOverlay) &&
+        (!yuv_hwaccel || (SDL_atoi (yuv_hwaccel) > 0))) {
+        overlay = _this->CreateYUVOverlay (_this, w, h, format, display);
+    }
+    /* If hardware YUV overlay failed ... */
+    if (overlay == NULL) {
+        overlay = SDL_CreateYUV_SW (_this, w, h, format, display);
+    }
+    return overlay;
 }
 
-int SDL_LockYUVOverlay(SDL_Overlay *overlay)
+int
+SDL_LockYUVOverlay (SDL_Overlay * overlay)
 {
-	return overlay->hwfuncs->Lock(current_video, overlay);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    return overlay->hwfuncs->Lock (_this, overlay);
 }
 
-void SDL_UnlockYUVOverlay(SDL_Overlay *overlay)
+void
+SDL_UnlockYUVOverlay (SDL_Overlay * overlay)
 {
-	overlay->hwfuncs->Unlock(current_video, overlay);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    overlay->hwfuncs->Unlock (_this, overlay);
 }
 
-int SDL_DisplayYUVOverlay(SDL_Overlay *overlay, SDL_Rect *dstrect)
+int
+SDL_DisplayYUVOverlay (SDL_Overlay * overlay, SDL_Rect * dstrect)
 {
-	SDL_Rect src, dst;
-	int srcx, srcy, srcw, srch;
-	int dstx, dsty, dstw, dsth;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_Rect src, dst;
+    int srcx, srcy, srcw, srch;
+    int dstx, dsty, dstw, dsth;
 
-	/* Clip the rectangle to the screen area */
-	srcx = 0;
-	srcy = 0;
-	srcw = overlay->w;
-	srch = overlay->h;
-	dstx = dstrect->x;
-	dsty = dstrect->y;
-	dstw = dstrect->w;
-	dsth = dstrect->h;
-	if ( dstx < 0 ) {
-		srcw += (dstx * overlay->w) / dstrect->w;
-		dstw += dstx;
-		srcx -= (dstx * overlay->w) / dstrect->w;
-		dstx = 0;
-	}
-	if ( (dstx+dstw) > current_video->screen->w ) {
-		int extra = (dstx+dstw - current_video->screen->w);
-		srcw -= (extra * overlay->w) / dstrect->w;
-		dstw -= extra;
-	}
-	if ( dsty < 0 ) {
-		srch += (dsty * overlay->h) / dstrect->h;
-		dsth += dsty;
-		srcy -= (dsty * overlay->h) / dstrect->h;
-		dsty = 0;
-	}
-	if ( (dsty+dsth) > current_video->screen->h ) {
-		int extra = (dsty+dsth - current_video->screen->h);
-		srch -= (extra * overlay->h) / dstrect->h;
-		dsth -= extra;
-	}
-	if ( srcw <= 0 || srch <= 0 ||
-	     srch <= 0 || dsth <= 0 ) {
-		return 0;
-	}
-	/* Ugh, I can't wait for SDL_Rect to be int values */
-	src.x = srcx;
-	src.y = srcy;
-	src.w = srcw;
-	src.h = srch;
-	dst.x = dstx;
-	dst.y = dsty;
-	dst.w = dstw;
-	dst.h = dsth;
-	return overlay->hwfuncs->Display(current_video, overlay, &src, &dst);
+    /* Clip the rectangle to the screen area */
+    srcx = 0;
+    srcy = 0;
+    srcw = overlay->w;
+    srch = overlay->h;
+    dstx = dstrect->x;
+    dsty = dstrect->y;
+    dstw = dstrect->w;
+    dsth = dstrect->h;
+    if (dstx < 0) {
+        srcw += (dstx * overlay->w) / dstrect->w;
+        dstw += dstx;
+        srcx -= (dstx * overlay->w) / dstrect->w;
+        dstx = 0;
+    }
+    if ((dstx + dstw) > SDL_VideoSurface->w) {
+        int extra = (dstx + dstw - SDL_VideoSurface->w);
+        srcw -= (extra * overlay->w) / dstrect->w;
+        dstw -= extra;
+    }
+    if (dsty < 0) {
+        srch += (dsty * overlay->h) / dstrect->h;
+        dsth += dsty;
+        srcy -= (dsty * overlay->h) / dstrect->h;
+        dsty = 0;
+    }
+    if ((dsty + dsth) > SDL_VideoSurface->h) {
+        int extra = (dsty + dsth - SDL_VideoSurface->h);
+        srch -= (extra * overlay->h) / dstrect->h;
+        dsth -= extra;
+    }
+    if (srcw <= 0 || srch <= 0 || srch <= 0 || dsth <= 0) {
+        return 0;
+    }
+    /* Ugh, I can't wait for SDL_Rect to be int values */
+    src.x = srcx;
+    src.y = srcy;
+    src.w = srcw;
+    src.h = srch;
+    dst.x = dstx;
+    dst.y = dsty;
+    dst.w = dstw;
+    dst.h = dsth;
+    return overlay->hwfuncs->Display (_this, overlay, &src, &dst);
 }
 
-void SDL_FreeYUVOverlay(SDL_Overlay *overlay)
+void
+SDL_FreeYUVOverlay (SDL_Overlay * overlay)
 {
-	if ( overlay ) {
-		if ( overlay->hwfuncs ) {
-			overlay->hwfuncs->FreeHW(current_video, overlay);
-		}
-		SDL_free(overlay);
-	}
+    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    if (overlay) {
+        if (overlay->hwfuncs) {
+            overlay->hwfuncs->FreeHW (_this, overlay);
+        }
+        SDL_free (overlay);
+    }
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

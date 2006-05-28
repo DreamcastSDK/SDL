@@ -19,6 +19,34 @@
     Sam Lantinga
     slouken@libsdl.org
 */
+#include "SDL_config.h"
 
-/* DEPRECATED */
-#include "SDL_endian.h"
+/* Window event handling code for SDL */
+
+#include "SDL_events.h"
+#include "SDL_events_c.h"
+
+int
+SDL_PrivateWindowEvent (SDL_WindowID windowID, Uint8 windowevent, int data1,
+                        int data2)
+{
+    int posted;
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_ProcessEvents[SDL_WINDOWEVENT] == SDL_ENABLE) {
+        SDL_Event event;
+        event.type = SDL_WINDOWEVENT;
+        event.window.event = windowevent;
+        event.window.data1 = data1;
+        event.window.data2 = data2;
+        event.window.windowID = windowID;
+        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+            posted = 1;
+            SDL_PushEvent (&event);
+        }
+    }
+    return (posted);
+}
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -26,8 +26,9 @@
 #include "../SDL_sysvideo.h"
 
 
-struct SDL_PrivateGLData {
-    int gl_active; /* to stop switching drivers while we have a valid context */
+struct SDL_PrivateGLData
+{
+    int gl_active;              /* to stop switching drivers while we have a valid context */
 
 #if SDL_VIDEO_OPENGL
     PIXELFORMATDESCRIPTOR GL_pfd;
@@ -36,26 +37,28 @@ struct SDL_PrivateGLData {
     int pixel_format;
     int WGL_ARB_pixel_format;
 
-    void * (WINAPI *wglGetProcAddress)(const char *proc);
+    void *(WINAPI * wglGetProcAddress) (const char *proc);
 
-    HGLRC (WINAPI *wglCreateContext)(HDC hdc);
+      HGLRC (WINAPI * wglCreateContext) (HDC hdc);
 
-    BOOL (WINAPI *wglDeleteContext)(HGLRC hglrc);
+      BOOL (WINAPI * wglDeleteContext) (HGLRC hglrc);
 
-    BOOL (WINAPI *wglMakeCurrent)(HDC hdc, HGLRC hglrc);
-   
-    BOOL (WINAPI *wglChoosePixelFormatARB)(HDC hdc, const int *piAttribIList,
-                                           const FLOAT *pfAttribFList,
-                                           UINT nMaxFormats, int *piFormats,
-                                           UINT *nNumFormats);
-    BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat,
-                                                int iLayerPlane,
-                                                UINT nAttributes, 
-                                                const int *piAttributes,
-                                                int *piValues);
-    void (WINAPI *wglSwapIntervalEXT)(int interval);
-    int (WINAPI *wglGetSwapIntervalEXT)(void);
-#endif /* SDL_VIDEO_OPENGL */
+      BOOL (WINAPI * wglMakeCurrent) (HDC hdc, HGLRC hglrc);
+
+      BOOL (WINAPI * wglChoosePixelFormatARB) (HDC hdc,
+                                               const int *piAttribIList,
+                                               const FLOAT * pfAttribFList,
+                                               UINT nMaxFormats,
+                                               int *piFormats,
+                                               UINT * nNumFormats);
+      BOOL (WINAPI * wglGetPixelFormatAttribivARB) (HDC hdc, int iPixelFormat,
+                                                    int iLayerPlane,
+                                                    UINT nAttributes,
+                                                    const int *piAttributes,
+                                                    int *piValues);
+    void (WINAPI * wglSwapIntervalEXT) (int interval);
+    int (WINAPI * wglGetSwapIntervalEXT) (void);
+#endif                          /* SDL_VIDEO_OPENGL */
 };
 
 /* Old variable names */
@@ -66,15 +69,15 @@ struct SDL_PrivateGLData {
 #define pixel_format	(this->gl_data->pixel_format)
 
 /* OpenGL functions */
-extern int WIN_GL_SetupWindow(_THIS);
-extern void WIN_GL_ShutDown(_THIS);
+extern int WIN_GL_SetupWindow (_THIS);
+extern void WIN_GL_ShutDown (_THIS);
 #if SDL_VIDEO_OPENGL
-extern int WIN_GL_MakeCurrent(_THIS);
-extern int WIN_GL_GetAttribute(_THIS, SDL_GLattr attrib, int* value);
-extern void WIN_GL_SwapBuffers(_THIS);
-extern void WIN_GL_UnloadLibrary(_THIS);
-extern int WIN_GL_LoadLibrary(_THIS, const char* path);
-extern void *WIN_GL_GetProcAddress(_THIS, const char* proc);
+extern int WIN_GL_MakeCurrent (_THIS);
+extern int WIN_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value);
+extern void WIN_GL_SwapBuffers (_THIS);
+extern void WIN_GL_UnloadLibrary (_THIS);
+extern int WIN_GL_LoadLibrary (_THIS, const char *path);
+extern void *WIN_GL_GetProcAddress (_THIS, const char *proc);
 #endif
 
 #if SDL_VIDEO_OPENGL
@@ -137,3 +140,4 @@ extern void *WIN_GL_GetProcAddress(_THIS, const char* proc);
 #endif
 
 #endif
+/* vi: set ts=4 sw=4 expandtab: */

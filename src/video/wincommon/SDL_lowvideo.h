@@ -79,19 +79,20 @@ extern BOOL SDL_windowid;
 /* Variables and functions exported to other parts of the native video
    subsystem (SDL_sysevents.c)
 */
-extern void WIN_FlushMessageQueue();
+extern void WIN_FlushMessageQueue ();
 
 /* Called by windows message loop when system palette is available */
-extern void (*WIN_RealizePalette)(_THIS);
+extern void (*WIN_RealizePalette) (_THIS);
 
 /* Called by windows message loop when the system palette changes */
-extern void (*WIN_PaletteChanged)(_THIS, HWND window);
+extern void (*WIN_PaletteChanged) (_THIS, HWND window);
 
 /* Called by windows message loop when a portion of the screen needs update */
-extern void (*WIN_WinPAINT)(_THIS, HDC hdc);
+extern void (*WIN_WinPAINT) (_THIS, HDC hdc);
 
 /* Called by windows message loop when the message isn't handled */
-extern LONG (*HandleMessage)(_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern LONG (*HandleMessage) (_THIS, HWND hwnd, UINT msg, WPARAM wParam,
+                              LPARAM lParam);
 
 /* The window cursor (from SDL_sysmouse.c) */
 extern HCURSOR SDL_hcursor;
@@ -119,15 +120,17 @@ extern DEVMODE SDL_fullscreen_mode;
 extern WORD *gamma_saved;
 
 /* This is really from SDL_dx5audio.c */
-extern void DX5_SoundFocus(HWND window);
+extern void DX5_SoundFocus (HWND window);
 
 /* DJM: This is really from SDL_sysevents.c, we need it in
    GDL_CreateWindow as well */
-LRESULT CALLBACK WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WinMessage (HWND hwnd, UINT msg, WPARAM wParam,
+                             LPARAM lParam);
 
 /* JFP: Implementation of ToUnicode() that works on 9x/ME/2K/XP */
-typedef int (WINAPI *ToUnicodeFN)(UINT, UINT, PBYTE, LPWSTR, int, UINT);
+typedef int (WINAPI * ToUnicodeFN) (UINT, UINT, PBYTE, LPWSTR, int, UINT);
 
 extern ToUnicodeFN SDL_ToUnicode;
 
 #endif /* SDL_lowvideo_h */
+/* vi: set ts=4 sw=4 expandtab: */

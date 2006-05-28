@@ -33,4 +33,5 @@
 #endif
 
 /* Set up the driver for Riva acceleration */
-extern void FB_RivaAccel(_THIS, __u32 card);
+extern void FB_RivaAccel (_THIS, __u32 card);
+/* vi: set ts=4 sw=4 expandtab: */

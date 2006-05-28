@@ -24,16 +24,16 @@
 /* Useful variables and functions from SDL_cursor.c */
 #include "SDL_mouse.h"
 
-extern int  SDL_CursorInit(Uint32 flags);
-extern void SDL_CursorPaletteChanged(void);
-extern void SDL_DrawCursor(SDL_Surface *screen);
-extern void SDL_DrawCursorNoLock(SDL_Surface *screen);
-extern void SDL_EraseCursor(SDL_Surface *screen);
-extern void SDL_EraseCursorNoLock(SDL_Surface *screen);
-extern void SDL_UpdateCursor(SDL_Surface *screen);
-extern void SDL_ResetCursor(void);
-extern void SDL_MoveCursor(int x, int y);
-extern void SDL_CursorQuit(void);
+extern int SDL_CursorInit (Uint32 flags);
+extern void SDL_CursorPaletteChanged (void);
+extern void SDL_DrawCursor (SDL_Surface * screen);
+extern void SDL_DrawCursorNoLock (SDL_Surface * screen);
+extern void SDL_EraseCursor (SDL_Surface * screen);
+extern void SDL_EraseCursorNoLock (SDL_Surface * screen);
+extern void SDL_UpdateCursor (SDL_Surface * screen);
+extern void SDL_ResetCursor (void);
+extern void SDL_MoveCursor (int x, int y);
+extern void SDL_CursorQuit (void);
 
 #define INLINE_MOUSELOCK
 #ifdef INLINE_MOUSELOCK
@@ -55,13 +55,13 @@ extern SDL_mutex *SDL_cursorlock;
 		}							\
 	} while ( 0 )
 #else
-extern void SDL_LockCursor(void);
-extern void SDL_UnlockCursor(void);
+extern void SDL_LockCursor (void);
+extern void SDL_UnlockCursor (void);
 #endif /* INLINE_MOUSELOCK */
 
 /* Only for low-level mouse cursor drawing */
 extern SDL_Cursor *SDL_cursor;
-extern void SDL_MouseRect(SDL_Rect *area);
+extern void SDL_MouseRect (SDL_Rect * area);
 
 /* State definitions for the SDL cursor */
 #define CURSOR_VISIBLE	0x01
@@ -71,3 +71,4 @@ extern void SDL_MouseRect(SDL_Rect *area);
 					(CURSOR_VISIBLE|CURSOR_USINGSW))
 
 extern volatile int SDL_cursorstate;
+/* vi: set ts=4 sw=4 expandtab: */

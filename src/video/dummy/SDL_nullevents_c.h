@@ -26,8 +26,8 @@
 /* Variables and functions exported by SDL_sysevents.c to other parts 
    of the native video subsystem (SDL_sysvideo.c)
 */
-extern void DUMMY_InitOSKeymap(_THIS);
-extern void DUMMY_PumpEvents(_THIS);
+extern void DUMMY_InitOSKeymap (_THIS);
+extern void DUMMY_PumpEvents (_THIS);
 
 /* end of SDL_nullevents_c.h ... */
-
+/* vi: set ts=4 sw=4 expandtab: */

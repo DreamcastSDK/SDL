@@ -22,5 +22,5 @@
 #include "SDL_config.h"
 
 /* Open the audio device, storing the pathname in 'path'  */
-extern int SDL_OpenAudioPath(char *path, int maxlen, int flags, int classic);
-
+extern int SDL_OpenAudioPath (char *path, int maxlen, int flags, int classic);
+/* vi: set ts=4 sw=4 expandtab: */

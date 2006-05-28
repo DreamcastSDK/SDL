@@ -35,8 +35,9 @@
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
 
-extern void AtariBios_InitOSKeymap(_THIS);
-extern void AtariBios_PumpEvents(_THIS);
-extern void AtariBios_ShutdownEvents(void);
+extern void AtariBios_InitOSKeymap (_THIS);
+extern void AtariBios_PumpEvents (_THIS);
+extern void AtariBios_ShutdownEvents (void);
 
 #endif /* _SDL_ATARI_BIOSEVENTS_H_ */
+/* vi: set ts=4 sw=4 expandtab: */

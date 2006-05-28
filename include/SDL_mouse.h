@@ -20,7 +20,11 @@
     slouken@libsdl.org
 */
 
-/* Include file for SDL mouse event handling */
+/**
+ * \file SDL_mouse.h
+ *
+ * Include file for SDL mouse event handling
+ */
 
 #ifndef _SDL_mouse_h
 #define _SDL_mouse_h
@@ -32,17 +36,20 @@
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
+/* *INDENT-OFF* */
 extern "C" {
+/* *INDENT-ON* */
 #endif
 
-typedef struct WMcursor WMcursor;	/* Implementation dependent */
-typedef struct SDL_Cursor {
-	SDL_Rect area;			/* The area of the mouse cursor */
-	Sint16 hot_x, hot_y;		/* The "tip" of the cursor */
-	Uint8 *data;			/* B/W cursor data */
-	Uint8 *mask;			/* B/W cursor mask */
-	Uint8 *save[2];			/* Place to save cursor area */
-	WMcursor *wm_cursor;		/* Window-manager cursor */
+typedef struct WMcursor WMcursor;       /* Implementation dependent */
+typedef struct SDL_Cursor
+{
+    SDL_Rect area;              /* The area of the mouse cursor */
+    Sint16 hot_x, hot_y;        /* The "tip" of the cursor */
+    Uint8 *data;                /* B/W cursor data */
+    Uint8 *mask;                /* B/W cursor mask */
+    Uint8 *save[2];             /* Place to save cursor area */
+    WMcursor *wm_cursor;        /* Window-manager cursor */
 } SDL_Cursor;
 
 /* Function prototypes */
@@ -52,7 +59,7 @@ typedef struct SDL_Cursor {
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the
  * current mouse cursor position.  You can pass NULL for either x or y.
  */
-extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
+extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState (int *x, int *y);
 
 /*
  * Retrieve the current state of the mouse.
@@ -60,12 +67,12 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the
  * mouse deltas since the last call to SDL_GetRelativeMouseState().
  */
-extern DECLSPEC Uint8 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
+extern DECLSPEC Uint8 SDLCALL SDL_GetRelativeMouseState (int *x, int *y);
 
 /*
  * Set the position of the mouse cursor (generates a mouse motion event)
  */
-extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
+extern DECLSPEC void SDLCALL SDL_WarpMouse (Uint16 x, Uint16 y);
 
 /*
  * Create a cursor using the specified data and mask (in MSB format).
@@ -80,25 +87,25 @@ extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
  *
  * Cursors created with this function must be freed with SDL_FreeCursor().
  */
-extern DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor
-		(Uint8 *data, Uint8 *mask, int w, int h, int hot_x, int hot_y);
+extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor
+    (Uint8 * data, Uint8 * mask, int w, int h, int hot_x, int hot_y);
 
 /*
  * Set the currently active cursor to the specified one.
  * If the cursor is currently visible, the change will be immediately 
  * represented on the display.
  */
-extern DECLSPEC void SDLCALL SDL_SetCursor(SDL_Cursor *cursor);
+extern DECLSPEC void SDLCALL SDL_SetCursor (SDL_Cursor * cursor);
 
 /*
  * Returns the currently active cursor.
  */
-extern DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
+extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor (void);
 
 /*
  * Deallocates a cursor created with SDL_CreateCursor().
  */
-extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor *cursor);
+extern DECLSPEC void SDLCALL SDL_FreeCursor (SDL_Cursor * cursor);
 
 /*
  * Toggle whether or not the cursor is shown on the screen.
@@ -107,7 +114,7 @@ extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor *cursor);
  * before the call, or 0 if it was not.  You can query the current
  * state by passing a 'toggle' value of -1.
  */
-extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
+extern DECLSPEC int SDLCALL SDL_ShowCursor (int toggle);
 
 /* Used as a mask when testing buttons in buttonstate
    Button 1:	Left mouse button
@@ -129,8 +136,12 @@ extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
+/* *INDENT-OFF* */
 }
+/* *INDENT-ON* */
 #endif
 #include "close_code.h"
 
 #endif /* _SDL_mouse_h */
+
+/* vi: set ts=4 sw=4 expandtab: */
