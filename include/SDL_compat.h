@@ -25,6 +25,7 @@
 #ifndef _SDL_compat_h
 #define _SDL_compat_h
 
+#include "SDL_video.h"
 #include "SDL_syswm.h"
 
 #include "begin_code.h"
@@ -58,6 +59,10 @@ extern "C" {
 
 #define SDL_LOGPAL 0x01
 #define SDL_PHYSPAL 0x02
+
+#define SDL_ACTIVEEVENT	SDL_EVENT_RESERVED1
+#define SDL_VIDEORESIZE	SDL_EVENT_RESERVED2
+#define SDL_VIDEOEXPOSE	SDL_EVENT_RESERVED3
 
 typedef enum
 {

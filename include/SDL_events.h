@@ -269,6 +269,20 @@ typedef struct SDL_SysWMEvent
     SDL_SysWMmsg *msg;  /**< driver dependent data, defined in SDL_syswm.h */
 } SDL_SysWMEvent;
 
+/* Typedefs for backwards compatibility */
+typedef struct SDL_ActiveEvent
+{
+    Uint8 type;
+    Uint8 gain;
+    Uint8 state;
+} SDL_ActiveEvent;
+typedef struct SDL_ResizeEvent
+{
+    Uint8 type;
+    int w;
+    int h;
+} SDL_ResizeEvent;
+
 /**
  * \union SDL_Event
  *
@@ -288,6 +302,10 @@ typedef union SDL_Event
     SDL_QuitEvent quit;             /**< Quit request event data */
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */
+
+    /* Temporarily here for backwards compatibility */
+    SDL_ActiveEvent active;
+    SDL_ResizeEvent resize;
 } SDL_Event;
 
 

@@ -129,9 +129,68 @@ SDL_ListModes(SDL_PixelFormat * format, Uint32 flags)
     return modes;
 }
 
+static int (*orig_eventfilter) (const SDL_Event * event);
+
+static int
+SDL_CompatEventFilter(const SDL_Event * event)
+{
+    SDL_Event fake;
+
+    switch (event->type) {
+    case SDL_WINDOWEVENT:
+        switch (event->window.event) {
+        case SDL_WINDOWEVENT_RESIZED:
+            fake.type = SDL_VIDEORESIZE;
+            fake.resize.w = event->window.data1;
+            fake.resize.h = event->window.data2;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_MINIMIZED:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 0;
+            fake.active.state = SDL_APPACTIVE;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_RESTORED:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 1;
+            fake.active.state = SDL_APPACTIVE;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_ENTER:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 1;
+            fake.active.state = SDL_APPMOUSEFOCUS;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_LEAVE:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 0;
+            fake.active.state = SDL_APPMOUSEFOCUS;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 1;
+            fake.active.state = SDL_APPINPUTFOCUS;
+            SDL_PushEvent(&fake);
+            break;
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            fake.type = SDL_ACTIVEEVENT;
+            fake.active.gain = 1;
+            fake.active.state = SDL_APPINPUTFOCUS;
+            SDL_PushEvent(&fake);
+            break;
+        }
+    }
+    return orig_eventfilter(event);
+}
+
 SDL_Surface *
 SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 {
+    int (*filter) (const SDL_Event * event);
+    const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
     int i;
     Uint32 window_flags;
@@ -146,6 +205,13 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 
     /* Destroy existing window */
     SDL_DestroyWindow(window);
+
+    /* Set up the event filter */
+    filter = SDL_GetEventFilter();
+    if (filter != SDL_CompatEventFilter) {
+        orig_eventfilter = filter;
+    }
+    SDL_SetEventFilter(SDL_CompatEventFilter);
 
     /* Create a new window */
     window_flags = SDL_WINDOW_SHOWN;
@@ -167,12 +233,20 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     }
 
     /* Set up the desired display mode */
-    desktop_format = SDL_GetDesktopDisplayMode()->format;
-    if ((bpp == SDL_BITSPERPIXEL(desktop_format)) ||
-        (desktop_format && (flags & SDL_ANYFORMAT))) {
+    desktop_mode = SDL_GetDesktopDisplayMode();
+    desktop_format = desktop_mode->format;
+    if (desktop_format && ((flags & SDL_ANYFORMAT)
+                           || (bpp == SDL_BITSPERPIXEL(desktop_format)))) {
         desired_format = desktop_format;
     } else {
         switch (bpp) {
+        case 0:
+            if (desktop_format) {
+                desired_format = desktop_format;
+            } else {
+                desired_format = SDL_PixelFormat_RGB888;
+            }
+            break;
         case 8:
             desired_format = SDL_PixelFormat_Index8;
             break;
@@ -204,7 +278,14 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
             return NULL;
         }
     } else {
-        mode = *SDL_GetDesktopDisplayMode();
+        if (desktop_format) {
+            mode.format = desktop_format;
+        }
+        if (desktop_mode->w && desktop_mode->h) {
+            mode.w = desktop_mode->w;
+            mode.h = desktop_mode->h;
+        }
+        mode.refresh_rate = desktop_mode->refresh_rate;
     }
     if (SDL_SetDisplayMode(&mode) < 0) {
         return NULL;

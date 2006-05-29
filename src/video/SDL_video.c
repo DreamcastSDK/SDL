@@ -233,6 +233,7 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
     _this->name = bootstrap[i]->name;
     _this->next_window_id = 1;
 
+
     /* Set some very sane GL defaults */
     _this->gl_config.driver_loaded = 0;
     _this->gl_config.dll_handle = NULL;
@@ -265,6 +266,16 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
         SDL_SetError("The video driver did not add any displays");
         SDL_VideoQuit();
         return (-1);
+    }
+
+    /* Temporarily here for backwards compatibility */
+    {
+        int bpp;
+        Uint32 Rmask, Gmask, Bmask, Amask;
+
+        SDL_PixelFormatEnumToMasks(SDL_GetDesktopDisplayMode()->format, &bpp,
+                                   &Rmask, &Gmask, &Bmask, &Amask);
+        _this->info.vfmt = SDL_AllocFormat(bpp, Rmask, Gmask, Bmask, Amask);
     }
 
     /* Sort the video modes */
@@ -325,7 +336,7 @@ SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
 }
 
 void
-SDL_AddVideoDisplay(SDL_VideoDisplay * display)
+SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
 {
     SDL_VideoDisplay *displays;
 
@@ -1034,6 +1045,14 @@ SDL_CreateWindowSurface(SDL_WindowID windowID, Uint32 format, Uint32 flags)
             return NULL;
         }
         window->surface->flags |= SDL_SCREEN_SURFACE;
+
+        /* If we have a palettized surface, create a default palette */
+        if (window->surface->format->palette) {
+            SDL_Color colors[256];
+            SDL_PixelFormat *vf = window->surface->format;
+            SDL_DitherColors(colors, vf->BitsPerPixel);
+            SDL_SetColors(window->surface, colors, 0, vf->palette->ncolors);
+        }
     }
     surface = window->surface;
 
@@ -1059,6 +1078,7 @@ SDL_CreateWindowSurface(SDL_WindowID windowID, Uint32 format, Uint32 flags)
             return NULL;
         }
         window->shadow->flags |= SDL_SHADOW_SURFACE;
+
         surface = window->shadow;
 
         /* 8-bit shadow surfaces report that they have exclusive palette */
@@ -1401,6 +1421,7 @@ SDL_VideoQuit(void)
     if (_this->displays) {
         SDL_free(_this->displays);
     }
+    SDL_free(_this->info.vfmt);
     _this->free(_this);
     _this = NULL;
 }

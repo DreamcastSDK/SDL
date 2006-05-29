@@ -126,22 +126,29 @@ typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
                          struct SDL_Surface * dst, SDL_Rect * dstrect);
 
 
-/* Useful for determining the video hardware capabilities */
+/**
+ * \struct SDL_VideoInfo
+ *
+ * \brief Useful for determining the video hardware capabilities
+ */
 typedef struct SDL_VideoInfo
 {
-    Uint32 hw_available:1;      /* Flag: Can you create hardware surfaces? */
-    Uint32 wm_available:1;      /* Flag: Can you talk to a window manager? */
+    Uint32 hw_available:1;  /**< Flag: Can you create hardware surfaces? */
+    Uint32 wm_available:1;  /**< Flag: Can you talk to a window manager? */
     Uint32 UnusedBits1:6;
     Uint32 UnusedBits2:1;
-    Uint32 blit_hw:1;           /* Flag: Accelerated blits HW --> HW */
-    Uint32 blit_hw_CC:1;        /* Flag: Accelerated blits with Colorkey */
-    Uint32 blit_hw_A:1;         /* Flag: Accelerated blits with Alpha */
-    Uint32 blit_sw:1;           /* Flag: Accelerated blits SW --> HW */
-    Uint32 blit_sw_CC:1;        /* Flag: Accelerated blits with Colorkey */
-    Uint32 blit_sw_A:1;         /* Flag: Accelerated blits with Alpha */
-    Uint32 blit_fill:1;         /* Flag: Accelerated color fill */
+    Uint32 blit_hw:1;       /**< Flag: Accelerated blits HW --> HW */
+    Uint32 blit_hw_CC:1;    /**< Flag: Accelerated blits with Colorkey */
+    Uint32 blit_hw_A:1;     /**< Flag: Accelerated blits with Alpha */
+    Uint32 blit_sw:1;       /**< Flag: Accelerated blits SW --> HW */
+    Uint32 blit_sw_CC:1;    /**< Flag: Accelerated blits with Colorkey */
+    Uint32 blit_sw_A:1;     /**< Flag: Accelerated blits with Alpha */
+    Uint32 blit_fill:1;     /**< Flag: Accelerated color fill */
     Uint32 UnusedBits3:16;
     Uint32 video_mem;           /* The total amount of video memory (in K) */
+
+    /* Here for backwards compatibility */
+    SDL_PixelFormat *vfmt;
 } SDL_VideoInfo;
 
 /**

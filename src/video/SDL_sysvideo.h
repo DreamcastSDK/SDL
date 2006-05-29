@@ -434,7 +434,7 @@ extern VideoBootStrap glSDL_bootstrap;
 
 extern SDL_VideoDevice *SDL_GetVideoDevice();
 extern void SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
-extern void SDL_AddVideoDisplay(SDL_VideoDisplay * display);
+extern void SDL_AddVideoDisplay(const SDL_VideoDisplay * display);
 extern void SDL_AddDisplayMode(int display, const SDL_DisplayMode * mode);
 extern SDL_Window *SDL_GetWindowFromSurface(SDL_Surface * surface);
 
