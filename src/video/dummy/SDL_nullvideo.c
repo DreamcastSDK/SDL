@@ -118,7 +118,12 @@ VideoBootStrap DUMMY_bootstrap = {
 int
 DUMMY_VideoInit (_THIS)
 {
+    SDL_DisplayMode mode;
+
     SDL_AddBasicVideoDisplay (NULL);
+
+    SDL_zero(mode);
+    SDL_AddDisplayMode(0, &mode);
 
     /* We're done! */
     return 0;

@@ -512,7 +512,9 @@ SDL_GetClosestDisplayMode (const SDL_DisplayMode * mode,
 int
 SDL_SetDisplayMode (const SDL_DisplayMode * mode)
 {
+    SDL_VideoDisplay *display;
     SDL_DisplayMode display_mode;
+    int i;
 
     if (!_this) {
         SDL_SetError ("Video subsystem has not been initialized");
@@ -524,21 +526,21 @@ SDL_SetDisplayMode (const SDL_DisplayMode * mode)
         SDL_SetError ("No mode passed to SDL_SetDisplayMode");
         return -1;
     }
+    display = &SDL_CurrentDisplay;
     display_mode = *mode;
 
     /* Default to the current mode */
     if (!display_mode.format) {
-        display_mode.format = SDL_CurrentDisplay.current_mode.format;
+        display_mode.format = display->current_mode.format;
     }
     if (!display_mode.w) {
-        display_mode.w = SDL_CurrentDisplay.current_mode.w;
+        display_mode.w = display->current_mode.w;
     }
     if (!display_mode.h) {
-        display_mode.h = SDL_CurrentDisplay.current_mode.h;
+        display_mode.h = display->current_mode.h;
     }
     if (!display_mode.refresh_rate) {
-        display_mode.refresh_rate =
-            SDL_CurrentDisplay.current_mode.refresh_rate;
+        display_mode.refresh_rate = display->current_mode.refresh_rate;
     }
 
     /* Get a good video mode, the closest one possible */
@@ -553,6 +555,19 @@ SDL_SetDisplayMode (const SDL_DisplayMode * mode)
         (&display_mode, SDL_GetCurrentDisplayMode (),
          sizeof (display_mode)) == 0) {
         return 0;
+    }
+
+    /* Free any previous window surfaces */
+    for (i = 0; i < display->num_windows; ++i) {
+        SDL_Window *window = &display->windows[i];
+        if (window->shadow) {
+            SDL_FreeSurface (window->shadow);
+            window->shadow = NULL;
+        }
+        if (window->surface) {
+            SDL_FreeSurface (window->surface);
+            window->surface = NULL;
+        }
     }
 
     return _this->SetDisplayMode (_this, &display_mode);
@@ -580,7 +595,7 @@ SDL_CreateWindow (const char *title, int x, int y, int w, int h, Uint32 flags)
 
     SDL_zero (window);
     window.id = _this->next_window_id++;
-    window.title = SDL_strdup (title);
+    window.title = title ? SDL_strdup (title) : NULL;
     window.x = x;
     window.y = y;
     window.w = w;
@@ -588,7 +603,9 @@ SDL_CreateWindow (const char *title, int x, int y, int w, int h, Uint32 flags)
     window.flags = (flags & allowed_flags);
 
     if (_this->CreateWindow && _this->CreateWindow (_this, &window) < 0) {
-        SDL_free (window.title);
+        if (window.title) {
+            SDL_free (window.title);
+        }
         return 0;
     }
 
@@ -600,7 +617,9 @@ SDL_CreateWindow (const char *title, int x, int y, int w, int h, Uint32 flags)
         if (_this->DestroyWindow) {
             _this->DestroyWindow (_this, &window);
         }
-        SDL_free (window.title);
+        if (window.title) {
+            SDL_free (window.title);
+        }
         return 0;
     }
     windows[num_windows] = window;
@@ -638,7 +657,9 @@ SDL_CreateWindowFrom (void *data)
         if (_this->DestroyWindow) {
             _this->DestroyWindow (_this, &window);
         }
-        SDL_free (window.title);
+        if (window.title) {
+            SDL_free (window.title);
+        }
         return 0;
     }
     windows[num_windows] = window;
@@ -674,7 +695,7 @@ SDL_GetWindowFromSurface (SDL_Surface * surface)
 {
     int i, j;
 
-    if (!_this) {
+    if (!_this || !surface) {
         return NULL;
     }
 
