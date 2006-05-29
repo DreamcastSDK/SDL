@@ -54,23 +54,23 @@ static SDL_bool supervisor;
 static int mint_present;        /* can we use Syield() ? */
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
     void *oldpile;
     unsigned long dummy;
 
     /* Set first ticks value */
-    oldpile = (void *) Super (0);
+    oldpile = (void *) Super(0);
     start = *((volatile long *) _hz_200);
-    Super (oldpile);
+    Super(oldpile);
 
     start *= 5;                 /* One _hz_200 tic is 5ms */
 
-    mint_present = (Getcookie (C_MiNT, &dummy) == C_FOUND);
+    mint_present = (Getcookie(C_MiNT, &dummy) == C_FOUND);
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
     Uint32 now;
     void *oldpile = NULL;
@@ -80,27 +80,27 @@ SDL_GetTicks (void)
        which is called from RunTimer, running in the vbl vector)
      */
     if (!supervisor) {
-        oldpile = (void *) Super (0);
+        oldpile = (void *) Super(0);
     }
 
     now = *((volatile long *) _hz_200);
 
     if (!supervisor) {
-        Super (oldpile);
+        Super(oldpile);
     }
 
     return ((now * 5) - start);
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
     Uint32 now;
 
-    now = SDL_GetTicks ();
-    while ((SDL_GetTicks () - now) < ms) {
+    now = SDL_GetTicks();
+    while ((SDL_GetTicks() - now) < ms) {
         if (mint_present) {
-            Syield ();
+            Syield();
         }
     }
 }
@@ -109,55 +109,55 @@ SDL_Delay (Uint32 ms)
 static SDL_bool timer_installed = SDL_FALSE;
 
 static void
-RunTimer (void)
+RunTimer(void)
 {
     supervisor = SDL_TRUE;
-    SDL_ThreadedTimerCheck ();
+    SDL_ThreadedTimerCheck();
     supervisor = SDL_FALSE;
 }
 
 /* This is only called if the event thread is not running */
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     void *oldpile;
 
     supervisor = SDL_FALSE;
 
     /* Install RunTimer in vbl vector */
-    oldpile = (void *) Super (0);
-    timer_installed = !SDL_AtariVblInstall (RunTimer);
-    Super (oldpile);
+    oldpile = (void *) Super(0);
+    timer_installed = !SDL_AtariVblInstall(RunTimer);
+    Super(oldpile);
 
     if (!timer_installed) {
         return (-1);
     }
-    return (SDL_SetTimerThreaded (0));
+    return (SDL_SetTimerThreaded(0));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     void *oldpile;
 
     if (timer_installed) {
         /* Uninstall RunTimer vbl vector */
-        oldpile = (void *) Super (0);
-        SDL_AtariVblUninstall (RunTimer);
-        Super (oldpile);
+        oldpile = (void *) Super(0);
+        SDL_AtariVblUninstall(RunTimer);
+        Super(oldpile);
         timer_installed = SDL_FALSE;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    SDL_SetError ("Internal logic error: MiNT uses vbl timer");
+    SDL_SetError("Internal logic error: MiNT uses vbl timer");
     return (-1);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     return;
 }

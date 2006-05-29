@@ -33,32 +33,32 @@
 #include "SDL_loadso.h"
 
 void *
-SDL_LoadObject (const char *sofile)
+SDL_LoadObject(const char *sofile)
 {
     const char *loaderror = "Unknown error";
-    void *handle = (void *) ldg_open ((char *) sofile, ldg_global);
+    void *handle = (void *) ldg_open((char *) sofile, ldg_global);
     if (handle == NULL) {
-        SDL_SetError ("Failed loading %s: %s", sofile, loaderror);
+        SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
     return (handle);
 }
 
 void *
-SDL_LoadFunction (void *handle, const char *name)
+SDL_LoadFunction(void *handle, const char *name)
 {
     const char *loaderror = "Unknown error";
-    void *symbol = (void *) ldg_find ((char *) name, (LDG *) handle);
+    void *symbol = (void *) ldg_find((char *) name, (LDG *) handle);
     if (symbol == NULL) {
-        SDL_SetError ("Failed loading %s: %s", name, loaderror);
+        SDL_SetError("Failed loading %s: %s", name, loaderror);
     }
     return (symbol);
 }
 
 void
-SDL_UnloadObject (void *handle)
+SDL_UnloadObject(void *handle)
 {
     if (handle != NULL) {
-        ldg_close ((LDG *) handle, ldg_global);
+        ldg_close((LDG *) handle, ldg_global);
     }
 }
 

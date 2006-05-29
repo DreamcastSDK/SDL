@@ -37,34 +37,34 @@
 /* Timer  SDL_arraysize(Timer ),start/reset time */
 static Uint32 timerStart;
 /* Timer running function */
-void RISCOS_CheckTimer ();
+void RISCOS_CheckTimer();
 #else
 #include <pthread.h>
 extern Uint32 riscos_main_thread;
 extern int riscos_using_threads;
-extern Uint32 SDL_ThreadID ();
-extern Uint32 SDL_EventThreadID (void);
+extern Uint32 SDL_ThreadID();
+extern Uint32 SDL_EventThreadID(void);
 #endif
 
 
-extern void RISCOS_BackgroundTasks (void);
+extern void RISCOS_BackgroundTasks(void);
 
 /* The first ticks value of the application */
 clock_t start;
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
     /* Set first ticks value */
-    start = clock ();
+    start = clock();
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
     clock_t ticks;
 
-    ticks = clock () - start;
+    ticks = clock() - start;
 
 
 #if CLOCKS_PER_SEC == 1000
@@ -84,17 +84,17 @@ SDL_GetTicks (void)
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
     Uint32 now, then, elapsed;
 #if !SDL_THREADS_DISABLED
     int is_event_thread;
     if (riscos_using_threads) {
         is_event_thread = 0;
-        if (SDL_EventThreadID ()) {
-            if (SDL_EventThreadID () == SDL_ThreadID ())
+        if (SDL_EventThreadID()) {
+            if (SDL_EventThreadID() == SDL_ThreadID())
                 is_event_thread = 1;
-        } else if (SDL_ThreadID () == riscos_main_thread)
+        } else if (SDL_ThreadID() == riscos_main_thread)
             is_event_thread = 1;
     } else
         is_event_thread = 1;
@@ -104,20 +104,20 @@ SDL_Delay (Uint32 ms)
     /*      for non event threads */
 
     /* Set the timeout interval - Linux only needs to do this once */
-    then = SDL_GetTicks ();
+    then = SDL_GetTicks();
 
     do {
         /* Do background tasks required while sleeping as we are not multithreaded */
 #if SDL_THREADS_DISABLED
-        RISCOS_BackgroundTasks ();
+        RISCOS_BackgroundTasks();
 #else
         /* For threaded build only run background tasks in event thread */
         if (is_event_thread)
-            RISCOS_BackgroundTasks ();
+            RISCOS_BackgroundTasks();
 #endif
 
         /* Calculate the time interval left (in case of interrupt) */
-        now = SDL_GetTicks ();
+        now = SDL_GetTicks();
         elapsed = (now - then);
         then = now;
         if (elapsed >= ms) {
@@ -127,7 +127,7 @@ SDL_Delay (Uint32 ms)
 #if !SDL_THREADS_DISABLED
         /* Need to yield to let other threads have a go */
         if (riscos_using_threads)
-            pthread_yield ();
+            pthread_yield();
 #endif
 
     }
@@ -139,27 +139,27 @@ SDL_Delay (Uint32 ms)
 /* Non-threaded version of timer */
 
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     return (0);
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
-    SDL_SetTimer (0, NULL);
+    SDL_SetTimer(0, NULL);
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    timerStart = SDL_GetTicks ();
+    timerStart = SDL_GetTicks();
 
     return (0);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     /* Don't need to do anything as we use SDL_timer_running
        to detect if we need to check the timer */
@@ -167,23 +167,23 @@ SDL_SYS_StopTimer (void)
 
 
 void
-RISCOS_CheckTimer ()
+RISCOS_CheckTimer()
 {
     if (SDL_timer_running
-        && SDL_GetTicks () - timerStart >= SDL_alarm_interval) {
+        && SDL_GetTicks() - timerStart >= SDL_alarm_interval) {
         Uint32 ms;
 
-        ms = SDL_alarm_callback (SDL_alarm_interval);
+        ms = SDL_alarm_callback(SDL_alarm_interval);
         if (ms != SDL_alarm_interval) {
             if (ms) {
-                SDL_alarm_interval = ROUND_RESOLUTION (ms);
+                SDL_alarm_interval = ROUND_RESOLUTION(ms);
             } else {
                 SDL_alarm_interval = 0;
                 SDL_timer_running = 0;
             }
         }
         if (SDL_alarm_interval)
-            timerStart = SDL_GetTicks ();
+            timerStart = SDL_GetTicks();
     }
 }
 
@@ -198,47 +198,47 @@ static int timer_alive = 0;
 static SDL_Thread *timer = NULL;
 
 static int
-RunTimer (void *unused)
+RunTimer(void *unused)
 {
     while (timer_alive) {
         if (SDL_timer_running) {
-            SDL_ThreadedTimerCheck ();
+            SDL_ThreadedTimerCheck();
         }
-        SDL_Delay (1);
+        SDL_Delay(1);
     }
     return (0);
 }
 
 /* This is only called if the event thread is not running */
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     timer_alive = 1;
-    timer = SDL_CreateThread (RunTimer, NULL);
+    timer = SDL_CreateThread(RunTimer, NULL);
     if (timer == NULL)
         return (-1);
-    return (SDL_SetTimerThreaded (1));
+    return (SDL_SetTimerThreaded(1));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     timer_alive = 0;
     if (timer) {
-        SDL_WaitThread (timer, NULL);
+        SDL_WaitThread(timer, NULL);
         timer = NULL;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    SDL_SetError ("Internal logic error: RISC OS uses threaded timer");
+    SDL_SetError("Internal logic error: RISC OS uses threaded timer");
     return (-1);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     return;
 }

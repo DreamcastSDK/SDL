@@ -43,8 +43,8 @@
 
 /* The translation table from a Microsoft VK keysym to a SDL keysym */
 static SDLKey VK_keymap[SDLK_LAST];
-static SDL_keysym *TranslateKey (WPARAM vkey, UINT scancode,
-                                 SDL_keysym * keysym, int pressed);
+static SDL_keysym *TranslateKey(WPARAM vkey, UINT scancode,
+                                SDL_keysym * keysym, int pressed);
 
 /* Masks for processing the windows KEYDOWN and KEYUP messages */
 #define REPEATED_KEYMASK	(1<<30)
@@ -63,7 +63,7 @@ static WNDPROCTYPE userWindowProc = NULL;
 #ifdef _WIN32_WCE
 
 WPARAM
-rotateKey (WPARAM key, SDL_ScreenOrientation direction)
+rotateKey(WPARAM key, SDL_ScreenOrientation direction)
 {
     if (direction != SDL_ORIENTATION_LEFT)
         return key;
@@ -87,7 +87,7 @@ rotateKey (WPARAM key, SDL_ScreenOrientation direction)
 
 /* The main Win32 event handler */
 LRESULT
-DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+DIB_HandleMessage(_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     extern int posted;
 
@@ -104,7 +104,7 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             // Rotate key if necessary
             if (this->hidden->orientation != SDL_ORIENTATION_UP)
-                wParam = rotateKey (wParam, this->hidden->orientation);
+                wParam = rotateKey(wParam, this->hidden->orientation);
 #endif
             /* Ignore repeated keys */
             if (lParam & REPEATED_KEYMASK) {
@@ -120,12 +120,12 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             case VK_SHIFT:
                 /* EXTENDED trick doesn't work here */
                 {
-                    Uint8 *state = SDL_GetKeyState (NULL);
+                    Uint8 *state = SDL_GetKeyState(NULL);
                     if (state[SDLK_LSHIFT] == SDL_RELEASED
-                        && (GetKeyState (VK_LSHIFT) & 0x8000)) {
+                        && (GetKeyState(VK_LSHIFT) & 0x8000)) {
                         wParam = VK_LSHIFT;
                     } else if (state[SDLK_RSHIFT] == SDL_RELEASED
-                               && (GetKeyState (VK_RSHIFT) & 0x8000)) {
+                               && (GetKeyState(VK_RSHIFT) & 0x8000)) {
                         wParam = VK_RSHIFT;
                     } else {
                         /* Probably a key repeat */
@@ -150,18 +150,18 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 m.wParam = wParam;
                 m.lParam = lParam;
                 m.time = 0;
-                if (TranslateMessage (&m)
-                    && PeekMessage (&m, hwnd, 0, WM_USER, PM_NOREMOVE)
+                if (TranslateMessage(&m)
+                    && PeekMessage(&m, hwnd, 0, WM_USER, PM_NOREMOVE)
                     && (m.message == WM_CHAR)) {
-                    GetMessage (&m, hwnd, 0, WM_USER);
+                    GetMessage(&m, hwnd, 0, WM_USER);
                     wParam = m.wParam;
                 }
             }
 #endif /* NO_GETKEYBOARDSTATE */
-            posted = SDL_PrivateKeyboard (SDL_PRESSED,
-                                          TranslateKey (wParam,
-                                                        HIWORD (lParam),
-                                                        &keysym, 1));
+            posted = SDL_PrivateKeyboard(SDL_PRESSED,
+                                         TranslateKey(wParam,
+                                                      HIWORD(lParam),
+                                                      &keysym, 1));
         }
         return (0);
 
@@ -177,7 +177,7 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             // Rotate key if necessary
             if (this->hidden->orientation != SDL_ORIENTATION_UP)
-                wParam = rotateKey (wParam, this->hidden->orientation);
+                wParam = rotateKey(wParam, this->hidden->orientation);
 #endif
 
             switch (wParam) {
@@ -190,12 +190,12 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             case VK_SHIFT:
                 /* EXTENDED trick doesn't work here */
                 {
-                    Uint8 *state = SDL_GetKeyState (NULL);
+                    Uint8 *state = SDL_GetKeyState(NULL);
                     if (state[SDLK_LSHIFT] == SDL_PRESSED
-                        && !(GetKeyState (VK_LSHIFT) & 0x8000)) {
+                        && !(GetKeyState(VK_LSHIFT) & 0x8000)) {
                         wParam = VK_LSHIFT;
                     } else if (state[SDLK_RSHIFT] == SDL_PRESSED
-                               && !(GetKeyState (VK_RSHIFT) & 0x8000)) {
+                               && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
                         wParam = VK_RSHIFT;
                     } else {
                         /* Probably a key repeat */
@@ -212,17 +212,17 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             /* Windows only reports keyup for print screen */
             if (wParam == VK_SNAPSHOT
-                && SDL_GetKeyState (NULL)[SDLK_PRINT] == SDL_RELEASED) {
-                posted = SDL_PrivateKeyboard (SDL_PRESSED,
-                                              TranslateKey (wParam,
-                                                            HIWORD
-                                                            (lParam),
-                                                            &keysym, 1));
+                && SDL_GetKeyState(NULL)[SDLK_PRINT] == SDL_RELEASED) {
+                posted = SDL_PrivateKeyboard(SDL_PRESSED,
+                                             TranslateKey(wParam,
+                                                          HIWORD
+                                                          (lParam),
+                                                          &keysym, 1));
             }
-            posted = SDL_PrivateKeyboard (SDL_RELEASED,
-                                          TranslateKey (wParam,
-                                                        HIWORD (lParam),
-                                                        &keysym, 0));
+            posted = SDL_PrivateKeyboard(SDL_RELEASED,
+                                         TranslateKey(wParam,
+                                                      HIWORD(lParam),
+                                                      &keysym, 0));
         }
         return (0);
 
@@ -242,46 +242,46 @@ DIB_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
                 SDL_SysWMmsg wmmsg;
 
-                SDL_VERSION (&wmmsg.version);
+                SDL_VERSION(&wmmsg.version);
                 wmmsg.hwnd = hwnd;
                 wmmsg.msg = msg;
                 wmmsg.wParam = wParam;
                 wmmsg.lParam = lParam;
-                posted = SDL_PrivateSysWMEvent (&wmmsg);
+                posted = SDL_PrivateSysWMEvent(&wmmsg);
 
                 /* DJM: If the user isn't watching for private
                    messages in her SDL event loop, then pass it
                    along to any win32 specific window proc.
                  */
             } else if (userWindowProc) {
-                return CallWindowProc (userWindowProc, hwnd, msg, wParam,
-                                       lParam);
+                return CallWindowProc(userWindowProc, hwnd, msg, wParam,
+                                      lParam);
             }
         }
         break;
     }
-    return (DefWindowProc (hwnd, msg, wParam, lParam));
+    return (DefWindowProc(hwnd, msg, wParam, lParam));
 }
 
 void
-DIB_PumpEvents (_THIS)
+DIB_PumpEvents(_THIS)
 {
     MSG msg;
 
-    while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE)) {
-        if (GetMessage (&msg, NULL, 0, 0) > 0) {
-            DispatchMessage (&msg);
+    while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+        if (GetMessage(&msg, NULL, 0, 0) > 0) {
+            DispatchMessage(&msg);
         }
     }
 }
 
 void
-DIB_InitOSKeymap (_THIS)
+DIB_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Map the VK keysyms */
-    for (i = 0; i < SDL_arraysize (VK_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(VK_keymap); ++i)
         VK_keymap[i] = SDLK_UNKNOWN;
 
     VK_keymap[VK_BACK] = SDLK_BACKSPACE;
@@ -406,7 +406,7 @@ DIB_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (WPARAM vkey, UINT scancode, SDL_keysym * keysym, int pressed)
+TranslateKey(WPARAM vkey, UINT scancode, SDL_keysym * keysym, int pressed)
 {
     /* Set the keysym information */
     keysym->scancode = (unsigned char) scancode;
@@ -421,10 +421,10 @@ TranslateKey (WPARAM vkey, UINT scancode, SDL_keysym * keysym, int pressed)
         BYTE keystate[256];
         Uint16 wchars[2];
 
-        GetKeyboardState (keystate);
+        GetKeyboardState(keystate);
         if (SDL_ToUnicode
             ((UINT) vkey, scancode, keystate, wchars,
-             sizeof (wchars) / sizeof (wchars[0]), 0) == 1) {
+             sizeof(wchars) / sizeof(wchars[0]), 0) == 1) {
             keysym->unicode = wchars[0];
         }
 #endif /* NO_GETKEYBOARDSTATE */
@@ -433,27 +433,27 @@ TranslateKey (WPARAM vkey, UINT scancode, SDL_keysym * keysym, int pressed)
 }
 
 int
-DIB_CreateWindow (_THIS)
+DIB_CreateWindow(_THIS)
 {
-    char *windowid = SDL_getenv ("SDL_WINDOWID");
+    char *windowid = SDL_getenv("SDL_WINDOWID");
 
-    SDL_RegisterApp (NULL, 0, 0);
+    SDL_RegisterApp(NULL, 0, 0);
 
     SDL_windowid = (windowid != NULL);
     if (SDL_windowid) {
 #if defined(_WIN32_WCE) && (_WIN32_WCE < 300)
         /* wince 2.1 does not have strtol */
         wchar_t *windowid_t =
-            SDL_malloc ((SDL_strlen (windowid) + 1) * sizeof (wchar_t));
-        MultiByteToWideChar (CP_ACP, MB_PRECOMPOSED, windowid, -1,
-                             windowid_t, SDL_strlen (windowid) + 1);
-        SDL_Window = (HWND) wcstol (windowid_t, NULL, 0);
-        SDL_free (windowid_t);
+            SDL_malloc((SDL_strlen(windowid) + 1) * sizeof(wchar_t));
+        MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, windowid, -1,
+                            windowid_t, SDL_strlen(windowid) + 1);
+        SDL_Window = (HWND) wcstol(windowid_t, NULL, 0);
+        SDL_free(windowid_t);
 #else
-        SDL_Window = (HWND) SDL_strtoull (windowid, NULL, 0);
+        SDL_Window = (HWND) SDL_strtoull(windowid, NULL, 0);
 #endif
         if (SDL_Window == NULL) {
-            SDL_SetError ("Couldn't get user specified window");
+            SDL_SetError("Couldn't get user specified window");
             return (-1);
         }
 
@@ -461,46 +461,45 @@ DIB_CreateWindow (_THIS)
            window to be handled by SDL.
          */
         userWindowProc =
-            (WNDPROCTYPE) GetWindowLongPtr (SDL_Window, GWLP_WNDPROC);
-        SetWindowLongPtr (SDL_Window, GWLP_WNDPROC, (LONG_PTR) WinMessage);
+            (WNDPROCTYPE) GetWindowLongPtr(SDL_Window, GWLP_WNDPROC);
+        SetWindowLongPtr(SDL_Window, GWLP_WNDPROC, (LONG_PTR) WinMessage);
     } else {
-        SDL_Window = CreateWindow (SDL_Appname, SDL_Appname,
-                                   (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
-                                    | WS_MINIMIZEBOX), CW_USEDEFAULT,
-                                   CW_USEDEFAULT, 0, 0, NULL, NULL,
-                                   SDL_Instance, NULL);
+        SDL_Window = CreateWindow(SDL_Appname, SDL_Appname,
+                                  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
+                                   | WS_MINIMIZEBOX), CW_USEDEFAULT,
+                                  CW_USEDEFAULT, 0, 0, NULL, NULL,
+                                  SDL_Instance, NULL);
         if (SDL_Window == NULL) {
-            SDL_SetError ("Couldn't create window");
+            SDL_SetError("Couldn't create window");
             return (-1);
         }
-        ShowWindow (SDL_Window, SW_HIDE);
+        ShowWindow(SDL_Window, SW_HIDE);
     }
 
     /* JC 14 Mar 2006
        Flush the message loop or this can cause big problems later
        Especially if the user decides to use dialog boxes or assert()!
      */
-    WIN_FlushMessageQueue ();
+    WIN_FlushMessageQueue();
 
     return (0);
 }
 
 void
-DIB_DestroyWindow (_THIS)
+DIB_DestroyWindow(_THIS)
 {
     if (SDL_windowid) {
-        SetWindowLongPtr (SDL_Window, GWLP_WNDPROC,
-                          (LONG_PTR) userWindowProc);
+        SetWindowLongPtr(SDL_Window, GWLP_WNDPROC, (LONG_PTR) userWindowProc);
     } else {
-        DestroyWindow (SDL_Window);
+        DestroyWindow(SDL_Window);
     }
-    SDL_UnregisterApp ();
+    SDL_UnregisterApp();
 
     /* JC 14 Mar 2006
        Flush the message loop or this can cause big problems later
        Especially if the user decides to use dialog boxes or assert()!
      */
-    WIN_FlushMessageQueue ();
+    WIN_FlushMessageQueue();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

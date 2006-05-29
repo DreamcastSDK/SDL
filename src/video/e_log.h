@@ -85,10 +85,10 @@ static double
 
 #ifdef __STDC__
 double
-__ieee754_log (double x)
+__ieee754_log(double x)
 #else
 double
-__ieee754_log (x)
+__ieee754_log(x)
      double x;
 #endif
 {
@@ -96,7 +96,7 @@ __ieee754_log (x)
     int32_t k, hx, i, j;
     u_int32_t lx;
 
-    EXTRACT_WORDS (hx, lx, x);
+    EXTRACT_WORDS(hx, lx, x);
 
     k = 0;
     if (hx < 0x00100000) {      /* x < 2**-1022  */
@@ -106,14 +106,14 @@ __ieee754_log (x)
             return (x - x) / zero;      /* log(-#) = NaN */
         k -= 54;
         x *= two54;             /* subnormal number, scale up x */
-        GET_HIGH_WORD (hx, x);
+        GET_HIGH_WORD(hx, x);
     }
     if (hx >= 0x7ff00000)
         return x + x;
     k += (hx >> 20) - 1023;
     hx &= 0x000fffff;
     i = (hx + 0x95f64) & 0x100000;
-    SET_HIGH_WORD (x, hx | (i ^ 0x3ff00000));   /* normalize x or x/2 */
+    SET_HIGH_WORD(x, hx | (i ^ 0x3ff00000));    /* normalize x or x/2 */
     k += (i >> 20);
     f = x - 1.0;
     if ((0x000fffff & (2 + hx)) < 3) {  /* |f| < 2**-20 */

@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////
 
 void
-SDL_MixAudio_MMX_S16_VC (char *dst, char *src, unsigned int nSize, int volume)
+SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
 {
     __asm {
 
@@ -102,7 +102,7 @@ SDL_MixAudio_MMX_S16_VC (char *dst, char *src, unsigned int nSize, int volume)
 ////////////////////////////////////////////////
 
 void
-SDL_MixAudio_MMX_S8_VC (char *dst, char *src, unsigned int nSize, int volume)
+SDL_MixAudio_MMX_S8_VC(char *dst, char *src, unsigned int nSize, int volume)
 {
     _asm {
 

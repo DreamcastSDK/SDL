@@ -51,7 +51,7 @@ static keymap_t *vga_keymap = NULL;
 #error You must choose your operating system here
 #endif
 static SDLKey keymap[128];
-static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
+static SDL_keysym *TranslateKey(int scancode, SDL_keysym * keysym);
 
 /* Ugh, we have to duplicate the kernel's keysym mapping code...
    Oh, it's not so bad. :-)
@@ -60,24 +60,24 @@ static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
  */
 #if defined(linux)
 int
-SVGA_initkeymaps (int fd)
+SVGA_initkeymaps(int fd)
 {
     struct kbentry entry;
     int map, i;
 
     /* Load all the keysym mappings */
     for (map = 0; map < NUM_VGAKEYMAPS; ++map) {
-        SDL_memset (vga_keymap[map], 0, NR_KEYS * sizeof (Uint16));
+        SDL_memset(vga_keymap[map], 0, NR_KEYS * sizeof(Uint16));
         for (i = 0; i < NR_KEYS; ++i) {
             entry.kb_table = map;
             entry.kb_index = i;
-            if (ioctl (fd, KDGKBENT, &entry) == 0) {
+            if (ioctl(fd, KDGKBENT, &entry) == 0) {
                 /* The "Enter" key is a special case */
                 if (entry.kb_value == K_ENTER) {
-                    entry.kb_value = K (KT_ASCII, 13);
+                    entry.kb_value = K(KT_ASCII, 13);
                 }
                 /* Handle numpad specially as well */
-                if (KTYP (entry.kb_value) == KT_PAD) {
+                if (KTYP(entry.kb_value) == KT_PAD) {
                     switch (entry.kb_value) {
                     case K_P0:
                     case K_P1:
@@ -93,34 +93,34 @@ SVGA_initkeymaps (int fd)
                         vga_keymap[map][i] += '0';
                         break;
                     case K_PPLUS:
-                        vga_keymap[map][i] = K (KT_ASCII, '+');
+                        vga_keymap[map][i] = K(KT_ASCII, '+');
                         break;
                     case K_PMINUS:
-                        vga_keymap[map][i] = K (KT_ASCII, '-');
+                        vga_keymap[map][i] = K(KT_ASCII, '-');
                         break;
                     case K_PSTAR:
-                        vga_keymap[map][i] = K (KT_ASCII, '*');
+                        vga_keymap[map][i] = K(KT_ASCII, '*');
                         break;
                     case K_PSLASH:
-                        vga_keymap[map][i] = K (KT_ASCII, '/');
+                        vga_keymap[map][i] = K(KT_ASCII, '/');
                         break;
                     case K_PENTER:
-                        vga_keymap[map][i] = K (KT_ASCII, '\r');
+                        vga_keymap[map][i] = K(KT_ASCII, '\r');
                         break;
                     case K_PCOMMA:
-                        vga_keymap[map][i] = K (KT_ASCII, ',');
+                        vga_keymap[map][i] = K(KT_ASCII, ',');
                         break;
                     case K_PDOT:
-                        vga_keymap[map][i] = K (KT_ASCII, '.');
+                        vga_keymap[map][i] = K(KT_ASCII, '.');
                         break;
                     default:
                         break;
                     }
                 }
                 /* Do the normal key translation */
-                if ((KTYP (entry.kb_value) == KT_LATIN) ||
-                    (KTYP (entry.kb_value) == KT_ASCII) ||
-                    (KTYP (entry.kb_value) == KT_LETTER)) {
+                if ((KTYP(entry.kb_value) == KT_LATIN) ||
+                    (KTYP(entry.kb_value) == KT_ASCII) ||
+                    (KTYP(entry.kb_value) == KT_LETTER)) {
                     vga_keymap[map][i] = entry.kb_value;
                 }
             }
@@ -130,17 +130,17 @@ SVGA_initkeymaps (int fd)
 }
 #elif defined(__FREEBSD__)
 int
-SVGA_initkeymaps (int fd)
+SVGA_initkeymaps(int fd)
 {
-    vga_keymap = SDL_malloc (sizeof (keymap_t));
+    vga_keymap = SDL_malloc(sizeof(keymap_t));
     if (!vga_keymap) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    if (ioctl (fd, GIO_KEYMAP, vga_keymap) == -1) {
-        SDL_free (vga_keymap);
+    if (ioctl(fd, GIO_KEYMAP, vga_keymap) == -1) {
+        SDL_free(vga_keymap);
         vga_keymap = NULL;
-        SDL_SetError ("Unable to get keyboard map");
+        SDL_SetError("Unable to get keyboard map");
         return (-1);
     }
     return (0);
@@ -152,73 +152,72 @@ SVGA_initkeymaps (int fd)
 int posted = 0;
 
 void
-SVGA_mousecallback (int button, int dx, int dy,
-                    int u1, int u2, int u3, int u4)
+SVGA_mousecallback(int button, int dx, int dy, int u1, int u2, int u3, int u4)
 {
     if (dx || dy) {
-        posted += SDL_PrivateMouseMotion (0, 1, dx, dy);
+        posted += SDL_PrivateMouseMotion(0, 1, dx, dy);
     }
     if (button & MOUSE_LEFTBUTTON) {
-        if (!(SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (1))) {
-            posted += SDL_PrivateMouseButton (SDL_PRESSED, 1, 0, 0);
+        if (!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1))) {
+            posted += SDL_PrivateMouseButton(SDL_PRESSED, 1, 0, 0);
         }
     } else {
-        if ((SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (1))) {
-            posted += SDL_PrivateMouseButton (SDL_RELEASED, 1, 0, 0);
+        if ((SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(1))) {
+            posted += SDL_PrivateMouseButton(SDL_RELEASED, 1, 0, 0);
         }
     }
     if (button & MOUSE_MIDDLEBUTTON) {
-        if (!(SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (2))) {
-            posted += SDL_PrivateMouseButton (SDL_PRESSED, 2, 0, 0);
+        if (!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(2))) {
+            posted += SDL_PrivateMouseButton(SDL_PRESSED, 2, 0, 0);
         }
     } else {
-        if ((SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (2))) {
-            posted += SDL_PrivateMouseButton (SDL_RELEASED, 2, 0, 0);
+        if ((SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(2))) {
+            posted += SDL_PrivateMouseButton(SDL_RELEASED, 2, 0, 0);
         }
     }
     if (button & MOUSE_RIGHTBUTTON) {
-        if (!(SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (3))) {
-            posted += SDL_PrivateMouseButton (SDL_PRESSED, 3, 0, 0);
+        if (!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(3))) {
+            posted += SDL_PrivateMouseButton(SDL_PRESSED, 3, 0, 0);
         }
     } else {
-        if ((SDL_GetMouseState (NULL, NULL) & SDL_BUTTON (3))) {
-            posted += SDL_PrivateMouseButton (SDL_RELEASED, 3, 0, 0);
+        if ((SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(3))) {
+            posted += SDL_PrivateMouseButton(SDL_RELEASED, 3, 0, 0);
         }
     }
 }
 
 void
-SVGA_keyboardcallback (int scancode, int pressed)
+SVGA_keyboardcallback(int scancode, int pressed)
 {
     SDL_keysym keysym;
 
     if (pressed) {
-        posted += SDL_PrivateKeyboard (SDL_PRESSED,
-                                       TranslateKey (scancode, &keysym));
+        posted += SDL_PrivateKeyboard(SDL_PRESSED,
+                                      TranslateKey(scancode, &keysym));
     } else {
-        posted += SDL_PrivateKeyboard (SDL_RELEASED,
-                                       TranslateKey (scancode, &keysym));
+        posted += SDL_PrivateKeyboard(SDL_RELEASED,
+                                      TranslateKey(scancode, &keysym));
     }
 }
 
 void
-SVGA_PumpEvents (_THIS)
+SVGA_PumpEvents(_THIS)
 {
     do {
         posted = 0;
-        mouse_update ();
-        keyboard_update ();
+        mouse_update();
+        keyboard_update();
     }
     while (posted);
 }
 
 void
-SVGA_InitOSKeymap (_THIS)
+SVGA_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Initialize the BeOS key translation table */
-    for (i = 0; i < SDL_arraysize (keymap); ++i)
+    for (i = 0; i < SDL_arraysize(keymap); ++i)
         keymap[i] = SDLK_UNKNOWN;
 
     keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
@@ -341,7 +340,7 @@ SVGA_InitOSKeymap (_THIS)
 
 #if defined(linux)
 static SDL_keysym *
-TranslateKey (int scancode, SDL_keysym * keysym)
+TranslateKey(int scancode, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -354,7 +353,7 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         int map;
         SDLMod modstate;
 
-        modstate = SDL_GetModState ();
+        modstate = SDL_GetModState();
         map = 0;
         if (modstate & KMOD_SHIFT) {
             map |= (1 << KG_SHIFT);
@@ -368,24 +367,24 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         if (modstate & KMOD_MODE) {
             map |= (1 << KG_ALTGR);
         }
-        if (KTYP (vga_keymap[map][scancode]) == KT_LETTER) {
+        if (KTYP(vga_keymap[map][scancode]) == KT_LETTER) {
             if (modstate & KMOD_CAPS) {
                 map ^= (1 << KG_SHIFT);
             }
         }
-        if (KTYP (vga_keymap[map][scancode]) == KT_PAD) {
+        if (KTYP(vga_keymap[map][scancode]) == KT_PAD) {
             if (modstate & KMOD_NUM) {
-                keysym->unicode = KVAL (vga_keymap[map][scancode]);
+                keysym->unicode = KVAL(vga_keymap[map][scancode]);
             }
         } else {
-            keysym->unicode = KVAL (vga_keymap[map][scancode]);
+            keysym->unicode = KVAL(vga_keymap[map][scancode]);
         }
     }
     return (keysym);
 }
 #elif defined(__FREEBSD__)
 static SDL_keysym *
-TranslateKey (int scancode, SDL_keysym * keysym)
+TranslateKey(int scancode, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -398,7 +397,7 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         int map;
         SDLMod modstate;
 
-        modstate = SDL_GetModState ();
+        modstate = SDL_GetModState();
         map = 0;
         if (modstate & KMOD_SHIFT) {
             map += 1;

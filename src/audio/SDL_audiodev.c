@@ -48,52 +48,52 @@
 
 
 int
-SDL_OpenAudioPath (char *path, int maxlen, int flags, int classic)
+SDL_OpenAudioPath(char *path, int maxlen, int flags, int classic)
 {
     const char *audiodev;
     int audio_fd;
     char audiopath[1024];
 
     /* Figure out what our audio device is */
-    if (((audiodev = SDL_getenv ("SDL_PATH_DSP")) == NULL) &&
-        ((audiodev = SDL_getenv ("AUDIODEV")) == NULL)) {
+    if (((audiodev = SDL_getenv("SDL_PATH_DSP")) == NULL) &&
+        ((audiodev = SDL_getenv("AUDIODEV")) == NULL)) {
         if (classic) {
             audiodev = _PATH_DEV_AUDIO;
         } else {
             struct stat sb;
 
             /* Added support for /dev/sound/\* in Linux 2.4 */
-            if (((stat ("/dev/sound", &sb) == 0) && S_ISDIR (sb.st_mode))
-                && ((stat (_PATH_DEV_DSP24, &sb) == 0)
-                    && S_ISCHR (sb.st_mode))) {
+            if (((stat("/dev/sound", &sb) == 0) && S_ISDIR(sb.st_mode))
+                && ((stat(_PATH_DEV_DSP24, &sb) == 0)
+                    && S_ISCHR(sb.st_mode))) {
                 audiodev = _PATH_DEV_DSP24;
             } else {
                 audiodev = _PATH_DEV_DSP;
             }
         }
     }
-    audio_fd = open (audiodev, flags, 0);
+    audio_fd = open(audiodev, flags, 0);
 
     /* If the first open fails, look for other devices */
-    if ((audio_fd < 0) && (SDL_strlen (audiodev) < (sizeof (audiopath) - 3))) {
+    if ((audio_fd < 0) && (SDL_strlen(audiodev) < (sizeof(audiopath) - 3))) {
         int exists, instance;
         struct stat sb;
 
         instance = 1;
         do {                    /* Don't use errno ENOENT - it may not be thread-safe */
-            SDL_snprintf (audiopath, SDL_arraysize (audiopath),
-                          "%s%d", audiodev, instance++);
+            SDL_snprintf(audiopath, SDL_arraysize(audiopath),
+                         "%s%d", audiodev, instance++);
             exists = 0;
-            if (stat (audiopath, &sb) == 0) {
+            if (stat(audiopath, &sb) == 0) {
                 exists = 1;
-                audio_fd = open (audiopath, flags, 0);
+                audio_fd = open(audiopath, flags, 0);
             }
         }
         while (exists && (audio_fd < 0));
         audiodev = audiopath;
     }
     if (path != NULL) {
-        SDL_strlcpy (path, audiodev, maxlen);
+        SDL_strlcpy(path, audiodev, maxlen);
         path[maxlen - 1] = '\0';
     }
     return (audio_fd);
@@ -126,51 +126,51 @@ char devsettings[][3] = {
 };
 
 static int
-OpenUserDefinedDevice (char *path, int maxlen, int flags)
+OpenUserDefinedDevice(char *path, int maxlen, int flags)
 {
     const char *audiodev;
     int audio_fd;
 
     /* Figure out what our audio device is */
-    if ((audiodev = SDL_getenv ("SDL_PATH_DSP")) == NULL) {
-        audiodev = SDL_getenv ("AUDIODEV");
+    if ((audiodev = SDL_getenv("SDL_PATH_DSP")) == NULL) {
+        audiodev = SDL_getenv("AUDIODEV");
     }
     if (audiodev == NULL) {
         return -1;
     }
-    audio_fd = open (audiodev, flags, 0);
+    audio_fd = open(audiodev, flags, 0);
     if (path != NULL) {
-        SDL_strlcpy (path, audiodev, maxlen);
+        SDL_strlcpy(path, audiodev, maxlen);
         path[maxlen - 1] = '\0';
     }
     return audio_fd;
 }
 
 int
-SDL_OpenAudioPath (char *path, int maxlen, int flags, int classic)
+SDL_OpenAudioPath(char *path, int maxlen, int flags, int classic)
 {
     struct stat sb;
     int audio_fd;
     char audiopath[1024];
     int cycle;
 
-    audio_fd = OpenUserDefinedDevice (path, maxlen, flags);
+    audio_fd = OpenUserDefinedDevice(path, maxlen, flags);
     if (audio_fd != -1) {
         return audio_fd;
     }
 
     cycle = 0;
     while (devsettings[cycle][0] != '\0') {
-        SDL_snprintf (audiopath, SDL_arraysize (audiopath),
-                      _PATH_DEV_DSP,
-                      devsettings[cycle][0],
-                      devsettings[cycle][1], devsettings[cycle][2]);
+        SDL_snprintf(audiopath, SDL_arraysize(audiopath),
+                     _PATH_DEV_DSP,
+                     devsettings[cycle][0],
+                     devsettings[cycle][1], devsettings[cycle][2]);
 
-        if (stat (audiopath, &sb) == 0) {
-            audio_fd = open (audiopath, flags, 0);
+        if (stat(audiopath, &sb) == 0) {
+            audio_fd = open(audiopath, flags, 0);
             if (audio_fd > 0) {
                 if (path != NULL) {
-                    SDL_strlcpy (path, audiopath, maxlen);
+                    SDL_strlcpy(path, audiopath, maxlen);
                 }
                 return audio_fd;
             }

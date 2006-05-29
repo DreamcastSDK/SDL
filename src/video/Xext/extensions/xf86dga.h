@@ -87,15 +87,15 @@ typedef struct
     int viewportFlags;          /* types of page flipping possible */
     int reserved1;
     int reserved2;
-} SDL_NAME (XDGAMode);
+} SDL_NAME(XDGAMode);
 
 
 typedef struct
 {
-    SDL_NAME (XDGAMode) mode;
+    SDL_NAME(XDGAMode) mode;
     unsigned char *data;
     Pixmap pixmap;
-} SDL_NAME (XDGADevice);
+} SDL_NAME(XDGADevice);
 
 
 #ifndef _XF86DGA_SERVER_
@@ -108,7 +108,7 @@ _XFUNCPROTOBEGIN typedef struct
     Time time;
     unsigned int state;
     unsigned int button;
-} SDL_NAME (XDGAButtonEvent);
+} SDL_NAME(XDGAButtonEvent);
 
 typedef struct
 {
@@ -119,7 +119,7 @@ typedef struct
     Time time;
     unsigned int state;
     unsigned int keycode;
-} SDL_NAME (XDGAKeyEvent);
+} SDL_NAME(XDGAKeyEvent);
 
 typedef struct
 {
@@ -131,88 +131,88 @@ typedef struct
     unsigned int state;
     int dx;
     int dy;
-} SDL_NAME (XDGAMotionEvent);
+} SDL_NAME(XDGAMotionEvent);
 
 typedef union
 {
     int type;
-      SDL_NAME (XDGAButtonEvent) xbutton;
-      SDL_NAME (XDGAKeyEvent) xkey;
-      SDL_NAME (XDGAMotionEvent) xmotion;
+      SDL_NAME(XDGAButtonEvent) xbutton;
+      SDL_NAME(XDGAKeyEvent) xkey;
+      SDL_NAME(XDGAMotionEvent) xmotion;
     long pad[24];
-} SDL_NAME (XDGAEvent);
+} SDL_NAME(XDGAEvent);
 
-Bool SDL_NAME (XDGAQueryExtension) (Display * dpy,
-                                    int *eventBase, int *erroBase);
+Bool SDL_NAME(XDGAQueryExtension) (Display * dpy,
+                                   int *eventBase, int *erroBase);
 
-Bool SDL_NAME (XDGAQueryVersion) (Display * dpy,
-                                  int *majorVersion, int *minorVersion);
+Bool SDL_NAME(XDGAQueryVersion) (Display * dpy,
+                                 int *majorVersion, int *minorVersion);
 
-SDL_NAME (XDGAMode) * SDL_NAME (XDGAQueryModes) (Display * dpy,
-                                                 int screen, int *num);
+SDL_NAME(XDGAMode) * SDL_NAME(XDGAQueryModes) (Display * dpy,
+                                               int screen, int *num);
 
-SDL_NAME (XDGADevice) * SDL_NAME (XDGASetMode) (Display * dpy,
-                                                int screen, int mode);
+SDL_NAME(XDGADevice) * SDL_NAME(XDGASetMode) (Display * dpy,
+                                              int screen, int mode);
 
 Bool
-SDL_NAME (XDGAOpenFramebuffer) (Display * dpy, int screen);
+SDL_NAME(XDGAOpenFramebuffer) (Display * dpy, int screen);
 
-     void SDL_NAME (XDGACloseFramebuffer) (Display * dpy, int screen);
+     void SDL_NAME(XDGACloseFramebuffer) (Display * dpy, int screen);
 
-     void SDL_NAME (XDGASetViewport) (Display * dpy,
-                                      int screen, int x, int y, int flags);
+     void SDL_NAME(XDGASetViewport) (Display * dpy,
+                                     int screen, int x, int y, int flags);
 
-     void SDL_NAME (XDGAInstallColormap) (Display * dpy,
-                                          int screen, Colormap cmap);
+     void SDL_NAME(XDGAInstallColormap) (Display * dpy,
+                                         int screen, Colormap cmap);
 
 Colormap
-SDL_NAME (XDGACreateColormap) (Display * dpy,
-                               int screen,
-                               SDL_NAME (XDGADevice) * device, int alloc);
+SDL_NAME(XDGACreateColormap) (Display * dpy,
+                              int screen,
+                              SDL_NAME(XDGADevice) * device, int alloc);
 
-     void SDL_NAME (XDGASelectInput) (Display * dpy, int screen,
-                                      long event_mask);
+     void SDL_NAME(XDGASelectInput) (Display * dpy, int screen,
+                                     long event_mask);
 
-     void SDL_NAME (XDGAFillRectangle) (Display * dpy,
-                                        int screen,
-                                        int x,
-                                        int y,
-                                        unsigned int width,
-                                        unsigned int height,
-                                        unsigned long color);
-
-
-     void SDL_NAME (XDGACopyArea) (Display * dpy,
-                                   int screen,
-                                   int srcx,
-                                   int srcy,
-                                   unsigned int width,
-                                   unsigned int height, int dstx, int dsty);
+     void SDL_NAME(XDGAFillRectangle) (Display * dpy,
+                                       int screen,
+                                       int x,
+                                       int y,
+                                       unsigned int width,
+                                       unsigned int height,
+                                       unsigned long color);
 
 
-     void SDL_NAME (XDGACopyTransparentArea) (Display * dpy,
-                                              int screen,
-                                              int srcx,
-                                              int srcy,
-                                              unsigned int width,
-                                              unsigned int height,
-                                              int dstx,
-                                              int dsty, unsigned long key);
+     void SDL_NAME(XDGACopyArea) (Display * dpy,
+                                  int screen,
+                                  int srcx,
+                                  int srcy,
+                                  unsigned int width,
+                                  unsigned int height, int dstx, int dsty);
 
-     int SDL_NAME (XDGAGetViewportStatus) (Display * dpy, int screen);
 
-     void SDL_NAME (XDGASync) (Display * dpy, int screen);
+     void SDL_NAME(XDGACopyTransparentArea) (Display * dpy,
+                                             int screen,
+                                             int srcx,
+                                             int srcy,
+                                             unsigned int width,
+                                             unsigned int height,
+                                             int dstx,
+                                             int dsty, unsigned long key);
+
+     int SDL_NAME(XDGAGetViewportStatus) (Display * dpy, int screen);
+
+     void SDL_NAME(XDGASync) (Display * dpy, int screen);
 
 Bool
-SDL_NAME (XDGASetClientVersion) (Display * dpy);
+SDL_NAME(XDGASetClientVersion) (Display * dpy);
 
-     void SDL_NAME (XDGAChangePixmapMode) (Display * dpy,
-                                           int screen, int *x, int *y,
-                                           int mode);
+     void SDL_NAME(XDGAChangePixmapMode) (Display * dpy,
+                                          int screen, int *x, int *y,
+                                          int mode);
 
 
-     void SDL_NAME (XDGAKeyEventToXKeyEvent) (SDL_NAME (XDGAKeyEvent) * dk,
-                                              XKeyEvent * xk);
+     void SDL_NAME(XDGAKeyEventToXKeyEvent) (SDL_NAME(XDGAKeyEvent) * dk,
+                                             XKeyEvent * xk);
 
 
 _XFUNCPROTOEND

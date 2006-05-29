@@ -88,25 +88,25 @@ static char rcsid[] = "$NetBSD: e_sqrt.c,v 1.8 1995/05/10 20:46:17 jtc Exp $";
 #include "math_private.h"
 
 #ifdef __STDC__
-double SDL_NAME (copysign) (double x, double y)
+double SDL_NAME(copysign) (double x, double y)
 #else
-double SDL_NAME (copysign) (x, y)
+double SDL_NAME(copysign) (x, y)
      double
          x,
          y;
 #endif
 {
     u_int32_t hx, hy;
-    GET_HIGH_WORD (hx, x);
-    GET_HIGH_WORD (hy, y);
-    SET_HIGH_WORD (x, (hx & 0x7fffffff) | (hy & 0x80000000));
+    GET_HIGH_WORD(hx, x);
+    GET_HIGH_WORD(hy, y);
+    SET_HIGH_WORD(x, (hx & 0x7fffffff) | (hy & 0x80000000));
     return x;
 }
 
 #ifdef __STDC__
-double SDL_NAME (scalbn) (double x, int n)
+double SDL_NAME(scalbn) (double x, int n)
 #else
-double SDL_NAME (scalbn) (x, n)
+double SDL_NAME(scalbn) (x, n)
      double
          x;
      int
@@ -114,13 +114,13 @@ double SDL_NAME (scalbn) (x, n)
 #endif
 {
     int32_t k, hx, lx;
-    EXTRACT_WORDS (hx, lx, x);
+    EXTRACT_WORDS(hx, lx, x);
     k = (hx & 0x7ff00000) >> 20;        /* extract exponent */
     if (k == 0) {               /* 0 or subnormal x */
         if ((lx | (hx & 0x7fffffff)) == 0)
             return x;           /* +-0 */
         x *= two54;
-        GET_HIGH_WORD (hx, x);
+        GET_HIGH_WORD(hx, x);
         k = ((hx & 0x7ff00000) >> 20) - 54;
         if (n < -50000)
             return tiny * x;    /*underflow */
@@ -129,28 +129,28 @@ double SDL_NAME (scalbn) (x, n)
         return x + x;           /* NaN or Inf */
     k = k + n;
     if (k > 0x7fe)
-        return huge * SDL_NAME (copysign) (huge, x);    /* overflow  */
+        return huge * SDL_NAME(copysign) (huge, x);     /* overflow  */
     if (k > 0) {                /* normal result */
-        SET_HIGH_WORD (x, (hx & 0x800fffff) | (k << 20));
+        SET_HIGH_WORD(x, (hx & 0x800fffff) | (k << 20));
         return x;
     }
     if (k <= -54) {
         if (n > 50000)          /* in case integer overflow in n+k */
-            return huge * SDL_NAME (copysign) (huge, x);        /*overflow */
+            return huge * SDL_NAME(copysign) (huge, x); /*overflow */
         else
-            return tiny * SDL_NAME (copysign) (tiny, x);        /*underflow */
+            return tiny * SDL_NAME(copysign) (tiny, x); /*underflow */
     }
     k += 54;                    /* subnormal result */
-    SET_HIGH_WORD (x, (hx & 0x800fffff) | (k << 20));
+    SET_HIGH_WORD(x, (hx & 0x800fffff) | (k << 20));
     return x * twom54;
 }
 
 #ifdef __STDC__
 double
-__ieee754_sqrt (double x)
+__ieee754_sqrt(double x)
 #else
 double
-__ieee754_sqrt (x)
+__ieee754_sqrt(x)
      double x;
 #endif
 {
@@ -159,7 +159,7 @@ __ieee754_sqrt (x)
     int32_t ix0, s0, q, m, t, i;
     u_int32_t r, t1, s1, ix1, q1;
 
-    EXTRACT_WORDS (ix0, ix1, x);
+    EXTRACT_WORDS(ix0, ix1, x);
 
     /* take care of Inf and NaN */
     if ((ix0 & 0x7ff00000) == 0x7ff00000) {
@@ -253,7 +253,7 @@ __ieee754_sqrt (x)
     if ((q & 1) == 1)
         ix1 |= sign;
     ix0 += (m << 20);
-    INSERT_WORDS (z, ix0, ix1);
+    INSERT_WORDS(z, ix0, ix1);
     return z;
 }
 

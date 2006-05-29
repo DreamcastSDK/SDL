@@ -27,20 +27,20 @@
 
 screenRotationT screenRotation = SDL_QT_NO_ROTATION;
 
-SDL_QWin::SDL_QWin (const QSize & size):
-QWidget (0, "SDL_main"),
-my_painter (0),
-my_image (0),
-my_inhibit_resize (false),
-my_mouse_pos (-1, -1),
-my_flags (0),
-my_has_fullscreen (false),
-my_locked (0)
+SDL_QWin::SDL_QWin(const QSize & size):
+QWidget(0, "SDL_main"),
+my_painter(0),
+my_image(0),
+my_inhibit_resize(false),
+my_mouse_pos(-1, -1),
+my_flags(0),
+my_has_fullscreen(false),
+my_locked(0)
 {
-    setBackgroundMode (NoBackground);
+    setBackgroundMode(NoBackground);
 }
 
-SDL_QWin::~SDL_QWin ()
+SDL_QWin::~SDL_QWin()
 {
     // Nothing to do yet.
     if (my_image) {
@@ -49,7 +49,7 @@ SDL_QWin::~SDL_QWin ()
 }
 
 void
-SDL_QWin::setImage (QImage * image)
+SDL_QWin::setImage(QImage * image)
 {
     if (my_image) {
         delete my_image;
@@ -59,59 +59,59 @@ SDL_QWin::setImage (QImage * image)
 }
 
 void
-SDL_QWin::resizeEvent (QResizeEvent * e)
+SDL_QWin::resizeEvent(QResizeEvent * e)
 {
-    if (size () != qApp->desktop ()->size ()) {
+    if (size() != qApp->desktop()->size()) {
         // Widget is not the correct size, so do the fullscreen magic
         my_has_fullscreen = false;
-        enableFullscreen ();
+        enableFullscreen();
     }
     if (my_inhibit_resize) {
         my_inhibit_resize = false;
     } else {
-        SDL_PrivateResize (e->size ().width (), e->size ().height ());
+        SDL_PrivateResize(e->size().width(), e->size().height());
     }
 }
 
 void
-SDL_QWin::focusInEvent (QFocusEvent *)
+SDL_QWin::focusInEvent(QFocusEvent *)
 {
     // Always do it here, no matter the size.
-    enableFullscreen ();
-    SDL_PrivateAppActive (true, SDL_APPINPUTFOCUS);
+    enableFullscreen();
+    SDL_PrivateAppActive(true, SDL_APPINPUTFOCUS);
 }
 
 void
-SDL_QWin::focusOutEvent (QFocusEvent *)
+SDL_QWin::focusOutEvent(QFocusEvent *)
 {
     my_has_fullscreen = false;
-    SDL_PrivateAppActive (false, SDL_APPINPUTFOCUS);
+    SDL_PrivateAppActive(false, SDL_APPINPUTFOCUS);
 }
 
 void
-SDL_QWin::closeEvent (QCloseEvent * e)
+SDL_QWin::closeEvent(QCloseEvent * e)
 {
-    SDL_PrivateQuit ();
-    e->ignore ();
+    SDL_PrivateQuit();
+    e->ignore();
 }
 
 void
-SDL_QWin::setMousePos (const QPoint & pos)
+SDL_QWin::setMousePos(const QPoint & pos)
 {
-    if (my_image->width () == height ()) {
+    if (my_image->width() == height()) {
         if (screenRotation == SDL_QT_ROTATION_90)
-            my_mouse_pos = QPoint (height () - pos.y (), pos.x ());
+            my_mouse_pos = QPoint(height() - pos.y(), pos.x());
         else if (screenRotation == SDL_QT_ROTATION_270)
-            my_mouse_pos = QPoint (pos.y (), width () - pos.x ());
+            my_mouse_pos = QPoint(pos.y(), width() - pos.x());
     } else {
         my_mouse_pos = pos;
     }
 }
 
 void
-SDL_QWin::mouseMoveEvent (QMouseEvent * e)
+SDL_QWin::mouseMoveEvent(QMouseEvent * e)
 {
-    Qt::ButtonState button = e->button ();
+    Qt::ButtonState button = e->button();
     int sdlstate = 0;
     if ((button & Qt::LeftButton)) {
         sdlstate |= SDL_BUTTON_LMASK;
@@ -122,46 +122,45 @@ SDL_QWin::mouseMoveEvent (QMouseEvent * e)
     if ((button & Qt::MidButton)) {
         sdlstate |= SDL_BUTTON_MMASK;
     }
-    setMousePos (e->pos ());
-    SDL_PrivateMouseMotion (sdlstate, 0, my_mouse_pos.x (),
-                            my_mouse_pos.y ());
+    setMousePos(e->pos());
+    SDL_PrivateMouseMotion(sdlstate, 0, my_mouse_pos.x(), my_mouse_pos.y());
 }
 
 void
-SDL_QWin::mousePressEvent (QMouseEvent * e)
+SDL_QWin::mousePressEvent(QMouseEvent * e)
 {
-    mouseMoveEvent (e);
-    Qt::ButtonState button = e->button ();
-    SDL_PrivateMouseButton (SDL_PRESSED,
-                            (button & Qt::LeftButton) ? 1 :
-                            ((button & Qt::RightButton) ? 2 : 3),
-                            my_mouse_pos.x (), my_mouse_pos.y ());
+    mouseMoveEvent(e);
+    Qt::ButtonState button = e->button();
+    SDL_PrivateMouseButton(SDL_PRESSED,
+                           (button & Qt::LeftButton) ? 1 :
+                           ((button & Qt::RightButton) ? 2 : 3),
+                           my_mouse_pos.x(), my_mouse_pos.y());
 }
 
 void
-SDL_QWin::mouseReleaseEvent (QMouseEvent * e)
+SDL_QWin::mouseReleaseEvent(QMouseEvent * e)
 {
-    setMousePos (e->pos ());
-    Qt::ButtonState button = e->button ();
-    SDL_PrivateMouseButton (SDL_RELEASED,
-                            (button & Qt::LeftButton) ? 1 :
-                            ((button & Qt::RightButton) ? 2 : 3),
-                            my_mouse_pos.x (), my_mouse_pos.y ());
-    my_mouse_pos = QPoint (-1, -1);
+    setMousePos(e->pos());
+    Qt::ButtonState button = e->button();
+    SDL_PrivateMouseButton(SDL_RELEASED,
+                           (button & Qt::LeftButton) ? 1 :
+                           ((button & Qt::RightButton) ? 2 : 3),
+                           my_mouse_pos.x(), my_mouse_pos.y());
+    my_mouse_pos = QPoint(-1, -1);
 }
 
 static inline void
-gs_fastRotateBlit_3 (unsigned short *fb,
-                     unsigned short *bits, const QRect & rect)
+gs_fastRotateBlit_3(unsigned short *fb,
+                    unsigned short *bits, const QRect & rect)
 {
     // FIXME: this only works correctly for 240x320 displays
     int startx, starty;
     int width, height;
 
-    startx = rect.left () >> 1;
-    starty = rect.top () >> 1;
-    width = ((rect.right () - rect.left ()) >> 1) + 2;
-    height = ((rect.bottom () - rect.top ()) >> 1) + 2;
+    startx = rect.left() >> 1;
+    starty = rect.top() >> 1;
+    width = ((rect.right() - rect.left()) >> 1) + 2;
+    height = ((rect.bottom() - rect.top()) >> 1) + 2;
 
     if ((startx + width) > 120) {
         width = 120 - startx;   // avoid horizontal overflow
@@ -208,17 +207,17 @@ gs_fastRotateBlit_3 (unsigned short *fb,
 }
 
 static inline void
-gs_fastRotateBlit_1 (unsigned short *fb,
-                     unsigned short *bits, const QRect & rect)
+gs_fastRotateBlit_1(unsigned short *fb,
+                    unsigned short *bits, const QRect & rect)
 {
     // FIXME: this only works correctly for 240x320 displays
     int startx, starty;
     int width, height;
 
-    startx = rect.left () >> 1;
-    starty = rect.top () >> 1;
-    width = ((rect.right () - rect.left ()) >> 1) + 2;
-    height = ((rect.bottom () - rect.top ()) >> 1) + 2;
+    startx = rect.left() >> 1;
+    starty = rect.top() >> 1;
+    width = ((rect.right() - rect.left()) >> 1) + 2;
+    height = ((rect.bottom() - rect.top()) >> 1) + 2;
 
     if ((startx + width) > 120) {
         width = 120 - startx;   // avoid horizontal overflow
@@ -381,42 +380,42 @@ bool SDL_QWin::repaintRotation1 (const QRect & rect)
 /* *INDENT-ON* */
 
 void
-SDL_QWin::repaintRect (const QRect & rect)
+SDL_QWin::repaintRect(const QRect & rect)
 {
-    if (!my_painter || !rect.width () || !rect.height ()) {
+    if (!my_painter || !rect.width() || !rect.height()) {
         return;
     }
 
-    if (QPixmap::defaultDepth () == 16) {
-        switch (my_painter->transformOrientation ()) {
+    if (QPixmap::defaultDepth() == 16) {
+        switch (my_painter->transformOrientation()) {
         case 3:
-            if (repaintRotation3 (rect)) {
+            if (repaintRotation3(rect)) {
                 return;
             }
             break;
         case 1:
-            if (repaintRotation1 (rect)) {
+            if (repaintRotation1(rect)) {
                 return;
             }
             break;
         case 0:
-            if (repaintRotation0 (rect)) {
+            if (repaintRotation0(rect)) {
                 return;
             }
             break;
         }
     }
-    my_painter->drawImage (rect.topLeft (), *my_image, rect);
+    my_painter->drawImage(rect.topLeft(), *my_image, rect);
 }
 
 // This paints the current buffer to the screen, when desired. 
 void
-SDL_QWin::paintEvent (QPaintEvent * ev)
+SDL_QWin::paintEvent(QPaintEvent * ev)
 {
     if (my_image) {
-        lockScreen (true);
-        repaintRect (ev->rect ());
-        unlockScreen ();
+        lockScreen(true);
+        repaintRect(ev->rect());
+        unlockScreen();
     }
 }
 
@@ -425,10 +424,10 @@ SDL_QWin::paintEvent (QPaintEvent * ev)
  * slow.
  */
 void
-SDL_QWin::QueueKey (QKeyEvent * e, int pressed)
+SDL_QWin::QueueKey(QKeyEvent * e, int pressed)
 {
     SDL_keysym keysym;
-    int scancode = e->key ();
+    int scancode = e->key();
     /* Set the keysym information */
     if (scancode >= 'A' && scancode <= 'Z') {
         // Qt sends uppercase, SDL wants lowercase
@@ -607,7 +606,7 @@ SDL_QWin::QueueKey (QKeyEvent * e, int pressed)
     }
     keysym.scancode = scancode;
     keysym.mod = KMOD_NONE;
-    ButtonState st = e->state ();
+    ButtonState st = e->state();
     if ((st & ShiftButton)) {
         keysym.mod = static_cast < SDLMod > (keysym.mod | KMOD_LSHIFT);
     }
@@ -618,8 +617,8 @@ SDL_QWin::QueueKey (QKeyEvent * e, int pressed)
         keysym.mod = static_cast < SDLMod > (keysym.mod | KMOD_LALT);
     }
     if (SDL_TranslateUNICODE) {
-        QChar qchar = e->text ()[0];
-        keysym.unicode = qchar.unicode ();
+        QChar qchar = e->text()[0];
+        keysym.unicode = qchar.unicode();
     } else {
         keysym.unicode = 0;
     }
@@ -631,33 +630,33 @@ SDL_QWin::QueueKey (QKeyEvent * e, int pressed)
 
     /* Queue the key event */
     if (pressed) {
-        SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+        SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
     } else {
-        SDL_PrivateKeyboard (SDL_RELEASED, &keysym);
+        SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
     }
 }
 
 void
-SDL_QWin::setFullscreen (bool fs_on)
+SDL_QWin::setFullscreen(bool fs_on)
 {
     my_has_fullscreen = false;
-    enableFullscreen ();
+    enableFullscreen();
 }
 
 void
-SDL_QWin::enableFullscreen ()
+SDL_QWin::enableFullscreen()
 {
     // Make sure size is correct
     if (!my_has_fullscreen) {
-        setFixedSize (qApp->desktop ()->size ());
+        setFixedSize(qApp->desktop()->size());
         // This call is needed because showFullScreen won't work
         // correctly if the widget already considers itself to be fullscreen.
-        showNormal ();
+        showNormal();
         // This is needed because showNormal() forcefully changes the window
         // style to WSTyle_TopLevel.
-        setWFlags (WStyle_Customize | WStyle_NoBorder);
+        setWFlags(WStyle_Customize | WStyle_NoBorder);
         // Enable fullscreen.
-        showFullScreen ();
+        showFullScreen();
         my_has_fullscreen = true;
     }
 }
@@ -679,13 +678,13 @@ SDL_QWin::lockScreen (bool force)
 /* *INDENT-ON* */
 
 void
-SDL_QWin::unlockScreen ()
+SDL_QWin::unlockScreen()
 {
     if (my_locked > 0) {
         my_locked--;            // decrease lock refcount;
     }
     if (!my_locked && my_painter) {
-        my_painter->end ();
+        my_painter->end();
         delete my_painter;
         my_painter = 0;
     }

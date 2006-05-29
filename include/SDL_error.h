@@ -39,9 +39,9 @@ extern "C" {
 #endif
 
 /* Public functions */
-extern DECLSPEC void SDLCALL SDL_SetError (const char *fmt, ...);
-extern DECLSPEC char *SDLCALL SDL_GetError (void);
-extern DECLSPEC void SDLCALL SDL_ClearError (void);
+extern DECLSPEC void SDLCALL SDL_SetError(const char *fmt, ...);
+extern DECLSPEC char *SDLCALL SDL_GetError(void);
+extern DECLSPEC void SDLCALL SDL_ClearError(void);
 
 /* Private error message function - used internally */
 #define SDL_OutOfMemory()	SDL_Error(SDL_ENOMEM)
@@ -55,7 +55,7 @@ typedef enum
     SDL_UNSUPPORTED,
     SDL_LASTERROR
 } SDL_errorcode;
-extern DECLSPEC void SDLCALL SDL_Error (SDL_errorcode code);
+extern DECLSPEC void SDLCALL SDL_Error(SDL_errorcode code);
 
 
 /* Ends C function definitions when using C++ */

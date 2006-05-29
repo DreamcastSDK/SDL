@@ -42,12 +42,12 @@
 
 /* The translation tables from a GGI keycode to a SDL keysym */
 static SDLKey keymap[128];
-static SDL_keysym *GGI_TranslateKey (ggi_event * ev, SDL_keysym * keysym);
+static SDL_keysym *GGI_TranslateKey(ggi_event * ev, SDL_keysym * keysym);
 
 static int posted = 0;
 
 void
-GGI_PumpEvents (_THIS)
+GGI_PumpEvents(_THIS)
 {
     struct timeval *tvp, tv = { 0, 0 };
     ggi_event ev;
@@ -56,7 +56,7 @@ GGI_PumpEvents (_THIS)
 
 /*	ggiFlush(VIS); */
 
-    while (ggiEventPoll (VIS, emAll, tvp))
+    while (ggiEventPoll(VIS, emAll, tvp))
 /*	while (ggiEventPoll(VIS, (emKeyboard | emPointer | emCommand), tvp)) */
     {
         int queueevent_mouse = 0, queueevent_kbd = 0;
@@ -73,7 +73,7 @@ GGI_PumpEvents (_THIS)
          * mouse and keyboard events.  Having to handle all
          * events will slow things down.  */
 
-        ggiEventRead (VIS, &ev, emAll);
+        ggiEventRead(VIS, &ev, emAll);
 /*		ggiEventRead(VIS, &ev, (emKeyboard | emPointer | emCommand)); */
 
         switch (ev.any.type) {
@@ -81,7 +81,7 @@ GGI_PumpEvents (_THIS)
             x = ev.pmove.x;
             y = ev.pmove.y;
             z = ev.pmove.wheel;
-            posted += SDL_PrivateMouseMotion (0, 1, x, y);
+            posted += SDL_PrivateMouseMotion(0, 1, x, y);
             break;
         case evPtrAbsolute:
             if (mouse_x != ev.pmove.x || mouse_y != ev.pmove.y
@@ -92,34 +92,33 @@ GGI_PumpEvents (_THIS)
                 mouse_x = ev.pmove.x;
                 mouse_y = ev.pmove.y;
                 mouse_z = ev.pmove.wheel;
-                posted += SDL_PrivateMouseMotion (0, 1, x, y);
+                posted += SDL_PrivateMouseMotion(0, 1, x, y);
             }
             break;
         case evPtrButtonPress:
             posted +=
-                SDL_PrivateMouseButton (SDL_PRESSED, ev.pbutton.button, 0, 0);
+                SDL_PrivateMouseButton(SDL_PRESSED, ev.pbutton.button, 0, 0);
             break;
         case evPtrButtonRelease:
             posted +=
-                SDL_PrivateMouseButton (SDL_RELEASED, ev.pbutton.button,
-                                        0, 0);
+                SDL_PrivateMouseButton(SDL_RELEASED, ev.pbutton.button, 0, 0);
             break;
         case evKeyPress:
         case evKeyRepeat:
             posted +=
-                SDL_PrivateKeyboard (SDL_PRESSED,
-                                     GGI_TranslateKey (&ev, &keysym));
+                SDL_PrivateKeyboard(SDL_PRESSED,
+                                    GGI_TranslateKey(&ev, &keysym));
             break;
         case evKeyRelease:
             posted +=
-                SDL_PrivateKeyboard (SDL_RELEASED,
-                                     GGI_TranslateKey (&ev, &keysym));
+                SDL_PrivateKeyboard(SDL_RELEASED,
+                                    GGI_TranslateKey(&ev, &keysym));
             break;
         case evCommand:
-            fprintf (stderr, "Command event %x recieved\n", ev.cmd.code);
+            fprintf(stderr, "Command event %x recieved\n", ev.cmd.code);
             break;
         default:
-            fprintf (stderr, "Unhandled event type %d\n", ev.any.type);
+            fprintf(stderr, "Unhandled event type %d\n", ev.any.type);
             break;
         }
     }
@@ -127,12 +126,12 @@ GGI_PumpEvents (_THIS)
 }
 
 void
-GGI_InitOSKeymap (_THIS)
+GGI_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Initialize the GGI key translation table */
-    for (i = 0; i < SDL_arraysize (keymap); ++i)
+    for (i = 0; i < SDL_arraysize(keymap); ++i)
         keymap[i] = SDLK_UNKNOWN;
 
     keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
@@ -256,7 +255,7 @@ GGI_InitOSKeymap (_THIS)
 
 
 static SDL_keysym *
-GGI_TranslateKey (gii_event * ev, SDL_keysym * keysym)
+GGI_TranslateKey(gii_event * ev, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = ev->key.button;
@@ -266,7 +265,7 @@ GGI_TranslateKey (gii_event * ev, SDL_keysym * keysym)
     /* If UNICODE is on, get the UNICODE value for the key */
     keysym->unicode = 0;
     if (SDL_TranslateUNICODE) {
-        keysym->unicode = GII_UNICODE (ev->key.sym);
+        keysym->unicode = GII_UNICODE(ev->key.sym);
     }
 
     return keysym;

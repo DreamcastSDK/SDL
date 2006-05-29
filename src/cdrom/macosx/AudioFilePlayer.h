@@ -36,7 +36,7 @@
 
 #include "SDL_error.h"
 
-const char *AudioFilePlayerErrorStr (OSStatus error);
+const char *AudioFilePlayerErrorStr(OSStatus error);
 
 /*
 void ThrowResult (OSStatus result, const char *str);
@@ -74,7 +74,7 @@ typedef struct S_AudioFilePlayer
     void (*Disconnect) (struct S_AudioFilePlayer * afp);
     void (*DoNotification) (struct S_AudioFilePlayer * afp, OSStatus inError);
     int (*IsConnected) (struct S_AudioFilePlayer * afp);
-      AudioUnit (*GetDestUnit) (struct S_AudioFilePlayer * afp);
+      AudioUnit(*GetDestUnit) (struct S_AudioFilePlayer * afp);
     void (*Print) (struct S_AudioFilePlayer * afp);
 
 /*private:*/
@@ -101,8 +101,8 @@ typedef struct S_AudioFilePlayer
 } AudioFilePlayer;
 
 
-AudioFilePlayer *new_AudioFilePlayer (const FSRef * inFileRef);
-void delete_AudioFilePlayer (AudioFilePlayer * afp);
+AudioFilePlayer *new_AudioFilePlayer(const FSRef * inFileRef);
+void delete_AudioFilePlayer(AudioFilePlayer * afp);
 
 
 
@@ -114,8 +114,8 @@ typedef struct S_AudioFileManager
        as it is called by the parent's Disconnect() method */
     void (*Disconnect) (struct S_AudioFileManager * afm);
     int (*DoConnect) (struct S_AudioFileManager * afm);
-      OSStatus (*Read) (struct S_AudioFileManager * afm, char *buffer,
-                        UInt32 * len);
+      OSStatus(*Read) (struct S_AudioFileManager * afm, char *buffer,
+                       UInt32 * len);
     const char *(*GetFileBuffer) (struct S_AudioFileManager * afm);
     const AudioFilePlayer *(*GetParent) (struct S_AudioFileManager * afm);
     void (*SetPosition) (struct S_AudioFileManager * afm, SInt64 pos);  /* seek/rewind in the file */
@@ -149,27 +149,27 @@ typedef struct S_AudioFileManager
     int mFinishedReadingData;
 
 /*protected:*/
-      OSStatus (*Render) (struct S_AudioFileManager * afm,
-                          AudioBuffer * ioData);
-      OSStatus (*GetFileData) (struct S_AudioFileManager * afm,
-                               void **inOutData, UInt32 * inOutDataSize);
+      OSStatus(*Render) (struct S_AudioFileManager * afm,
+                         AudioBuffer * ioData);
+      OSStatus(*GetFileData) (struct S_AudioFileManager * afm,
+                              void **inOutData, UInt32 * inOutDataSize);
     void (*AfterRender) (struct S_AudioFileManager * afm);
 
 /*public:*/
     /*static */
-      OSStatus (*FileInputProc) (void *inRefCon,
-                                 AudioUnitRenderActionFlags inActionFlags,
-                                 const AudioTimeStamp * inTimeStamp,
-                                 UInt32 inBusNumber, AudioBuffer * ioData);
+      OSStatus(*FileInputProc) (void *inRefCon,
+                                AudioUnitRenderActionFlags inActionFlags,
+                                const AudioTimeStamp * inTimeStamp,
+                                UInt32 inBusNumber, AudioBuffer * ioData);
 } AudioFileManager;
 
 
-AudioFileManager *new_AudioFileManager (AudioFilePlayer * inParent,
-                                        SInt16 inForkRefNum,
-                                        SInt64 inFileLength,
-                                        UInt32 inChunkSize);
+AudioFileManager *new_AudioFileManager(AudioFilePlayer * inParent,
+                                       SInt16 inForkRefNum,
+                                       SInt64 inFileLength,
+                                       UInt32 inChunkSize);
 
-void delete_AudioFileManager (AudioFileManager * afm);
+void delete_AudioFileManager(AudioFileManager * afm);
 
 #endif
 /* vi: set ts=4 sw=4 expandtab: */

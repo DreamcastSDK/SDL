@@ -26,12 +26,12 @@
 /* Variables and functions exported by SDL_sysevents.c to other parts 
    of the native video subsystem (SDL_sysvideo.c)
 */
-extern int VGL_initkeymaps (int fd);
-extern int VGL_initmouse (int fd);
-extern void VGL_keyboardcallback (int scancode, int pressed);
+extern int VGL_initkeymaps(int fd);
+extern int VGL_initmouse(int fd);
+extern void VGL_keyboardcallback(int scancode, int pressed);
 
-extern void VGL_InitOSKeymap (_THIS);
-extern void VGL_PumpEvents (_THIS);
+extern void VGL_InitOSKeymap(_THIS);
+extern void VGL_PumpEvents(_THIS);
 
 /* Mouse buttons */
 #define MOUSE_LEFTBUTTON        0x01

@@ -30,21 +30,21 @@
 
 
 SDL_Overlay *
-SDL_CreateYUVOverlay (int w, int h, Uint32 format, SDL_Surface * display)
+SDL_CreateYUVOverlay(int w, int h, Uint32 format, SDL_Surface * display)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
     const char *yuv_hwaccel;
     SDL_Overlay *overlay;
 
-    window = SDL_GetWindowFromSurface (display);
+    window = SDL_GetWindowFromSurface(display);
     if (window && (window->flags & SDL_WINDOW_OPENGL)) {
-        SDL_SetError ("YUV overlays are not supported in OpenGL mode");
+        SDL_SetError("YUV overlays are not supported in OpenGL mode");
         return NULL;
     }
 
     /* Display directly on video surface, if possible */
-    if (SDL_getenv ("SDL_VIDEO_YUV_DIRECT")) {
+    if (SDL_getenv("SDL_VIDEO_YUV_DIRECT")) {
         if (window &&
             ((window->surface->format->BytesPerPixel == 2) ||
              (window->surface->format->BytesPerPixel == 4))) {
@@ -52,36 +52,36 @@ SDL_CreateYUVOverlay (int w, int h, Uint32 format, SDL_Surface * display)
         }
     }
     overlay = NULL;
-    yuv_hwaccel = SDL_getenv ("SDL_VIDEO_YUV_HWACCEL");
+    yuv_hwaccel = SDL_getenv("SDL_VIDEO_YUV_HWACCEL");
     if (((display->flags & SDL_SCREEN_SURFACE) && _this->CreateYUVOverlay) &&
-        (!yuv_hwaccel || (SDL_atoi (yuv_hwaccel) > 0))) {
-        overlay = _this->CreateYUVOverlay (_this, w, h, format, display);
+        (!yuv_hwaccel || (SDL_atoi(yuv_hwaccel) > 0))) {
+        overlay = _this->CreateYUVOverlay(_this, w, h, format, display);
     }
     /* If hardware YUV overlay failed ... */
     if (overlay == NULL) {
-        overlay = SDL_CreateYUV_SW (_this, w, h, format, display);
+        overlay = SDL_CreateYUV_SW(_this, w, h, format, display);
     }
     return overlay;
 }
 
 int
-SDL_LockYUVOverlay (SDL_Overlay * overlay)
+SDL_LockYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
-    return overlay->hwfuncs->Lock (_this, overlay);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    return overlay->hwfuncs->Lock(_this, overlay);
 }
 
 void
-SDL_UnlockYUVOverlay (SDL_Overlay * overlay)
+SDL_UnlockYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
-    overlay->hwfuncs->Unlock (_this, overlay);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    overlay->hwfuncs->Unlock(_this, overlay);
 }
 
 int
-SDL_DisplayYUVOverlay (SDL_Overlay * overlay, SDL_Rect * dstrect)
+SDL_DisplayYUVOverlay(SDL_Overlay * overlay, SDL_Rect * dstrect)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Rect src, dst;
     int srcx, srcy, srcw, srch;
     int dstx, dsty, dstw, dsth;
@@ -129,18 +129,18 @@ SDL_DisplayYUVOverlay (SDL_Overlay * overlay, SDL_Rect * dstrect)
     dst.y = dsty;
     dst.w = dstw;
     dst.h = dsth;
-    return overlay->hwfuncs->Display (_this, overlay, &src, &dst);
+    return overlay->hwfuncs->Display(_this, overlay, &src, &dst);
 }
 
 void
-SDL_FreeYUVOverlay (SDL_Overlay * overlay)
+SDL_FreeYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (overlay) {
         if (overlay->hwfuncs) {
-            overlay->hwfuncs->FreeHW (_this, overlay);
+            overlay->hwfuncs->FreeHW(_this, overlay);
         }
-        SDL_free (overlay);
+        SDL_free(overlay);
     }
 }
 

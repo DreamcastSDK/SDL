@@ -63,14 +63,14 @@ struct SDL_PrivateGLData
     void (*glFlush) (void);
 
     /* osmesa.ldg */
-      OSMesaContext (*OSMesaCreateContextExt) (GLenum format, GLint depthBits,
-                                               GLint stencilBits,
-                                               GLint accumBits,
-                                               OSMesaContext sharelist);
+      OSMesaContext(*OSMesaCreateContextExt) (GLenum format, GLint depthBits,
+                                              GLint stencilBits,
+                                              GLint accumBits,
+                                              OSMesaContext sharelist);
     void (*OSMesaDestroyContext) (OSMesaContext ctx);
-      GLboolean (*OSMesaMakeCurrent) (OSMesaContext ctx, void *buffer,
-                                      GLenum type, GLsizei width,
-                                      GLsizei height);
+      GLboolean(*OSMesaMakeCurrent) (OSMesaContext ctx, void *buffer,
+                                     GLenum type, GLsizei width,
+                                     GLsizei height);
     void (*OSMesaPixelStore) (GLint pname, GLint value);
     void *(*OSMesaGetProcAddress) (const char *funcName);
 
@@ -103,15 +103,15 @@ struct SDL_PrivateGLData
 #define gl_curheight	(this->gl_data->height)
 
 /* OpenGL functions */
-extern int SDL_AtariGL_Init (_THIS, SDL_Surface * current);
-extern void SDL_AtariGL_Quit (_THIS, SDL_bool unload);
-extern void SDL_AtariGL_InitPointers (_THIS);
+extern int SDL_AtariGL_Init(_THIS, SDL_Surface * current);
+extern void SDL_AtariGL_Quit(_THIS, SDL_bool unload);
+extern void SDL_AtariGL_InitPointers(_THIS);
 
-extern int SDL_AtariGL_LoadLibrary (_THIS, const char *path);
-extern void *SDL_AtariGL_GetProcAddress (_THIS, const char *proc);
-extern int SDL_AtariGL_GetAttribute (_THIS, SDL_GLattr attrib, int *value);
-extern int SDL_AtariGL_MakeCurrent (_THIS);
-extern void SDL_AtariGL_SwapBuffers (_THIS);
+extern int SDL_AtariGL_LoadLibrary(_THIS, const char *path);
+extern void *SDL_AtariGL_GetProcAddress(_THIS, const char *proc);
+extern int SDL_AtariGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
+extern int SDL_AtariGL_MakeCurrent(_THIS);
+extern void SDL_AtariGL_SwapBuffers(_THIS);
 
 #endif /* _SDL_ATARIGL_H_ */
 /* vi: set ts=4 sw=4 expandtab: */

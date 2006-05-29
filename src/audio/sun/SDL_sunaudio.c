@@ -48,58 +48,58 @@
 #define OPEN_FLAGS	(O_WRONLY|O_NONBLOCK)
 
 /* Audio driver functions */
-static int DSP_OpenAudio (_THIS, SDL_AudioSpec * spec);
-static void DSP_WaitAudio (_THIS);
-static void DSP_PlayAudio (_THIS);
-static Uint8 *DSP_GetAudioBuf (_THIS);
-static void DSP_CloseAudio (_THIS);
+static int DSP_OpenAudio(_THIS, SDL_AudioSpec * spec);
+static void DSP_WaitAudio(_THIS);
+static void DSP_PlayAudio(_THIS);
+static Uint8 *DSP_GetAudioBuf(_THIS);
+static void DSP_CloseAudio(_THIS);
 
-static Uint8 snd2au (int sample);
+static Uint8 snd2au(int sample);
 
 /* Audio driver bootstrap functions */
 
 static int
-Audio_Available (void)
+Audio_Available(void)
 {
     int fd;
     int available;
 
     available = 0;
-    fd = SDL_OpenAudioPath (NULL, 0, OPEN_FLAGS, 1);
+    fd = SDL_OpenAudioPath(NULL, 0, OPEN_FLAGS, 1);
     if (fd >= 0) {
         available = 1;
-        close (fd);
+        close(fd);
     }
     return (available);
 }
 
 static void
-Audio_DeleteDevice (SDL_AudioDevice * device)
+Audio_DeleteDevice(SDL_AudioDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_AudioDevice *
-Audio_CreateDevice (int devindex)
+Audio_CreateDevice(int devindex)
 {
     SDL_AudioDevice *this;
 
     /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc (sizeof (SDL_AudioDevice));
+    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
     if (this) {
-        SDL_memset (this, 0, (sizeof *this));
+        SDL_memset(this, 0, (sizeof *this));
         this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc ((sizeof *this->hidden));
+            SDL_malloc((sizeof *this->hidden));
     }
     if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (this) {
-            SDL_free (this);
+            SDL_free(this);
         }
         return (0);
     }
-    SDL_memset (this->hidden, 0, (sizeof *this->hidden));
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
     audio_fd = -1;
 
     /* Set the function pointers */
@@ -121,30 +121,30 @@ AudioBootStrap SUNAUDIO_bootstrap = {
 
 #ifdef DEBUG_AUDIO
 void
-CheckUnderflow (_THIS)
+CheckUnderflow(_THIS)
 {
 #ifdef AUDIO_GETINFO
     audio_info_t info;
     int left;
 
-    ioctl (audio_fd, AUDIO_GETINFO, &info);
+    ioctl(audio_fd, AUDIO_GETINFO, &info);
     left = (written - info.play.samples);
     if (written && (left == 0)) {
-        fprintf (stderr, "audio underflow!\n");
+        fprintf(stderr, "audio underflow!\n");
     }
 #endif
 }
 #endif
 
 void
-DSP_WaitAudio (_THIS)
+DSP_WaitAudio(_THIS)
 {
 #ifdef AUDIO_GETINFO
 #define SLEEP_FUDGE	10      /* 10 ms scheduling fudge factor */
     audio_info_t info;
     Sint32 left;
 
-    ioctl (audio_fd, AUDIO_GETINFO, &info);
+    ioctl(audio_fd, AUDIO_GETINFO, &info);
     left = (written - info.play.samples);
     if (left > fragsize) {
         Sint32 sleepy;
@@ -152,20 +152,20 @@ DSP_WaitAudio (_THIS)
         sleepy = ((left - fragsize) / frequency);
         sleepy -= SLEEP_FUDGE;
         if (sleepy > 0) {
-            SDL_Delay (sleepy);
+            SDL_Delay(sleepy);
         }
     }
 #else
     fd_set fdset;
 
-    FD_ZERO (&fdset);
-    FD_SET (audio_fd, &fdset);
-    select (audio_fd + 1, NULL, &fdset, NULL, NULL);
+    FD_ZERO(&fdset);
+    FD_SET(audio_fd, &fdset);
+    select(audio_fd + 1, NULL, &fdset, NULL, NULL);
 #endif
 }
 
 void
-DSP_PlayAudio (_THIS)
+DSP_PlayAudio(_THIS)
 {
     /* Write the audio data */
     if (ulaw_only) {
@@ -183,7 +183,7 @@ DSP_PlayAudio (_THIS)
 
                 sndbuf = mixbuf;
                 for (pos = 0; pos < fragsize; ++pos) {
-                    *aubuf = snd2au ((0x80 - *sndbuf) * 64);
+                    *aubuf = snd2au((0x80 - *sndbuf) * 64);
                     accum += incr;
                     while (accum > 0) {
                         accum -= 1000;
@@ -199,7 +199,7 @@ DSP_PlayAudio (_THIS)
 
                 sndbuf = (Sint16 *) mixbuf;
                 for (pos = 0; pos < fragsize; ++pos) {
-                    *aubuf = snd2au (*sndbuf / 4);
+                    *aubuf = snd2au(*sndbuf / 4);
                     accum += incr;
                     while (accum > 0) {
                         accum -= 1000;
@@ -211,18 +211,18 @@ DSP_PlayAudio (_THIS)
             break;
         }
 #ifdef DEBUG_AUDIO
-        CheckUnderflow (this);
+        CheckUnderflow(this);
 #endif
-        if (write (audio_fd, ulaw_buf, fragsize) < 0) {
+        if (write(audio_fd, ulaw_buf, fragsize) < 0) {
             /* Assume fatal error, for now */
             this->enabled = 0;
         }
         written += fragsize;
     } else {
 #ifdef DEBUG_AUDIO
-        CheckUnderflow (this);
+        CheckUnderflow(this);
 #endif
-        if (write (audio_fd, mixbuf, this->spec.size) < 0) {
+        if (write(audio_fd, mixbuf, this->spec.size) < 0) {
             /* Assume fatal error, for now */
             this->enabled = 0;
         }
@@ -231,27 +231,27 @@ DSP_PlayAudio (_THIS)
 }
 
 Uint8 *
-DSP_GetAudioBuf (_THIS)
+DSP_GetAudioBuf(_THIS)
 {
     return (mixbuf);
 }
 
 void
-DSP_CloseAudio (_THIS)
+DSP_CloseAudio(_THIS)
 {
     if (mixbuf != NULL) {
-        SDL_FreeAudioMem (mixbuf);
+        SDL_FreeAudioMem(mixbuf);
         mixbuf = NULL;
     }
     if (ulaw_buf != NULL) {
-        SDL_free (ulaw_buf);
+        SDL_free(ulaw_buf);
         ulaw_buf = NULL;
     }
-    close (audio_fd);
+    close(audio_fd);
 }
 
 int
-DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
+DSP_OpenAudio(_THIS, SDL_AudioSpec * spec)
 {
     char audiodev[1024];
 #ifdef AUDIO_SETINFO
@@ -287,16 +287,16 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
 
     default:
         {
-            SDL_SetError ("Unsupported audio format");
+            SDL_SetError("Unsupported audio format");
             return (-1);
         }
     }
     audio_fmt = spec->format;
 
     /* Open the audio device */
-    audio_fd = SDL_OpenAudioPath (audiodev, sizeof (audiodev), OPEN_FLAGS, 1);
+    audio_fd = SDL_OpenAudioPath(audiodev, sizeof(audiodev), OPEN_FLAGS, 1);
     if (audio_fd < 0) {
-        SDL_SetError ("Couldn't open %s: %s", audiodev, strerror (errno));
+        SDL_SetError("Couldn't open %s: %s", audiodev, strerror(errno));
         return (-1);
     }
 
@@ -304,7 +304,7 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
 #ifdef AUDIO_SETINFO
     for (;;) {
         audio_info_t info;
-        AUDIO_INITINFO (&info); /* init all fields to "no change" */
+        AUDIO_INITINFO(&info);  /* init all fields to "no change" */
 
         /* Try to set the requested settings */
         info.play.sample_rate = spec->freq;
@@ -312,12 +312,12 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
         info.play.precision = (enc == AUDIO_ENCODING_ULAW)
             ? 8 : spec->format & 0xff;
         info.play.encoding = enc;
-        if (ioctl (audio_fd, AUDIO_SETINFO, &info) == 0) {
+        if (ioctl(audio_fd, AUDIO_SETINFO, &info) == 0) {
 
             /* Check to be sure we got what we wanted */
-            if (ioctl (audio_fd, AUDIO_GETINFO, &info) < 0) {
-                SDL_SetError ("Error getting audio parameters: %s",
-                              strerror (errno));
+            if (ioctl(audio_fd, AUDIO_GETINFO, &info) < 0) {
+                SDL_SetError("Error getting audio parameters: %s",
+                             strerror(errno));
                 return -1;
             }
             if (info.play.encoding == enc
@@ -347,8 +347,8 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
 
         default:
             /* oh well... */
-            SDL_SetError ("Error setting audio parameters: %s",
-                          strerror (errno));
+            SDL_SetError("Error setting audio parameters: %s",
+                         strerror(errno));
             return -1;
         }
     }
@@ -360,9 +360,9 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
         spec->freq = desired_freq;
         fragsize = (spec->samples * 1000) / (spec->freq / 8);
         frequency = 8;
-        ulaw_buf = (Uint8 *) SDL_malloc (fragsize);
+        ulaw_buf = (Uint8 *) SDL_malloc(fragsize);
         if (ulaw_buf == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
         spec->channels = 1;
@@ -371,22 +371,22 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
         frequency = spec->freq / 1000;
     }
 #ifdef DEBUG_AUDIO
-    fprintf (stderr, "Audio device %s U-Law only\n",
-             ulaw_only ? "is" : "is not");
-    fprintf (stderr, "format=0x%x chan=%d freq=%d\n",
-             spec->format, spec->channels, spec->freq);
+    fprintf(stderr, "Audio device %s U-Law only\n",
+            ulaw_only ? "is" : "is not");
+    fprintf(stderr, "format=0x%x chan=%d freq=%d\n",
+            spec->format, spec->channels, spec->freq);
 #endif
 
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec (spec);
+    SDL_CalculateAudioSpec(spec);
 
     /* Allocate mixing buffer */
-    mixbuf = (Uint8 *) SDL_AllocAudioMem (spec->size);
+    mixbuf = (Uint8 *) SDL_AllocAudioMem(spec->size);
     if (mixbuf == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    SDL_memset (mixbuf, spec->silence, spec->size);
+    SDL_memset(mixbuf, spec->silence, spec->size);
 
     /* We're ready to rock and roll. :-) */
     return (0);
@@ -411,7 +411,7 @@ DSP_OpenAudio (_THIS, SDL_AudioSpec * spec)
 /************************************************************************/
 
 static Uint8
-snd2au (int sample)
+snd2au(int sample)
 {
 
     int mask;

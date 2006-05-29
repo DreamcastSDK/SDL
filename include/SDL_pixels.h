@@ -109,64 +109,64 @@ enum
 {
     SDL_PixelFormat_Unknown,
     SDL_PixelFormat_Index1LSB =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Index1, SDL_BitmapOrder_1234, 0,
-                                1, 0),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Index1, SDL_BitmapOrder_1234, 0,
+                               1, 0),
     SDL_PixelFormat_Index1MSB =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Index1, SDL_BitmapOrder_4321, 0,
-                                1, 0),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Index1, SDL_BitmapOrder_4321, 0,
+                               1, 0),
     SDL_PixelFormat_Index4LSB =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Index4, SDL_BitmapOrder_1234, 0,
-                                2, 0),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Index4, SDL_BitmapOrder_1234, 0,
+                               2, 0),
     SDL_PixelFormat_Index4MSB =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Index4, SDL_BitmapOrder_4321, 0,
-                                2, 0),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Index4, SDL_BitmapOrder_4321, 0,
+                               2, 0),
     SDL_PixelFormat_Index8 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Index8, 0, 0, 8, 1),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Index8, 0, 0, 8, 1),
     SDL_PixelFormat_RGB332 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed8, SDL_PackedOrder_XRGB,
-                                SDL_PackedLayout_332, 8, 1),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed8, SDL_PackedOrder_XRGB,
+                               SDL_PackedLayout_332, 8, 1),
     SDL_PixelFormat_RGB444 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
-                                SDL_PackedLayout_4444, 12, 2),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
+                               SDL_PackedLayout_4444, 12, 2),
     SDL_PixelFormat_RGB555 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
-                                SDL_PackedLayout_1555, 15, 2),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
+                               SDL_PackedLayout_1555, 15, 2),
     SDL_PixelFormat_ARGB4444 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed16, SDL_PackedOrder_ARGB,
-                                SDL_PackedLayout_4444, 16, 2),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed16, SDL_PackedOrder_ARGB,
+                               SDL_PackedLayout_4444, 16, 2),
     SDL_PixelFormat_ARGB1555 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed16, SDL_PackedOrder_ARGB,
-                                SDL_PackedLayout_1555, 16, 2),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed16, SDL_PackedOrder_ARGB,
+                               SDL_PackedLayout_1555, 16, 2),
     SDL_PixelFormat_RGB565 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
-                                SDL_PackedLayout_565, 16, 2),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed16, SDL_PackedOrder_XRGB,
+                               SDL_PackedLayout_565, 16, 2),
     SDL_PixelFormat_RGB24 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_ArrayU8, SDL_ArrayOrder_RGB, 0,
-                                24, 3),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_ArrayU8, SDL_ArrayOrder_RGB, 0,
+                               24, 3),
     SDL_PixelFormat_BGR24 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_ArrayU8, SDL_ArrayOrder_BGR, 0,
-                                24, 3),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_ArrayU8, SDL_ArrayOrder_BGR, 0,
+                               24, 3),
     SDL_PixelFormat_RGB888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_XRGB,
-                                SDL_PackedLayout_8888, 24, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_XRGB,
+                               SDL_PackedLayout_8888, 24, 4),
     SDL_PixelFormat_BGR888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_XBGR,
-                                SDL_PackedLayout_8888, 24, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_XBGR,
+                               SDL_PackedLayout_8888, 24, 4),
     SDL_PixelFormat_ARGB8888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
-                                SDL_PackedLayout_8888, 32, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
+                               SDL_PackedLayout_8888, 32, 4),
     SDL_PixelFormat_RGBA8888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_RGBA,
-                                SDL_PackedLayout_8888, 32, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_RGBA,
+                               SDL_PackedLayout_8888, 32, 4),
     SDL_PixelFormat_ABGR8888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_ABGR,
-                                SDL_PackedLayout_8888, 32, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_ABGR,
+                               SDL_PackedLayout_8888, 32, 4),
     SDL_PixelFormat_BGRA8888 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_BGRA,
-                                SDL_PackedLayout_8888, 32, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_BGRA,
+                               SDL_PackedLayout_8888, 32, 4),
     SDL_PixelFormat_ARGB2101010 =
-        SDL_DEFINE_PIXELFORMAT (SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
-                                SDL_PackedLayout_2101010, 32, 4),
+        SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
+                               SDL_PackedLayout_2101010, 32, 4),
 };
 
 typedef struct SDL_Color
@@ -213,19 +213,19 @@ typedef struct SDL_PixelFormat
  * Convert one of the enumerated formats above to a bpp and RGBA masks.
  * Returns SDL_TRUE, or SDL_FALSE if the conversion wasn't possible.
  */
-extern DECLSPEC SDL_bool SDL_PixelFormatEnumToMasks (Uint32 format, int *bpp,
-                                                     Uint32 * Rmask,
-                                                     Uint32 * Gmask,
-                                                     Uint32 * Bmask,
-                                                     Uint32 * Amask);
+extern DECLSPEC SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp,
+                                                    Uint32 * Rmask,
+                                                    Uint32 * Gmask,
+                                                    Uint32 * Bmask,
+                                                    Uint32 * Amask);
 
 /*
  * Convert a bpp and RGBA masks to one of the enumerated formats above.
  * Returns SDL_PixelFormat_Unknown if the conversion wasn't possible.
  */
-extern DECLSPEC Uint32 SDL_MasksToPixelFormatEnum (int bpp, Uint32 Rmask,
-                                                   Uint32 Gmask, Uint32 Bmask,
-                                                   Uint32 Amask);
+extern DECLSPEC Uint32 SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask,
+                                                  Uint32 Gmask, Uint32 Bmask,
+                                                  Uint32 Amask);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -33,30 +33,30 @@
 
 #ifdef HAVE_SIGNAL_H
 static void
-SDL_HandleSIG (int sig)
+SDL_HandleSIG(int sig)
 {
     /* Reset the signal handler */
-    signal (sig, SDL_HandleSIG);
+    signal(sig, SDL_HandleSIG);
 
     /* Signal a quit interrupt */
-    SDL_PrivateQuit ();
+    SDL_PrivateQuit();
 }
 #endif /* HAVE_SIGNAL_H */
 
 /* Public functions */
 int
-SDL_QuitInit (void)
+SDL_QuitInit(void)
 {
 #ifdef HAVE_SIGNAL_H
     void (*ohandler) (int);
 
     /* Both SIGINT and SIGTERM are translated into quit interrupts */
-    ohandler = signal (SIGINT, SDL_HandleSIG);
+    ohandler = signal(SIGINT, SDL_HandleSIG);
     if (ohandler != SIG_DFL)
-        signal (SIGINT, ohandler);
-    ohandler = signal (SIGTERM, SDL_HandleSIG);
+        signal(SIGINT, ohandler);
+    ohandler = signal(SIGTERM, SDL_HandleSIG);
     if (ohandler != SIG_DFL)
-        signal (SIGTERM, ohandler);
+        signal(SIGTERM, ohandler);
 #endif /* HAVE_SIGNAL_H */
 
     /* That's it! */
@@ -64,23 +64,23 @@ SDL_QuitInit (void)
 }
 
 void
-SDL_QuitQuit (void)
+SDL_QuitQuit(void)
 {
 #ifdef HAVE_SIGNAL_H
     void (*ohandler) (int);
 
-    ohandler = signal (SIGINT, SIG_DFL);
+    ohandler = signal(SIGINT, SIG_DFL);
     if (ohandler != SDL_HandleSIG)
-        signal (SIGINT, ohandler);
-    ohandler = signal (SIGTERM, SIG_DFL);
+        signal(SIGINT, ohandler);
+    ohandler = signal(SIGTERM, SIG_DFL);
     if (ohandler != SDL_HandleSIG)
-        signal (SIGTERM, ohandler);
+        signal(SIGTERM, ohandler);
 #endif /* HAVE_SIGNAL_H */
 }
 
 /* This function returns 1 if it's okay to close the application window */
 int
-SDL_PrivateQuit (void)
+SDL_PrivateQuit(void)
 {
     int posted;
 
@@ -90,7 +90,7 @@ SDL_PrivateQuit (void)
         event.type = SDL_QUIT;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
-            SDL_PushEvent (&event);
+            SDL_PushEvent(&event);
         }
     }
     return (posted);

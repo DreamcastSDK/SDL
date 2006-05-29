@@ -53,20 +53,20 @@
 
 #if SDL_VIDEO_OPENGL_GLX
 static int
-glXExtensionSupported (_THIS, const char *extension)
+glXExtensionSupported(_THIS, const char *extension)
 {
     const char *extensions;
     const char *start;
     const char *where, *terminator;
 
     /* Extension names should not have spaces. */
-    where = SDL_strchr (extension, ' ');
+    where = SDL_strchr(extension, ' ');
     if (where || *extension == '\0') {
         return 0;
     }
 
     extensions =
-        this->gl_data->glXQueryExtensionsString (GFX_Display, SDL_Screen);
+        this->gl_data->glXQueryExtensionsString(GFX_Display, SDL_Screen);
     /* It takes a bit of care to be fool-proof about parsing the
      * OpenGL extensions string. Don't be fooled by sub-strings, etc.
      */
@@ -74,11 +74,11 @@ glXExtensionSupported (_THIS, const char *extension)
     start = extensions;
 
     for (;;) {
-        where = SDL_strstr (start, extension);
+        where = SDL_strstr(start, extension);
         if (!where)
             break;
 
-        terminator = where + strlen (extension);
+        terminator = where + strlen(extension);
         if (where == start || *(where - 1) == ' ')
             if (*terminator == ' ' || *terminator == '\0')
                 return 1;
@@ -90,7 +90,7 @@ glXExtensionSupported (_THIS, const char *extension)
 #endif /* SDL_VIDEO_OPENGL_GLX */
 
 XVisualInfo *
-X11_GL_GetVisual (_THIS)
+X11_GL_GetVisual(_THIS)
 {
 #if SDL_VIDEO_OPENGL_GLX
     /* 64 seems nice. */
@@ -100,7 +100,7 @@ X11_GL_GetVisual (_THIS)
     /* load the gl driver from a default path */
     if (!this->gl_config.driver_loaded) {
         /* no driver has been loaded, use default (ourselves) */
-        if (X11_GL_LoadLibrary (this, NULL) < 0) {
+        if (X11_GL_LoadLibrary(this, NULL) < 0) {
             return NULL;
         }
     }
@@ -111,12 +111,12 @@ X11_GL_GetVisual (_THIS)
         XVisualInfo vi_in;
         int out_count;
 
-        XGetWindowAttributes (SDL_Display, SDL_Window, &a);
+        XGetWindowAttributes(SDL_Display, SDL_Window, &a);
         vi_in.screen = SDL_Screen;
-        vi_in.visualid = XVisualIDFromVisual (a.visual);
-        glx_visualinfo = XGetVisualInfo (SDL_Display,
-                                         VisualScreenMask | VisualIDMask,
-                                         &vi_in, &out_count);
+        vi_in.visualid = XVisualIDFromVisual(a.visual);
+        glx_visualinfo = XGetVisualInfo(SDL_Display,
+                                        VisualScreenMask | VisualIDMask,
+                                        &vi_in, &out_count);
         return glx_visualinfo;
     }
 
@@ -187,29 +187,29 @@ X11_GL_GetVisual (_THIS)
     }
 
     if (this->gl_config.accelerated >= 0 &&
-        glXExtensionSupported (this, "GLX_EXT_visual_rating")) {
+        glXExtensionSupported(this, "GLX_EXT_visual_rating")) {
         attribs[i++] = GLX_VISUAL_CAVEAT_EXT;
         attribs[i++] = GLX_NONE_EXT;
     }
 #ifdef GLX_DIRECT_COLOR         /* Try for a DirectColor visual for gamma support */
-    if (!SDL_getenv ("SDL_VIDEO_X11_NODIRECTCOLOR")) {
+    if (!SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR")) {
         attribs[i++] = GLX_X_VISUAL_TYPE;
         attribs[i++] = GLX_DIRECT_COLOR;
     }
 #endif
     attribs[i++] = None;
 
-    glx_visualinfo = this->gl_data->glXChooseVisual (GFX_Display,
-                                                     SDL_Screen, attribs);
+    glx_visualinfo = this->gl_data->glXChooseVisual(GFX_Display,
+                                                    SDL_Screen, attribs);
 #ifdef GLX_DIRECT_COLOR
-    if (!glx_visualinfo && !SDL_getenv ("SDL_VIDEO_X11_NODIRECTCOLOR")) {       /* No DirectColor visual?  Try again.. */
+    if (!glx_visualinfo && !SDL_getenv("SDL_VIDEO_X11_NODIRECTCOLOR")) {        /* No DirectColor visual?  Try again.. */
         attribs[i - 3] = None;
-        glx_visualinfo = this->gl_data->glXChooseVisual (GFX_Display,
-                                                         SDL_Screen, attribs);
+        glx_visualinfo = this->gl_data->glXChooseVisual(GFX_Display,
+                                                        SDL_Screen, attribs);
     }
 #endif
     if (!glx_visualinfo) {
-        SDL_SetError ("Couldn't find matching GLX visual");
+        SDL_SetError("Couldn't find matching GLX visual");
         return NULL;
     }
 /*
@@ -217,13 +217,13 @@ X11_GL_GetVisual (_THIS)
 */
     return glx_visualinfo;
 #else
-    SDL_SetError ("X11 driver not configured with OpenGL");
+    SDL_SetError("X11 driver not configured with OpenGL");
     return NULL;
 #endif
 }
 
 int
-X11_GL_CreateWindow (_THIS, int w, int h)
+X11_GL_CreateWindow(_THIS, int w, int h)
 {
     int retval;
 #if SDL_VIDEO_OPENGL_GLX
@@ -231,68 +231,66 @@ X11_GL_CreateWindow (_THIS, int w, int h)
     unsigned long mask;
     unsigned long black;
 
-    black = (glx_visualinfo->visual == DefaultVisual (SDL_Display,
-                                                      SDL_Screen))
-        ? BlackPixel (SDL_Display, SDL_Screen) : 0;
+    black = (glx_visualinfo->visual == DefaultVisual(SDL_Display, SDL_Screen))
+        ? BlackPixel(SDL_Display, SDL_Screen) : 0;
     attributes.background_pixel = black;
     attributes.border_pixel = black;
     attributes.colormap = SDL_XColorMap;
     mask = CWBackPixel | CWBorderPixel | CWColormap;
 
-    SDL_Window = XCreateWindow (SDL_Display, WMwindow,
-                                0, 0, w, h, 0, glx_visualinfo->depth,
-                                InputOutput, glx_visualinfo->visual,
-                                mask, &attributes);
+    SDL_Window = XCreateWindow(SDL_Display, WMwindow,
+                               0, 0, w, h, 0, glx_visualinfo->depth,
+                               InputOutput, glx_visualinfo->visual,
+                               mask, &attributes);
     if (!SDL_Window) {
-        SDL_SetError ("Could not create window");
+        SDL_SetError("Could not create window");
         return -1;
     }
     retval = 0;
 #else
-    SDL_SetError ("X11 driver not configured with OpenGL");
+    SDL_SetError("X11 driver not configured with OpenGL");
     retval = -1;
 #endif
     return (retval);
 }
 
 int
-X11_GL_CreateContext (_THIS)
+X11_GL_CreateContext(_THIS)
 {
     int retval;
 #if SDL_VIDEO_OPENGL_GLX
 
     /* We do this to create a clean separation between X and GLX errors. */
-    XSync (SDL_Display, False);
-    glx_context = this->gl_data->glXCreateContext (GFX_Display,
-                                                   glx_visualinfo, NULL,
-                                                   True);
-    XSync (GFX_Display, False);
+    XSync(SDL_Display, False);
+    glx_context = this->gl_data->glXCreateContext(GFX_Display,
+                                                  glx_visualinfo, NULL, True);
+    XSync(GFX_Display, False);
 
     if (glx_context == NULL) {
-        SDL_SetError ("Could not create GL context");
+        SDL_SetError("Could not create GL context");
         return (-1);
     }
-    if (X11_GL_MakeCurrent (this) < 0) {
+    if (X11_GL_MakeCurrent(this) < 0) {
         return (-1);
     }
     gl_active = 1;
 
-    if (!glXExtensionSupported (this, "SGI_swap_control")) {
+    if (!glXExtensionSupported(this, "SGI_swap_control")) {
         this->gl_data->glXSwapIntervalSGI = NULL;
     }
-    if (!glXExtensionSupported (this, "GLX_MESA_swap_control")) {
+    if (!glXExtensionSupported(this, "GLX_MESA_swap_control")) {
         this->gl_data->glXSwapIntervalMESA = NULL;
         this->gl_data->glXGetSwapIntervalMESA = NULL;
     }
     if (this->gl_config.swap_control >= 0) {
         if (this->gl_data->glXSwapIntervalMESA) {
-            this->gl_data->glXSwapIntervalMESA (this->gl_config.swap_control);
+            this->gl_data->glXSwapIntervalMESA(this->gl_config.swap_control);
         } else if (this->gl_data->glXSwapIntervalSGI) {
-            this->gl_data->glXSwapIntervalSGI (this->gl_config.swap_control);
+            this->gl_data->glXSwapIntervalSGI(this->gl_config.swap_control);
         }
     }
 #else
-    SDL_SetError ("X11 driver not configured with OpenGL");
+    SDL_SetError("X11 driver not configured with OpenGL");
 #endif
     if (gl_active) {
         retval = 0;
@@ -303,15 +301,15 @@ X11_GL_CreateContext (_THIS)
 }
 
 void
-X11_GL_Shutdown (_THIS)
+X11_GL_Shutdown(_THIS)
 {
 #if SDL_VIDEO_OPENGL_GLX
     /* Clean up OpenGL */
     if (glx_context) {
-        this->gl_data->glXMakeCurrent (GFX_Display, None, NULL);
+        this->gl_data->glXMakeCurrent(GFX_Display, None, NULL);
 
         if (glx_context != NULL)
-            this->gl_data->glXDestroyContext (GFX_Display, glx_context);
+            this->gl_data->glXDestroyContext(GFX_Display, glx_context);
 
         glx_context = NULL;
     }
@@ -323,28 +321,28 @@ X11_GL_Shutdown (_THIS)
 
 /* Make the current context active */
 int
-X11_GL_MakeCurrent (_THIS)
+X11_GL_MakeCurrent(_THIS)
 {
     int retval;
 
     retval = 0;
-    if (!this->gl_data->glXMakeCurrent (GFX_Display, SDL_Window, glx_context)) {
-        SDL_SetError ("Unable to make GL context current");
+    if (!this->gl_data->glXMakeCurrent(GFX_Display, SDL_Window, glx_context)) {
+        SDL_SetError("Unable to make GL context current");
         retval = -1;
     }
-    XSync (GFX_Display, False);
+    XSync(GFX_Display, False);
 
     /* More Voodoo X server workarounds... Grr... */
-    SDL_Lock_EventThread ();
-    X11_CheckDGAMouse (this);
-    SDL_Unlock_EventThread ();
+    SDL_Lock_EventThread();
+    X11_CheckDGAMouse(this);
+    SDL_Unlock_EventThread();
 
     return (retval);
 }
 
 /* Get attribute data from glX. */
 int
-X11_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+X11_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
     int retval;
     int glx_attrib = None;
@@ -396,11 +394,11 @@ X11_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
         glx_attrib = GLX_SAMPLES_ARB;
         break;
     case SDL_GL_ACCELERATED_VISUAL:
-        if (glXExtensionSupported (this, "GLX_EXT_visual_rating")) {
+        if (glXExtensionSupported(this, "GLX_EXT_visual_rating")) {
             glx_attrib = GLX_VISUAL_CAVEAT_EXT;
             retval =
-                this->gl_data->glXGetConfig (GFX_Display, glx_visualinfo,
-                                             glx_attrib, value);
+                this->gl_data->glXGetConfig(GFX_Display, glx_visualinfo,
+                                            glx_attrib, value);
             if (*value == GLX_SLOW_VISUAL_EXT) {
                 *value = SDL_FALSE;
             } else {
@@ -413,7 +411,7 @@ X11_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
         break;
     case SDL_GL_SWAP_CONTROL:
         if (this->gl_data->glXGetSwapIntervalMESA) {
-            return this->gl_data->glXGetSwapIntervalMESA ();
+            return this->gl_data->glXGetSwapIntervalMESA();
         } else {
             return (-1) /*(this->gl_config.swap_control > 0) */ ;
         }
@@ -423,27 +421,27 @@ X11_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
     }
 
     retval =
-        this->gl_data->glXGetConfig (GFX_Display, glx_visualinfo, glx_attrib,
-                                     value);
+        this->gl_data->glXGetConfig(GFX_Display, glx_visualinfo, glx_attrib,
+                                    value);
 
     return retval;
 }
 
 void
-X11_GL_SwapBuffers (_THIS)
+X11_GL_SwapBuffers(_THIS)
 {
-    this->gl_data->glXSwapBuffers (GFX_Display, SDL_Window);
+    this->gl_data->glXSwapBuffers(GFX_Display, SDL_Window);
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */
 
 void
-X11_GL_UnloadLibrary (_THIS)
+X11_GL_UnloadLibrary(_THIS)
 {
 #if SDL_VIDEO_OPENGL_GLX
     if (this->gl_config.driver_loaded) {
 
-        SDL_UnloadObject (this->gl_config.dll_handle);
+        SDL_UnloadObject(this->gl_config.dll_handle);
 
         this->gl_data->glXGetProcAddress = NULL;
         this->gl_data->glXChooseVisual = NULL;
@@ -465,63 +463,62 @@ X11_GL_UnloadLibrary (_THIS)
 
 /* Passing a NULL path means load pointers from the application */
 int
-X11_GL_LoadLibrary (_THIS, const char *path)
+X11_GL_LoadLibrary(_THIS, const char *path)
 {
     void *handle = NULL;
 
     if (gl_active) {
-        SDL_SetError ("OpenGL context already created");
+        SDL_SetError("OpenGL context already created");
         return -1;
     }
 
     if (path == NULL) {
-        path = SDL_getenv ("SDL_VIDEO_GL_DRIVER");
+        path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
         if (path == NULL) {
             path = DEFAULT_OPENGL;
         }
     }
 
-    handle = SDL_LoadObject (path);
+    handle = SDL_LoadObject(path);
     if (handle == NULL) {
         /* SDL_LoadObject() will call SDL_SetError() for us. */
         return -1;
     }
 
     /* Unload the old driver and reset the pointers */
-    X11_GL_UnloadLibrary (this);
+    X11_GL_UnloadLibrary(this);
 
     /* Load new function pointers */
     this->gl_data->glXGetProcAddress =
-        (void *(*)(const GLubyte *)) SDL_LoadFunction (handle,
-                                                       "glXGetProcAddressARB");
+        (void *(*)(const GLubyte *)) SDL_LoadFunction(handle,
+                                                      "glXGetProcAddressARB");
     this->gl_data->glXChooseVisual =
-        (XVisualInfo * (*)(Display *, int, int *)) SDL_LoadFunction (handle,
-                                                                     "glXChooseVisual");
+        (XVisualInfo * (*)(Display *, int, int *)) SDL_LoadFunction(handle,
+                                                                    "glXChooseVisual");
     this->gl_data->glXCreateContext =
-        (GLXContext (*)(Display *, XVisualInfo *, GLXContext, int))
-        SDL_LoadFunction (handle, "glXCreateContext");
+        (GLXContext(*)(Display *, XVisualInfo *, GLXContext, int))
+        SDL_LoadFunction(handle, "glXCreateContext");
     this->gl_data->glXDestroyContext =
-        (void (*)(Display *, GLXContext)) SDL_LoadFunction (handle,
-                                                            "glXDestroyContext");
+        (void (*)(Display *, GLXContext)) SDL_LoadFunction(handle,
+                                                           "glXDestroyContext");
     this->gl_data->glXMakeCurrent =
         (int (*)(Display *, GLXDrawable, GLXContext))
-        SDL_LoadFunction (handle, "glXMakeCurrent");
+        SDL_LoadFunction(handle, "glXMakeCurrent");
     this->gl_data->glXSwapBuffers =
-        (void (*)(Display *, GLXDrawable)) SDL_LoadFunction (handle,
-                                                             "glXSwapBuffers");
+        (void (*)(Display *, GLXDrawable)) SDL_LoadFunction(handle,
+                                                            "glXSwapBuffers");
     this->gl_data->glXGetConfig =
         (int (*)(Display *, XVisualInfo *, int, int *))
-        SDL_LoadFunction (handle, "glXGetConfig");
+        SDL_LoadFunction(handle, "glXGetConfig");
     this->gl_data->glXQueryExtensionsString =
-        (const char *(*)(Display *, int)) SDL_LoadFunction (handle,
-                                                            "glXQueryExtensionsString");
+        (const char *(*)(Display *, int)) SDL_LoadFunction(handle,
+                                                           "glXQueryExtensionsString");
     this->gl_data->glXSwapIntervalSGI =
-        (int (*)(int)) SDL_LoadFunction (handle, "glXSwapIntervalSGI");
+        (int (*)(int)) SDL_LoadFunction(handle, "glXSwapIntervalSGI");
     this->gl_data->glXSwapIntervalMESA =
-        (GLint (*)(unsigned)) SDL_LoadFunction (handle,
-                                                "glXSwapIntervalMESA");
+        (GLint(*)(unsigned)) SDL_LoadFunction(handle, "glXSwapIntervalMESA");
     this->gl_data->glXGetSwapIntervalMESA =
-        (GLint (*)(void)) SDL_LoadFunction (handle, "glXGetSwapIntervalMESA");
+        (GLint(*)(void)) SDL_LoadFunction(handle, "glXGetSwapIntervalMESA");
 
     if ((this->gl_data->glXChooseVisual == NULL) ||
         (this->gl_data->glXCreateContext == NULL) ||
@@ -530,15 +527,15 @@ X11_GL_LoadLibrary (_THIS, const char *path)
         (this->gl_data->glXSwapBuffers == NULL) ||
         (this->gl_data->glXGetConfig == NULL) ||
         (this->gl_data->glXQueryExtensionsString == NULL)) {
-        SDL_SetError ("Could not retrieve OpenGL functions");
+        SDL_SetError("Could not retrieve OpenGL functions");
         return -1;
     }
 
     this->gl_config.dll_handle = handle;
     this->gl_config.driver_loaded = 1;
     if (path) {
-        SDL_strlcpy (this->gl_config.driver_path, path,
-                     SDL_arraysize (this->gl_config.driver_path));
+        SDL_strlcpy(this->gl_config.driver_path, path,
+                    SDL_arraysize(this->gl_config.driver_path));
     } else {
         *this->gl_config.driver_path = '\0';
     }
@@ -546,15 +543,15 @@ X11_GL_LoadLibrary (_THIS, const char *path)
 }
 
 void *
-X11_GL_GetProcAddress (_THIS, const char *proc)
+X11_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *handle;
 
     handle = this->gl_config.dll_handle;
     if (this->gl_data->glXGetProcAddress) {
-        return this->gl_data->glXGetProcAddress ((const GLubyte *) proc);
+        return this->gl_data->glXGetProcAddress((const GLubyte *) proc);
     }
-    return SDL_LoadFunction (handle, proc);
+    return SDL_LoadFunction(handle, proc);
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */

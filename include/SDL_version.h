@@ -129,7 +129,7 @@ typedef struct SDL_version
  *
  * \sa SDL_VERSION
  */
-extern DECLSPEC void SDLCALL SDL_GetVersion (SDL_version * ver);
+extern DECLSPEC void SDLCALL SDL_GetVersion(SDL_version * ver);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

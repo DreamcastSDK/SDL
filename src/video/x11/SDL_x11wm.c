@@ -34,7 +34,7 @@
 #include "SDL_x11wm_c.h"
 
 static Uint8
-reverse_byte (Uint8 x)
+reverse_byte(Uint8 x)
 {
     x = (x & 0xaa) >> 1 | (x & 0x55) << 1;
     x = (x & 0xcc) >> 2 | (x & 0x33) << 2;
@@ -43,7 +43,7 @@ reverse_byte (Uint8 x)
 }
 
 void
-X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
+X11_SetIcon(_THIS, SDL_Surface * icon, Uint8 * mask)
 {
     SDL_Surface *sicon;
     XWMHints *wmhints;
@@ -60,12 +60,12 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     char *p;
     int masksize;
 
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
     /* The icon must use the default visual, depth and colormap of the
        screen, so it might need a conversion */
-    dvis = DefaultVisual (SDL_Display, SDL_Screen);
-    dbpp = DefaultDepth (SDL_Display, SDL_Screen);
+    dvis = DefaultVisual(SDL_Display, SDL_Screen);
+    dbpp = DefaultDepth(SDL_Display, SDL_Screen);
     for (i = 0; i < this->hidden->nvisuals; i++) {
         if (this->hidden->visuals[i].visual == dvis) {
             dbpp = this->hidden->visuals[i].bpp;
@@ -74,10 +74,10 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     }
 
     /* The Visual struct is supposed to be opaque but we cheat a little */
-    sicon = SDL_CreateRGBSurface (SDL_SWSURFACE, icon->w, icon->h,
-                                  dbpp,
-                                  dvis->red_mask, dvis->green_mask,
-                                  dvis->blue_mask, 0);
+    sicon = SDL_CreateRGBSurface(SDL_SWSURFACE, icon->w, icon->h,
+                                 dbpp,
+                                 dvis->red_mask, dvis->green_mask,
+                                 dvis->blue_mask, 0);
     if (sicon == NULL)
         goto done;
 
@@ -88,13 +88,13 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
         int nwant;
         Colormap dcmap;
         int missing;
-        dcmap = DefaultColormap (SDL_Display, SDL_Screen);
+        dcmap = DefaultColormap(SDL_Display, SDL_Screen);
         if (icon->format->palette) {
             /* The icon has a palette as well - we just have to
                find those colours */
             nwant = icon->format->palette->ncolors;
-            SDL_memcpy (want, icon->format->palette->colors,
-                        nwant * sizeof want[0]);
+            SDL_memcpy(want, icon->format->palette->colors,
+                       nwant * sizeof want[0]);
         } else {
             /* try the standard 6x6x6 cube for lack of better
                ideas */
@@ -118,14 +118,14 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
                     SDL_iconcolors[i]--;
                 }
             }
-            XFreeColors (GFX_Display, dcmap, freelist, nfree, 0);
+            XFreeColors(GFX_Display, dcmap, freelist, nfree, 0);
         }
         if (!SDL_iconcolors)
-            SDL_iconcolors = SDL_malloc (256 * sizeof *SDL_iconcolors);
-        SDL_memset (SDL_iconcolors, 0, 256 * sizeof *SDL_iconcolors);
+            SDL_iconcolors = SDL_malloc(256 * sizeof *SDL_iconcolors);
+        SDL_memset(SDL_iconcolors, 0, 256 * sizeof *SDL_iconcolors);
 
         /* try to allocate the colours */
-        SDL_memset (got, 0, sizeof got);
+        SDL_memset(got, 0, sizeof got);
         missing = 0;
         for (i = 0; i < nwant; i++) {
             XColor c;
@@ -133,7 +133,7 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
             c.green = want[i].g << 8;
             c.blue = want[i].b << 8;
             c.flags = DoRed | DoGreen | DoBlue;
-            if (XAllocColor (GFX_Display, dcmap, &c)) {
+            if (XAllocColor(GFX_Display, dcmap, &c)) {
                 /* got the colour */
                 SDL_iconcolors[c.pixel]++;
                 got[c.pixel] = want[i];
@@ -147,13 +147,13 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
             XColor cols[256];
             for (i = 0; i < 256; i++)
                 cols[i].pixel = i;
-            XQueryColors (GFX_Display, dcmap, cols, 256);
+            XQueryColors(GFX_Display, dcmap, cols, 256);
             for (i = 0; i < 256; i++) {
                 got[i].r = cols[i].red >> 8;
                 got[i].g = cols[i].green >> 8;
                 got[i].b = cols[i].blue >> 8;
                 if (!SDL_iconcolors[i]) {
-                    if (XAllocColor (GFX_Display, dcmap, cols + i)) {
+                    if (XAllocColor(GFX_Display, dcmap, cols + i)) {
                         SDL_iconcolors[i] = 1;
                     } else {
                         /* index not available */
@@ -165,62 +165,62 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
             }
         }
 
-        SDL_SetColors (sicon, got, 0, 256);
+        SDL_SetColors(sicon, got, 0, 256);
     }
 
     bounds.x = 0;
     bounds.y = 0;
     bounds.w = icon->w;
     bounds.h = icon->h;
-    if (SDL_LowerBlit (icon, &bounds, sicon, &bounds) < 0)
+    if (SDL_LowerBlit(icon, &bounds, sicon, &bounds) < 0)
         goto done;
 
     /* We need the mask as given, except in LSBfirst format instead of
        MSBfirst. Reverse the bits in each byte. */
     masksize = ((sicon->w + 7) >> 3) * sicon->h;
-    LSBmask = SDL_malloc (masksize);
+    LSBmask = SDL_malloc(masksize);
     if (LSBmask == NULL) {
         goto done;
     }
-    SDL_memset (LSBmask, 0, masksize);
+    SDL_memset(LSBmask, 0, masksize);
     for (i = 0; i < masksize; i++)
-        LSBmask[i] = reverse_byte (mask[i]);
-    mask_pixmap = XCreatePixmapFromBitmapData (SDL_Display, WMwindow,
-                                               (char *) LSBmask,
-                                               sicon->w, sicon->h, 1L, 0L, 1);
+        LSBmask[i] = reverse_byte(mask[i]);
+    mask_pixmap = XCreatePixmapFromBitmapData(SDL_Display, WMwindow,
+                                              (char *) LSBmask,
+                                              sicon->w, sicon->h, 1L, 0L, 1);
 
     /* Transfer the image to an X11 pixmap */
-    icon_image = XCreateImage (SDL_Display,
-                               DefaultVisual (SDL_Display, SDL_Screen),
-                               DefaultDepth (SDL_Display, SDL_Screen),
-                               ZPixmap, 0, sicon->pixels,
-                               sicon->w, sicon->h, 32, 0);
+    icon_image = XCreateImage(SDL_Display,
+                              DefaultVisual(SDL_Display, SDL_Screen),
+                              DefaultDepth(SDL_Display, SDL_Screen),
+                              ZPixmap, 0, sicon->pixels,
+                              sicon->w, sicon->h, 32, 0);
     icon_image->byte_order = (SDL_BYTEORDER == SDL_BIG_ENDIAN)
         ? MSBFirst : LSBFirst;
-    icon_pixmap = XCreatePixmap (SDL_Display, SDL_Root, sicon->w, sicon->h,
-                                 DefaultDepth (SDL_Display, SDL_Screen));
-    gc = XCreateGC (SDL_Display, icon_pixmap, 0, &GCvalues);
-    XPutImage (SDL_Display, icon_pixmap, gc, icon_image,
-               0, 0, 0, 0, sicon->w, sicon->h);
-    XFreeGC (SDL_Display, gc);
-    XDestroyImage (icon_image);
-    SDL_free (LSBmask);
+    icon_pixmap = XCreatePixmap(SDL_Display, SDL_Root, sicon->w, sicon->h,
+                                DefaultDepth(SDL_Display, SDL_Screen));
+    gc = XCreateGC(SDL_Display, icon_pixmap, 0, &GCvalues);
+    XPutImage(SDL_Display, icon_pixmap, gc, icon_image,
+              0, 0, 0, 0, sicon->w, sicon->h);
+    XFreeGC(SDL_Display, gc);
+    XDestroyImage(icon_image);
+    SDL_free(LSBmask);
     sicon->pixels = NULL;
 
     /* Some buggy window managers (some versions of Enlightenment, it
        seems) need an icon window *and* icon pixmap to work properly, while
        it screws up others. The default is only to use a pixmap. */
-    p = SDL_getenv ("SDL_VIDEO_X11_ICONWIN");
+    p = SDL_getenv("SDL_VIDEO_X11_ICONWIN");
     if (p && *p) {
-        icon_window = XCreateSimpleWindow (SDL_Display, SDL_Root,
-                                           0, 0, sicon->w, sicon->h, 0,
-                                           CopyFromParent, CopyFromParent);
-        XSetWindowBackgroundPixmap (SDL_Display, icon_window, icon_pixmap);
-        XClearWindow (SDL_Display, icon_window);
+        icon_window = XCreateSimpleWindow(SDL_Display, SDL_Root,
+                                          0, 0, sicon->w, sicon->h, 0,
+                                          CopyFromParent, CopyFromParent);
+        XSetWindowBackgroundPixmap(SDL_Display, icon_window, icon_pixmap);
+        XClearWindow(SDL_Display, icon_window);
     }
 
     /* Set the window icon to the icon pixmap (and icon window) */
-    wmhints = XAllocWMHints ();
+    wmhints = XAllocWMHints();
     wmhints->flags = (IconPixmapHint | IconMaskHint);
     wmhints->icon_pixmap = icon_pixmap;
     wmhints->icon_mask = mask_pixmap;
@@ -228,17 +228,17 @@ X11_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
         wmhints->flags |= IconWindowHint;
         wmhints->icon_window = icon_window;
     }
-    XSetWMHints (SDL_Display, WMwindow, wmhints);
-    XFree (wmhints);
-    XSync (SDL_Display, False);
+    XSetWMHints(SDL_Display, WMwindow, wmhints);
+    XFree(wmhints);
+    XSync(SDL_Display, False);
 
   done:
-    SDL_Unlock_EventThread ();
-    SDL_FreeSurface (sicon);
+    SDL_Unlock_EventThread();
+    SDL_FreeSurface(sicon);
 }
 
 void
-X11_SetCaptionNoLock (_THIS, const char *title, const char *icon)
+X11_SetCaptionNoLock(_THIS, const char *title, const char *icon)
 {
     XTextProperty titleprop, iconprop;
     Status status;
@@ -249,91 +249,90 @@ X11_SetCaptionNoLock (_THIS, const char *title, const char *icon)
 
     /* Look up some useful Atoms */
     if (SDL_X11_HAVE_UTF8) {
-        _NET_WM_NAME = XInternAtom (SDL_Display, "_NET_WM_NAME", False);
+        _NET_WM_NAME = XInternAtom(SDL_Display, "_NET_WM_NAME", False);
         _NET_WM_ICON_NAME =
-            XInternAtom (SDL_Display, "_NET_WM_ICON_NAME", False);
+            XInternAtom(SDL_Display, "_NET_WM_ICON_NAME", False);
     }
 #endif
 
     if (title != NULL) {
-        char *title_latin1 = SDL_iconv_utf8_latin1 ((char *) title);
+        char *title_latin1 = SDL_iconv_utf8_latin1((char *) title);
         if (!title_latin1) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return;
         }
-        status = XStringListToTextProperty (&title_latin1, 1, &titleprop);
-        SDL_free (title_latin1);
+        status = XStringListToTextProperty(&title_latin1, 1, &titleprop);
+        SDL_free(title_latin1);
         if (status) {
-            XSetTextProperty (SDL_Display, WMwindow, &titleprop, XA_WM_NAME);
-            XFree (titleprop.value);
+            XSetTextProperty(SDL_Display, WMwindow, &titleprop, XA_WM_NAME);
+            XFree(titleprop.value);
         }
 #ifdef X_HAVE_UTF8_STRING
         if (SDL_X11_HAVE_UTF8) {
-            status = Xutf8TextListToTextProperty (SDL_Display,
-                                                  (char **) &title, 1,
-                                                  XUTF8StringStyle,
-                                                  &titleprop);
+            status = Xutf8TextListToTextProperty(SDL_Display,
+                                                 (char **) &title, 1,
+                                                 XUTF8StringStyle,
+                                                 &titleprop);
             if (status == Success) {
-                XSetTextProperty (SDL_Display, WMwindow, &titleprop,
-                                  _NET_WM_NAME);
-                XFree (titleprop.value);
+                XSetTextProperty(SDL_Display, WMwindow, &titleprop,
+                                 _NET_WM_NAME);
+                XFree(titleprop.value);
             }
         }
 #endif
     }
     if (icon != NULL) {
-        char *icon_latin1 = SDL_iconv_utf8_latin1 ((char *) icon);
+        char *icon_latin1 = SDL_iconv_utf8_latin1((char *) icon);
         if (!icon_latin1) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return;
         }
-        status = XStringListToTextProperty (&icon_latin1, 1, &iconprop);
-        SDL_free (icon_latin1);
+        status = XStringListToTextProperty(&icon_latin1, 1, &iconprop);
+        SDL_free(icon_latin1);
         if (status) {
-            XSetTextProperty (SDL_Display, WMwindow, &iconprop,
-                              XA_WM_ICON_NAME);
-            XFree (iconprop.value);
+            XSetTextProperty(SDL_Display, WMwindow, &iconprop,
+                             XA_WM_ICON_NAME);
+            XFree(iconprop.value);
         }
 #ifdef X_HAVE_UTF8_STRING
         if (SDL_X11_HAVE_UTF8) {
-            status = Xutf8TextListToTextProperty (SDL_Display,
-                                                  (char **) &icon, 1,
-                                                  XUTF8StringStyle,
-                                                  &iconprop);
+            status = Xutf8TextListToTextProperty(SDL_Display,
+                                                 (char **) &icon, 1,
+                                                 XUTF8StringStyle, &iconprop);
             if (status == Success) {
-                XSetTextProperty (SDL_Display, WMwindow, &iconprop,
-                                  _NET_WM_ICON_NAME);
-                XFree (iconprop.value);
+                XSetTextProperty(SDL_Display, WMwindow, &iconprop,
+                                 _NET_WM_ICON_NAME);
+                XFree(iconprop.value);
             }
         }
 #endif
     }
-    XSync (SDL_Display, False);
+    XSync(SDL_Display, False);
 }
 
 void
-X11_SetCaption (_THIS, const char *title, const char *icon)
+X11_SetCaption(_THIS, const char *title, const char *icon)
 {
-    SDL_Lock_EventThread ();
-    X11_SetCaptionNoLock (this, title, icon);
-    SDL_Unlock_EventThread ();
+    SDL_Lock_EventThread();
+    X11_SetCaptionNoLock(this, title, icon);
+    SDL_Unlock_EventThread();
 }
 
 /* Iconify the window */
 int
-X11_IconifyWindow (_THIS)
+X11_IconifyWindow(_THIS)
 {
     int result;
 
-    SDL_Lock_EventThread ();
-    result = XIconifyWindow (SDL_Display, WMwindow, SDL_Screen);
-    XSync (SDL_Display, False);
-    SDL_Unlock_EventThread ();
+    SDL_Lock_EventThread();
+    result = XIconifyWindow(SDL_Display, WMwindow, SDL_Screen);
+    XSync(SDL_Display, False);
+    SDL_Unlock_EventThread();
     return (result);
 }
 
 SDL_GrabMode
-X11_GrabInputNoLock (_THIS, SDL_GrabMode mode)
+X11_GrabInputNoLock(_THIS, SDL_GrabMode mode)
 {
     int result;
 
@@ -344,12 +343,12 @@ X11_GrabInputNoLock (_THIS, SDL_GrabMode mode)
         return (mode);          /* Will be set later on mode switch */
     }
     if (mode == SDL_GRAB_OFF) {
-        XUngrabPointer (SDL_Display, CurrentTime);
-        XUngrabKeyboard (SDL_Display, CurrentTime);
+        XUngrabPointer(SDL_Display, CurrentTime);
+        XUngrabKeyboard(SDL_Display, CurrentTime);
     } else {
         if (SDL_VideoSurface->flags & SDL_FULLSCREEN) {
             /* Unbind the mouse from the fullscreen window */
-            XUngrabPointer (SDL_Display, CurrentTime);
+            XUngrabPointer(SDL_Display, CurrentTime);
         }
         /* Try to grab the mouse */
 #if 0                           /* We'll wait here until we actually grab, otherwise behavior undefined */
@@ -357,39 +356,39 @@ X11_GrabInputNoLock (_THIS, SDL_GrabMode mode)
 #else
         for (;;) {
 #endif
-            result = XGrabPointer (SDL_Display, SDL_Window, True, 0,
-                                   GrabModeAsync, GrabModeAsync,
-                                   SDL_Window, None, CurrentTime);
+            result = XGrabPointer(SDL_Display, SDL_Window, True, 0,
+                                  GrabModeAsync, GrabModeAsync,
+                                  SDL_Window, None, CurrentTime);
             if (result == GrabSuccess) {
                 break;
             }
-            SDL_Delay (100);
+            SDL_Delay(100);
         }
         if (result != GrabSuccess) {
             /* Uh, oh, what do we do here? */ ;
         }
         /* Now grab the keyboard */
-        XGrabKeyboard (SDL_Display, WMwindow, True,
-                       GrabModeAsync, GrabModeAsync, CurrentTime);
+        XGrabKeyboard(SDL_Display, WMwindow, True,
+                      GrabModeAsync, GrabModeAsync, CurrentTime);
 
         /* Raise the window if we grab the mouse */
         if (!(SDL_VideoSurface->flags & SDL_FULLSCREEN))
-            XRaiseWindow (SDL_Display, WMwindow);
+            XRaiseWindow(SDL_Display, WMwindow);
 
         /* Make sure we register input focus */
-        SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+        SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
     }
-    XSync (SDL_Display, False);
+    XSync(SDL_Display, False);
 
     return (mode);
 }
 
 SDL_GrabMode
-X11_GrabInput (_THIS, SDL_GrabMode mode)
+X11_GrabInput(_THIS, SDL_GrabMode mode)
 {
-    SDL_Lock_EventThread ();
-    mode = X11_GrabInputNoLock (this, mode);
-    SDL_Unlock_EventThread ();
+    SDL_Lock_EventThread();
+    mode = X11_GrabInputNoLock(this, mode);
+    SDL_Unlock_EventThread();
 
     return (mode);
 }
@@ -398,29 +397,29 @@ X11_GrabInput (_THIS, SDL_GrabMode mode)
    Otherwise, in case of a version mismatch, it returns -1.
 */
 static void
-lock_display (void)
+lock_display(void)
 {
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 }
 static void
-unlock_display (void)
+unlock_display(void)
 {
     /* Make sure any X11 transactions are completed */
     SDL_VideoDevice *this = current_video;
-    XSync (SDL_Display, False);
-    SDL_Unlock_EventThread ();
+    XSync(SDL_Display, False);
+    SDL_Unlock_EventThread();
 }
 
 int
-X11_GetWMInfo (_THIS, SDL_SysWMinfo * info)
+X11_GetWMInfo(_THIS, SDL_SysWMinfo * info)
 {
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_X11;
         info->info.x11.display = SDL_Display;
         info->info.x11.window = SDL_Window;
-        if (SDL_VERSIONNUM (info->version.major,
-                            info->version.minor,
-                            info->version.patch) >= 1002) {
+        if (SDL_VERSIONNUM(info->version.major,
+                           info->version.minor,
+                           info->version.patch) >= 1002) {
             info->info.x11.fswindow = FSwindow;
             info->info.x11.wmwindow = WMwindow;
         }
@@ -428,8 +427,8 @@ X11_GetWMInfo (_THIS, SDL_SysWMinfo * info)
         info->info.x11.unlock_func = unlock_display;
         return (1);
     } else {
-        SDL_SetError ("Application not compiled with SDL %d.%d\n",
-                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d.%d\n",
+                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return (-1);
     }
 }

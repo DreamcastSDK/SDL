@@ -42,21 +42,21 @@
 #include "SDL_phyuv_c.h"
 #include "../blank_cursor.h"
 
-static int ph_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Surface *ph_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                     int height, int bpp, Uint32 flags);
-static int ph_SetColors (_THIS, int firstcolor, int ncolors,
-                         SDL_Color * colors);
-static void ph_VideoQuit (_THIS);
-static void ph_DeleteDevice (SDL_VideoDevice * device);
+static int ph_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Surface *ph_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                    int height, int bpp, Uint32 flags);
+static int ph_SetColors(_THIS, int firstcolor, int ncolors,
+                        SDL_Color * colors);
+static void ph_VideoQuit(_THIS);
+static void ph_DeleteDevice(SDL_VideoDevice * device);
 
 static int phstatus = -1;
 
 static int
-ph_Available (void)
+ph_Available(void)
 {
     if (phstatus != 0) {
-        phstatus = PtInit (NULL);
+        phstatus = PtInit(NULL);
         if (phstatus == 0) {
             return 1;
         } else {
@@ -67,24 +67,24 @@ ph_Available (void)
 }
 
 static SDL_VideoDevice *
-ph_CreateDevice (int devindex)
+ph_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
         device->gl_data = NULL;
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
-        ph_DeleteDevice (device);
+        SDL_OutOfMemory();
+        ph_DeleteDevice(device);
         return NULL;
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the driver flags */
     device->handles_any_size = 1;
@@ -142,34 +142,34 @@ VideoBootStrap ph_bootstrap = {
 };
 
 static void
-ph_DeleteDevice (SDL_VideoDevice * device)
+ph_DeleteDevice(SDL_VideoDevice * device)
 {
     if (device) {
         if (device->hidden) {
-            SDL_free (device->hidden);
+            SDL_free(device->hidden);
             device->hidden = NULL;
         }
         if (device->gl_data) {
-            SDL_free (device->gl_data);
+            SDL_free(device->gl_data);
             device->gl_data = NULL;
         }
-        SDL_free (device);
+        SDL_free(device);
         device = NULL;
     }
 }
 
 static PtWidget_t *
-ph_CreateWindow (_THIS)
+ph_CreateWindow(_THIS)
 {
     PtWidget_t *widget;
 
-    widget = PtCreateWidget (PtWindow, NULL, 0, NULL);
+    widget = PtCreateWidget(PtWindow, NULL, 0, NULL);
 
     return widget;
 }
 
 static int
-ph_SetupWindow (_THIS, int w, int h, int flags)
+ph_SetupWindow(_THIS, int w, int h, int flags)
 {
     PtArg_t args[32];
     PhPoint_t pos = { 0, 0 };
@@ -182,86 +182,86 @@ ph_SetupWindow (_THIS, int w, int h, int flags)
     int x, y;
 
     /* check if window size has been changed by Window Manager */
-    PtGetResource (window, Pt_ARG_DIM, &olddim, 0);
+    PtGetResource(window, Pt_ARG_DIM, &olddim, 0);
     if ((olddim->w != w) || (olddim->h != h)) {
-        PtSetArg (&args[nargs++], Pt_ARG_DIM, &dim, 0);
+        PtSetArg(&args[nargs++], Pt_ARG_DIM, &dim, 0);
     }
 
     if ((flags & SDL_RESIZABLE) == SDL_RESIZABLE) {
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
-                  Ph_WM_CLOSE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
-                  Ph_WM_MAX | Ph_WM_RESTORE | Ph_WM_RESIZE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
-                  Ph_WM_RESIZE | Ph_WM_MOVE | Ph_WM_CLOSE | Ph_WM_MAX |
-                  Ph_WM_RESTORE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
-                  Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_MAX |
-                  Ph_WM_RENDER_COLLAPSE | Ph_WM_RENDER_RETURN);
-        PtSetArg (&args[nargs++], Pt_ARG_RESIZE_FLAGS, Pt_TRUE,
-                  Pt_RESIZE_XY_AS_REQUIRED);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
+                 Ph_WM_CLOSE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
+                 Ph_WM_MAX | Ph_WM_RESTORE | Ph_WM_RESIZE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
+                 Ph_WM_RESIZE | Ph_WM_MOVE | Ph_WM_CLOSE | Ph_WM_MAX |
+                 Ph_WM_RESTORE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
+                 Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_MAX |
+                 Ph_WM_RENDER_COLLAPSE | Ph_WM_RENDER_RETURN);
+        PtSetArg(&args[nargs++], Pt_ARG_RESIZE_FLAGS, Pt_TRUE,
+                 Pt_RESIZE_XY_AS_REQUIRED);
     } else {
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
-                  Ph_WM_RESIZE | Ph_WM_MAX | Ph_WM_RESTORE | Ph_WM_CLOSE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_FALSE,
-                  Ph_WM_RESIZE | Ph_WM_MAX | Ph_WM_RESTORE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
-                  Ph_WM_MOVE | Ph_WM_CLOSE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_FALSE,
-                  Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_MAX |
-                  Ph_WM_RENDER_COLLAPSE | Ph_WM_RENDER_RETURN);
-        PtSetArg (&args[nargs++], Pt_ARG_RESIZE_FLAGS, Pt_FALSE,
-                  Pt_RESIZE_XY_AS_REQUIRED);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
+                 Ph_WM_RESIZE | Ph_WM_MAX | Ph_WM_RESTORE | Ph_WM_CLOSE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_FALSE,
+                 Ph_WM_RESIZE | Ph_WM_MAX | Ph_WM_RESTORE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
+                 Ph_WM_MOVE | Ph_WM_CLOSE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_FALSE,
+                 Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_MAX |
+                 Ph_WM_RENDER_COLLAPSE | Ph_WM_RENDER_RETURN);
+        PtSetArg(&args[nargs++], Pt_ARG_RESIZE_FLAGS, Pt_FALSE,
+                 Pt_RESIZE_XY_AS_REQUIRED);
     }
 
     if (((flags & SDL_NOFRAME) == SDL_NOFRAME)
         || ((flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)) {
         if ((flags & SDL_RESIZABLE) != SDL_RESIZABLE) {
-            PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS,
-                      Pt_FALSE, Pt_TRUE);
+            PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS,
+                     Pt_FALSE, Pt_TRUE);
         } else {
-            PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS,
-                      Pt_FALSE, Pt_TRUE);
-            PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
-                      Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_BORDER);
+            PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS,
+                     Pt_FALSE, Pt_TRUE);
+            PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
+                     Ph_WM_RENDER_RESIZE | Ph_WM_RENDER_BORDER);
         }
     } else {
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
-                  Ph_WM_RENDER_BORDER | Ph_WM_RENDER_TITLE |
-                  Ph_WM_RENDER_CLOSE | Ph_WM_RENDER_MENU | Ph_WM_RENDER_MIN);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_RENDER_FLAGS, Pt_TRUE,
+                 Ph_WM_RENDER_BORDER | Ph_WM_RENDER_TITLE |
+                 Ph_WM_RENDER_CLOSE | Ph_WM_RENDER_MENU | Ph_WM_RENDER_MIN);
     }
 
     if ((flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
-        PtSetArg (&args[nargs++], Pt_ARG_POS, &pos, 0);
-        PtSetArg (&args[nargs++], Pt_ARG_BASIC_FLAGS, Pt_TRUE,
-                  Pt_BASIC_PREVENT_FILL);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
-                  Ph_WM_FFRONT | Ph_WM_MAX | Ph_WM_TOFRONT | Ph_WM_CONSWITCH);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
-                  Ph_WM_STATE_ISFRONT | Ph_WM_STATE_ISFOCUS |
-                  Ph_WM_STATE_ISALTKEY);
+        PtSetArg(&args[nargs++], Pt_ARG_POS, &pos, 0);
+        PtSetArg(&args[nargs++], Pt_ARG_BASIC_FLAGS, Pt_TRUE,
+                 Pt_BASIC_PREVENT_FILL);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
+                 Ph_WM_FFRONT | Ph_WM_MAX | Ph_WM_TOFRONT | Ph_WM_CONSWITCH);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
+                 Ph_WM_STATE_ISFRONT | Ph_WM_STATE_ISFOCUS |
+                 Ph_WM_STATE_ISALTKEY);
     } else {
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
-                  Ph_WM_FFRONT | Ph_WM_CONSWITCH);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
-                  Ph_WM_STATE_ISFRONT);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
-                  Ph_WM_STATE_ISALTKEY);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_FALSE,
+                 Ph_WM_FFRONT | Ph_WM_CONSWITCH);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
+                 Ph_WM_STATE_ISFRONT);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
+                 Ph_WM_STATE_ISALTKEY);
 
         if ((flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-            PtSetArg (&args[nargs++], Pt_ARG_BASIC_FLAGS, Pt_TRUE,
-                      Pt_BASIC_PREVENT_FILL);
+            PtSetArg(&args[nargs++], Pt_ARG_BASIC_FLAGS, Pt_TRUE,
+                     Pt_BASIC_PREVENT_FILL);
         } else {
-            PtSetArg (&args[nargs++], Pt_ARG_FILL_COLOR, Pg_BLACK, 0);
+            PtSetArg(&args[nargs++], Pt_ARG_FILL_COLOR, Pg_BLACK, 0);
         }
         if (!currently_maximized) {
-            windowpos = SDL_getenv ("SDL_VIDEO_WINDOW_POS");
-            iscentered = SDL_getenv ("SDL_VIDEO_CENTERED");
+            windowpos = SDL_getenv("SDL_VIDEO_WINDOW_POS");
+            iscentered = SDL_getenv("SDL_VIDEO_CENTERED");
 
             if ((iscentered)
                 || ((windowpos)
-                    && (SDL_strcmp (windowpos, "center") == 0))) {
-                PhWindowQueryVisible (Ph_QUERY_CONSOLE, 0, 0, &desktopextent);
+                    && (SDL_strcmp(windowpos, "center") == 0))) {
+                PhWindowQueryVisible(Ph_QUERY_CONSOLE, 0, 0, &desktopextent);
                 if (desktop_mode.width > w) {
                     pos.x = (desktop_mode.width - w) / 2;
                 }
@@ -271,10 +271,10 @@ ph_SetupWindow (_THIS, int w, int h, int flags)
 
                 pos.x += desktopextent.ul.x;
                 pos.y += desktopextent.ul.y;
-                PtSetArg (&args[nargs++], Pt_ARG_POS, &pos, 0);
+                PtSetArg(&args[nargs++], Pt_ARG_POS, &pos, 0);
             } else {
                 if (windowpos) {
-                    if (SDL_sscanf (windowpos, "%d,%d", &x, &y) == 2) {
+                    if (SDL_sscanf(windowpos, "%d,%d", &x, &y) == 2) {
                         if ((x < desktop_mode.width)
                             && (y < desktop_mode.height)) {
                             PhWindowQueryVisible
@@ -282,7 +282,7 @@ ph_SetupWindow (_THIS, int w, int h, int flags)
                             pos.x = x + desktopextent.ul.x;
                             pos.y = y + desktopextent.ul.y;
                         }
-                        PtSetArg (&args[nargs++], Pt_ARG_POS, &pos, 0);
+                        PtSetArg(&args[nargs++], Pt_ARG_POS, &pos, 0);
                     }
                 }
             }
@@ -290,42 +290,42 @@ ph_SetupWindow (_THIS, int w, int h, int flags)
 
         /* if window is maximized render it as maximized */
         if (currently_maximized) {
-            PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
-                      Ph_WM_STATE_ISMAX);
+            PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
+                     Ph_WM_STATE_ISMAX);
         } else {
-            PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
-                      Ph_WM_STATE_ISMAX);
+            PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
+                     Ph_WM_STATE_ISMAX);
         }
 
         /* do not grab the keyboard by default */
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
-                  Ph_WM_STATE_ISALTKEY);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_FALSE,
+                 Ph_WM_STATE_ISALTKEY);
 
         /* bring the focus to the window */
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
-                  Ph_WM_STATE_ISFOCUS);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_STATE, Pt_TRUE,
+                 Ph_WM_STATE_ISFOCUS);
 
         /* allow to catch hide event */
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
-                  Ph_WM_HIDE);
-        PtSetArg (&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
-                  Ph_WM_HIDE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_MANAGED_FLAGS, Pt_TRUE,
+                 Ph_WM_HIDE);
+        PtSetArg(&args[nargs++], Pt_ARG_WINDOW_NOTIFY_FLAGS, Pt_TRUE,
+                 Ph_WM_HIDE);
     }
 
-    PtSetResources (window, nargs, args);
-    PtRealizeWidget (window);
-    PtWindowToFront (window);
+    PtSetResources(window, nargs, args);
+    PtRealizeWidget(window);
+    PtWindowToFront(window);
 
 #if 0                           /* FIXME */
-    PtGetResource (window, Pt_ARG_POS, &olddim, 0);
-    fprintf (stderr, "POSITION: %d, %d\n", olddim->w, olddim->h);
+    PtGetResource(window, Pt_ARG_POS, &olddim, 0);
+    fprintf(stderr, "POSITION: %d, %d\n", olddim->w, olddim->h);
 #endif
 
     return 0;
 }
 
 static const struct ColourMasks *
-ph_GetColourMasks (int bpp)
+ph_GetColourMasks(int bpp)
 {
     /* The alpha mask doesn't appears to be needed */
     static const struct ColourMasks phColorMasks[5] = {
@@ -353,7 +353,7 @@ ph_GetColourMasks (int bpp)
 }
 
 static int
-ph_VideoInit (_THIS, SDL_PixelFormat * vformat)
+ph_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     PgHWCaps_t hwcaps;
     int i;
@@ -371,40 +371,39 @@ ph_VideoInit (_THIS, SDL_PixelFormat * vformat)
     old_video_mode = -1;
     old_refresh_rate = -1;
 
-    if (NULL == (phevent = SDL_malloc (EVENT_SIZE))) {
-        SDL_OutOfMemory ();
+    if (NULL == (phevent = SDL_malloc(EVENT_SIZE))) {
+        SDL_OutOfMemory();
         return -1;
     }
-    SDL_memset (phevent, 0x00, EVENT_SIZE);
+    SDL_memset(phevent, 0x00, EVENT_SIZE);
 
-    window = ph_CreateWindow (this);
+    window = ph_CreateWindow(this);
     if (window == NULL) {
-        SDL_SetError ("ph_VideoInit(): Couldn't create video window !\n");
+        SDL_SetError("ph_VideoInit(): Couldn't create video window !\n");
         return -1;
     }
 
     /* Create the blank cursor */
-    SDL_BlankCursor = this->CreateWMCursor (this, blank_cdata, blank_cmask,
-                                            (int) BLANK_CWIDTH,
-                                            (int) BLANK_CHEIGHT,
-                                            (int) BLANK_CHOTX,
-                                            (int) BLANK_CHOTY);
+    SDL_BlankCursor = this->CreateWMCursor(this, blank_cdata, blank_cmask,
+                                           (int) BLANK_CWIDTH,
+                                           (int) BLANK_CHEIGHT,
+                                           (int) BLANK_CHOTX,
+                                           (int) BLANK_CHOTY);
 
     if (SDL_BlankCursor == NULL) {
         return -1;
     }
 
-    if (PgGetGraphicsHWCaps (&hwcaps) < 0) {
-        SDL_SetError
-            ("ph_VideoInit(): GetGraphicsHWCaps function failed !\n");
-        this->FreeWMCursor (this, SDL_BlankCursor);
+    if (PgGetGraphicsHWCaps(&hwcaps) < 0) {
+        SDL_SetError("ph_VideoInit(): GetGraphicsHWCaps function failed !\n");
+        this->FreeWMCursor(this, SDL_BlankCursor);
         return -1;
     }
 
-    if (PgGetVideoModeInfo (hwcaps.current_video_mode, &desktop_mode) < 0) {
+    if (PgGetVideoModeInfo(hwcaps.current_video_mode, &desktop_mode) < 0) {
         SDL_SetError
             ("ph_VideoInit(): PgGetVideoModeInfo function failed !\n");
-        this->FreeWMCursor (this, SDL_BlankCursor);
+        this->FreeWMCursor(this, SDL_BlankCursor);
         return -1;
     }
 
@@ -420,12 +419,12 @@ ph_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
     /* save current palette */
     if (desktopbpp == 8) {
-        PgGetPalette (savedpal);
-        PgGetPalette (syspalph);
+        PgGetPalette(savedpal);
+        PgGetPalette(syspalph);
     } else {
         for (i = 0; i < _Pg_MAX_PALETTE; i++) {
-            savedpal[i] = PgRGB (0, 0, 0);
-            syspalph[i] = PgRGB (0, 0, 0);
+            savedpal[i] = PgRGB(0, 0, 0);
+            syspalph[i] = PgRGB(0, 0, 0);
         }
     }
 
@@ -445,36 +444,36 @@ ph_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
     this->info.wm_available = 1;
 
-    ph_UpdateHWInfo (this);
+    ph_UpdateHWInfo(this);
 
     return 0;
 }
 
 static SDL_Surface *
-ph_SetVideoMode (_THIS, SDL_Surface * current, int width, int height, int bpp,
-                 Uint32 flags)
+ph_SetVideoMode(_THIS, SDL_Surface * current, int width, int height, int bpp,
+                Uint32 flags)
 {
     const struct ColourMasks *mask;
 
     /* Lock the event thread, in multi-threading environments */
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
     current->flags = flags;
 
     /* if we do not have desired fullscreen mode, then fallback into window mode */
     if (((current->flags & SDL_FULLSCREEN) == SDL_FULLSCREEN)
-        && (ph_GetVideoMode (width, height, bpp) == 0)) {
+        && (ph_GetVideoMode(width, height, bpp) == 0)) {
         current->flags &= ~SDL_FULLSCREEN;
         current->flags &= ~SDL_NOFRAME;
         current->flags &= ~SDL_RESIZABLE;
     }
 
-    ph_SetupWindow (this, width, height, current->flags);
+    ph_SetupWindow(this, width, height, current->flags);
 
-    mask = ph_GetColourMasks (bpp);
+    mask = ph_GetColourMasks(bpp);
     if (mask != NULL) {
-        SDL_ReallocFormat (current, mask->bpp, mask->red, mask->green,
-                           mask->blue, 0);
+        SDL_ReallocFormat(current, mask->bpp, mask->red, mask->green,
+                          mask->blue, 0);
     } else {
         SDL_SetError
             ("ph_SetVideoMode(): desired bpp is not supported by photon !\n");
@@ -530,55 +529,55 @@ ph_SetVideoMode (_THIS, SDL_Surface * current, int width, int height, int bpp,
     }
 
     /* Must call at least once for setup image planes */
-    if (ph_SetupUpdateFunction (this, current, current->flags) == -1) {
+    if (ph_SetupUpdateFunction(this, current, current->flags) == -1) {
         /* Error string was filled in the ph_SetupUpdateFunction() */
         return NULL;
     }
 
     /* finish window drawing, if we are not in fullscreen, of course */
     if ((current->flags & SDL_FULLSCREEN) != SDL_FULLSCREEN) {
-        PtFlush ();
+        PtFlush();
     } else {
-        PgFlush ();
+        PgFlush();
     }
 
     visualbpp = bpp;
 
-    ph_UpdateHWInfo (this);
+    ph_UpdateHWInfo(this);
 
-    SDL_Unlock_EventThread ();
+    SDL_Unlock_EventThread();
 
     /* We've done! */
     return (current);
 }
 
 static void
-ph_VideoQuit (_THIS)
+ph_VideoQuit(_THIS)
 {
     /* restore palette */
     if (desktopbpp == 8) {
-        PgSetPalette (syspalph, 0, -1, 0, 0, 0);
-        PgSetPalette (savedpal, 0, 0, _Pg_MAX_PALETTE,
-                      Pg_PALSET_GLOBAL | Pg_PALSET_FORCE_EXPOSE, 0);
-        PgFlush ();
+        PgSetPalette(syspalph, 0, -1, 0, 0, 0);
+        PgSetPalette(savedpal, 0, 0, _Pg_MAX_PALETTE,
+                     Pg_PALSET_GLOBAL | Pg_PALSET_FORCE_EXPOSE, 0);
+        PgFlush();
     }
 
-    ph_DestroyImage (this, SDL_VideoSurface);
+    ph_DestroyImage(this, SDL_VideoSurface);
 
     if (window) {
-        PtUnrealizeWidget (window);
-        PtDestroyWidget (window);
+        PtUnrealizeWidget(window);
+        PtDestroyWidget(window);
         window = NULL;
     }
 
     if (phevent != NULL) {
-        SDL_free (phevent);
+        SDL_free(phevent);
         phevent = NULL;
     }
 }
 
 static int
-ph_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+ph_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
     SDL_Rect updaterect;
@@ -592,34 +591,32 @@ ph_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
         if ((SDL_Image) && (SDL_Image->palette)) {
             for (i = firstcolor; i < firstcolor + ncolors; i++) {
                 syspalph[i] =
-                    PgRGB (colors[i - firstcolor].r,
-                           colors[i - firstcolor].g,
-                           colors[i - firstcolor].b);
+                    PgRGB(colors[i - firstcolor].r,
+                          colors[i - firstcolor].g, colors[i - firstcolor].b);
                 SDL_Image->palette[i] = syspalph[i];
             }
 
             /* image needs to be redrawn */
-            this->UpdateRects (this, 1, &updaterect);
+            this->UpdateRects(this, 1, &updaterect);
         }
     } else {
         if (desktoppal == SDLPH_PAL_SYSTEM) {
             for (i = firstcolor; i < firstcolor + ncolors; i++) {
                 syspalph[i] =
-                    PgRGB (colors[i - firstcolor].r,
-                           colors[i - firstcolor].g,
-                           colors[i - firstcolor].b);
+                    PgRGB(colors[i - firstcolor].r,
+                          colors[i - firstcolor].g, colors[i - firstcolor].b);
             }
 
             if ((this->screen->flags & SDL_FULLSCREEN) != SDL_FULLSCREEN) {
                 /* window mode must use soft palette */
-                PgSetPalette (&syspalph[firstcolor], 0, firstcolor,
-                              ncolors, Pg_PALSET_GLOBAL, 0);
+                PgSetPalette(&syspalph[firstcolor], 0, firstcolor,
+                             ncolors, Pg_PALSET_GLOBAL, 0);
                 /* image needs to be redrawn */
-                this->UpdateRects (this, 1, &updaterect);
+                this->UpdateRects(this, 1, &updaterect);
             } else {
                 /* fullscreen mode must use hardware palette */
-                PgSetPalette (&syspalph[firstcolor], 0, firstcolor,
-                              ncolors, Pg_PALSET_GLOBAL, 0);
+                PgSetPalette(&syspalph[firstcolor], 0, firstcolor,
+                             ncolors, Pg_PALSET_GLOBAL, 0);
             }
         } else {
             /* SDLPH_PAL_NONE do nothing */

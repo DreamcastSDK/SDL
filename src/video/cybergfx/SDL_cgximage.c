@@ -33,18 +33,18 @@
 #define WLUT WriteLUTPixelArray
 #else
 void
-WLUT (APTR a, UWORD b, UWORD c, UWORD d, struct RastPort *e, APTR f, UWORD g,
-      UWORD h, UWORD i, UWORD l, UBYTE m)
+WLUT(APTR a, UWORD b, UWORD c, UWORD d, struct RastPort *e, APTR f, UWORD g,
+     UWORD h, UWORD i, UWORD l, UBYTE m)
 {
-    WriteLUTPixelArray (a, b, c, d, e, f, g, h, i, l, m);
+    WriteLUTPixelArray(a, b, c, d, e, f, g, h, i, l, m);
 }
 #endif
 
 #endif
 
 /* Various screen update functions available */
-static void CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects);
-static void CGX_FakeUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void CGX_NormalUpdate(_THIS, int numrects, SDL_Rect * rects);
+static void CGX_FakeUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 BOOL SafeDisp = TRUE, SafeChange = TRUE;
 struct MsgPort *safeport = NULL, *dispport = NULL;
@@ -52,7 +52,7 @@ ULONG safe_sigbit, disp_sigbit;
 int use_picasso96 = 1;
 
 int
-CGX_SetupImage (_THIS, SDL_Surface * screen)
+CGX_SetupImage(_THIS, SDL_Surface * screen)
 {
     SDL_Ximage = NULL;
 
@@ -60,12 +60,10 @@ CGX_SetupImage (_THIS, SDL_Surface * screen)
         ULONG pitch;
 
         if (!screen->hwdata) {
-            if (!
-                (screen->hwdata =
-                 SDL_malloc (sizeof (struct private_hwdata))))
+            if (!(screen->hwdata = SDL_malloc(sizeof(struct private_hwdata))))
                 return -1;
 
-            D (bug ("Creating system accel struct\n"));
+            D(bug("Creating system accel struct\n"));
         }
         screen->hwdata->lock = NULL;
         screen->hwdata->allocated = 0;
@@ -73,18 +71,18 @@ CGX_SetupImage (_THIS, SDL_Surface * screen)
         screen->hwdata->bmap = SDL_RastPort->BitMap;
         screen->hwdata->videodata = this;
 
-        if (!(screen->hwdata->lock = LockBitMapTags (screen->hwdata->bmap,
-                                                     LBMI_BASEADDRESS,
-                                                     (ULONG) & screen->
-                                                     pixels,
-                                                     LBMI_BYTESPERROW,
-                                                     (ULONG) & pitch,
-                                                     TAG_DONE))) {
-            SDL_free (screen->hwdata);
+        if (!(screen->hwdata->lock = LockBitMapTags(screen->hwdata->bmap,
+                                                    LBMI_BASEADDRESS,
+                                                    (ULONG) & screen->
+                                                    pixels,
+                                                    LBMI_BYTESPERROW,
+                                                    (ULONG) & pitch,
+                                                    TAG_DONE))) {
+            SDL_free(screen->hwdata);
             screen->hwdata = NULL;
             return -1;
         } else {
-            UnLockBitMap (screen->hwdata->lock);
+            UnLockBitMap(screen->hwdata->lock);
             screen->hwdata->lock = NULL;
         }
 
@@ -92,23 +90,23 @@ CGX_SetupImage (_THIS, SDL_Surface * screen)
 
         this->UpdateRects = CGX_FakeUpdate;
 
-        D (bug
-           ("Accel video image configured (%lx, pitch %ld).\n",
-            screen->pixels, screen->pitch));
+        D(bug
+          ("Accel video image configured (%lx, pitch %ld).\n",
+           screen->pixels, screen->pitch));
         return 0;
     }
 
-    screen->pixels = SDL_malloc (screen->h * screen->pitch);
+    screen->pixels = SDL_malloc(screen->h * screen->pitch);
 
     if (screen->pixels == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
 
     SDL_Ximage = screen->pixels;
 
     if (SDL_Ximage == NULL) {
-        SDL_SetError ("Couldn't create XImage");
+        SDL_SetError("Couldn't create XImage");
         return (-1);
     }
 
@@ -118,17 +116,17 @@ CGX_SetupImage (_THIS, SDL_Surface * screen)
 }
 
 void
-CGX_DestroyImage (_THIS, SDL_Surface * screen)
+CGX_DestroyImage(_THIS, SDL_Surface * screen)
 {
     if (SDL_Ximage) {
-        SDL_free (SDL_Ximage);
+        SDL_free(SDL_Ximage);
         SDL_Ximage = NULL;
     }
     if (screen) {
         screen->pixels = NULL;
 
         if (screen->hwdata) {
-            SDL_free (screen->hwdata);
+            SDL_free(screen->hwdata);
             screen->hwdata = NULL;
         }
     }
@@ -136,27 +134,27 @@ CGX_DestroyImage (_THIS, SDL_Surface * screen)
 
 /* This is a hack to see whether this system has more than 1 CPU */
 static int
-num_CPU (void)
+num_CPU(void)
 {
     return 1;
 }
 
 int
-CGX_ResizeImage (_THIS, SDL_Surface * screen, Uint32 flags)
+CGX_ResizeImage(_THIS, SDL_Surface * screen, Uint32 flags)
 {
     int retval;
 
-    D (bug ("Calling ResizeImage()\n"));
+    D(bug("Calling ResizeImage()\n"));
 
-    CGX_DestroyImage (this, screen);
+    CGX_DestroyImage(this, screen);
 
     if (flags & SDL_INTERNALOPENGL) {   /* No image when using GL */
         retval = 0;
     } else {
-        retval = CGX_SetupImage (this, screen);
+        retval = CGX_SetupImage(this, screen);
         /* We support asynchronous blitting on the display */
         if (flags & SDL_ASYNCBLIT) {
-            if (num_CPU () > 1) {
+            if (num_CPU() > 1) {
                 screen->flags |= SDL_ASYNCBLIT;
             }
         }
@@ -165,19 +163,19 @@ CGX_ResizeImage (_THIS, SDL_Surface * screen, Uint32 flags)
 }
 
 int
-CGX_AllocHWSurface (_THIS, SDL_Surface * surface)
+CGX_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
-    D (bug
-       ("Alloc HW surface...%ld x %ld x %ld!\n", surface->w, surface->h,
-        this->hidden->depth));
+    D(bug
+      ("Alloc HW surface...%ld x %ld x %ld!\n", surface->w, surface->h,
+       this->hidden->depth));
 
     if (surface == SDL_VideoSurface) {
-        D (bug ("Allocation skipped, it's system one!\n"));
+        D(bug("Allocation skipped, it's system one!\n"));
         return 0;
     }
 
     if (!surface->hwdata) {
-        if (!(surface->hwdata = SDL_malloc (sizeof (struct private_hwdata))))
+        if (!(surface->hwdata = SDL_malloc(sizeof(struct private_hwdata))))
             return -1;
     }
 
@@ -187,14 +185,14 @@ CGX_AllocHWSurface (_THIS, SDL_Surface * surface)
     surface->hwdata->allocated = 0;
 
     if (surface->hwdata->bmap =
-        AllocBitMap (surface->w, surface->h, this->hidden->depth,
-                     BMF_MINPLANES, SDL_Display->RastPort.BitMap)) {
+        AllocBitMap(surface->w, surface->h, this->hidden->depth,
+                    BMF_MINPLANES, SDL_Display->RastPort.BitMap)) {
         surface->hwdata->allocated = 1;
         surface->flags |= SDL_HWSURFACE;
-        D (bug ("...OK\n"));
+        D(bug("...OK\n"));
         return 0;
     } else {
-        SDL_free (surface->hwdata);
+        SDL_free(surface->hwdata);
         surface->hwdata = NULL;
     }
 
@@ -202,27 +200,27 @@ CGX_AllocHWSurface (_THIS, SDL_Surface * surface)
 }
 
 void
-CGX_FreeHWSurface (_THIS, SDL_Surface * surface)
+CGX_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface && surface != SDL_VideoSurface && surface->hwdata) {
-        D (bug ("Free hw surface.\n"));
+        D(bug("Free hw surface.\n"));
 
         if (surface->hwdata->mask)
-            SDL_free (surface->hwdata->mask);
+            SDL_free(surface->hwdata->mask);
 
         if (surface->hwdata->bmap && surface->hwdata->allocated)
-            FreeBitMap (surface->hwdata->bmap);
+            FreeBitMap(surface->hwdata->bmap);
 
-        SDL_free (surface->hwdata);
+        SDL_free(surface->hwdata);
         surface->hwdata = NULL;
         surface->pixels = NULL;
-        D (bug ("end of free hw surface\n"));
+        D(bug("end of free hw surface\n"));
     }
     return;
 }
 
 int
-CGX_LockHWSurface (_THIS, SDL_Surface * surface)
+CGX_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface->hwdata) {
 //              D(bug("Locking a bitmap...\n"));
@@ -231,10 +229,9 @@ CGX_LockHWSurface (_THIS, SDL_Surface * surface)
 
             if (!
                 (surface->hwdata->lock =
-                 LockBitMapTags (surface->hwdata->bmap, LBMI_BASEADDRESS,
-                                 (ULONG) & surface->pixels,
-                                 LBMI_BYTESPERROW, (ULONG) & pitch,
-                                 TAG_DONE)))
+                 LockBitMapTags(surface->hwdata->bmap, LBMI_BASEADDRESS,
+                                (ULONG) & surface->pixels,
+                                LBMI_BYTESPERROW, (ULONG) & pitch, TAG_DONE)))
                 return -1;
 
 // surface->pitch e' a 16bit!
@@ -249,37 +246,37 @@ CGX_LockHWSurface (_THIS, SDL_Surface * surface)
                      surface->format->BytesPerPixel *
                      (SDL_Window->BorderLeft + SDL_Window->LeftEdge));
         }
-        D (
-              else
-              bug ("Already locked!!!\n"));
+        D(
+             else
+             bug("Already locked!!!\n"));
     }
     return (0);
 }
 
 void
-CGX_UnlockHWSurface (_THIS, SDL_Surface * surface)
+CGX_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface->hwdata && surface->hwdata->lock) {
-        UnLockBitMap (surface->hwdata->lock);
+        UnLockBitMap(surface->hwdata->lock);
         surface->hwdata->lock = NULL;
 //              surface->pixels=NULL;
     }
 }
 
 int
-CGX_FlipHWSurface (_THIS, SDL_Surface * surface)
+CGX_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
     static int current = 0;
 
     if (this->hidden->dbuffer) {
         if (!SafeChange) {
-            Wait (disp_sigbit);
+            Wait(disp_sigbit);
 // Non faccio nulla, vuoto solo la porta
-            while (GetMsg (dispport) != NULL);
+            while (GetMsg(dispport) != NULL);
             SafeChange = TRUE;
         }
 
-        if (ChangeScreenBuffer (SDL_Display, this->hidden->SB[current ^ 1])) {
+        if (ChangeScreenBuffer(SDL_Display, this->hidden->SB[current ^ 1])) {
             surface->hwdata->bmap = SDL_RastPort->BitMap =
                 this->hidden->SB[current]->sb_BitMap;
             SafeChange = FALSE;
@@ -288,8 +285,8 @@ CGX_FlipHWSurface (_THIS, SDL_Surface * surface)
         }
 
         if (!SafeDisp) {
-            Wait (safe_sigbit);
-            while (GetMsg (safeport) != NULL);
+            Wait(safe_sigbit);
+            while (GetMsg(safeport) != NULL);
             SafeDisp = TRUE;
         }
 
@@ -299,7 +296,7 @@ CGX_FlipHWSurface (_THIS, SDL_Surface * surface)
 
 /* Byte-swap the pixels in the display image */
 static void
-CGX_SwapAllPixels (SDL_Surface * screen)
+CGX_SwapAllPixels(SDL_Surface * screen)
 {
     int x, y;
 
@@ -311,7 +308,7 @@ CGX_SwapAllPixels (SDL_Surface * screen)
                 spot = (Uint16 *) ((Uint8 *) screen->pixels +
                                    y * screen->pitch);
                 for (x = 0; x < screen->w; ++x, ++spot) {
-                    *spot = SDL_Swap16 (*spot);
+                    *spot = SDL_Swap16(*spot);
                 }
             }
         }
@@ -324,7 +321,7 @@ CGX_SwapAllPixels (SDL_Surface * screen)
                 spot = (Uint32 *) ((Uint8 *) screen->pixels +
                                    y * screen->pitch);
                 for (x = 0; x < screen->w; ++x, ++spot) {
-                    *spot = SDL_Swap32 (*spot);
+                    *spot = SDL_Swap32(*spot);
                 }
             }
         }
@@ -336,7 +333,7 @@ CGX_SwapAllPixels (SDL_Surface * screen)
     }
 }
 static void
-CGX_SwapPixels (SDL_Surface * screen, int numrects, SDL_Rect * rects)
+CGX_SwapPixels(SDL_Surface * screen, int numrects, SDL_Rect * rects)
 {
     int i;
     int x, minx, maxx;
@@ -355,7 +352,7 @@ CGX_SwapPixels (SDL_Surface * screen, int numrects, SDL_Rect * rects)
                     spot = (Uint16 *) ((Uint8 *) screen->pixels +
                                        y * screen->pitch + minx * 2);
                     for (x = minx; x < maxx; ++x, ++spot) {
-                        *spot = SDL_Swap16 (*spot);
+                        *spot = SDL_Swap16(*spot);
                     }
                 }
             }
@@ -374,7 +371,7 @@ CGX_SwapPixels (SDL_Surface * screen, int numrects, SDL_Rect * rects)
                     spot = (Uint32 *) ((Uint8 *) screen->pixels +
                                        y * screen->pitch + minx * 4);
                     for (x = minx; x < maxx; ++x, ++spot) {
-                        *spot = SDL_Swap32 (*spot);
+                        *spot = SDL_Swap32(*spot);
                     }
                 }
             }
@@ -393,21 +390,21 @@ CGX_SwapPixels (SDL_Surface * screen, int numrects, SDL_Rect * rects)
 #else
 
 void
-USE_WPA (char *a, int b, int c, int d, struct RastPort *e, int f, int g,
-         int h, int i, Uint32 l)
+USE_WPA(char *a, int b, int c, int d, struct RastPort *e, int f, int g,
+        int h, int i, Uint32 l)
 {
-    WritePixelArray (a, b, c, d, e, f, g, h, i, l);
+    WritePixelArray(a, b, c, d, e, f, g, h, i, l);
 }
 
 #endif
 
 static void
-CGX_FakeUpdate (_THIS, int numrects, SDL_Rect * rects)
+CGX_FakeUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
 }
 
 static void
-CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
+CGX_NormalUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     int i, format, customroutine = 0;
 #ifndef USE_CGX_WRITELUTPIXEL
@@ -447,25 +444,25 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
                 customroutine = 1;
             break;
         default:
-            D (bug ("Unable to blit this surface!\n"));
+            D(bug("Unable to blit this surface!\n"));
             return;
         }
 
     /* Check for endian-swapped X server, swap if necessary (VERY slow!) */
     if (swap_pixels && ((this->screen->format->BytesPerPixel % 2) == 0)) {
-        D (bug ("Software Swapping! SLOOOW!\n"));
-        CGX_SwapPixels (this->screen, numrects, rects);
+        D(bug("Software Swapping! SLOOOW!\n"));
+        CGX_SwapPixels(this->screen, numrects, rects);
         for (i = 0; i < numrects; ++i) {
             if (!rects[i].w) {  /* Clipped? */
                 continue;
             }
-            USE_WPA (this->screen->pixels, rects[i].x, rects[i].y,
-                     this->screen->pitch, SDL_RastPort,
-                     SDL_Window->BorderLeft + rects[i].x,
-                     SDL_Window->BorderTop + rects[i].y, rects[i].w,
-                     rects[i].h, format);
+            USE_WPA(this->screen->pixels, rects[i].x, rects[i].y,
+                    this->screen->pitch, SDL_RastPort,
+                    SDL_Window->BorderLeft + rects[i].x,
+                    SDL_Window->BorderTop + rects[i].y, rects[i].w,
+                    rects[i].h, format);
         }
-        CGX_SwapPixels (this->screen, numrects, rects);
+        CGX_SwapPixels(this->screen, numrects, rects);
     } else if (customroutine == 2) {
 #ifdef USE_CGX_WRITELUTPIXEL
         for (i = 0; i < numrects; ++i) {
@@ -473,11 +470,11 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
                 continue;
             }
 
-            WLUT (this->screen->pixels, rects[i].x, rects[i].y,
-                  this->screen->pitch, SDL_RastPort, SDL_XPixels,
-                  SDL_Window->BorderLeft + rects[i].x,
-                  SDL_Window->BorderTop + rects[i].y, rects[i].w,
-                  rects[i].h, CTABFMT_XRGB8);
+            WLUT(this->screen->pixels, rects[i].x, rects[i].y,
+                 this->screen->pitch, SDL_RastPort, SDL_XPixels,
+                 SDL_Window->BorderLeft + rects[i].x,
+                 SDL_Window->BorderTop + rects[i].y, rects[i].w,
+                 rects[i].h, CTABFMT_XRGB8);
         }
 #else
         unsigned char *bm_address;
@@ -485,9 +482,9 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            &bm_address, LBMI_BYTESPERROW, &destpitch,
-                            TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           &bm_address, LBMI_BYTESPERROW, &destpitch,
+                           TAG_DONE)) {
             int srcwidth;
             unsigned char *destbase;
             register int j, k, t;
@@ -530,7 +527,7 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
                     dest += destpitch;
                 }
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
     } else if (customroutine == 3) {
         unsigned char *bm_address;
@@ -538,9 +535,9 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            &bm_address, LBMI_BYTESPERROW, &destpitch,
-                            TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           &bm_address, LBMI_BYTESPERROW, &destpitch,
+                           TAG_DONE)) {
             int srcwidth;
             unsigned char *destbase;
             register int j, k;
@@ -582,7 +579,7 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
                     dest += destpitch;
                 }
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
     } else if (customroutine == 4) {
         unsigned char *bm_address;
@@ -590,9 +587,9 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            &bm_address, LBMI_BYTESPERROW, &destpitch,
-                            TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           &bm_address, LBMI_BYTESPERROW, &destpitch,
+                           TAG_DONE)) {
             int srcwidth;
             unsigned char *destbase;
             register int j, k;
@@ -634,7 +631,7 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
                     dest += destpitch;
                 }
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
 #endif
     } else if (customroutine) {
@@ -645,9 +642,9 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
 //              D(bug("Using customroutine!\n"));
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            (ULONG) & bm_address, LBMI_BYTESPERROW,
-                            (ULONG) & destpitch, TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           (ULONG) & bm_address, LBMI_BYTESPERROW,
+                           (ULONG) & destpitch, TAG_DONE)) {
             unsigned char *destbase;
             register int j, srcwidth;
             register unsigned char *src, *dest;
@@ -684,12 +681,12 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
 //                              D(bug("Rects: %ld,%ld %ld,%ld Src:%lx Dest:%lx\n",rects[i].x,rects[i].y,rects[i].w,rects[i].h,src,dest));
 
                 for (j = rects[i].h; j; --j) {
-                    SDL_memcpy (dest, src, srcwidth);
+                    SDL_memcpy(dest, src, srcwidth);
                     src += this->screen->pitch;
                     dest += destpitch;
                 }
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
 //                      D(bug("Rectblit addr: %lx pitch: %ld rects:%ld srcptr: %lx srcpitch: %ld\n",bm_address,destpitch,numrects,this->screen->pixels,this->screen->pitch));
         }
     } else {
@@ -697,17 +694,17 @@ CGX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
             if (!rects[i].w) {  /* Clipped? */
                 continue;
             }
-            USE_WPA (this->screen->pixels, rects[i].x, rects[i].y,
-                     this->screen->pitch, SDL_RastPort,
-                     SDL_Window->BorderLeft + rects[i].x,
-                     SDL_Window->BorderTop + rects[i].y, rects[i].w,
-                     rects[i].h, format);
+            USE_WPA(this->screen->pixels, rects[i].x, rects[i].y,
+                    this->screen->pitch, SDL_RastPort,
+                    SDL_Window->BorderLeft + rects[i].x,
+                    SDL_Window->BorderTop + rects[i].y, rects[i].w,
+                    rects[i].h, format);
         }
     }
 }
 
 void
-CGX_RefreshDisplay (_THIS)
+CGX_RefreshDisplay(_THIS)
 {
     int format, customroutine = 0;
 #ifndef USE_CGX_WRITELUTPIXEL
@@ -755,27 +752,27 @@ CGX_RefreshDisplay (_THIS)
 
     /* Check for endian-swapped X server, swap if necessary */
     if (swap_pixels && ((this->screen->format->BytesPerPixel % 2) == 0)) {
-        CGX_SwapAllPixels (this->screen);
-        USE_WPA (this->screen->pixels, 0, 0, this->screen->pitch,
-                 SDL_RastPort, SDL_Window->BorderLeft,
-                 SDL_Window->BorderTop, this->screen->w, this->screen->h,
-                 format);
-        CGX_SwapAllPixels (this->screen);
+        CGX_SwapAllPixels(this->screen);
+        USE_WPA(this->screen->pixels, 0, 0, this->screen->pitch,
+                SDL_RastPort, SDL_Window->BorderLeft,
+                SDL_Window->BorderTop, this->screen->w, this->screen->h,
+                format);
+        CGX_SwapAllPixels(this->screen);
     } else if (customroutine == 2) {
 #ifdef USE_CGX_WRITELUTPIXEL
-        WLUT (this->screen->pixels, 0, 0, this->screen->pitch,
-              SDL_RastPort, SDL_XPixels, SDL_Window->BorderLeft,
-              SDL_Window->BorderTop, this->screen->w, this->screen->h,
-              CTABFMT_XRGB8);
+        WLUT(this->screen->pixels, 0, 0, this->screen->pitch,
+             SDL_RastPort, SDL_XPixels, SDL_Window->BorderLeft,
+             SDL_Window->BorderTop, this->screen->w, this->screen->h,
+             CTABFMT_XRGB8);
 #else
         unsigned char *bm_address;
         Uint32 destpitch;
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            (ULONG) & bm_address, LBMI_BYTESPERROW,
-                            (ULONG) & destpitch, TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           (ULONG) & bm_address, LBMI_BYTESPERROW,
+                           (ULONG) & destpitch, TAG_DONE)) {
             register int j, k, t;
             register unsigned char *mask, *dst;
             register unsigned char *src, *dest;
@@ -805,7 +802,7 @@ CGX_RefreshDisplay (_THIS)
                 src += this->screen->pitch;
                 dest += destpitch;
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
     } else if (customroutine == 3) {
         unsigned char *bm_address;
@@ -813,9 +810,9 @@ CGX_RefreshDisplay (_THIS)
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            (ULONG) & bm_address, LBMI_BYTESPERROW,
-                            (ULONG) & destpitch, TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           (ULONG) & bm_address, LBMI_BYTESPERROW,
+                           (ULONG) & destpitch, TAG_DONE)) {
             register int j, k;
             register unsigned char *src, *dest;
             register Uint16 *destl, *srcl;
@@ -844,7 +841,7 @@ CGX_RefreshDisplay (_THIS)
                 src += this->screen->pitch;
                 dest += destpitch;
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
     } else if (customroutine == 4) {
         unsigned char *bm_address;
@@ -852,9 +849,9 @@ CGX_RefreshDisplay (_THIS)
         APTR handle;
 
         if (handle =
-            LockBitMapTags (SDL_RastPort->BitMap, LBMI_BASEADDRESS,
-                            (ULONG) & bm_address, LBMI_BYTESPERROW,
-                            (ULONG) & destpitch, TAG_DONE)) {
+            LockBitMapTags(SDL_RastPort->BitMap, LBMI_BASEADDRESS,
+                           (ULONG) & bm_address, LBMI_BYTESPERROW,
+                           (ULONG) & destpitch, TAG_DONE)) {
             register int j, k;
             register unsigned char *src, *dest;
             register Uint32 *destl, *srcl;
@@ -883,7 +880,7 @@ CGX_RefreshDisplay (_THIS)
                 src += this->screen->pitch;
                 dest += destpitch;
             }
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
 #endif
     } else if (customroutine) {
@@ -891,10 +888,10 @@ CGX_RefreshDisplay (_THIS)
         Uint32 destpitch;
         APTR handle;
 
-        if (handle = LockBitMapTags (SDL_RastPort->BitMap,
-                                     LBMI_BASEADDRESS, (ULONG) & bm_address,
-                                     LBMI_BYTESPERROW, (ULONG) & destpitch,
-                                     TAG_DONE)) {
+        if (handle = LockBitMapTags(SDL_RastPort->BitMap,
+                                    LBMI_BASEADDRESS, (ULONG) & bm_address,
+                                    LBMI_BYTESPERROW, (ULONG) & destpitch,
+                                    TAG_DONE)) {
             register int j;
             register unsigned char *src, *dest;
 
@@ -913,22 +910,22 @@ CGX_RefreshDisplay (_THIS)
 //                      D(bug("addr: %lx pitch: %ld src:%lx srcpitch: %ld\n",dest,destpitch,this->screen->pixels,this->screen->pitch));
 
             if (this->screen->pitch == destpitch) {
-                SDL_memcpy (dest, src, this->screen->pitch * this->screen->h);
+                SDL_memcpy(dest, src, this->screen->pitch * this->screen->h);
             } else {
                 for (j = this->screen->h; j; --j) {
-                    SDL_memcpy (dest, src, this->screen->pitch);
+                    SDL_memcpy(dest, src, this->screen->pitch);
                     src += this->screen->pitch;
                     dest += destpitch;
                 }
             }
 
-            UnLockBitMap (handle);
+            UnLockBitMap(handle);
         }
     } else {
-        USE_WPA (this->screen->pixels, 0, 0, this->screen->pitch,
-                 SDL_RastPort, SDL_Window->BorderLeft,
-                 SDL_Window->BorderTop, this->screen->w, this->screen->h,
-                 format);
+        USE_WPA(this->screen->pixels, 0, 0, this->screen->pitch,
+                SDL_RastPort, SDL_Window->BorderLeft,
+                SDL_Window->BorderTop, this->screen->w, this->screen->h,
+                format);
     }
 
 }

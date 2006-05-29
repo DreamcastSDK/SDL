@@ -40,9 +40,9 @@ static struct SignalSemaphore thread_lock;
 int thread_lock_created = 0;
 
 int
-SDL_ThreadsInit (void)
+SDL_ThreadsInit(void)
 {
-    InitSemaphore (&thread_lock);
+    InitSemaphore(&thread_lock);
     thread_lock_created = 1;
     return 0;
 }
@@ -53,14 +53,14 @@ SDL_ThreadsInit (void)
    they will no longer have access to any per-thread data.
  */
 void
-SDL_ThreadsQuit ()
+SDL_ThreadsQuit()
 {
     thread_lock_created = 0;
 }
 
 /* Routines for manipulating the thread list */
 static void
-SDL_AddThread (SDL_Thread * thread)
+SDL_AddThread(SDL_Thread * thread)
 {
     SDL_Thread **threads;
 
@@ -71,44 +71,44 @@ SDL_AddThread (SDL_Thread * thread)
        is only one thread running the first time this is called.
      */
     if (!thread_lock_created) {
-        if (SDL_ThreadsInit () < 0) {
+        if (SDL_ThreadsInit() < 0) {
             return;
         }
     }
-    ObtainSemaphore (&thread_lock);
+    ObtainSemaphore(&thread_lock);
 
     /* Expand the list of threads, if necessary */
 #ifdef DEBUG_THREADS
-    printf ("Adding thread (%d already - %d max)\n",
-            SDL_numthreads, SDL_maxthreads);
+    printf("Adding thread (%d already - %d max)\n",
+           SDL_numthreads, SDL_maxthreads);
 #endif
     if (SDL_numthreads == SDL_maxthreads) {
         threads =
-            (SDL_Thread **) SDL_malloc ((SDL_maxthreads + ARRAY_CHUNKSIZE) *
-                                        (sizeof *threads));
+            (SDL_Thread **) SDL_malloc((SDL_maxthreads + ARRAY_CHUNKSIZE) *
+                                       (sizeof *threads));
         if (threads == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             goto done;
         }
-        SDL_memcpy (threads, SDL_Threads, SDL_numthreads * (sizeof *threads));
+        SDL_memcpy(threads, SDL_Threads, SDL_numthreads * (sizeof *threads));
         SDL_maxthreads += ARRAY_CHUNKSIZE;
         if (SDL_Threads) {
-            SDL_free (SDL_Threads);
+            SDL_free(SDL_Threads);
         }
         SDL_Threads = threads;
     }
     SDL_Threads[SDL_numthreads++] = thread;
   done:
-    ReleaseSemaphore (&thread_lock);
+    ReleaseSemaphore(&thread_lock);
 }
 
 static void
-SDL_DelThread (SDL_Thread * thread)
+SDL_DelThread(SDL_Thread * thread)
 {
     int i;
 
     if (thread_lock_created) {
-        ObtainSemaphore (&thread_lock);
+        ObtainSemaphore(&thread_lock);
         for (i = 0; i < SDL_numthreads; ++i) {
             if (thread == SDL_Threads[i]) {
                 break;
@@ -121,11 +121,11 @@ SDL_DelThread (SDL_Thread * thread)
                 ++i;
             }
 #ifdef DEBUG_THREADS
-            printf ("Deleting thread (%d left - %d max)\n",
-                    SDL_numthreads, SDL_maxthreads);
+            printf("Deleting thread (%d left - %d max)\n",
+                   SDL_numthreads, SDL_maxthreads);
 #endif
         }
-        ReleaseSemaphore (&thread_lock);
+        ReleaseSemaphore(&thread_lock);
     }
 }
 
@@ -134,7 +134,7 @@ static SDL_error SDL_global_error;
 
 /* Routine to get the thread-specific error variable */
 SDL_error *
-SDL_GetErrBuf (void)
+SDL_GetErrBuf(void)
 {
     SDL_error *errbuf;
 
@@ -143,15 +143,15 @@ SDL_GetErrBuf (void)
         int i;
         Uint32 this_thread;
 
-        this_thread = SDL_ThreadID ();
-        ObtainSemaphore (&thread_lock);
+        this_thread = SDL_ThreadID();
+        ObtainSemaphore(&thread_lock);
         for (i = 0; i < SDL_numthreads; ++i) {
             if (this_thread == SDL_Threads[i]->threadid) {
                 errbuf = &SDL_Threads[i]->errbuf;
                 break;
             }
         }
-        ReleaseSemaphore (&thread_lock);
+        ReleaseSemaphore(&thread_lock);
     }
     return (errbuf);
 }
@@ -167,7 +167,7 @@ typedef struct
 } thread_args;
 
 void
-SDL_RunThread (void *data)
+SDL_RunThread(void *data)
 {
     thread_args *args;
     int (*userfunc) (void *);
@@ -177,11 +177,11 @@ SDL_RunThread (void *data)
     /* Perform any system-dependent setup
        - this function cannot fail, and cannot use SDL_SetError()
      */
-    SDL_SYS_SetupThread ();
+    SDL_SYS_SetupThread();
 
     /* Get the thread id */
     args = (thread_args *) data;
-    args->info->threadid = SDL_ThreadID ();
+    args->info->threadid = SDL_ThreadID();
 
     /* Figure out what function to run */
     userfunc = args->func;
@@ -189,102 +189,102 @@ SDL_RunThread (void *data)
     statusloc = &args->info->status;
 
     /* Wake up the parent thread */
-    Signal (args->wait, SIGBREAKF_CTRL_E);
+    Signal(args->wait, SIGBREAKF_CTRL_E);
 
     /* Run the function */
-    *statusloc = userfunc (userdata);
+    *statusloc = userfunc(userdata);
 }
 
 SDL_Thread *
-SDL_CreateThread (int (*fn) (void *), void *data)
+SDL_CreateThread(int (*fn) (void *), void *data)
 {
     SDL_Thread *thread;
     thread_args *args;
     int ret;
 
     /* Allocate memory for the thread info structure */
-    thread = (SDL_Thread *) SDL_malloc (sizeof (*thread));
+    thread = (SDL_Thread *) SDL_malloc(sizeof(*thread));
     if (thread == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (thread, 0, (sizeof *thread));
+    SDL_memset(thread, 0, (sizeof *thread));
     thread->status = -1;
 
     /* Set up the arguments for the thread */
-    args = (thread_args *) SDL_malloc (sizeof (*args));
+    args = (thread_args *) SDL_malloc(sizeof(*args));
     if (args == NULL) {
-        SDL_OutOfMemory ();
-        SDL_free (thread);
+        SDL_OutOfMemory();
+        SDL_free(thread);
         return (NULL);
     }
     args->func = fn;
     args->data = data;
     args->info = thread;
-    args->wait = FindTask (NULL);
+    args->wait = FindTask(NULL);
     if (args->wait == NULL) {
-        SDL_free (thread);
-        SDL_free (args);
-        SDL_OutOfMemory ();
+        SDL_free(thread);
+        SDL_free(args);
+        SDL_OutOfMemory();
         return (NULL);
     }
 
     /* Add the thread to the list of available threads */
-    SDL_AddThread (thread);
+    SDL_AddThread(thread);
 
-    D (bug ("Starting thread...\n"));
+    D(bug("Starting thread...\n"));
 
     /* Create the thread and go! */
-    ret = SDL_SYS_CreateThread (thread, args);
+    ret = SDL_SYS_CreateThread(thread, args);
     if (ret >= 0) {
-        D (bug ("Waiting for thread CTRL_E...\n"));
+        D(bug("Waiting for thread CTRL_E...\n"));
         /* Wait for the thread function to use arguments */
-        Wait (SIGBREAKF_CTRL_E);
-        D (bug ("  Arrived."));
+        Wait(SIGBREAKF_CTRL_E);
+        D(bug("  Arrived."));
     } else {
         /* Oops, failed.  Gotta free everything */
-        SDL_DelThread (thread);
-        SDL_free (thread);
+        SDL_DelThread(thread);
+        SDL_free(thread);
         thread = NULL;
     }
-    SDL_free (args);
+    SDL_free(args);
 
     /* Everything is running now */
     return (thread);
 }
 
 void
-SDL_WaitThread (SDL_Thread * thread, int *status)
+SDL_WaitThread(SDL_Thread * thread, int *status)
 {
     if (thread) {
-        SDL_SYS_WaitThread (thread);
+        SDL_SYS_WaitThread(thread);
         if (status) {
             *status = thread->status;
         }
-        SDL_DelThread (thread);
-        SDL_free (thread);
+        SDL_DelThread(thread);
+        SDL_free(thread);
     }
 }
 
 Uint32
-SDL_GetThreadID (SDL_Thread * thread)
+SDL_GetThreadID(SDL_Thread * thread)
 {
     Uint32 id;
 
     if (thread) {
         id = thread->threadid;
     } else {
-        id = SDL_ThreadID ();
+        id = SDL_ThreadID();
     }
     return (id);
 }
 
 void
-SDL_KillThread (SDL_Thread * thread)
+SDL_KillThread(SDL_Thread * thread)
 {
     if (thread) {
-        SDL_SYS_KillThread (thread);
-        SDL_WaitThread (thread, NULL);
+        SDL_SYS_KillThread(thread);
+        SDL_WaitThread(thread, NULL);
     }
 }
 

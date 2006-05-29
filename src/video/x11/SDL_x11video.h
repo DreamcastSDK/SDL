@@ -117,7 +117,7 @@ struct SDL_PrivateVideoData
 
     /* Variables used by the X11 video mode code */
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
-      SDL_NAME (XineramaScreenInfo) * xinerama;
+      SDL_NAME(XineramaScreenInfo) * xinerama;
 #endif
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     XRRScreenConfiguration *screen_config;
@@ -125,7 +125,7 @@ struct SDL_PrivateVideoData
     Rotation saved_rotation;
 #endif
 #if SDL_VIDEO_DRIVER_X11_VIDMODE
-      SDL_NAME (XF86VidModeModeInfo) saved_mode;
+      SDL_NAME(XF86VidModeModeInfo) saved_mode;
     struct
     {
         int x, y;

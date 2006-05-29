@@ -64,56 +64,56 @@ static struct sembuf op_post[1] = {
 
 /* Create a blockable semaphore */
 SDL_sem *
-SDL_CreateSemaphore (Uint32 initial_value)
+SDL_CreateSemaphore(Uint32 initial_value)
 {
     extern int _creating_thread_lock;   /* SDL_threads.c */
     SDL_sem *sem;
     union semun init;
 
-    sem = (SDL_sem *) SDL_malloc (sizeof (*sem));
+    sem = (SDL_sem *) SDL_malloc(sizeof(*sem));
     if (sem == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    sem->id = semget (IPC_PRIVATE, 1, (0600 | IPC_CREAT));
+    sem->id = semget(IPC_PRIVATE, 1, (0600 | IPC_CREAT));
     if (sem->id < 0) {
-        SDL_SetError ("Couldn't create semaphore");
-        SDL_free (sem);
+        SDL_SetError("Couldn't create semaphore");
+        SDL_free(sem);
         return (NULL);
     }
     init.val = initial_value;   /* Initialize semaphore */
-    semctl (sem->id, 0, SETVAL, init);
+    semctl(sem->id, 0, SETVAL, init);
     return (sem);
 }
 
 void
-SDL_DestroySemaphore (SDL_sem * sem)
+SDL_DestroySemaphore(SDL_sem * sem)
 {
     if (sem) {
 #ifdef __IRIX__
-        semctl (sem->id, 0, IPC_RMID);
+        semctl(sem->id, 0, IPC_RMID);
 #else
         union semun dummy;
         dummy.val = 0;
-        semctl (sem->id, 0, IPC_RMID, dummy);
+        semctl(sem->id, 0, IPC_RMID, dummy);
 #endif
-        SDL_free (sem);
+        SDL_free(sem);
     }
 }
 
 int
-SDL_SemTryWait (SDL_sem * sem)
+SDL_SemTryWait(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
     retval = 0;
   tryagain:
-    if (semop (sem->id, op_trywait, 1) < 0) {
+    if (semop(sem->id, op_trywait, 1) < 0) {
         if (errno == EINTR) {
             goto tryagain;
         }
@@ -123,61 +123,61 @@ SDL_SemTryWait (SDL_sem * sem)
 }
 
 int
-SDL_SemWait (SDL_sem * sem)
+SDL_SemWait(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
     retval = 0;
   tryagain:
-    if (semop (sem->id, op_wait, 1) < 0) {
+    if (semop(sem->id, op_wait, 1) < 0) {
         if (errno == EINTR) {
             goto tryagain;
         }
-        SDL_SetError ("Semaphore operation error");
+        SDL_SetError("Semaphore operation error");
         retval = -1;
     }
     return retval;
 }
 
 int
-SDL_SemWaitTimeout (SDL_sem * sem, Uint32 timeout)
+SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
     /* Try the easy cases first */
     if (timeout == 0) {
-        return SDL_SemTryWait (sem);
+        return SDL_SemTryWait(sem);
     }
     if (timeout == SDL_MUTEX_MAXWAIT) {
-        return SDL_SemWait (sem);
+        return SDL_SemWait(sem);
     }
 
     /* Ack!  We have to busy wait... */
-    timeout += SDL_GetTicks ();
+    timeout += SDL_GetTicks();
     do {
-        retval = SDL_SemTryWait (sem);
+        retval = SDL_SemTryWait(sem);
         if (retval == 0) {
             break;
         }
-        SDL_Delay (1);
+        SDL_Delay(1);
     }
-    while (SDL_GetTicks () < timeout);
+    while (SDL_GetTicks() < timeout);
 
     return retval;
 }
 
 Uint32
-SDL_SemValue (SDL_sem * sem)
+SDL_SemValue(SDL_sem * sem)
 {
     int semval;
     Uint32 value;
@@ -186,12 +186,12 @@ SDL_SemValue (SDL_sem * sem)
     if (sem) {
       tryagain:
 #ifdef __IRIX__
-        semval = semctl (sem->id, 0, GETVAL);
+        semval = semctl(sem->id, 0, GETVAL);
 #else
         {
             union semun arg;
             arg.val = 0;
-            semval = semctl (sem->id, 0, GETVAL, arg);
+            semval = semctl(sem->id, 0, GETVAL, arg);
         }
 #endif
         if (semval < 0) {
@@ -206,22 +206,22 @@ SDL_SemValue (SDL_sem * sem)
 }
 
 int
-SDL_SemPost (SDL_sem * sem)
+SDL_SemPost(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
     retval = 0;
   tryagain:
-    if (semop (sem->id, op_post, 1) < 0) {
+    if (semop(sem->id, op_post, 1) < 0) {
         if (errno == EINTR) {
             goto tryagain;
         }
-        SDL_SetError ("Semaphore operation error");
+        SDL_SetError("Semaphore operation error");
         retval = -1;
     }
     return retval;

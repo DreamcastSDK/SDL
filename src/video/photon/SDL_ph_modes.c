@@ -31,16 +31,16 @@ SDL_Rect SDL_modelist[PH_MAX_VIDEOMODES];
 SDL_Rect *SDL_modearray[PH_MAX_VIDEOMODES];
 
 static int
-compare_modes_by_res (const void *mode1, const void *mode2)
+compare_modes_by_res(const void *mode1, const void *mode2)
 {
     PgVideoModeInfo_t mode1_info;
     PgVideoModeInfo_t mode2_info;
 
-    if (PgGetVideoModeInfo (*(unsigned short *) mode1, &mode1_info) < 0) {
+    if (PgGetVideoModeInfo(*(unsigned short *) mode1, &mode1_info) < 0) {
         return 0;
     }
 
-    if (PgGetVideoModeInfo (*(unsigned short *) mode2, &mode2_info) < 0) {
+    if (PgGetVideoModeInfo(*(unsigned short *) mode2, &mode2_info) < 0) {
         return 0;
     }
 
@@ -52,7 +52,7 @@ compare_modes_by_res (const void *mode1, const void *mode2)
 }
 
 SDL_Rect **
-ph_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+ph_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     int i = 0;
     int j = 0;
@@ -62,7 +62,7 @@ ph_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
         SDL_modearray[i] = &SDL_modelist[i];
     }
 
-    if (PgGetVideoModeList (&mode_list) < 0) {
+    if (PgGetVideoModeList(&mode_list) < 0) {
         SDL_SetError
             ("ph_ListModes(): PgGetVideoModeList() function failed !\n");
         return NULL;
@@ -71,7 +71,7 @@ ph_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
     mode_info.bits_per_pixel = 0;
 
     for (i = 0; i < mode_list.num_modes; i++) {
-        if (PgGetVideoModeInfo (mode_list.modes[i], &mode_info) < 0) {
+        if (PgGetVideoModeInfo(mode_list.modes[i], &mode_info) < 0) {
             SDL_SetError
                 ("ph_ListModes(): PgGetVideoModeInfo() function failed on mode: 0x%X.\n",
                  mode_list.modes[i]);
@@ -100,7 +100,7 @@ ph_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
 }
 
 void
-ph_FreeVideoModes (_THIS)
+ph_FreeVideoModes(_THIS)
 {
     return;
 }
@@ -108,13 +108,13 @@ ph_FreeVideoModes (_THIS)
 /* return the mode associated with width, height and bpp */
 /* if there is no mode then zero is returned             */
 int
-ph_GetVideoMode (int width, int height, int bpp)
+ph_GetVideoMode(int width, int height, int bpp)
 {
     int i;
     int modestage = 0;
     int closestmode = 0;
 
-    if (PgGetVideoModeList (&mode_list) < 0) {
+    if (PgGetVideoModeList(&mode_list) < 0) {
         return -1;
     }
 
@@ -125,7 +125,7 @@ ph_GetVideoMode (int width, int height, int bpp)
 
     /* search list for exact match */
     for (i = 0; i < mode_list.num_modes; i++) {
-        if (PgGetVideoModeInfo (mode_list.modes[i], &mode_info) < 0) {
+        if (PgGetVideoModeInfo(mode_list.modes[i], &mode_info) < 0) {
             return 0;
         }
 
@@ -153,19 +153,19 @@ ph_GetVideoMode (int width, int height, int bpp)
 /* return the mode associated with width, height and bpp               */
 /* if requested bpp is not found the mode with closest bpp is returned */
 int
-get_mode_any_format (int width, int height, int bpp)
+get_mode_any_format(int width, int height, int bpp)
 {
     int i, closest, delta, min_delta;
 
-    if (PgGetVideoModeList (&mode_list) < 0) {
+    if (PgGetVideoModeList(&mode_list) < 0) {
         return -1;
     }
 
-    SDL_qsort (mode_list.modes, mode_list.num_modes, sizeof (unsigned short),
-               compare_modes_by_res);
+    SDL_qsort(mode_list.modes, mode_list.num_modes, sizeof(unsigned short),
+              compare_modes_by_res);
 
     for (i = 0; i < mode_list.num_modes; i++) {
-        if (PgGetVideoModeInfo (mode_list.modes[i], &mode_info) < 0) {
+        if (PgGetVideoModeInfo(mode_list.modes[i], &mode_info) < 0) {
             return 0;
         }
         if ((mode_info.width == width) && (mode_info.height == height)) {
@@ -180,10 +180,10 @@ get_mode_any_format (int width, int height, int bpp)
             return mode_list.modes[closest];
         }
 
-        min_delta = abs (mode_info.bits_per_pixel - bpp);
+        min_delta = abs(mode_info.bits_per_pixel - bpp);
 
         while (1) {
-            if (PgGetVideoModeInfo (mode_list.modes[i], &mode_info) < 0) {
+            if (PgGetVideoModeInfo(mode_list.modes[i], &mode_info) < 0) {
                 return 0;
             }
 
@@ -195,7 +195,7 @@ get_mode_any_format (int width, int height, int bpp)
                     closest = i;
                     break;
                 } else {
-                    delta = abs (mode_info.bits_per_pixel - bpp);
+                    delta = abs(mode_info.bits_per_pixel - bpp);
                     if (delta < min_delta) {
                         closest = i;
                         min_delta = delta;
@@ -211,13 +211,13 @@ get_mode_any_format (int width, int height, int bpp)
 }
 
 int
-ph_ToggleFullScreen (_THIS, int on)
+ph_ToggleFullScreen(_THIS, int on)
 {
     return -1;
 }
 
 int
-ph_EnterFullScreen (_THIS, SDL_Surface * screen, int fmode)
+ph_EnterFullScreen(_THIS, SDL_Surface * screen, int fmode)
 {
     PgDisplaySettings_t settings;
     int mode;
@@ -228,21 +228,21 @@ ph_EnterFullScreen (_THIS, SDL_Surface * screen, int fmode)
         /* Get the video mode and set it */
         if (screen->flags & SDL_ANYFORMAT) {
             if ((mode =
-                 get_mode_any_format (screen->w, screen->h,
-                                      screen->format->BitsPerPixel)) == 0) {
+                 get_mode_any_format(screen->w, screen->h,
+                                     screen->format->BitsPerPixel)) == 0) {
                 SDL_SetError
                     ("ph_EnterFullScreen(): can't find appropriate video mode !\n");
                 return 0;
             }
         } else {
             if ((mode =
-                 ph_GetVideoMode (screen->w, screen->h,
-                                  screen->format->BitsPerPixel)) == 0) {
+                 ph_GetVideoMode(screen->w, screen->h,
+                                 screen->format->BitsPerPixel)) == 0) {
                 SDL_SetError
                     ("ph_EnterFullScreen(): can't find appropriate video mode !\n");
                 return 0;
             }
-            if (PgGetVideoModeInfo (mode, &mode_info) < 0) {
+            if (PgGetVideoModeInfo(mode, &mode_info) < 0) {
                 SDL_SetError
                     ("ph_EnterFullScreen(): can't get video mode capabilities !\n");
                 return 0;
@@ -257,7 +257,7 @@ ph_EnterFullScreen (_THIS, SDL_Surface * screen, int fmode)
         }
 
         /* save old video mode caps */
-        PgGetVideoMode (&settings);
+        PgGetVideoMode(&settings);
         old_video_mode = settings.mode;
         old_refresh_rate = settings.refresh;
 
@@ -266,14 +266,14 @@ ph_EnterFullScreen (_THIS, SDL_Surface * screen, int fmode)
         settings.refresh = 0;
         settings.flags = 0;
 
-        refreshrate = SDL_getenv ("SDL_PHOTON_FULLSCREEN_REFRESH");
+        refreshrate = SDL_getenv("SDL_PHOTON_FULLSCREEN_REFRESH");
         if (refreshrate != NULL) {
-            if (SDL_sscanf (refreshrate, "%d", &refreshratenum) == 1) {
+            if (SDL_sscanf(refreshrate, "%d", &refreshratenum) == 1) {
                 settings.refresh = refreshratenum;
             }
         }
 
-        if (PgSetVideoMode (&settings) < 0) {
+        if (PgSetVideoMode(&settings) < 0) {
             SDL_SetError
                 ("ph_EnterFullScreen(): PgSetVideoMode() call failed !\n");
             return 0;
@@ -290,26 +290,26 @@ ph_EnterFullScreen (_THIS, SDL_Surface * screen, int fmode)
         if (fmode == 0) {
             if (OCImage.direct_context == NULL) {
                 OCImage.direct_context =
-                    (PdDirectContext_t *) PdCreateDirectContext ();
+                    (PdDirectContext_t *) PdCreateDirectContext();
                 if (!OCImage.direct_context) {
                     SDL_SetError
                         ("ph_EnterFullScreen(): Can't create direct context !\n");
-                    ph_LeaveFullScreen (this);
+                    ph_LeaveFullScreen(this);
                     return 0;
                 }
             }
-            OCImage.oldDC = PdDirectStart (OCImage.direct_context);
+            OCImage.oldDC = PdDirectStart(OCImage.direct_context);
         }
 
         currently_fullscreen = 1;
     }
-    PgFlush ();
+    PgFlush();
 
     return 1;
 }
 
 int
-ph_LeaveFullScreen (_THIS)
+ph_LeaveFullScreen(_THIS)
 {
     PgDisplaySettings_t oldmode_settings;
 
@@ -323,12 +323,12 @@ ph_LeaveFullScreen (_THIS)
         /* release routines starts here */
         {
             if (OCImage.direct_context) {
-                PdDirectStop (OCImage.direct_context);
-                PdReleaseDirectContext (OCImage.direct_context);
+                PdDirectStop(OCImage.direct_context);
+                PdReleaseDirectContext(OCImage.direct_context);
                 OCImage.direct_context = NULL;
             }
             if (OCImage.oldDC) {
-                PhDCSetCurrent (OCImage.oldDC);
+                PhDCSetCurrent(OCImage.oldDC);
                 OCImage.oldDC = NULL;
             }
 
@@ -340,7 +340,7 @@ ph_LeaveFullScreen (_THIS)
                 oldmode_settings.refresh = (unsigned short) old_refresh_rate;
                 oldmode_settings.flags = 0;
 
-                if (PgSetVideoMode (&oldmode_settings) < 0) {
+                if (PgSetVideoMode(&oldmode_settings) < 0) {
                     SDL_SetError
                         ("Ph_LeaveFullScreen(): PgSetVideoMode() function failed !\n");
                     return 0;

@@ -73,33 +73,33 @@ Inspired by http://arisme.free.fr/ports/SDL.php
 
 // defined and used in SDL_sysevents.c
 extern HINSTANCE aygshell;
-extern void SDL_UnregisterApp ();
-extern int DIB_AddMode (_THIS, int bpp, int w, int h);
+extern void SDL_UnregisterApp();
+extern int DIB_AddMode(_THIS, int bpp, int w, int h);
 
 /* Initialization/Query functions */
-static int GAPI_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **GAPI_ListModes (_THIS, SDL_PixelFormat * format,
-                                  Uint32 flags);
-static SDL_Surface *GAPI_SetVideoMode (_THIS, SDL_Surface * current,
-                                       int width, int height, int bpp,
-                                       Uint32 flags);
-static int GAPI_SetColors (_THIS, int firstcolor, int ncolors,
-                           SDL_Color * colors);
-static void GAPI_VideoQuit (_THIS);
+static int GAPI_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **GAPI_ListModes(_THIS, SDL_PixelFormat * format,
+                                 Uint32 flags);
+static SDL_Surface *GAPI_SetVideoMode(_THIS, SDL_Surface * current,
+                                      int width, int height, int bpp,
+                                      Uint32 flags);
+static int GAPI_SetColors(_THIS, int firstcolor, int ncolors,
+                          SDL_Color * colors);
+static void GAPI_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int GAPI_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int GAPI_LockHWSurface (_THIS, SDL_Surface * surface);
-static void GAPI_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void GAPI_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int GAPI_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int GAPI_LockHWSurface(_THIS, SDL_Surface * surface);
+static void GAPI_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void GAPI_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* Windows message handling functions, will not be processed */
-static void GAPI_RealizePalette (_THIS);
-static void GAPI_PaletteChanged (_THIS, HWND window);
-static void GAPI_WinPAINT (_THIS, HDC hdc);
+static void GAPI_RealizePalette(_THIS);
+static void GAPI_PaletteChanged(_THIS, HWND window);
+static void GAPI_WinPAINT(_THIS, HDC hdc);
 
 /* etc. */
-static void GAPI_UpdateRects (_THIS, int numrects, SDL_Rect * rects);
+static void GAPI_UpdateRects(_THIS, int numrects, SDL_Rect * rects);
 
 static HMODULE g_hGapiLib = 0;
 #define LINK(type,name,import) \
@@ -149,14 +149,14 @@ typedef struct GXDeviceInfo
 } GXDeviceInfo;
 
 static int
-GAPI_Available (void)
+GAPI_Available(void)
 {
     // try to use VGA display, even on emulator
-    HDC hdc = GetDC (NULL);
-    int result = ExtEscape (hdc, GETRAWFRAMEBUFFER, 0, NULL,
-                            sizeof (RawFrameBufferInfo),
-                            (char *) &g_RawFrameBufferInfo);
-    ReleaseDC (NULL, hdc);
+    HDC hdc = GetDC(NULL);
+    int result = ExtEscape(hdc, GETRAWFRAMEBUFFER, 0, NULL,
+                           sizeof(RawFrameBufferInfo),
+                           (char *) &g_RawFrameBufferInfo);
+    ReleaseDC(NULL, hdc);
     g_bRawBufferAvailable = result > 0;
 
 #if WITHOUT_GAPI
@@ -164,17 +164,17 @@ GAPI_Available (void)
 #endif
 
 #if USE_GAPI_EMU
-    g_hGapiLib = LoadLibrary (_T ("GAPI_Emu.dll"));
+    g_hGapiLib = LoadLibrary(_T("GAPI_Emu.dll"));
     if (!g_hGapiLib) {
-        SDL_SetError ("Gapi Emu not found!");
+        SDL_SetError("Gapi Emu not found!");
     }
     return g_hGapiLib != 0;
 #endif
 
     // try to find gx.dll
-    g_hGapiLib = LoadLibrary (_T ("\\Windows\\gx.dll"));
+    g_hGapiLib = LoadLibrary(_T("\\Windows\\gx.dll"));
     if (!g_hGapiLib) {
-        g_hGapiLib = LoadLibrary (_T ("gx.dll"));
+        g_hGapiLib = LoadLibrary(_T("gx.dll"));
         if (!g_hGapiLib)
             return g_bRawBufferAvailable;
     }
@@ -183,7 +183,7 @@ GAPI_Available (void)
 }
 
 static int
-cmpmodes (const void *va, const void *vb)
+cmpmodes(const void *va, const void *vb)
 {
     SDL_Rect *a = *(SDL_Rect **) va;
     SDL_Rect *b = *(SDL_Rect **) vb;
@@ -194,7 +194,7 @@ cmpmodes (const void *va, const void *vb)
 }
 
 static int
-GAPI_AddMode (_THIS, int bpp, int w, int h)
+GAPI_AddMode(_THIS, int bpp, int w, int h)
 {
     SDL_Rect *mode;
     int i, index;
@@ -213,9 +213,9 @@ GAPI_AddMode (_THIS, int bpp, int w, int h)
     }
 
     /* Set up the new video mode rectangle */
-    mode = (SDL_Rect *) SDL_malloc (sizeof *mode);
+    mode = (SDL_Rect *) SDL_malloc(sizeof *mode);
     if (mode == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
     mode->x = 0;
@@ -226,12 +226,12 @@ GAPI_AddMode (_THIS, int bpp, int w, int h)
     /* Allocate the new list of modes, and fill in the new mode */
     next_mode = gapi->SDL_nummodes[index];
     gapi->SDL_modelist[index] = (SDL_Rect **)
-        SDL_realloc (gapi->SDL_modelist[index],
-                     (1 + next_mode + 1) * sizeof (SDL_Rect *));
+        SDL_realloc(gapi->SDL_modelist[index],
+                    (1 + next_mode + 1) * sizeof(SDL_Rect *));
     if (gapi->SDL_modelist[index] == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         gapi->SDL_nummodes[index] = 0;
-        SDL_free (mode);
+        SDL_free(mode);
         return (-1);
     }
     gapi->SDL_modelist[index][next_mode] = mode;
@@ -242,23 +242,23 @@ GAPI_AddMode (_THIS, int bpp, int w, int h)
 }
 
 static void
-GAPI_DeleteDevice (SDL_VideoDevice * device)
+GAPI_DeleteDevice(SDL_VideoDevice * device)
 {
     if (g_hGapiLib) {
-        FreeLibrary (g_hGapiLib);
+        FreeLibrary(g_hGapiLib);
         g_hGapiLib = 0;
     }
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-GAPI_CreateDevice (int devindex)
+GAPI_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     if (!g_hGapiLib && !g_bRawBufferAvailable) {
-        if (!GAPI_Available ()) {
+        if (!GAPI_Available()) {
             SDL_SetError
                 ("GAPI dll is not found and VGA mode is not available!");
             return 0;
@@ -266,20 +266,20 @@ GAPI_CreateDevice (int devindex)
     }
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = GAPI_VideoInit;
@@ -323,39 +323,39 @@ GAPI_CreateDevice (int devindex)
     /* Load gapi library */
 #define gx device->hidden->gxFunc
 
-    LINK (GXOpenDisplay, gx.GXOpenDisplay,
-          "?GXOpenDisplay@@YAHPAUHWND__@@K@Z") LINK (GXCloseDisplay,
-                                                     gx.GXCloseDisplay,
-                                                     "?GXCloseDisplay@@YAHXZ")
-        LINK (GXBeginDraw, gx.GXBeginDraw,
-              "?GXBeginDraw@@YAPAXXZ") LINK (GXEndDraw, gx.GXEndDraw,
-                                             "?GXEndDraw@@YAHXZ")
-        LINK (GXOpenInput, gx.GXOpenInput,
-              "?GXOpenInput@@YAHXZ") LINK (GXCloseInput, gx.GXCloseInput,
-                                           "?GXCloseInput@@YAHXZ")
-        LINK (GXGetDisplayProperties, gx.GXGetDisplayProperties,
-              "?GXGetDisplayProperties@@YA?AUGXDisplayProperties@@XZ")
-        LINK (GXGetDefaultKeys, gx.GXGetDefaultKeys,
-              "?GXGetDefaultKeys@@YA?AUGXKeyList@@H@Z") LINK (GXSuspend,
-                                                              gx.GXSuspend,
-                                                              "?GXSuspend@@YAHXZ")
-        LINK (GXResume, gx.GXResume, "?GXResume@@YAHXZ") LINK (GXSetViewport,
-                                                               gx.
-                                                               GXSetViewport,
-                                                               "?GXSetViewport@@YAHKKKK@Z")
-        LINK (GXIsDisplayDRAMBuffer, gx.GXIsDisplayDRAMBuffer,
-              "?GXIsDisplayDRAMBuffer@@YAHXZ")
+    LINK(GXOpenDisplay, gx.GXOpenDisplay,
+         "?GXOpenDisplay@@YAHPAUHWND__@@K@Z") LINK(GXCloseDisplay,
+                                                   gx.GXCloseDisplay,
+                                                   "?GXCloseDisplay@@YAHXZ")
+        LINK(GXBeginDraw, gx.GXBeginDraw,
+             "?GXBeginDraw@@YAPAXXZ") LINK(GXEndDraw, gx.GXEndDraw,
+                                           "?GXEndDraw@@YAHXZ")
+        LINK(GXOpenInput, gx.GXOpenInput,
+             "?GXOpenInput@@YAHXZ") LINK(GXCloseInput, gx.GXCloseInput,
+                                         "?GXCloseInput@@YAHXZ")
+        LINK(GXGetDisplayProperties, gx.GXGetDisplayProperties,
+             "?GXGetDisplayProperties@@YA?AUGXDisplayProperties@@XZ")
+        LINK(GXGetDefaultKeys, gx.GXGetDefaultKeys,
+             "?GXGetDefaultKeys@@YA?AUGXKeyList@@H@Z") LINK(GXSuspend,
+                                                            gx.GXSuspend,
+                                                            "?GXSuspend@@YAHXZ")
+        LINK(GXResume, gx.GXResume, "?GXResume@@YAHXZ") LINK(GXSetViewport,
+                                                             gx.
+                                                             GXSetViewport,
+                                                             "?GXSetViewport@@YAHKKKK@Z")
+        LINK(GXIsDisplayDRAMBuffer, gx.GXIsDisplayDRAMBuffer,
+             "?GXIsDisplayDRAMBuffer@@YAHXZ")
         /* wrong gapi.dll */
         if (!gx.GXOpenDisplay) {
         if (g_hGapiLib) {
-            FreeLibrary (g_hGapiLib);
+            FreeLibrary(g_hGapiLib);
             g_hGapiLib = 0;
         }
     }
 
     if (!gx.GXOpenDisplay && !g_bRawBufferAvailable) {
-        SDL_SetError ("Error: damaged or unknown gapi.dll!\n");
-        GAPI_DeleteDevice (device);
+        SDL_SetError("Error: damaged or unknown gapi.dll!\n");
+        GAPI_DeleteDevice(device);
         return 0;
     }
 
@@ -368,7 +368,7 @@ VideoBootStrap GAPI_bootstrap = {
 };
 
 static void
-FillStructs (_THIS, BOOL useVga)
+FillStructs(_THIS, BOOL useVga)
 {
 #ifdef _ARM_
     WCHAR oemstr[100];
@@ -377,7 +377,7 @@ FillStructs (_THIS, BOOL useVga)
 
     if (!useVga) {
         this->hidden->gxProperties =
-            this->hidden->gxFunc.GXGetDisplayProperties ();
+            this->hidden->gxFunc.GXGetDisplayProperties();
         this->hidden->needUpdate = 1;
         this->hidden->hiresFix = 0;
         this->hidden->useVga = 0;
@@ -385,7 +385,7 @@ FillStructs (_THIS, BOOL useVga)
 
 #ifdef _ARM_
         /* check some devices and extract addition info */
-        SystemParametersInfo (SPI_GETOEMINFO, sizeof (oemstr), oemstr, 0);
+        SystemParametersInfo(SPI_GETOEMINFO, sizeof(oemstr), oemstr, 0);
 
         // buggy iPaq38xx
         if ((oemstr[12] == 'H') && (oemstr[13] == '3')
@@ -398,17 +398,17 @@ FillStructs (_THIS, BOOL useVga)
         }
 #if (EMULATE_AXIM_X30 == 0)
         // buggy Dell Axim X30
-        if (_tcsncmp (oemstr, L"Dell Axim X30", 13) == 0)
+        if (_tcsncmp(oemstr, L"Dell Axim X30", 13) == 0)
 #endif
         {
             GXDeviceInfo gxInfo = { 0 };
-            HDC hdc = GetDC (NULL);
+            HDC hdc = GetDC(NULL);
             int result;
 
             gxInfo.Version = 100;
             result =
-                ExtEscape (hdc, GETGXINFO, 0, NULL, sizeof (gxInfo),
-                           (char *) &gxInfo);
+                ExtEscape(hdc, GETGXINFO, 0, NULL, sizeof(gxInfo),
+                          (char *) &gxInfo);
             if (result > 0) {
                 this->hidden->useGXOpenDisplay = 0;
                 this->hidden->videoMem = gxInfo.pvFrameBuffer;
@@ -469,10 +469,10 @@ FillStructs (_THIS, BOOL useVga)
 }
 
 static void
-GAPI_CreatePalette (int ncolors, SDL_Color * colors)
+GAPI_CreatePalette(int ncolors, SDL_Color * colors)
 {
     // Setup a custom color palette
-    BYTE buffer[sizeof (LOGPALETTE) + 255 * sizeof (PALETTEENTRY)];
+    BYTE buffer[sizeof(LOGPALETTE) + 255 * sizeof(PALETTEENTRY)];
     int i;
     LOGPALETTE *pLogical = (LOGPALETTE *) buffer;
     PALETTEENTRY *entries = pLogical->palPalEntry;
@@ -491,41 +491,41 @@ GAPI_CreatePalette (int ncolors, SDL_Color * colors)
     pLogical->palVersion = 0x0300;
     pLogical->palNumEntries = ncolors;
 
-    hPalette = CreatePalette (pLogical);
-    ASSERT (hPalette);
+    hPalette = CreatePalette(pLogical);
+    ASSERT(hPalette);
 
 
     // Realize the palette
-    hdc = GetDC (0);
+    hdc = GetDC(0);
 
-    SelectPalette (hdc, hPalette, FALSE);
-    RealizePalette (hdc);
+    SelectPalette(hdc, hPalette, FALSE);
+    RealizePalette(hdc);
 
-    ReleaseDC (0, hdc);
-    DeleteObject (hPalette);
+    ReleaseDC(0, hdc);
+    DeleteObject(hPalette);
 }
 
 int
-GAPI_VideoInit (_THIS, SDL_PixelFormat * vformat)
+GAPI_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     int i, bpp;
 
     /* Create the window */
-    if (DIB_CreateWindow (this) < 0) {
+    if (DIB_CreateWindow(this) < 0) {
         return (-1);
     }
 
     if (g_hGapiLib) {
-        FillStructs (this, 0);
+        FillStructs(this, 0);
 
         // SDL does not supports 2/4bpp mode, so use 16 bpp
         bpp = gapi->gxProperties.cBPP < 8 ? 16 : gapi->gxProperties.cBPP;
 
         /* set up normal and landscape mode */
-        GAPI_AddMode (this, bpp, gapi->gxProperties.cyHeight,
-                      gapi->gxProperties.cxWidth);
-        GAPI_AddMode (this, bpp, gapi->gxProperties.cxWidth,
-                      gapi->gxProperties.cyHeight);
+        GAPI_AddMode(this, bpp, gapi->gxProperties.cyHeight,
+                     gapi->gxProperties.cxWidth);
+        GAPI_AddMode(this, bpp, gapi->gxProperties.cxWidth,
+                     gapi->gxProperties.cyHeight);
     }
 
     /* add hi-res mode */
@@ -534,16 +534,16 @@ GAPI_VideoInit (_THIS, SDL_PixelFormat * vformat)
            (unsigned) g_RawFrameBufferInfo.cxPixels)
           && (gapi->gxProperties.cyHeight ==
               (unsigned) g_RawFrameBufferInfo.cyPixels))) {
-        FillStructs (this, 1);
+        FillStructs(this, 1);
 
         // SDL does not supports 2/4bpp mode, so use 16 bpp
         bpp = gapi->gxProperties.cBPP < 8 ? 16 : gapi->gxProperties.cBPP;
 
         /* set up normal and landscape mode */
-        GAPI_AddMode (this, bpp, gapi->gxProperties.cyHeight,
-                      gapi->gxProperties.cxWidth);
-        GAPI_AddMode (this, bpp, gapi->gxProperties.cxWidth,
-                      gapi->gxProperties.cyHeight);
+        GAPI_AddMode(this, bpp, gapi->gxProperties.cyHeight,
+                     gapi->gxProperties.cxWidth);
+        GAPI_AddMode(this, bpp, gapi->gxProperties.cxWidth,
+                     gapi->gxProperties.cyHeight);
     }
 
     /* Determine the current screen size */
@@ -553,8 +553,8 @@ GAPI_VideoInit (_THIS, SDL_PixelFormat * vformat)
     /* Sort the mode lists */
     for (i = 0; i < NUM_MODELISTS; ++i) {
         if (gapi->SDL_nummodes[i] > 0) {
-            SDL_qsort (gapi->SDL_modelist[i], gapi->SDL_nummodes[i],
-                       sizeof *gapi->SDL_modelist[i], cmpmodes);
+            SDL_qsort(gapi->SDL_modelist[i], gapi->SDL_nummodes[i],
+                      sizeof *gapi->SDL_modelist[i], cmpmodes);
         }
     }
 
@@ -597,15 +597,15 @@ GAPI_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 SDL_Rect **
-GAPI_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+GAPI_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     return (this->hidden->SDL_modelist[((format->BitsPerPixel + 7) / 8) - 1]);
 //       return (SDL_Rect **) -1;
 }
 
 SDL_Surface *
-GAPI_SetVideoMode (_THIS, SDL_Surface * current,
-                   int width, int height, int bpp, Uint32 flags)
+GAPI_SetVideoMode(_THIS, SDL_Surface * current,
+                  int width, int height, int bpp, Uint32 flags)
 {
     SDL_Surface *video;
     Uint32 Rmask, Gmask, Bmask;
@@ -613,7 +613,7 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
     SDL_Rect allScreen;
 
     if (bpp < 4) {
-        SDL_SetError ("1 bpp and 2 bpp modes is not implemented yet!");
+        SDL_SetError("1 bpp and 2 bpp modes is not implemented yet!");
         return 0;
     }
 
@@ -647,13 +647,13 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
             Bmask = 0x000000ff;
             break;
         default:
-            SDL_SetError ("Unsupported Bits Per Pixel format requested");
+            SDL_SetError("Unsupported Bits Per Pixel format requested");
             return NULL;
         }
-        video = SDL_CreateRGBSurface (SDL_SWSURFACE,
-                                      0, 0, bpp, Rmask, Gmask, Bmask, 0);
+        video = SDL_CreateRGBSurface(SDL_SWSURFACE,
+                                     0, 0, bpp, Rmask, Gmask, Bmask, 0);
         if (video == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (NULL);
         }
     }
@@ -663,14 +663,14 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* GAPI or VGA? */
     if (g_hGapiLib) {
-        FillStructs (this, 0);
+        FillStructs(this, 0);
         if ((((unsigned) width != gapi->gxProperties.cxWidth)
              || ((unsigned) height != gapi->gxProperties.cyHeight))
             && (((unsigned) width != gapi->gxProperties.cyHeight)
                 || ((unsigned) height != gapi->gxProperties.cxWidth)))
-            FillStructs (this, 1);      // gapi is found but we use VGA resolution                        
+            FillStructs(this, 1);       // gapi is found but we use VGA resolution                        
     } else
-        FillStructs (this, 1);
+        FillStructs(this, 1);
 
     if (!this->hidden->needUpdate && !this->hidden->videoMem) {
         SDL_SetError
@@ -680,18 +680,18 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* detect user landscape mode */
     if ((width > height)
-        && (GetSystemMetrics (SM_CXSCREEN) < GetSystemMetrics (SM_CYSCREEN)))
+        && (GetSystemMetrics(SM_CXSCREEN) < GetSystemMetrics(SM_CYSCREEN)))
         gapi->userOrientation = SDL_ORIENTATION_RIGHT;
 
     /* shall we apply hires fix? for example when we do not use hires resource */
     gapi->hiresFix = 0;
     if (gapi->userOrientation == SDL_ORIENTATION_RIGHT) {
-        if ((width > GetSystemMetrics (SM_CYSCREEN))
-            || (height > GetSystemMetrics (SM_CXSCREEN)))
+        if ((width > GetSystemMetrics(SM_CYSCREEN))
+            || (height > GetSystemMetrics(SM_CXSCREEN)))
             gapi->hiresFix = 1;
-    } else if ((width > GetSystemMetrics (SM_CXSCREEN))
-               || (height > GetSystemMetrics (SM_CYSCREEN)))
-        if (!((width == GetSystemMetrics (SM_CYSCREEN)) && (height == GetSystemMetrics (SM_CXSCREEN)))) // user portrait, device landscape
+    } else if ((width > GetSystemMetrics(SM_CXSCREEN))
+               || (height > GetSystemMetrics(SM_CYSCREEN)))
+        if (!((width == GetSystemMetrics(SM_CYSCREEN)) && (height == GetSystemMetrics(SM_CXSCREEN))))   // user portrait, device landscape
             gapi->hiresFix = 1;
 
     switch (gapi->userOrientation) {
@@ -720,7 +720,7 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
 
     video->w = this->hidden->w = width;
     video->h = this->hidden->h = height;
-    video->pitch = SDL_CalculatePitch (video);
+    video->pitch = SDL_CalculatePitch(video);
 
     /* Small fix for WinCE/Win32 - when activating window
        SDL_VideoSurface is equal to zero, so activating code
@@ -733,61 +733,61 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
     style = 0;
 
     if (!SDL_windowid)
-        SetWindowLong (SDL_Window, GWL_STYLE, style);
+        SetWindowLong(SDL_Window, GWL_STYLE, style);
 
     /* Allocate bitmap */
     if (gapiBuffer) {
-        SDL_free (gapiBuffer);
+        SDL_free(gapiBuffer);
         gapiBuffer = NULL;
     }
-    gapiBuffer = SDL_malloc (video->h * video->pitch);
+    gapiBuffer = SDL_malloc(video->h * video->pitch);
     video->pixels = gapiBuffer;
 
     if (!this->hidden->buffer) {
-        SDL_SetError ("Couldn't allocate buffer for requested mode");
+        SDL_SetError("Couldn't allocate buffer for requested mode");
         return (NULL);
     }
 
-    SDL_memset (gapiBuffer, 255, video->h * video->pitch);
-    MoveWindow (SDL_Window, 0, 0, GetSystemMetrics (SM_CXSCREEN),
-                GetSystemMetrics (SM_CYSCREEN), FALSE);
-    ShowWindow (SDL_Window, SW_SHOW);
-    SetForegroundWindow (SDL_Window);
+    SDL_memset(gapiBuffer, 255, video->h * video->pitch);
+    MoveWindow(SDL_Window, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+               GetSystemMetrics(SM_CYSCREEN), FALSE);
+    ShowWindow(SDL_Window, SW_SHOW);
+    SetForegroundWindow(SDL_Window);
 
     /* JC 14 Mar 2006
        Flush the message loop or this can cause big problems later
        Especially if the user decides to use dialog boxes or assert()!
      */
-    WIN_FlushMessageQueue ();
+    WIN_FlushMessageQueue();
 
     /* Open GAPI display */
     if (!gapi->useVga && this->hidden->useGXOpenDisplay)
-        if (!gapi->gxFunc.GXOpenDisplay (SDL_Window, GX_FULLSCREEN)) {
-            SDL_SetError ("Couldn't initialize GAPI");
+        if (!gapi->gxFunc.GXOpenDisplay(SDL_Window, GX_FULLSCREEN)) {
+            SDL_SetError("Couldn't initialize GAPI");
             return (NULL);
         }
 #if REPORT_VIDEO_INFO
-    printf ("Video properties:\n");
-    printf ("display bpp: %d\n", gapi->gxProperties.cBPP);
-    printf ("display width: %d\n", gapi->gxProperties.cxWidth);
-    printf ("display height: %d\n", gapi->gxProperties.cyHeight);
-    printf ("x pitch: %d\n", gapi->gxProperties.cbxPitch);
-    printf ("y pitch: %d\n", gapi->gxProperties.cbyPitch);
-    printf ("gapi flags: 0x%x\n", gapi->gxProperties.ffFormat);
+    printf("Video properties:\n");
+    printf("display bpp: %d\n", gapi->gxProperties.cBPP);
+    printf("display width: %d\n", gapi->gxProperties.cxWidth);
+    printf("display height: %d\n", gapi->gxProperties.cyHeight);
+    printf("x pitch: %d\n", gapi->gxProperties.cbxPitch);
+    printf("y pitch: %d\n", gapi->gxProperties.cbyPitch);
+    printf("gapi flags: 0x%x\n", gapi->gxProperties.ffFormat);
 
     if (!gapi->useVga && this->hidden->useGXOpenDisplay && gapi->needUpdate) {
-        gapi->videoMem = gapi->gxFunc.GXBeginDraw ();
-        gapi->gxFunc.GXEndDraw ();
+        gapi->videoMem = gapi->gxFunc.GXBeginDraw();
+        gapi->gxFunc.GXEndDraw();
     }
 
-    printf ("video memory: 0x%x\n", gapi->videoMem);
-    printf ("need update: %d\n", gapi->needUpdate);
-    printf ("hi-res fix: %d\n", gapi->hiresFix);
-    printf ("VGA is available on the device: %d\n", g_bRawBufferAvailable);
-    printf ("use raw framebuffer: %d\n", gapi->useVga);
-    printf ("video surface bpp: %d\n", video->format->BitsPerPixel);
-    printf ("video surface width: %d\n", video->w);
-    printf ("video surface height: %d\n", video->h);
+    printf("video memory: 0x%x\n", gapi->videoMem);
+    printf("need update: %d\n", gapi->needUpdate);
+    printf("hi-res fix: %d\n", gapi->hiresFix);
+    printf("VGA is available on the device: %d\n", g_bRawBufferAvailable);
+    printf("use raw framebuffer: %d\n", gapi->useVga);
+    printf("video surface bpp: %d\n", video->format->BitsPerPixel);
+    printf("video surface width: %d\n", video->w);
+    printf("video surface height: %d\n", video->h);
 #endif
 
 
@@ -795,7 +795,7 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
     allScreen.x = allScreen.y = 0;
     allScreen.w = video->w - 1;
     allScreen.h = video->h - 1;
-    GAPI_UpdateRects (this, 1, &allScreen);
+    GAPI_UpdateRects(this, 1, &allScreen);
 
     /* We're done */
     return (video);
@@ -803,35 +803,35 @@ GAPI_SetVideoMode (_THIS, SDL_Surface * current,
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-GAPI_AllocHWSurface (_THIS, SDL_Surface * surface)
+GAPI_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-GAPI_FreeHWSurface (_THIS, SDL_Surface * surface)
+GAPI_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-GAPI_LockHWSurface (_THIS, SDL_Surface * surface)
+GAPI_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     return (0);
 }
 
 static void
-GAPI_UnlockHWSurface (_THIS, SDL_Surface * surface)
+GAPI_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 static int
-updateLine8to8 (_THIS, unsigned char *srcPointer, unsigned char *destPointer,
-                int width, int height, int lines)
+updateLine8to8(_THIS, unsigned char *srcPointer, unsigned char *destPointer,
+               int width, int height, int lines)
 {
     if (gapi->dstPixelStep == 1) {      /* optimized blitting on most devices */
-        SDL_memcpy (destPointer, srcPointer, width);
+        SDL_memcpy(destPointer, srcPointer, width);
         return 1;
     } else {
         // TODO: read 4 pixels, write DWORD
@@ -846,14 +846,14 @@ updateLine8to8 (_THIS, unsigned char *srcPointer, unsigned char *destPointer,
 
 /* Video memory is very slow so lets optimize as much as possible */
 static int
-updateLine16to16 (_THIS, PIXEL * srcPointer, PIXEL * destPointer, int width,
-                  int height, int lines)
+updateLine16to16(_THIS, PIXEL * srcPointer, PIXEL * destPointer, int width,
+                 int height, int lines)
 {
     PIXEL *line1, *line2;
     int step = gapi->dstPixelStep / 2;
 
     if (step == 1) {            /* optimized blitting on most devices */
-        SDL_memcpy (destPointer, srcPointer, width * sizeof (PIXEL));
+        SDL_memcpy(destPointer, srcPointer, width * sizeof(PIXEL));
         return 1;
     } else {
         if ((gapi->gapiOrientation != SDL_ORIENTATION_UP) && (gapi->userOrientation == SDL_ORIENTATION_UP))     // iPaq 3660/3800 and user orientation up
@@ -950,8 +950,8 @@ updateLine16to16 (_THIS, PIXEL * srcPointer, PIXEL * destPointer, int width,
 
 
 static int
-updateLine16to4 (_THIS, PIXEL * srcPointer, unsigned char *destPointer,
-                 int width, int height, int lines, int yNibble, int xNibble)
+updateLine16to4(_THIS, PIXEL * srcPointer, unsigned char *destPointer,
+                int width, int height, int lines, int yNibble, int xNibble)
 {
     PIXEL *line1, *line2;
     int step = gapi->dstPixelStep;
@@ -1031,7 +1031,7 @@ updateLine16to4 (_THIS, PIXEL * srcPointer, unsigned char *destPointer,
 }
 
 static void
-GAPI_UpdateRectsMono (_THIS, int numrects, SDL_Rect * rects)
+GAPI_UpdateRectsMono(_THIS, int numrects, SDL_Rect * rects)
 {
     int i, height;
     int linesProcessed;
@@ -1063,9 +1063,9 @@ GAPI_UpdateRectsMono (_THIS, int numrects, SDL_Rect * rects)
             case 2:            // TODO
             case 4:
                 linesProcessed =
-                    updateLine16to4 (this, (PIXEL *) srcPointer,
-                                     destPointer, rects[i].w,
-                                     rects[i].h, height, yNibble, xNibble);
+                    updateLine16to4(this, (PIXEL *) srcPointer,
+                                    destPointer, rects[i].w,
+                                    rects[i].h, height, yNibble, xNibble);
                 yNibble = 0;
             }
             height -= linesProcessed;
@@ -1079,7 +1079,7 @@ GAPI_UpdateRectsMono (_THIS, int numrects, SDL_Rect * rects)
 }
 
 static void
-GAPI_UpdateRectsColor (_THIS, int numrects, SDL_Rect * rects)
+GAPI_UpdateRectsColor(_THIS, int numrects, SDL_Rect * rects)
 {
     int i, height;
     int bytesPerPixel = (gapi->gxProperties.cBPP + 1) / 8;
@@ -1101,16 +1101,16 @@ GAPI_UpdateRectsColor (_THIS, int numrects, SDL_Rect * rects)
             switch (bytesPerPixel) {
             case 1:
                 linesProcessed =
-                    updateLine8to8 (this, srcPointer,
-                                    (unsigned char *) destPointer,
-                                    rects[i].w, rects[i].h, height);
+                    updateLine8to8(this, srcPointer,
+                                   (unsigned char *) destPointer,
+                                   rects[i].w, rects[i].h, height);
                 break;
             case 2:
 #pragma warning(disable: 4133)
                 linesProcessed =
-                    updateLine16to16 (this, (PIXEL *) srcPointer,
-                                      destPointer, rects[i].w,
-                                      rects[i].h, height);
+                    updateLine16to16(this, (PIXEL *) srcPointer,
+                                     destPointer, rects[i].w,
+                                     rects[i].h, height);
                 break;
             }
             height -= linesProcessed;
@@ -1124,55 +1124,55 @@ GAPI_UpdateRectsColor (_THIS, int numrects, SDL_Rect * rects)
 
 
 static void
-GAPI_UpdateRects (_THIS, int numrects, SDL_Rect * rects)
+GAPI_UpdateRects(_THIS, int numrects, SDL_Rect * rects)
 {
     // we do not want to corrupt video memory
     if (gapi->suspended)
         return;
 
     if (gapi->needUpdate)
-        gapi->videoMem = gapi->gxFunc.GXBeginDraw ();
+        gapi->videoMem = gapi->gxFunc.GXBeginDraw();
 
     if (gapi->gxProperties.cBPP < 8)
-        GAPI_UpdateRectsMono (this, numrects, rects);
+        GAPI_UpdateRectsMono(this, numrects, rects);
     else
-        GAPI_UpdateRectsColor (this, numrects, rects);
+        GAPI_UpdateRectsColor(this, numrects, rects);
 
     if (gapi->needUpdate)
-        gapi->gxFunc.GXEndDraw ();
+        gapi->gxFunc.GXEndDraw();
 }
 
 /* Note:  If we are terminated, this could be called in the middle of
    another SDL video routine -- notably UpdateRects.
 */
 void
-GAPI_VideoQuit (_THIS)
+GAPI_VideoQuit(_THIS)
 {
     int i, j;
     /* Destroy the window and everything associated with it */
     if (SDL_Window) {
         if ((g_hGapiLib != 0) && this && this->hidden
             && this->hidden->gxFunc.GXCloseDisplay && !this->hidden->useVga)
-            this->hidden->gxFunc.GXCloseDisplay ();
+            this->hidden->gxFunc.GXCloseDisplay();
 
         if (this->screen->pixels != NULL) {
-            SDL_free (this->screen->pixels);
+            SDL_free(this->screen->pixels);
             this->screen->pixels = NULL;
         }
         if (screen_icn) {
-            DestroyIcon (screen_icn);
+            DestroyIcon(screen_icn);
             screen_icn = NULL;
         }
 
-        DIB_DestroyWindow (this);
-        SDL_UnregisterApp ();
+        DIB_DestroyWindow(this);
+        SDL_UnregisterApp();
 
         SDL_Window = NULL;
 #if defined(_WIN32_WCE)
 
 // Unload wince aygshell library to prevent leak
         if (aygshell) {
-            FreeLibrary (aygshell);
+            FreeLibrary(aygshell);
             aygshell = NULL;
         }
 #endif
@@ -1181,8 +1181,8 @@ GAPI_VideoQuit (_THIS)
         for (i = 0; i < NUM_MODELISTS; ++i) {
             if (gapi->SDL_modelist[i] != NULL) {
                 for (j = 0; gapi->SDL_modelist[i][j]; ++j)
-                    SDL_free (gapi->SDL_modelist[i][j]);
-                SDL_free (gapi->SDL_modelist[i]);
+                    SDL_free(gapi->SDL_modelist[i][j]);
+                SDL_free(gapi->SDL_modelist[i]);
                 gapi->SDL_modelist[i] = NULL;
             }
         }
@@ -1192,19 +1192,19 @@ GAPI_VideoQuit (_THIS)
 }
 
 static void
-GAPI_RealizePalette (_THIS)
+GAPI_RealizePalette(_THIS)
 {
-    OutputDebugString (TEXT ("GAPI_RealizePalette NOT IMPLEMENTED !\r\n"));
+    OutputDebugString(TEXT("GAPI_RealizePalette NOT IMPLEMENTED !\r\n"));
 }
 
 static void
-GAPI_PaletteChanged (_THIS, HWND window)
+GAPI_PaletteChanged(_THIS, HWND window)
 {
-    OutputDebugString (TEXT ("GAPI_PaletteChanged NOT IMPLEMENTED !\r\n"));
+    OutputDebugString(TEXT("GAPI_PaletteChanged NOT IMPLEMENTED !\r\n"));
 }
 
 static void
-GAPI_WinPAINT (_THIS, HDC hdc)
+GAPI_WinPAINT(_THIS, HDC hdc)
 {
     // draw current offscreen buffer on hdc
 
@@ -1215,7 +1215,7 @@ GAPI_WinPAINT (_THIS, HDC hdc)
     HDC srcDC;
 
     // Create a DIB
-    BYTE buffer[sizeof (BITMAPINFOHEADER) + 3 * sizeof (RGBQUAD)] = { 0 };
+    BYTE buffer[sizeof(BITMAPINFOHEADER) + 3 * sizeof(RGBQUAD)] = { 0 };
     BITMAPINFO *pBMI = (BITMAPINFO *) buffer;
     BITMAPINFOHEADER *pHeader = &pBMI->bmiHeader;
     DWORD *pColors = (DWORD *) & pBMI->bmiColors;
@@ -1225,7 +1225,7 @@ GAPI_WinPAINT (_THIS, HDC hdc)
         return;
 
     // DIB Header
-    pHeader->biSize = sizeof (BITMAPINFOHEADER);
+    pHeader->biSize = sizeof(BITMAPINFOHEADER);
     pHeader->biWidth = this->hidden->w;
     pHeader->biHeight = -this->hidden->h;
     pHeader->biPlanes = 1;
@@ -1241,26 +1241,25 @@ GAPI_WinPAINT (_THIS, HDC hdc)
         pHeader->biCompression = BI_BITFIELDS;
     }
     // Create the DIB
-    hb = CreateDIBSection (0, pBMI, DIB_RGB_COLORS, (void **) &bitmapData, 0,
-                           0);
+    hb = CreateDIBSection(0, pBMI, DIB_RGB_COLORS, (void **) &bitmapData, 0,
+                          0);
 
     // copy data
     // FIXME: prevent misalignment, but I've never seen non aligned width of screen
-    memcpy (bitmapData, this->hidden->buffer, pHeader->biSizeImage);
-    srcDC = CreateCompatibleDC (hdc);
-    SelectObject (srcDC, hb);
+    memcpy(bitmapData, this->hidden->buffer, pHeader->biSizeImage);
+    srcDC = CreateCompatibleDC(hdc);
+    SelectObject(srcDC, hb);
 
-    BitBlt (hdc, 0, 0, this->hidden->w, this->hidden->h, srcDC, 0, 0,
-            SRCCOPY);
+    BitBlt(hdc, 0, 0, this->hidden->w, this->hidden->h, srcDC, 0, 0, SRCCOPY);
 
-    DeleteObject (hb);
-    DeleteDC (srcDC);
+    DeleteObject(hb);
+    DeleteDC(srcDC);
 }
 
 int
-GAPI_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+GAPI_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
-    GAPI_CreatePalette (ncolors, colors);
+    GAPI_CreatePalette(ncolors, colors);
     return 1;
 }
 

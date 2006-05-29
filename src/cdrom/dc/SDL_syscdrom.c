@@ -32,20 +32,20 @@
 #include "../SDL_syscdrom.h"
 
 /* The system-dependent CD control functions */
-static const char *SDL_SYS_CDName (int drive);
-static int SDL_SYS_CDOpen (int drive);
-static int SDL_SYS_CDGetTOC (SDL_CD * cdrom);
-static CDstatus SDL_SYS_CDStatus (SDL_CD * cdrom, int *position);
-static int SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length);
-static int SDL_SYS_CDPause (SDL_CD * cdrom);
-static int SDL_SYS_CDResume (SDL_CD * cdrom);
-static int SDL_SYS_CDStop (SDL_CD * cdrom);
-static int SDL_SYS_CDEject (SDL_CD * cdrom);
-static void SDL_SYS_CDClose (SDL_CD * cdrom);
+static const char *SDL_SYS_CDName(int drive);
+static int SDL_SYS_CDOpen(int drive);
+static int SDL_SYS_CDGetTOC(SDL_CD * cdrom);
+static CDstatus SDL_SYS_CDStatus(SDL_CD * cdrom, int *position);
+static int SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length);
+static int SDL_SYS_CDPause(SDL_CD * cdrom);
+static int SDL_SYS_CDResume(SDL_CD * cdrom);
+static int SDL_SYS_CDStop(SDL_CD * cdrom);
+static int SDL_SYS_CDEject(SDL_CD * cdrom);
+static void SDL_SYS_CDClose(SDL_CD * cdrom);
 
 
 int
-SDL_SYS_CDInit (void)
+SDL_SYS_CDInit(void)
 {
     /* Fill in our driver capabilities */
     SDL_CDcaps.Name = SDL_SYS_CDName;
@@ -63,41 +63,41 @@ SDL_SYS_CDInit (void)
 }
 
 static const char *
-SDL_SYS_CDName (int drive)
+SDL_SYS_CDName(int drive)
 {
     return "/cd";
 }
 
 static int
-SDL_SYS_CDOpen (int drive)
+SDL_SYS_CDOpen(int drive)
 {
     return (drive);
 }
 
 #define	TRACK_CDDA	0
 static int
-SDL_SYS_CDGetTOC (SDL_CD * cdrom)
+SDL_SYS_CDGetTOC(SDL_CD * cdrom)
 {
     CDROM_TOC toc;
     int ret, i;
 
-    ret = cdrom_read_toc (&toc, 0);
+    ret = cdrom_read_toc(&toc, 0);
     if (ret != ERR_OK) {
         return -1;
     }
 
-    cdrom->numtracks = TOC_TRACK (toc.last) - TOC_TRACK (toc.first) + 1;
+    cdrom->numtracks = TOC_TRACK(toc.last) - TOC_TRACK(toc.first) + 1;
     for (i = 0; i < cdrom->numtracks; i++) {
         unsigned long entry = toc.entry[i];
         cdrom->track[i].id = i + 1;
         cdrom->track[i].type =
-            (TOC_CTRL (toc.entry[i]) ==
+            (TOC_CTRL(toc.entry[i]) ==
              TRACK_CDDA) ? SDL_AUDIO_TRACK : SDL_DATA_TRACK;
-        cdrom->track[i].offset = TOC_LBA (entry) - 150;
+        cdrom->track[i].offset = TOC_LBA(entry) - 150;
         cdrom->track[i].length =
-            TOC_LBA ((i + 1 <
-                      toc.last) ? toc.entry[i + 1] : toc.leadout_sector) -
-            TOC_LBA (entry);
+            TOC_LBA((i + 1 <
+                     toc.last) ? toc.entry[i + 1] : toc.leadout_sector) -
+            TOC_LBA(entry);
     }
 
     return 0;
@@ -105,11 +105,11 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
 
 /* Get CD-ROM status */
 static CDstatus
-SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
+SDL_SYS_CDStatus(SDL_CD * cdrom, int *position)
 {
     int ret, dc_status, disc_type;
 
-    ret = cdrom_get_status (&dc_status, &disc_type);
+    ret = cdrom_get_status(&dc_status, &disc_type);
     if (ret != ERR_OK)
         return CD_ERROR;
 
@@ -133,52 +133,52 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
 
 /* Start play */
 static int
-SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
+SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length)
 {
     int ret =
-        cdrom_cdda_play (start - 150, start - 150 + length, 1, CDDA_SECTORS);
+        cdrom_cdda_play(start - 150, start - 150 + length, 1, CDDA_SECTORS);
     return ret == ERR_OK ? 0 : -1;
 }
 
 /* Pause play */
 static int
-SDL_SYS_CDPause (SDL_CD * cdrom)
+SDL_SYS_CDPause(SDL_CD * cdrom)
 {
-    int ret = cdrom_cdda_pause ();
+    int ret = cdrom_cdda_pause();
     return ret == ERR_OK ? 0 : -1;
 }
 
 /* Resume play */
 static int
-SDL_SYS_CDResume (SDL_CD * cdrom)
+SDL_SYS_CDResume(SDL_CD * cdrom)
 {
-    int ret = cdrom_cdda_resume ();
+    int ret = cdrom_cdda_resume();
     return ret == ERR_OK ? 0 : -1;
 }
 
 /* Stop play */
 static int
-SDL_SYS_CDStop (SDL_CD * cdrom)
+SDL_SYS_CDStop(SDL_CD * cdrom)
 {
-    int ret = cdrom_spin_down ();
+    int ret = cdrom_spin_down();
     return ret == ERR_OK ? 0 : -1;
 }
 
 /* Eject the CD-ROM */
 static int
-SDL_SYS_CDEject (SDL_CD * cdrom)
+SDL_SYS_CDEject(SDL_CD * cdrom)
 {
     return -1;
 }
 
 /* Close the CD-ROM handle */
 static void
-SDL_SYS_CDClose (SDL_CD * cdrom)
+SDL_SYS_CDClose(SDL_CD * cdrom)
 {
 }
 
 void
-SDL_SYS_CDQuit (void)
+SDL_SYS_CDQuit(void)
 {
 
 }

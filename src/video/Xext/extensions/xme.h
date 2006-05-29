@@ -30,13 +30,13 @@ typedef struct
     int refresh;
 } XiGMiscResolutionInfo;
 
-extern Bool XiGMiscQueryVersion (Display * dpy, int *major, int *minor);
-extern int XiGMiscQueryViews (Display * dpy, int screen,
-                              XiGMiscViewInfo ** pviews);
-extern int XiGMiscQueryResolutions (Display * dpy, int screen, int view,
-                                    int *pactive,
-                                    XiGMiscResolutionInfo ** presolutions);
-extern void XiGMiscChangeResolution (Display * dpy, int screen, int view,
-                                     int width, int height, int refresh);
+extern Bool XiGMiscQueryVersion(Display * dpy, int *major, int *minor);
+extern int XiGMiscQueryViews(Display * dpy, int screen,
+                             XiGMiscViewInfo ** pviews);
+extern int XiGMiscQueryResolutions(Display * dpy, int screen, int view,
+                                   int *pactive,
+                                   XiGMiscResolutionInfo ** presolutions);
+extern void XiGMiscChangeResolution(Display * dpy, int screen, int view,
+                                    int width, int height, int refresh);
 #endif /* _XME_H_INCLUDED */
 /* vi: set ts=4 sw=4 expandtab: */

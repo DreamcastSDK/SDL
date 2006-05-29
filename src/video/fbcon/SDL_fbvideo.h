@@ -143,30 +143,30 @@ struct SDL_PrivateVideoData
 #endif
 
 /* These functions are defined in SDL_fbvideo.c */
-extern void FB_SavePaletteTo (_THIS, int palette_len, __u16 * area);
-extern void FB_RestorePaletteFrom (_THIS, int palette_len, __u16 * area);
+extern void FB_SavePaletteTo(_THIS, int palette_len, __u16 * area);
+extern void FB_RestorePaletteFrom(_THIS, int palette_len, __u16 * area);
 
 /* These are utility functions for working with video surfaces */
 
 static __inline__ void
-FB_AddBusySurface (SDL_Surface * surface)
+FB_AddBusySurface(SDL_Surface * surface)
 {
     ((vidmem_bucket *) surface->hwdata)->dirty = 1;
 }
 
 static __inline__ int
-FB_IsSurfaceBusy (SDL_Surface * surface)
+FB_IsSurfaceBusy(SDL_Surface * surface)
 {
     return ((vidmem_bucket *) surface->hwdata)->dirty;
 }
 
 static __inline__ void
-FB_WaitBusySurfaces (_THIS)
+FB_WaitBusySurfaces(_THIS)
 {
     vidmem_bucket *bucket;
 
     /* Wait for graphic operations to complete */
-    wait_idle (this);
+    wait_idle(this);
 
     /* Clear all surface dirty bits */
     for (bucket = &surfaces; bucket; bucket = bucket->next) {
@@ -175,7 +175,7 @@ FB_WaitBusySurfaces (_THIS)
 }
 
 static __inline__ void
-FB_dst_to_xy (_THIS, SDL_Surface * dst, int *x, int *y)
+FB_dst_to_xy(_THIS, SDL_Surface * dst, int *x, int *y)
 {
     *x = (long) ((char *) dst->pixels - mapped_mem) % this->screen->pitch;
     *y = (long) ((char *) dst->pixels - mapped_mem) / this->screen->pitch;

@@ -39,18 +39,18 @@ typedef struct ThreadStartParms
 } tThreadStartParms, *pThreadStartParms;
 
 static void
-threadfunc (void *pparm)
+threadfunc(void *pparm)
 {
     pThreadStartParms pThreadParms = pparm;
     pfnSDL_CurrentEndThread pfnCurrentEndThread = NULL;
 
     // Call the thread function!
-    SDL_RunThread (pThreadParms->args);
+    SDL_RunThread(pThreadParms->args);
 
     // Get the current endthread we have to use!
     if (pThreadParms) {
         pfnCurrentEndThread = pThreadParms->pfnCurrentEndThread;
-        SDL_free (pThreadParms);
+        SDL_free(pThreadParms);
     }
     // Call endthread!
     if (pfnCurrentEndThread)
@@ -58,13 +58,13 @@ threadfunc (void *pparm)
 }
 
 int
-SDL_SYS_CreateThread (SDL_Thread * thread, void *args,
-                      pfnSDL_CurrentBeginThread pfnBeginThread,
-                      pfnSDL_CurrentEndThread pfnEndThread)
+SDL_SYS_CreateThread(SDL_Thread * thread, void *args,
+                     pfnSDL_CurrentBeginThread pfnBeginThread,
+                     pfnSDL_CurrentEndThread pfnEndThread)
 {
-    pThreadStartParms pThreadParms = SDL_malloc (sizeof (tThreadStartParms));
+    pThreadStartParms pThreadParms = SDL_malloc(sizeof(tThreadStartParms));
     if (!pThreadParms) {
-        SDL_SetError ("Not enough memory to create thread");
+        SDL_SetError("Not enough memory to create thread");
         return (-1);
     }
     // Save the function which we will have to call to clear the RTL of calling app!
@@ -75,31 +75,31 @@ SDL_SYS_CreateThread (SDL_Thread * thread, void *args,
     thread->threadid = thread->handle =
         (*pfnBeginThread) (threadfunc, NULL, 512 * 1024, pThreadParms);
     if ((int) thread->threadid <= 0) {
-        SDL_SetError ("Not enough resources to create thread");
+        SDL_SetError("Not enough resources to create thread");
         return (-1);
     }
     return (0);
 }
 
 void
-SDL_SYS_SetupThread (void)
+SDL_SYS_SetupThread(void)
 {
     return;
 }
 
 DECLSPEC Uint32 SDLCALL
-SDL_ThreadID (void)
+SDL_ThreadID(void)
 {
     PTIB tib;
-    DosGetInfoBlocks (&tib, NULL);
+    DosGetInfoBlocks(&tib, NULL);
     return ((Uint32) (tib->tib_ptib2->tib2_ultid));
 }
 
 void
-SDL_SYS_WaitThread (SDL_Thread * thread)
+SDL_SYS_WaitThread(SDL_Thread * thread)
 {
     TID tid = thread->handle;
-    DosWaitThread (&tid, DCWW_WAIT);
+    DosWaitThread(&tid, DCWW_WAIT);
 }
 
 /* WARNING: This function is really a last resort.
@@ -107,9 +107,9 @@ SDL_SYS_WaitThread (SDL_Thread * thread)
  * TerminateThread() doesn't perform stack and DLL cleanup.
  */
 void
-SDL_SYS_KillThread (SDL_Thread * thread)
+SDL_SYS_KillThread(SDL_Thread * thread)
 {
-    DosKillThread (thread->handle);
+    DosKillThread(thread->handle);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

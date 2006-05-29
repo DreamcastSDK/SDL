@@ -43,34 +43,34 @@ Uint32 riscos_main_thread = 0;  /* Thread running events */
 
 
 static void *
-RunThread (void *data)
+RunThread(void *data)
 {
-    SDL_RunThread (data);
-    pthread_exit ((void *) 0);
+    SDL_RunThread(data);
+    pthread_exit((void *) 0);
     return ((void *) 0);        /* Prevent compiler warning */
 }
 
 int
-SDL_SYS_CreateThread (SDL_Thread * thread, void *args)
+SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 {
     pthread_attr_t type;
 
     /* Set the thread attributes */
-    if (pthread_attr_init (&type) != 0) {
-        SDL_SetError ("Couldn't initialize pthread attributes");
+    if (pthread_attr_init(&type) != 0) {
+        SDL_SetError("Couldn't initialize pthread attributes");
         return (-1);
     }
-    pthread_attr_setdetachstate (&type, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_setdetachstate(&type, PTHREAD_CREATE_JOINABLE);
 
     /* Create the thread and go! */
-    if (pthread_create (&thread->handle, &type, RunThread, args) != 0) {
-        SDL_SetError ("Not enough resources to create thread");
+    if (pthread_create(&thread->handle, &type, RunThread, args) != 0) {
+        SDL_SetError("Not enough resources to create thread");
         return (-1);
     }
 #ifdef __RISCOS__
     if (riscos_using_threads == 0) {
         riscos_using_threads = 1;
-        riscos_main_thread = SDL_ThreadID ();
+        riscos_main_thread = SDL_ThreadID();
     }
 #endif
 
@@ -78,50 +78,50 @@ SDL_SYS_CreateThread (SDL_Thread * thread, void *args)
 }
 
 void
-SDL_SYS_SetupThread (void)
+SDL_SYS_SetupThread(void)
 {
     int i;
     sigset_t mask;
 
     /* Mask asynchronous signals for this thread */
-    sigemptyset (&mask);
+    sigemptyset(&mask);
     for (i = 0; sig_list[i]; ++i) {
-        sigaddset (&mask, sig_list[i]);
+        sigaddset(&mask, sig_list[i]);
     }
-    pthread_sigmask (SIG_BLOCK, &mask, 0);
+    pthread_sigmask(SIG_BLOCK, &mask, 0);
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
     /* Allow ourselves to be asynchronously cancelled */
     {
         int oldstate;
-        pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, &oldstate);
+        pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldstate);
     }
 #endif
 }
 
 /* WARNING:  This may not work for systems with 64-bit pid_t */
 Uint32
-SDL_ThreadID (void)
+SDL_ThreadID(void)
 {
-    return ((Uint32) pthread_self ());
+    return ((Uint32) pthread_self());
 }
 
 void
-SDL_SYS_WaitThread (SDL_Thread * thread)
+SDL_SYS_WaitThread(SDL_Thread * thread)
 {
-    pthread_join (thread->handle, 0);
+    pthread_join(thread->handle, 0);
 }
 
 void
-SDL_SYS_KillThread (SDL_Thread * thread)
+SDL_SYS_KillThread(SDL_Thread * thread)
 {
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
-    pthread_cancel (thread->handle);
+    pthread_cancel(thread->handle);
 #else
 #ifdef __FREEBSD__
 #warning For some reason, this doesnt actually kill a thread - FreeBSD 3.2
 #endif
-    pthread_kill (thread->handle, SIGKILL);
+    pthread_kill(thread->handle, SIGKILL);
 #endif
 }
 

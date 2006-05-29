@@ -38,22 +38,22 @@ struct WMcursor
 
 /* There isn't any implementation dependent data */
 void
-GS_FreeWMCursor (_THIS, WMcursor * cursor)
+GS_FreeWMCursor(_THIS, WMcursor * cursor)
 {
     return;
 }
 
 /* There isn't any implementation dependent data */
 WMcursor *
-GS_CreateWMCursor (_THIS,
-                   Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
-                   int hot_y)
+GS_CreateWMCursor(_THIS,
+                  Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
+                  int hot_y)
 {
     return ((WMcursor *) 0x01);
 }
 
 static void
-GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
+GS_MoveCursor(_THIS, SDL_Cursor * cursor, int x, int y)
 {
     SDL_Surface *screen;
     struct ps2_image image;
@@ -63,11 +63,11 @@ GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
     int screen_updated;
 
     /* Lock so we don't interrupt an update with mouse motion */
-    SDL_LockCursor ();
+    SDL_LockCursor();
 
     /* Make sure any pending DMA has completed */
     if (dma_pending) {
-        ioctl (console_fd, PS2IOC_SENDQCT, 1);
+        ioctl(console_fd, PS2IOC_SENDQCT, 1);
         dma_pending = 0;
     }
 
@@ -77,13 +77,13 @@ GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
     screen->pixels = mapped_mem + screen->offset;
     screen_updated = 0;
     if (cursor_drawn) {
-        SDL_EraseCursorNoLock (screen);
+        SDL_EraseCursorNoLock(screen);
         cursor_drawn = 0;
         screen_updated = 1;
     }
 
     /* Save the current mouse area */
-    SDL_MouseRect (&area);
+    SDL_MouseRect(&area);
     mouse_y1 = area.y;
     mouse_y2 = area.y + area.h;
 
@@ -95,7 +95,7 @@ GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
 
         /* Draw the cursor at the new location */
         if ((SDL_cursorstate & CURSOR_VISIBLE) && screen->pixels) {
-            SDL_DrawCursorNoLock (screen);
+            SDL_DrawCursorNoLock(screen);
             cursor_drawn = 1;
             screen_updated = 1;
         }
@@ -104,7 +104,7 @@ GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
 
     /* Update the affected area of the screen */
     if (screen_updated) {
-        SDL_MouseRect (&area);
+        SDL_MouseRect(&area);
         if (area.y < mouse_y1) {
             mouse_y1 = area.y;
         }
@@ -115,38 +115,38 @@ GS_MoveCursor (_THIS, SDL_Cursor * cursor, int x, int y)
         image.y += screen->offset / screen->pitch + mouse_y1;
         image.h = mouse_y2 - mouse_y1;
         image.ptr = mapped_mem + (image.y - screen_image.y) * screen->pitch;
-        ioctl (console_fd, PS2IOC_LOADIMAGE, &image);
+        ioctl(console_fd, PS2IOC_LOADIMAGE, &image);
 
         /* Need to scale offscreen image to TV output */
         if (image.y > 0) {
-            scaleimage_nonblock (console_fd, tex_tags_mem, scale_tags_mem);
+            scaleimage_nonblock(console_fd, tex_tags_mem, scale_tags_mem);
         }
     }
 
     /* We're finished */
-    SDL_UnlockCursor ();
+    SDL_UnlockCursor();
 }
 
 void
-GS_MoveWMCursor (_THIS, int x, int y)
+GS_MoveWMCursor(_THIS, int x, int y)
 {
-    GS_MoveCursor (this, SDL_cursor, x, y);
+    GS_MoveCursor(this, SDL_cursor, x, y);
 }
 
 int
-GS_ShowWMCursor (_THIS, WMcursor * wmcursor)
+GS_ShowWMCursor(_THIS, WMcursor * wmcursor)
 {
     SDL_Cursor *cursor;
     int x, y;
 
     /* Draw the cursor at the appropriate location */
-    SDL_GetMouseState (&x, &y);
+    SDL_GetMouseState(&x, &y);
     if (wmcursor) {
         cursor = SDL_cursor;
     } else {
         cursor = NULL;
     }
-    GS_MoveCursor (this, cursor, x, y);
+    GS_MoveCursor(this, cursor, x, y);
     return (1);
 }
 

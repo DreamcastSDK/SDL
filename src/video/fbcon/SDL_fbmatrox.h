@@ -26,5 +26,5 @@
 #include "SDL_fbvideo.h"
 
 /* Set up the driver for Matrox acceleration */
-extern void FB_MatroxAccel (_THIS, __u32 card);
+extern void FB_MatroxAccel(_THIS, __u32 card);
 /* vi: set ts=4 sw=4 expandtab: */

@@ -77,9 +77,9 @@ typedef struct
 
 /*--- Function prototypes ---*/
 
-int SDL_XBIOS_SB3Usable (scpn_cookie_t * cookie_scpn);
+int SDL_XBIOS_SB3Usable(scpn_cookie_t * cookie_scpn);
 
-void SDL_XBIOS_SB3Init (_THIS, scpn_cookie_t * cookie_scpn);
+void SDL_XBIOS_SB3Init(_THIS, scpn_cookie_t * cookie_scpn);
 
 #endif /* _SDL_xbios_sb3_h_ */
 /* vi: set ts=4 sw=4 expandtab: */

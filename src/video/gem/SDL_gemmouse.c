@@ -49,23 +49,23 @@ struct WMcursor
 
 
 void
-GEM_FreeWMCursor (_THIS, WMcursor * cursor)
+GEM_FreeWMCursor(_THIS, WMcursor * cursor)
 {
     if (cursor == NULL)
         return;
 
-    graf_mouse (ARROW, NULL);
+    graf_mouse(ARROW, NULL);
 
     if (cursor->mform_p != NULL)
-        SDL_free (cursor->mform_p);
+        SDL_free(cursor->mform_p);
 
-    SDL_free (cursor);
+    SDL_free(cursor);
 }
 
 WMcursor *
-GEM_CreateWMCursor (_THIS,
-                    Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
-                    int hot_y)
+GEM_CreateWMCursor(_THIS,
+                   Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
+                   int hot_y)
 {
     WMcursor *cursor;
     MFORM *new_mform;
@@ -73,23 +73,23 @@ GEM_CreateWMCursor (_THIS,
 
     /* Check the size */
     if ((w > MAXCURWIDTH) || (h > MAXCURHEIGHT)) {
-        SDL_SetError ("Only cursors of dimension (%dx%d) are allowed",
-                      MAXCURWIDTH, MAXCURHEIGHT);
+        SDL_SetError("Only cursors of dimension (%dx%d) are allowed",
+                     MAXCURWIDTH, MAXCURHEIGHT);
         return (NULL);
     }
 
     /* Allocate the cursor memory */
-    cursor = (WMcursor *) SDL_malloc (sizeof (WMcursor));
+    cursor = (WMcursor *) SDL_malloc(sizeof(WMcursor));
     if (cursor == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
 
     /* Allocate mform */
-    new_mform = (MFORM *) SDL_malloc (sizeof (MFORM));
+    new_mform = (MFORM *) SDL_malloc(sizeof(MFORM));
     if (new_mform == NULL) {
-        SDL_free (cursor);
-        SDL_OutOfMemory ();
+        SDL_free(cursor);
+        SDL_OutOfMemory();
         return (NULL);
     }
 
@@ -120,18 +120,18 @@ GEM_CreateWMCursor (_THIS,
 
 #ifdef DEBUG_VIDEO_GEM
     for (i = 0; i < h; i++) {
-        printf ("sdl:video:gem: cursor, line %d = 0x%04x\n", i,
-                new_mform->mf_mask[i]);
+        printf("sdl:video:gem: cursor, line %d = 0x%04x\n", i,
+               new_mform->mf_mask[i]);
     }
 
-    printf ("sdl:video:gem: CreateWMCursor(): done\n");
+    printf("sdl:video:gem: CreateWMCursor(): done\n");
 #endif
 
     return cursor;
 }
 
 int
-GEM_ShowWMCursor (_THIS, WMcursor * cursor)
+GEM_ShowWMCursor(_THIS, WMcursor * cursor)
 {
 /*
 	if (cursor == NULL) {
@@ -141,7 +141,7 @@ GEM_ShowWMCursor (_THIS, WMcursor * cursor)
 	}
 */
 #ifdef DEBUG_VIDEO_GEM
-    printf ("sdl:video:gem: ShowWMCursor(0x%08x)\n", (long) cursor);
+    printf("sdl:video:gem: ShowWMCursor(0x%08x)\n", (long) cursor);
 #endif
 
     return 1;
@@ -149,7 +149,7 @@ GEM_ShowWMCursor (_THIS, WMcursor * cursor)
 
 #if 0
 void
-GEM_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+GEM_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
 {
     /* This seems to work only on AES 3.4 (Falcon) */
 
@@ -158,17 +158,17 @@ GEM_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
     warpevent.ap_event = APPEVNT_MOUSE;
     warpevent.ap_value = (x << 16) | y;
 
-    appl_tplay (&warpevent, 1, 1000);
+    appl_tplay(&warpevent, 1, 1000);
 }
 #endif
 
 void
-GEM_CheckMouseMode (_THIS)
+GEM_CheckMouseMode(_THIS)
 {
     /* If the mouse is hidden and input is grabbed, we use relative mode */
     if ((!(SDL_cursorstate & CURSOR_VISIBLE)) &&
         /*(this->input_grab != SDL_GRAB_OFF) && *//* Damn GEM can not grab */
-        (SDL_GetAppState () & SDL_APPACTIVE)) {
+        (SDL_GetAppState() & SDL_APPACTIVE)) {
         GEM_mouse_relative = SDL_TRUE;
     } else {
         GEM_mouse_relative = SDL_FALSE;

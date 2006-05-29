@@ -45,19 +45,19 @@
 
 #define _THIS SDL_VideoDevice *this
 
-static int iPod_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **iPod_ListModes (_THIS, SDL_PixelFormat * format,
-                                  Uint32 flags);
-static SDL_Surface *iPod_SetVideoMode (_THIS, SDL_Surface * current,
-                                       int width, int height, int bpp,
-                                       Uint32 flags);
-static int iPod_SetColors (_THIS, int firstcolor, int ncolors,
-                           SDL_Color * colors);
-static void iPod_UpdateRects (_THIS, int nrects, SDL_Rect * rects);
-static void iPod_VideoQuit (_THIS);
-static void iPod_PumpEvents (_THIS);
+static int iPod_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **iPod_ListModes(_THIS, SDL_PixelFormat * format,
+                                 Uint32 flags);
+static SDL_Surface *iPod_SetVideoMode(_THIS, SDL_Surface * current,
+                                      int width, int height, int bpp,
+                                      Uint32 flags);
+static int iPod_SetColors(_THIS, int firstcolor, int ncolors,
+                          SDL_Color * colors);
+static void iPod_UpdateRects(_THIS, int nrects, SDL_Rect * rects);
+static void iPod_VideoQuit(_THIS);
+static void iPod_PumpEvents(_THIS);
 
-static long iPod_GetGeneration ();
+static long iPod_GetGeneration();
 
 static int initd = 0;
 static int kbfd = -1;
@@ -80,64 +80,64 @@ FILE *dbgout;
 static unsigned long lcd_base, lcd_rtc, lcd_width, lcd_height;
 
 static long
-iPod_GetGeneration ()
+iPod_GetGeneration()
 {
     int i;
     char cpuinfo[256];
     char *ptr;
     FILE *file;
 
-    if ((file = fopen ("/proc/cpuinfo", "r")) != NULL) {
-        while (fgets (cpuinfo, sizeof (cpuinfo), file) != NULL)
-            if (SDL_strncmp (cpuinfo, "Revision", 8) == 0)
+    if ((file = fopen("/proc/cpuinfo", "r")) != NULL) {
+        while (fgets(cpuinfo, sizeof(cpuinfo), file) != NULL)
+            if (SDL_strncmp(cpuinfo, "Revision", 8) == 0)
                 break;
-        fclose (file);
+        fclose(file);
     }
-    for (i = 0; !isspace (cpuinfo[i]); i++);
-    for (; isspace (cpuinfo[i]); i++);
+    for (i = 0; !isspace(cpuinfo[i]); i++);
+    for (; isspace(cpuinfo[i]); i++);
     ptr = cpuinfo + i + 2;
 
-    return SDL_strtol (ptr, NULL, 10);
+    return SDL_strtol(ptr, NULL, 10);
 }
 
 static int
-iPod_Available ()
+iPod_Available()
 {
     return 1;
 }
 
 static void
-iPod_DeleteDevice (SDL_VideoDevice * device)
+iPod_DeleteDevice(SDL_VideoDevice * device)
 {
-    free (device->hidden);
-    free (device);
+    free(device->hidden);
+    free(device);
 }
 
 void
-iPod_InitOSKeymap (_THIS)
+iPod_InitOSKeymap(_THIS)
 {
 }
 
 static SDL_VideoDevice *
-iPod_CreateDevice (int devindex)
+iPod_CreateDevice(int devindex)
 {
     SDL_VideoDevice *this;
 
-    this = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    this = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (this) {
-        memset (this, 0, sizeof *this);
+        memset(this, 0, sizeof *this);
         this->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc (sizeof (struct SDL_PrivateVideoData));
+            SDL_malloc(sizeof(struct SDL_PrivateVideoData));
     }
     if (!this || !this->hidden) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (this)
-            SDL_free (this);
+            SDL_free(this);
         return 0;
     }
-    memset (this->hidden, 0, sizeof (struct SDL_PrivateVideoData));
+    memset(this->hidden, 0, sizeof(struct SDL_PrivateVideoData));
 
-    generation = iPod_GetGeneration ();
+    generation = iPod_GetGeneration();
 
     this->VideoInit = iPod_VideoInit;
     this->ListModes = iPod_ListModes;
@@ -174,7 +174,7 @@ VideoBootStrap iPod_bootstrap = {
 //--//
 
 static int
-iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
+iPod_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     if (!initd) {
         /*** Code adapted/copied from SDL fbcon driver. ***/
@@ -184,65 +184,65 @@ iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
         int i, tty0_fd;
 
         dbgout =
-            fdopen (open ("/etc/sdlpod.log", O_WRONLY | O_SYNC | O_APPEND),
-                    "a");
+            fdopen(open("/etc/sdlpod.log", O_WRONLY | O_SYNC | O_APPEND),
+                   "a");
         if (dbgout) {
-            setbuf (dbgout, 0);
-            fprintf (dbgout, "--> Started SDL <--\n");
+            setbuf(dbgout, 0);
+            fprintf(dbgout, "--> Started SDL <--\n");
         }
         // Try to query for a free VT
         tty0_fd = -1;
         for (i = 0; tty0[i] && (tty0_fd < 0); ++i) {
-            tty0_fd = open (tty0[i], O_WRONLY, 0);
+            tty0_fd = open(tty0[i], O_WRONLY, 0);
         }
         if (tty0_fd < 0) {
-            tty0_fd = dup (0);  /* Maybe stdin is a VT? */
+            tty0_fd = dup(0);   /* Maybe stdin is a VT? */
         }
-        ioctl (tty0_fd, VT_OPENQRY, &curvt);
-        close (tty0_fd);
+        ioctl(tty0_fd, VT_OPENQRY, &curvt);
+        close(tty0_fd);
 
-        tty0_fd = open ("/dev/tty", O_RDWR, 0);
+        tty0_fd = open("/dev/tty", O_RDWR, 0);
         if (tty0_fd >= 0) {
-            ioctl (tty0_fd, TIOCNOTTY, 0);
-            close (tty0_fd);
+            ioctl(tty0_fd, TIOCNOTTY, 0);
+            close(tty0_fd);
         }
 
-        if ((geteuid () == 0) && (curvt > 0)) {
+        if ((geteuid() == 0) && (curvt > 0)) {
             for (i = 0; vcs[i] && (kbfd < 0); ++i) {
                 char vtpath[12];
 
-                SDL_snprintf (vtpath, SDL_arraysize (vtpath), vcs[i], curvt);
-                kbfd = open (vtpath, O_RDWR);
+                SDL_snprintf(vtpath, SDL_arraysize(vtpath), vcs[i], curvt);
+                kbfd = open(vtpath, O_RDWR);
             }
         }
         if (kbfd < 0) {
             if (dbgout)
-                fprintf (dbgout, "Couldn't open any VC\n");
+                fprintf(dbgout, "Couldn't open any VC\n");
             return -1;
         }
         if (dbgout)
-            fprintf (stderr, "Current VT: %d\n", curvt);
+            fprintf(stderr, "Current VT: %d\n", curvt);
 
         if (kbfd >= 0) {
             /* Switch to the correct virtual terminal */
             if (curvt > 0) {
                 struct vt_stat vtstate;
 
-                if (ioctl (kbfd, VT_GETSTATE, &vtstate) == 0) {
+                if (ioctl(kbfd, VT_GETSTATE, &vtstate) == 0) {
                     oldvt = vtstate.v_active;
                 }
-                if (ioctl (kbfd, VT_ACTIVATE, curvt) == 0) {
+                if (ioctl(kbfd, VT_ACTIVATE, curvt) == 0) {
                     if (dbgout)
-                        fprintf (dbgout, "Waiting for switch to this VT... ");
-                    ioctl (kbfd, VT_WAITACTIVE, curvt);
+                        fprintf(dbgout, "Waiting for switch to this VT... ");
+                    ioctl(kbfd, VT_WAITACTIVE, curvt);
                     if (dbgout)
-                        fprintf (dbgout, "done!\n");
+                        fprintf(dbgout, "done!\n");
                 }
             }
             // Set terminal input mode
-            if (tcgetattr (kbfd, &old_termios) < 0) {
+            if (tcgetattr(kbfd, &old_termios) < 0) {
                 if (dbgout)
-                    fprintf (dbgout, "Can't get termios\n");
+                    fprintf(dbgout, "Can't get termios\n");
                 return -1;
             }
             cur_termios = old_termios;
@@ -257,32 +257,32 @@ iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
             cur_termios.c_cc[VMIN] = 0;
             cur_termios.c_cc[VTIME] = 0;
 
-            if (tcsetattr (kbfd, TCSAFLUSH, &cur_termios) < 0) {
+            if (tcsetattr(kbfd, TCSAFLUSH, &cur_termios) < 0) {
                 if (dbgout)
-                    fprintf (dbgout, "Can't set termios\n");
+                    fprintf(dbgout, "Can't set termios\n");
                 return -1;
             }
-            if (ioctl (kbfd, KDSKBMODE, K_MEDIUMRAW) < 0) {
+            if (ioctl(kbfd, KDSKBMODE, K_MEDIUMRAW) < 0) {
                 if (dbgout)
-                    fprintf (dbgout, "Can't set medium-raw mode\n");
+                    fprintf(dbgout, "Can't set medium-raw mode\n");
                 return -1;
             }
-            if (ioctl (kbfd, KDSETMODE, KD_GRAPHICS) < 0) {
+            if (ioctl(kbfd, KDSETMODE, KD_GRAPHICS) < 0) {
                 if (dbgout)
-                    fprintf (dbgout, "Can't set graphics\n");
+                    fprintf(dbgout, "Can't set graphics\n");
                 return -1;
             }
         }
         // Open the framebuffer
-        if ((fbfd = open ("/dev/fb0", O_RDWR)) < 0) {
+        if ((fbfd = open("/dev/fb0", O_RDWR)) < 0) {
             if (dbgout)
-                fprintf (dbgout, "Can't open framebuffer\n");
+                fprintf(dbgout, "Can't open framebuffer\n");
             return -1;
         } else {
             struct fb_var_screeninfo vinfo;
 
             if (dbgout)
-                fprintf (dbgout, "Generation: %ld\n", generation);
+                fprintf(dbgout, "Generation: %ld\n", generation);
 
             if (generation >= 40000) {
                 lcd_base = IPOD_NEW_LCD_BASE;
@@ -290,15 +290,15 @@ iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
                 lcd_base = IPOD_OLD_LCD_BASE;
             }
 
-            ioctl (fbfd, FBIOGET_VSCREENINFO, &vinfo);
-            close (fbfd);
+            ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo);
+            close(fbfd);
 
             if (lcd_base == IPOD_OLD_LCD_BASE)
                 lcd_rtc = IPOD_OLD_LCD_RTC;
             else if (lcd_base == IPOD_NEW_LCD_BASE)
                 lcd_rtc = IPOD_NEW_LCD_RTC;
             else {
-                SDL_SetError ("Unknown iPod version");
+                SDL_SetError("Unknown iPod version");
                 return -1;
             }
 
@@ -306,10 +306,10 @@ iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
             lcd_height = vinfo.yres;
 
             if (dbgout)
-                fprintf (dbgout, "LCD is %dx%d\n", lcd_width, lcd_height);
+                fprintf(dbgout, "LCD is %dx%d\n", lcd_width, lcd_height);
         }
 
-        fcntl (kbfd, F_SETFL, O_RDWR | O_NONBLOCK);
+        fcntl(kbfd, F_SETFL, O_RDWR | O_NONBLOCK);
 
         /* Determine the current screen size */
         this->info.current_w = lcd_width;
@@ -327,25 +327,25 @@ iPod_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
         initd = 1;
         if (dbgout)
-            fprintf (dbgout, "Initialized.\n\n");
+            fprintf(dbgout, "Initialized.\n\n");
     }
     return 0;
 }
 
 static SDL_Rect **
-iPod_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+iPod_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     int width, height, fd;
     static SDL_Rect r;
     static SDL_Rect *rs[2] = { &r, 0 };
 
-    if ((fd = open ("/dev/fb0", O_RDWR)) < 0) {
+    if ((fd = open("/dev/fb0", O_RDWR)) < 0) {
         return 0;
     } else {
         struct fb_var_screeninfo vinfo;
 
-        ioctl (fbfd, FBIOGET_VSCREENINFO, &vinfo);
-        close (fbfd);
+        ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo);
+        close(fbfd);
 
         width = vinfo.xres;
         height = vinfo.yres;
@@ -358,8 +358,8 @@ iPod_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
 
 
 static SDL_Surface *
-iPod_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
-                   int bpp, Uint32 flags)
+iPod_SetVideoMode(_THIS, SDL_Surface * current, int width, int height,
+                  int bpp, Uint32 flags)
 {
     Uint32 Rmask, Gmask, Bmask;
     if (bpp > 8) {
@@ -371,18 +371,18 @@ iPod_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     }
 
     if (this->hidden->buffer)
-        SDL_free (this->hidden->buffer);
-    this->hidden->buffer = SDL_malloc (width * height * (bpp / 8));
+        SDL_free(this->hidden->buffer);
+    this->hidden->buffer = SDL_malloc(width * height * (bpp / 8));
     if (!this->hidden->buffer) {
-        SDL_SetError ("Couldn't allocate buffer for requested mode");
+        SDL_SetError("Couldn't allocate buffer for requested mode");
         return 0;
     }
 
-    memset (this->hidden->buffer, 0, width * height * (bpp / 8));
+    memset(this->hidden->buffer, 0, width * height * (bpp / 8));
 
-    if (!SDL_ReallocFormat (current, bpp, Rmask, Gmask, Bmask, 0)) {
-        SDL_SetError ("Couldn't allocate new pixel format");
-        SDL_free (this->hidden->buffer);
+    if (!SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, 0)) {
+        SDL_SetError("Couldn't allocate new pixel format");
+        SDL_free(this->hidden->buffer);
         this->hidden->buffer = 0;
         return 0;
     }
@@ -408,7 +408,7 @@ iPod_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
 }
 
 static int
-iPod_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+iPod_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     if (SDL_VideoSurface && SDL_VideoSurface->format
         && SDL_VideoSurface->format->palette) {
@@ -425,21 +425,21 @@ iPod_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 }
 
 static void
-iPod_VideoQuit (_THIS)
+iPod_VideoQuit(_THIS)
 {
-    ioctl (kbfd, KDSETMODE, KD_TEXT);
-    tcsetattr (kbfd, TCSAFLUSH, &old_termios);
+    ioctl(kbfd, KDSETMODE, KD_TEXT);
+    tcsetattr(kbfd, TCSAFLUSH, &old_termios);
     old_kbmode = -1;
 
     if (oldvt > 0)
-        ioctl (kbfd, VT_ACTIVATE, oldvt);
+        ioctl(kbfd, VT_ACTIVATE, oldvt);
 
     if (kbfd > 0)
-        close (kbfd);
+        close(kbfd);
 
     if (dbgout) {
-        fprintf (dbgout, "<-- Ended SDL -->\n");
-        fclose (dbgout);
+        fprintf(dbgout, "<-- Ended SDL -->\n");
+        fclose(dbgout);
     }
 
     kbfd = -1;
@@ -473,7 +473,7 @@ static char iPod_SC_keymap[] = {
 
 
 static void
-iPod_keyboard ()
+iPod_keyboard()
 {
     unsigned char keybuf[128];
     int i, nread;
@@ -482,26 +482,26 @@ iPod_keyboard ()
 
     keysym.mod = 0;
     keysym.scancode = 0xff;
-    memset (&ev, 0, sizeof (SDL_Event));
+    memset(&ev, 0, sizeof(SDL_Event));
 
-    nread = read (kbfd, keybuf, 128);
+    nread = read(kbfd, keybuf, 128);
     for (i = 0; i < nread; i++) {
         char ascii = iPod_SC_keymap[keybuf[i] & 0x7f];
 
         if (dbgout)
-            fprintf (dbgout, "Key! %02x is %c %s", keybuf[i], ascii,
-                     (keybuf[i] & 0x80) ? "up" : "down");
+            fprintf(dbgout, "Key! %02x is %c %s", keybuf[i], ascii,
+                    (keybuf[i] & 0x80) ? "up" : "down");
 
         keysym.sym = keysym.unicode = ascii;
         ev.type = (keybuf[i] & 0x80) ? SDL_KEYUP : SDL_KEYDOWN;
         ev.key.state = 0;
         ev.key.keysym = keysym;
-        SDL_PushEvent (&ev);
+        SDL_PushEvent(&ev);
     }
 }
 
 static void
-iPod_PumpEvents (_THIS)
+iPod_PumpEvents(_THIS)
 {
     fd_set fdset;
     int max_fd = 0;
@@ -511,21 +511,21 @@ iPod_PumpEvents (_THIS)
     do {
         posted = 0;
 
-        FD_ZERO (&fdset);
+        FD_ZERO(&fdset);
         if (kbfd >= 0) {
-            FD_SET (kbfd, &fdset);
+            FD_SET(kbfd, &fdset);
             max_fd = kbfd;
         }
         if (dbgout)
-            fprintf (dbgout, "Selecting");
-        if (select (max_fd + 1, &fdset, 0, 0, &zero) > 0) {
+            fprintf(dbgout, "Selecting");
+        if (select(max_fd + 1, &fdset, 0, 0, &zero) > 0) {
             if (dbgout)
-                fprintf (dbgout, " -> match!\n");
-            iPod_keyboard ();
+                fprintf(dbgout, " -> match!\n");
+            iPod_keyboard();
             posted++;
         }
         if (dbgout)
-            fprintf (dbgout, "\n");
+            fprintf(dbgout, "\n");
     }
     while (posted);
 }
@@ -541,17 +541,17 @@ static char ipod_scr[160 * (128 / 4)];
 
 /* get current usec counter */
 static int
-M_timer_get_current (void)
+M_timer_get_current(void)
 {
-    return inl (lcd_rtc);
+    return inl(lcd_rtc);
 }
 
 /* check if number of useconds has past */
 static int
-M_timer_check (int clock_start, int usecs)
+M_timer_check(int clock_start, int usecs)
 {
     unsigned long clock;
-    clock = inl (lcd_rtc);
+    clock = inl(lcd_rtc);
 
     if ((clock - clock_start) >= usecs) {
         return 1;
@@ -562,60 +562,60 @@ M_timer_check (int clock_start, int usecs)
 
 /* wait for LCD with timeout */
 static void
-M_lcd_wait_write (void)
+M_lcd_wait_write(void)
 {
-    if ((inl (lcd_base) & 0x8000) != 0) {
-        int start = M_timer_get_current ();
+    if ((inl(lcd_base) & 0x8000) != 0) {
+        int start = M_timer_get_current();
 
         do {
-            if ((inl (lcd_base) & (unsigned int) 0x8000) == 0)
+            if ((inl(lcd_base) & (unsigned int) 0x8000) == 0)
                 break;
         }
-        while (M_timer_check (start, 1000) == 0);
+        while (M_timer_check(start, 1000) == 0);
     }
 }
 
 
 /* send LCD data */
 static void
-M_lcd_send_data (int data_lo, int data_hi)
+M_lcd_send_data(int data_lo, int data_hi)
 {
-    M_lcd_wait_write ();
+    M_lcd_wait_write();
 
-    outl (data_lo, lcd_base + LCD_DATA);
+    outl(data_lo, lcd_base + LCD_DATA);
 
-    M_lcd_wait_write ();
+    M_lcd_wait_write();
 
-    outl (data_hi, lcd_base + LCD_DATA);
+    outl(data_hi, lcd_base + LCD_DATA);
 
 }
 
 /* send LCD command */
 static void
-M_lcd_prepare_cmd (int cmd)
+M_lcd_prepare_cmd(int cmd)
 {
-    M_lcd_wait_write ();
+    M_lcd_wait_write();
 
-    outl (0x0, lcd_base + LCD_CMD);
+    outl(0x0, lcd_base + LCD_CMD);
 
-    M_lcd_wait_write ();
+    M_lcd_wait_write();
 
-    outl (cmd, lcd_base + LCD_CMD);
+    outl(cmd, lcd_base + LCD_CMD);
 
 }
 
 /* send LCD command and data */
 static void
-M_lcd_cmd_and_data (int cmd, int data_lo, int data_hi)
+M_lcd_cmd_and_data(int cmd, int data_lo, int data_hi)
 {
-    M_lcd_prepare_cmd (cmd);
+    M_lcd_prepare_cmd(cmd);
 
-    M_lcd_send_data (data_lo, data_hi);
+    M_lcd_send_data(data_lo, data_hi);
 }
 
 // Copied from uW
 static void
-M_update_display (int sx, int sy, int mx, int my)
+M_update_display(int sx, int sy, int mx, int my)
 {
     int y;
     unsigned short cursor_pos;
@@ -630,17 +630,17 @@ M_update_display (int sx, int sy, int mx, int my)
         int x;
 
         /* move the cursor */
-        M_lcd_cmd_and_data (0x11, cursor_pos >> 8, cursor_pos & 0xff);
+        M_lcd_cmd_and_data(0x11, cursor_pos >> 8, cursor_pos & 0xff);
 
         /* setup for printing */
-        M_lcd_prepare_cmd (0x12);
+        M_lcd_prepare_cmd(0x12);
 
         img_data = ipod_scr + (sx << 1) + (y * (lcd_width / 4));
 
         /* loops up to 160 times */
         for (x = sx; x <= mx; x++) {
             /* display eight pixels */
-            M_lcd_send_data (*(img_data + 1), *img_data);
+            M_lcd_send_data(*(img_data + 1), *img_data);
 
             img_data += 2;
         }
@@ -652,17 +652,17 @@ M_update_display (int sx, int sy, int mx, int my)
 
 /* get current usec counter */
 static int
-C_timer_get_current (void)
+C_timer_get_current(void)
 {
-    return inl (0x60005010);
+    return inl(0x60005010);
 }
 
 /* check if number of useconds has past */
 static int
-C_timer_check (int clock_start, int usecs)
+C_timer_check(int clock_start, int usecs)
 {
     unsigned long clock;
-    clock = inl (0x60005010);
+    clock = inl(0x60005010);
 
     if ((clock - clock_start) >= usecs) {
         return 1;
@@ -673,30 +673,30 @@ C_timer_check (int clock_start, int usecs)
 
 /* wait for LCD with timeout */
 static void
-C_lcd_wait_write (void)
+C_lcd_wait_write(void)
 {
-    if ((inl (0x70008A0C) & 0x80000000) != 0) {
-        int start = C_timer_get_current ();
+    if ((inl(0x70008A0C) & 0x80000000) != 0) {
+        int start = C_timer_get_current();
 
         do {
-            if ((inl (0x70008A0C) & 0x80000000) == 0)
+            if ((inl(0x70008A0C) & 0x80000000) == 0)
                 break;
         }
-        while (C_timer_check (start, 1000) == 0);
+        while (C_timer_check(start, 1000) == 0);
     }
 }
 static void
-C_lcd_cmd_data (int cmd, int data)
+C_lcd_cmd_data(int cmd, int data)
 {
-    C_lcd_wait_write ();
-    outl (cmd | 0x80000000, 0x70008A0C);
+    C_lcd_wait_write();
+    outl(cmd | 0x80000000, 0x70008A0C);
 
-    C_lcd_wait_write ();
-    outl (data | 0x80000000, 0x70008A0C);
+    C_lcd_wait_write();
+    outl(data | 0x80000000, 0x70008A0C);
 }
 
 static void
-C_update_display (int sx, int sy, int mx, int my)
+C_update_display(int sx, int sy, int mx, int my)
 {
     int height = (my - sy) + 1;
     int width = (mx - sx) + 1;
@@ -707,14 +707,13 @@ C_update_display (int sx, int sy, int mx, int my)
         width++;
 
     /* start X and Y */
-    C_lcd_cmd_data (0x12, (sy & 0xff));
-    C_lcd_cmd_data (0x13, (((SDL_VideoSurface->w - 1) - sx) & 0xff));
+    C_lcd_cmd_data(0x12, (sy & 0xff));
+    C_lcd_cmd_data(0x13, (((SDL_VideoSurface->w - 1) - sx) & 0xff));
 
     /* max X and Y */
-    C_lcd_cmd_data (0x15, (((sy + height) - 1) & 0xff));
-    C_lcd_cmd_data (0x16,
-                    (((((SDL_VideoSurface->w - 1) - sx) - width) +
-                      1) & 0xff));
+    C_lcd_cmd_data(0x15, (((sy + height) - 1) & 0xff));
+    C_lcd_cmd_data(0x16,
+                   (((((SDL_VideoSurface->w - 1) - sx) - width) + 1) & 0xff));
 
     addr += sx + sy * SDL_VideoSurface->pitch;
 
@@ -730,9 +729,9 @@ C_update_display (int sx, int sy, int mx, int my)
             pixels_to_write = (width * h) * 2;
         }
 
-        outl (0x10000080, 0x70008A20);
-        outl ((pixels_to_write - 1) | 0xC0010000, 0x70008A24);
-        outl (0x34000000, 0x70008A20);
+        outl(0x10000080, 0x70008A20);
+        outl((pixels_to_write - 1) | 0xC0010000, 0x70008A24);
+        outl(0x34000000, 0x70008A20);
 
         /* for each row */
         for (x = 0; x < h; x++) {
@@ -743,18 +742,18 @@ C_update_display (int sx, int sy, int mx, int my)
                 two_pixels = addr[0] | (addr[1] << 16);
                 addr += 2;
 
-                while ((inl (0x70008A20) & 0x1000000) == 0);
+                while ((inl(0x70008A20) & 0x1000000) == 0);
 
                 /* output 2 pixels */
-                outl (two_pixels, 0x70008B00);
+                outl(two_pixels, 0x70008B00);
             }
 
             addr += SDL_VideoSurface->w - width;
         }
 
-        while ((inl (0x70008A20) & 0x4000000) == 0);
+        while ((inl(0x70008A20) & 0x4000000) == 0);
 
-        outl (0x0, 0x70008A24);
+        outl(0x0, 0x70008A24);
 
         height = height - h;
     }
@@ -762,10 +761,10 @@ C_update_display (int sx, int sy, int mx, int my)
 
 // Should work with photo. However, I don't have one, so I'm not sure.
 static void
-iPod_UpdateRects (_THIS, int nrects, SDL_Rect * rects)
+iPod_UpdateRects(_THIS, int nrects, SDL_Rect * rects)
 {
     if (SDL_VideoSurface->format->BitsPerPixel == 16) {
-        C_update_display (0, 0, lcd_width, lcd_height);
+        C_update_display(0, 0, lcd_width, lcd_height);
     } else {
         int i, y, x;
         for (i = 0; i < nrects; i++) {
@@ -789,7 +788,7 @@ iPod_UpdateRects (_THIS, int nrects, SDL_Rect * rects)
             }
         }
 
-        M_update_display (0, 0, lcd_width, lcd_height);
+        M_update_display(0, 0, lcd_width, lcd_height);
     }
 }
 

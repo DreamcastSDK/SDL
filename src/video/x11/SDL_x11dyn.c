@@ -61,12 +61,12 @@ static x11dynlib x11libs[] = {
 };
 
 static void
-X11_GetSym (const char *fnname, int *rc, void **fn)
+X11_GetSym(const char *fnname, int *rc, void **fn)
 {
     int i;
-    for (i = 0; i < SDL_TABLESIZE (x11libs); i++) {
+    for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
         if (x11libs[i].lib != NULL) {
-            *fn = SDL_LoadFunction (x11libs[i].lib, fnname);
+            *fn = SDL_LoadFunction(x11libs[i].lib, fnname);
             if (*fn != NULL)
                 break;
         }
@@ -74,10 +74,10 @@ X11_GetSym (const char *fnname, int *rc, void **fn)
 
 #if DEBUG_DYNAMIC_X11
     if (*fn != NULL)
-        printf ("X11: Found '%s' in %s (%p)\n", fnname, x11libs[i].libname,
-                *fn);
+        printf("X11: Found '%s' in %s (%p)\n", fnname, x11libs[i].libname,
+               *fn);
     else
-        printf ("X11: Symbol '%s' NOT FOUND!\n", fnname);
+        printf("X11: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
 
     if (*fn == NULL)
@@ -97,7 +97,7 @@ X11_GetSym (const char *fnname, int *rc, void **fn)
 
 /* Annoying varargs entry point... */
 #ifdef X_HAVE_UTF8_STRING
-XIC (*pXCreateIC) (XIM,...) = NULL;
+XIC(*pXCreateIC) (XIM,...) = NULL;
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
@@ -111,7 +111,7 @@ XIC (*pXCreateIC) (XIM,...) = NULL;
 static int x11_load_refcount = 0;
 
 void
-SDL_X11_UnloadSymbols (void)
+SDL_X11_UnloadSymbols(void)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
     /* Don't actually unload if more than one module is using the libs... */
@@ -130,9 +130,9 @@ SDL_X11_UnloadSymbols (void)
             pXCreateIC = NULL;
 #endif
 
-            for (i = 0; i < SDL_TABLESIZE (x11libs); i++) {
+            for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
                 if (x11libs[i].lib != NULL) {
-                    SDL_UnloadObject (x11libs[i].lib);
+                    SDL_UnloadObject(x11libs[i].lib);
                     x11libs[i].lib = NULL;
                 }
             }
@@ -143,7 +143,7 @@ SDL_X11_UnloadSymbols (void)
 
 /* returns non-zero if all needed symbols were loaded. */
 int
-SDL_X11_LoadSymbols (void)
+SDL_X11_LoadSymbols(void)
 {
     int rc = 1;                 /* always succeed if not using Dynamic X11 stuff. */
 
@@ -152,9 +152,9 @@ SDL_X11_LoadSymbols (void)
     if (x11_load_refcount++ == 0) {
         int i;
         int *thismod = NULL;
-        for (i = 0; i < SDL_TABLESIZE (x11libs); i++) {
+        for (i = 0; i < SDL_TABLESIZE(x11libs); i++) {
             if (x11libs[i].libname != NULL) {
-                x11libs[i].lib = SDL_LoadObject (x11libs[i].libname);
+                x11libs[i].lib = SDL_LoadObject(x11libs[i].libname);
             }
         }
 #define SDL_X11_MODULE(modname) thismod = &SDL_X11_HAVE_##modname;
@@ -164,11 +164,11 @@ SDL_X11_LoadSymbols (void)
 #undef SDL_X11_SYM
 
 #ifdef X_HAVE_UTF8_STRING
-        X11_GetSym ("XCreateIC", &SDL_X11_HAVE_UTF8, (void **) &pXCreateIC);
+        X11_GetSym("XCreateIC", &SDL_X11_HAVE_UTF8, (void **) &pXCreateIC);
 #endif
 
         if (!SDL_X11_HAVE_BASEXLIB) {   /* some required symbol didn't load. */
-            SDL_X11_UnloadSymbols ();   /* in case something got loaded... */
+            SDL_X11_UnloadSymbols();    /* in case something got loaded... */
             rc = 0;
         }
     }

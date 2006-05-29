@@ -45,7 +45,7 @@ static Uint16 atari_prevmouseb; /* buttons */
 /* Functions */
 
 void
-SDL_AtariXbios_InstallVectors (int vectors_mask)
+SDL_AtariXbios_InstallVectors(int vectors_mask)
 {
     void *oldpile;
 
@@ -61,26 +61,26 @@ SDL_AtariXbios_InstallVectors (int vectors_mask)
     }
 
     /* Read IKBD vectors base */
-    kbdvecs = Kbdvbase ();
+    kbdvecs = Kbdvbase();
 
     /* Go to supervisor mode */
-    oldpile = (void *) Super (0);
+    oldpile = (void *) Super(0);
 
     /* Install our vectors */
-    SDL_AtariXbios_Install (kbdvecs,
-                            (vectors_mask & ATARI_XBIOS_MOUSEEVENTS) ?
-                            SDL_AtariXbios_MouseVector : NULL,
-                            (vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) ?
-                            SDL_AtariXbios_JoystickVector : NULL);
+    SDL_AtariXbios_Install(kbdvecs,
+                           (vectors_mask & ATARI_XBIOS_MOUSEEVENTS) ?
+                           SDL_AtariXbios_MouseVector : NULL,
+                           (vectors_mask & ATARI_XBIOS_JOYSTICKEVENTS) ?
+                           SDL_AtariXbios_JoystickVector : NULL);
 
     /* Back to user mode */
-    Super (oldpile);
+    Super(oldpile);
 
     SDL_AtariXbios_enabled = 1;
 }
 
 void
-SDL_AtariXbios_RestoreVectors (void)
+SDL_AtariXbios_RestoreVectors(void)
 {
     void *oldpile;
 
@@ -89,20 +89,20 @@ SDL_AtariXbios_RestoreVectors (void)
     }
 
     /* Read IKBD vectors base */
-    kbdvecs = Kbdvbase ();
+    kbdvecs = Kbdvbase();
 
     /* Go to supervisor mode */
-    oldpile = (void *) Super (NULL);
+    oldpile = (void *) Super(NULL);
 
     /* Reinstall system vector */
-    SDL_AtariXbios_Restore (kbdvecs);
+    SDL_AtariXbios_Restore(kbdvecs);
 
     /* Back to user mode */
-    Super (oldpile);
+    Super(oldpile);
 }
 
 static int
-atari_GetButton (int button)
+atari_GetButton(int button)
 {
     switch (button) {
     case 0:
@@ -116,7 +116,7 @@ atari_GetButton (int button)
 }
 
 void
-SDL_AtariXbios_PostMouseEvents (_THIS, SDL_bool buttonEvents)
+SDL_AtariXbios_PostMouseEvents(_THIS, SDL_bool buttonEvents)
 {
     if (SDL_AtariXbios_enabled == 0) {
         return;
@@ -124,8 +124,8 @@ SDL_AtariXbios_PostMouseEvents (_THIS, SDL_bool buttonEvents)
 
     /* Mouse motion ? */
     if (SDL_AtariXbios_mousex || SDL_AtariXbios_mousey) {
-        SDL_PrivateMouseMotion (0, 1, SDL_AtariXbios_mousex,
-                                SDL_AtariXbios_mousey);
+        SDL_PrivateMouseMotion(0, 1, SDL_AtariXbios_mousex,
+                               SDL_AtariXbios_mousey);
         SDL_AtariXbios_mousex = SDL_AtariXbios_mousey = 0;
     }
 
@@ -140,12 +140,11 @@ SDL_AtariXbios_PostMouseEvents (_THIS, SDL_bool buttonEvents)
             prevbutton = atari_prevmouseb & (1 << i);
 
             if (curbutton && !prevbutton) {
-                SDL_PrivateMouseButton (SDL_PRESSED,
-                                        atari_GetButton (i), 0, 0);
+                SDL_PrivateMouseButton(SDL_PRESSED, atari_GetButton(i), 0, 0);
             }
             if (!curbutton && prevbutton) {
-                SDL_PrivateMouseButton (SDL_RELEASED,
-                                        atari_GetButton (i), 0, 0);
+                SDL_PrivateMouseButton(SDL_RELEASED,
+                                       atari_GetButton(i), 0, 0);
             }
         }
         atari_prevmouseb = SDL_AtariXbios_mouseb;

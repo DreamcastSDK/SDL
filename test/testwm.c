@@ -15,28 +15,28 @@ static Uint32 video_flags;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
-quit (int rc)
+quit(int rc)
 {
-    SDL_Quit ();
-    exit (rc);
+    SDL_Quit();
+    exit(rc);
 }
 
 int
-SetVideoMode (int w, int h)
+SetVideoMode(int w, int h)
 {
     SDL_Surface *screen;
     int i;
     Uint8 *buffer;
     SDL_Color palette[256];
 
-    screen = SDL_SetVideoMode (w, h, video_bpp, video_flags);
+    screen = SDL_SetVideoMode(w, h, video_bpp, video_flags);
     if (screen == NULL) {
-        fprintf (stderr, "Couldn't set %dx%dx%d video mode: %s\n",
-                 w, h, video_bpp, SDL_GetError ());
+        fprintf(stderr, "Couldn't set %dx%dx%d video mode: %s\n",
+                w, h, video_bpp, SDL_GetError());
         return (-1);
     }
-    printf ("Running in %s mode\n", screen->flags & SDL_FULLSCREEN ?
-            "fullscreen" : "windowed");
+    printf("Running in %s mode\n", screen->flags & SDL_FULLSCREEN ?
+           "fullscreen" : "windowed");
 
     /* Set the surface pixels and refresh! */
     for (i = 0; i < 256; ++i) {
@@ -44,26 +44,26 @@ SetVideoMode (int w, int h)
         palette[i].g = 255 - i;
         palette[i].b = 255 - i;
     }
-    SDL_SetColors (screen, palette, 0, 256);
-    if (SDL_LockSurface (screen) < 0) {
-        fprintf (stderr, "Couldn't lock display surface: %s\n",
-                 SDL_GetError ());
+    SDL_SetColors(screen, palette, 0, 256);
+    if (SDL_LockSurface(screen) < 0) {
+        fprintf(stderr, "Couldn't lock display surface: %s\n",
+                SDL_GetError());
         return (-1);
     }
     buffer = (Uint8 *) screen->pixels;
     for (i = 0; i < screen->h; ++i) {
-        memset (buffer, (i * 255) / screen->h,
-                screen->w * screen->format->BytesPerPixel);
+        memset(buffer, (i * 255) / screen->h,
+               screen->w * screen->format->BytesPerPixel);
         buffer += screen->pitch;
     }
-    SDL_UnlockSurface (screen);
-    SDL_UpdateRect (screen, 0, 0, 0, 0);
+    SDL_UnlockSurface(screen);
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     return (0);
 }
 
 SDL_Surface *
-LoadIconSurface (char *file, Uint8 ** maskp)
+LoadIconSurface(char *file, Uint8 ** maskp)
 {
     SDL_Surface *icon;
     Uint8 *pixels;
@@ -73,9 +73,9 @@ LoadIconSurface (char *file, Uint8 ** maskp)
     *maskp = NULL;
 
     /* Load the icon surface */
-    icon = SDL_LoadBMP (file);
+    icon = SDL_LoadBMP(file);
     if (icon == NULL) {
-        fprintf (stderr, "Couldn't load %s: %s\n", file, SDL_GetError ());
+        fprintf(stderr, "Couldn't load %s: %s\n", file, SDL_GetError());
         return (NULL);
     }
 
@@ -89,28 +89,28 @@ LoadIconSurface (char *file, Uint8 ** maskp)
 
 
     if (icon->format->palette == NULL) {
-        fprintf (stderr, "Icon must have a palette!\n");
-        SDL_FreeSurface (icon);
+        fprintf(stderr, "Icon must have a palette!\n");
+        SDL_FreeSurface(icon);
         return (NULL);
     }
 
     /* Set the colorkey */
-    SDL_SetColorKey (icon, SDL_SRCCOLORKEY, *((Uint8 *) icon->pixels));
+    SDL_SetColorKey(icon, SDL_SRCCOLORKEY, *((Uint8 *) icon->pixels));
 
     /* Create the mask */
     pixels = (Uint8 *) icon->pixels;
-    printf ("Transparent pixel: (%d,%d,%d)\n",
-            icon->format->palette->colors[*pixels].r,
-            icon->format->palette->colors[*pixels].g,
-            icon->format->palette->colors[*pixels].b);
+    printf("Transparent pixel: (%d,%d,%d)\n",
+           icon->format->palette->colors[*pixels].r,
+           icon->format->palette->colors[*pixels].g,
+           icon->format->palette->colors[*pixels].b);
     mlen = (icon->w * icon->h + 7) / 8;
-    mask = (Uint8 *) malloc (mlen);
+    mask = (Uint8 *) malloc(mlen);
     if (mask == NULL) {
-        fprintf (stderr, "Out of memory!\n");
-        SDL_FreeSurface (icon);
+        fprintf(stderr, "Out of memory!\n");
+        SDL_FreeSurface(icon);
         return (NULL);
     }
-    memset (mask, 0, mlen);
+    memset(mask, 0, mlen);
     for (i = 0; i < icon->h; i++)
         for (j = 0; j < icon->w; j++) {
             int pindex = i * icon->pitch + j;
@@ -123,60 +123,60 @@ LoadIconSurface (char *file, Uint8 ** maskp)
 }
 
 void
-HotKey_ToggleFullScreen (void)
+HotKey_ToggleFullScreen(void)
 {
     SDL_Surface *screen;
 
-    screen = SDL_GetVideoSurface ();
-    if (SDL_WM_ToggleFullScreen (screen)) {
-        printf ("Toggled fullscreen mode - now %s\n",
-                (screen->flags & SDL_FULLSCREEN) ? "fullscreen" : "windowed");
+    screen = SDL_GetVideoSurface();
+    if (SDL_WM_ToggleFullScreen(screen)) {
+        printf("Toggled fullscreen mode - now %s\n",
+               (screen->flags & SDL_FULLSCREEN) ? "fullscreen" : "windowed");
     } else {
-        printf ("Unable to toggle fullscreen mode\n");
+        printf("Unable to toggle fullscreen mode\n");
         video_flags ^= SDL_FULLSCREEN;
-        SetVideoMode (screen->w, screen->h);
+        SetVideoMode(screen->w, screen->h);
     }
 }
 
 void
-HotKey_ToggleGrab (void)
+HotKey_ToggleGrab(void)
 {
     SDL_GrabMode mode;
 
-    printf ("Ctrl-G: toggling input grab!\n");
-    mode = SDL_WM_GrabInput (SDL_GRAB_QUERY);
+    printf("Ctrl-G: toggling input grab!\n");
+    mode = SDL_WM_GrabInput(SDL_GRAB_QUERY);
     if (mode == SDL_GRAB_ON) {
-        printf ("Grab was on\n");
+        printf("Grab was on\n");
     } else {
-        printf ("Grab was off\n");
+        printf("Grab was off\n");
     }
-    mode = SDL_WM_GrabInput (mode ? SDL_GRAB_OFF : SDL_GRAB_ON);
+    mode = SDL_WM_GrabInput(mode ? SDL_GRAB_OFF : SDL_GRAB_ON);
     if (mode == SDL_GRAB_ON) {
-        printf ("Grab is now on\n");
+        printf("Grab is now on\n");
     } else {
-        printf ("Grab is now off\n");
+        printf("Grab is now off\n");
     }
 }
 
 void
-HotKey_Iconify (void)
+HotKey_Iconify(void)
 {
-    printf ("Ctrl-Z: iconifying window!\n");
-    SDL_WM_IconifyWindow ();
+    printf("Ctrl-Z: iconifying window!\n");
+    SDL_WM_IconifyWindow();
 }
 
 void
-HotKey_Quit (void)
+HotKey_Quit(void)
 {
     SDL_Event event;
 
-    printf ("Posting internal quit request\n");
+    printf("Posting internal quit request\n");
     event.type = SDL_USEREVENT;
-    SDL_PushEvent (&event);
+    SDL_PushEvent(&event);
 }
 
 int SDLCALL
-FilterEvents (const SDL_Event * event)
+FilterEvents(const SDL_Event * event)
 {
     static int reallyquit = 0;
 
@@ -184,19 +184,19 @@ FilterEvents (const SDL_Event * event)
 
     case SDL_ACTIVEEVENT:
         /* See what happened */
-        printf ("App %s ", event->active.gain ? "gained" : "lost");
+        printf("App %s ", event->active.gain ? "gained" : "lost");
         if (event->active.state & SDL_APPACTIVE)
-            printf ("active ");
+            printf("active ");
         if (event->active.state & SDL_APPINPUTFOCUS)
-            printf ("input ");
+            printf("input ");
         if (event->active.state & SDL_APPMOUSEFOCUS)
-            printf ("mouse ");
-        printf ("focus\n");
+            printf("mouse ");
+        printf("focus\n");
 
         /* See if we are iconified or restored */
         if (event->active.state & SDL_APPACTIVE) {
-            printf ("App has been %s\n",
-                    event->active.gain ? "restored" : "iconified");
+            printf("App has been %s\n",
+                   event->active.gain ? "restored" : "iconified");
         }
         return (0);
 
@@ -205,38 +205,37 @@ FilterEvents (const SDL_Event * event)
     case SDL_MOUSEBUTTONUP:
         if (event->button.state == SDL_PRESSED) {
             visible = !visible;
-            SDL_ShowCursor (visible);
+            SDL_ShowCursor(visible);
         }
-        printf ("Mouse button %d has been %s\n",
-                event->button.button,
-                (event->button.state == SDL_PRESSED) ?
-                "pressed" : "released");
+        printf("Mouse button %d has been %s\n",
+               event->button.button,
+               (event->button.state == SDL_PRESSED) ? "pressed" : "released");
         return (0);
 
         /* Show relative mouse motion */
     case SDL_MOUSEMOTION:
 #if 0
-        printf ("Mouse motion: {%d,%d} (%d,%d)\n",
-                event->motion.x, event->motion.y,
-                event->motion.xrel, event->motion.yrel);
+        printf("Mouse motion: {%d,%d} (%d,%d)\n",
+               event->motion.x, event->motion.y,
+               event->motion.xrel, event->motion.yrel);
 #endif
         return (0);
 
     case SDL_KEYDOWN:
         if (event->key.keysym.sym == SDLK_ESCAPE) {
-            HotKey_Quit ();
+            HotKey_Quit();
         }
         if ((event->key.keysym.sym == SDLK_g) &&
             (event->key.keysym.mod & KMOD_CTRL)) {
-            HotKey_ToggleGrab ();
+            HotKey_ToggleGrab();
         }
         if ((event->key.keysym.sym == SDLK_z) &&
             (event->key.keysym.mod & KMOD_CTRL)) {
-            HotKey_Iconify ();
+            HotKey_Iconify();
         }
         if ((event->key.keysym.sym == SDLK_RETURN) &&
             (event->key.keysym.mod & KMOD_ALT)) {
-            HotKey_ToggleFullScreen ();
+            HotKey_ToggleFullScreen();
         }
         return (0);
 
@@ -248,10 +247,10 @@ FilterEvents (const SDL_Event * event)
     case SDL_QUIT:
         if (!reallyquit) {
             reallyquit = 1;
-            printf ("Quit requested\n");
+            printf("Quit requested\n");
             return (0);
         }
-        printf ("Quit demanded\n");
+        printf("Quit demanded\n");
         return (1);
 
         /* This will never happen because events queued directly
@@ -267,7 +266,7 @@ FilterEvents (const SDL_Event * event)
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     SDL_Event event;
     char *title;
@@ -276,8 +275,8 @@ main (int argc, char *argv[])
     int parsed;
     int w, h;
 
-    if (SDL_Init (SDL_INIT_VIDEO) < 0) {
-        fprintf (stderr, "Couldn't initialize SDL: %s\n", SDL_GetError ());
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -288,28 +287,28 @@ main (int argc, char *argv[])
     video_flags = SDL_SWSURFACE;
     parsed = 1;
     while (parsed) {
-        if ((argc >= 2) && (strcmp (argv[1], "-fullscreen") == 0)) {
+        if ((argc >= 2) && (strcmp(argv[1], "-fullscreen") == 0)) {
             video_flags |= SDL_FULLSCREEN;
             argc -= 1;
             argv += 1;
-        } else if ((argc >= 2) && (strcmp (argv[1], "-resize") == 0)) {
+        } else if ((argc >= 2) && (strcmp(argv[1], "-resize") == 0)) {
             video_flags |= SDL_RESIZABLE;
             argc -= 1;
             argv += 1;
-        } else if ((argc >= 2) && (strcmp (argv[1], "-noframe") == 0)) {
+        } else if ((argc >= 2) && (strcmp(argv[1], "-noframe") == 0)) {
             video_flags |= SDL_NOFRAME;
             argc -= 1;
             argv += 1;
-        } else if ((argc >= 3) && (strcmp (argv[1], "-width") == 0)) {
-            w = atoi (argv[2]);
+        } else if ((argc >= 3) && (strcmp(argv[1], "-width") == 0)) {
+            w = atoi(argv[2]);
             argc -= 2;
             argv += 2;
-        } else if ((argc >= 3) && (strcmp (argv[1], "-height") == 0)) {
-            h = atoi (argv[2]);
+        } else if ((argc >= 3) && (strcmp(argv[1], "-height") == 0)) {
+            h = atoi(argv[2]);
             argc -= 2;
             argv += 2;
-        } else if ((argc >= 3) && (strcmp (argv[1], "-bpp") == 0)) {
-            video_bpp = atoi (argv[2]);
+        } else if ((argc >= 3) && (strcmp(argv[1], "-bpp") == 0)) {
+            video_bpp = atoi(argv[2]);
             argc -= 2;
             argv += 2;
         } else {
@@ -318,59 +317,59 @@ main (int argc, char *argv[])
     }
 
     /* Set the icon -- this must be done before the first mode set */
-    icon = LoadIconSurface ("icon.bmp", &icon_mask);
+    icon = LoadIconSurface("icon.bmp", &icon_mask);
     if (icon != NULL) {
-        SDL_WM_SetIcon (icon, icon_mask);
+        SDL_WM_SetIcon(icon, icon_mask);
     }
     if (icon_mask != NULL)
-        free (icon_mask);
+        free(icon_mask);
 
     /* Set the title bar */
     if (argv[1] == NULL)
         title = "Testing  1.. 2.. 3...";
     else
         title = argv[1];
-    SDL_WM_SetCaption (title, "testwm");
+    SDL_WM_SetCaption(title, "testwm");
 
     /* See if it's really set */
-    SDL_WM_GetCaption (&title, NULL);
+    SDL_WM_GetCaption(&title, NULL);
     if (title)
-        printf ("Title was set to: %s\n", title);
+        printf("Title was set to: %s\n", title);
     else
-        printf ("No window title was set!\n");
+        printf("No window title was set!\n");
 
     /* Initialize the display */
-    if (SetVideoMode (w, h) < 0) {
-        quit (1);
+    if (SetVideoMode(w, h) < 0) {
+        quit(1);
     }
 
     /* Set an event filter that discards everything but QUIT */
-    SDL_SetEventFilter (FilterEvents);
+    SDL_SetEventFilter(FilterEvents);
 
     /* Ignore key up events, they don't even get filtered */
-    SDL_EventState (SDL_KEYUP, SDL_IGNORE);
+    SDL_EventState(SDL_KEYUP, SDL_IGNORE);
 
     /* Loop, waiting for QUIT */
-    while (SDL_WaitEvent (&event)) {
+    while (SDL_WaitEvent(&event)) {
         switch (event.type) {
         case SDL_VIDEORESIZE:
-            printf ("Got a resize event: %dx%d\n",
-                    event.resize.w, event.resize.h);
-            SetVideoMode (event.resize.w, event.resize.h);
+            printf("Got a resize event: %dx%d\n",
+                   event.resize.w, event.resize.h);
+            SetVideoMode(event.resize.w, event.resize.h);
             break;
         case SDL_USEREVENT:
-            printf ("Handling internal quit request\n");
+            printf("Handling internal quit request\n");
             /* Fall through to the quit handler */
         case SDL_QUIT:
-            printf ("Bye bye..\n");
-            quit (0);
+            printf("Bye bye..\n");
+            quit(0);
         default:
             /* This should never happen */
-            printf ("Warning: Event %d wasn't filtered\n", event.type);
+            printf("Warning: Event %d wasn't filtered\n", event.type);
             break;
         }
     }
-    printf ("SDL_WaitEvent() error: %s\n", SDL_GetError ());
-    SDL_Quit ();
+    printf("SDL_WaitEvent() error: %s\n", SDL_GetError());
+    SDL_Quit();
     return (255);
 }

@@ -64,7 +64,7 @@ struct private_yuvhwdata
 };
 
 static int
-power_of_2 (int value)
+power_of_2(int value)
 {
     int shift;
 
@@ -75,8 +75,8 @@ power_of_2 (int value)
 }
 
 SDL_Overlay *
-GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
-                     SDL_Surface * display)
+GS_CreateYUVOverlay(_THIS, int width, int height, Uint32 format,
+                    SDL_Surface * display)
 {
     SDL_Overlay *overlay;
     struct private_yuvhwdata *hwdata;
@@ -92,13 +92,13 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
 
     /* We can only decode blocks of 16x16 pixels */
     if ((width & 15) || (height & 15)) {
-        SDL_SetError ("Overlay width/height must be multiples of 16");
+        SDL_SetError("Overlay width/height must be multiples of 16");
         return (NULL);
     }
     /* Make sure the image isn't too large for a single DMA transfer */
     if (((width / 16) * (height / 16)) > MAX_MACROBLOCKS) {
-        SDL_SetError ("Overlay too large (maximum size: %d pixels)",
-                      MAX_MACROBLOCKS * 16 * 16);
+        SDL_SetError("Overlay too large (maximum size: %d pixels)",
+                     MAX_MACROBLOCKS * 16 * 16);
         return (NULL);
     }
 
@@ -111,17 +111,17 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
         /* Supported planar YUV format */
         break;
     default:
-        SDL_SetError ("Unsupported YUV format");
+        SDL_SetError("Unsupported YUV format");
         return (NULL);
     }
 
     /* Create the overlay structure */
-    overlay = (SDL_Overlay *) SDL_malloc (sizeof *overlay);
+    overlay = (SDL_Overlay *) SDL_malloc(sizeof *overlay);
     if (overlay == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (overlay, 0, (sizeof *overlay));
+    SDL_memset(overlay, 0, (sizeof *overlay));
 
     /* Fill in the basic members */
     overlay->format = format;
@@ -133,18 +133,18 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     overlay->hw_overlay = 1;
 
     /* Create the pixel data */
-    hwdata = (struct private_yuvhwdata *) SDL_malloc (sizeof *hwdata);
+    hwdata = (struct private_yuvhwdata *) SDL_malloc(sizeof *hwdata);
     overlay->hwdata = hwdata;
     if (hwdata == NULL) {
-        SDL_FreeYUVOverlay (overlay);
-        SDL_OutOfMemory ();
+        SDL_FreeYUVOverlay(overlay);
+        SDL_OutOfMemory();
         return (NULL);
     }
     hwdata->ipu_fd = -1;
-    hwdata->pixels = (Uint8 *) SDL_malloc (width * height * 2);
+    hwdata->pixels = (Uint8 *) SDL_malloc(width * height * 2);
     if (hwdata->pixels == NULL) {
-        SDL_FreeYUVOverlay (overlay);
-        SDL_OutOfMemory ();
+        SDL_FreeYUVOverlay(overlay);
+        SDL_OutOfMemory();
         return (NULL);
     }
     hwdata->macroblocks = (width / 16) * (height / 16);
@@ -175,10 +175,10 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
        simplicity we'll support only one.  Opening the IPU more
        than once will fail with EBUSY.
      */
-    hwdata->ipu_fd = open ("/dev/ps2ipu", O_RDWR);
+    hwdata->ipu_fd = open("/dev/ps2ipu", O_RDWR);
     if (hwdata->ipu_fd < 0) {
-        SDL_FreeYUVOverlay (overlay);
-        SDL_SetError ("Playstation 2 IPU busy");
+        SDL_FreeYUVOverlay(overlay);
+        SDL_SetError("Playstation 2 IPU busy");
         return (NULL);
     }
 
@@ -187,14 +187,14 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     map_offset = (mapped_len + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
     hwdata->dma_len = hwdata->macroblocks * (16 * 16 + 8 * 8 + 8 * 8) +
         width * height * bpp +
-        hwdata->macroblocks * (16 * sizeof (long long)) +
-        12 * sizeof (long long);
-    hwdata->dma_mem = mmap (0, hwdata->dma_len, PROT_READ | PROT_WRITE,
-                            MAP_SHARED, memory_fd, map_offset);
+        hwdata->macroblocks * (16 * sizeof(long long)) +
+        12 * sizeof(long long);
+    hwdata->dma_mem = mmap(0, hwdata->dma_len, PROT_READ | PROT_WRITE,
+                           MAP_SHARED, memory_fd, map_offset);
     if (hwdata->dma_mem == MAP_FAILED) {
         hwdata->ipu_imem = (caddr_t) 0;
-        SDL_FreeYUVOverlay (overlay);
-        SDL_SetError ("Unable to map %d bytes for DMA", hwdata->dma_len);
+        SDL_FreeYUVOverlay(overlay);
+        SDL_SetError("Unable to map %d bytes for DMA", hwdata->dma_len);
         return (NULL);
     }
     hwdata->ipu_imem = hwdata->dma_mem;
@@ -205,11 +205,11 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     /* Allocate memory for the DMA packets */
     hwdata->plist.num = hwdata->macroblocks * 4 + 1;
     hwdata->plist.packet =
-        (struct ps2_packet *) SDL_malloc (hwdata->plist.num *
-                                          sizeof (struct ps2_packet));
+        (struct ps2_packet *) SDL_malloc(hwdata->plist.num *
+                                         sizeof(struct ps2_packet));
     if (!hwdata->plist.packet) {
-        SDL_FreeYUVOverlay (overlay);
-        SDL_OutOfMemory ();
+        SDL_FreeYUVOverlay(overlay);
+        SDL_OutOfMemory();
         return (NULL);
     }
     pnum = 0;
@@ -227,7 +227,7 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
         for (w = width / 16; w; --w) {
             /* The head tag */
             packet[pnum].ptr = &tags[0];
-            packet[pnum].len = 10 * sizeof (*tags);
+            packet[pnum].len = 10 * sizeof(*tags);
             ++pnum;
             tags[0] = 4 | (1LL << 60);  /* GIFtag */
             tags[1] = 0x0e;     /* A+D */
@@ -245,7 +245,7 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
             tags[9] = PS2_GS_TRXDIR;
             /* Now the actual image data */
             packet[pnum].ptr = &tags[10];
-            packet[pnum].len = 2 * sizeof (*tags);
+            packet[pnum].len = 2 * sizeof(*tags);
             ++pnum;
             tags[10] = ((16 * 16 * bpp) >> 4) | (2LL << 58);
             tags[11] = 0;
@@ -253,7 +253,7 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
             packet[pnum].len = 16 * 16 * bpp;
             ++pnum;
             packet[pnum].ptr = &tags[12];
-            packet[pnum].len = 2 * sizeof (*tags);
+            packet[pnum].len = 2 * sizeof(*tags);
             ++pnum;
             tags[12] = (0 >> 4) | (1 << 15) | (2LL << 58);
             tags[13] = 0;
@@ -268,25 +268,25 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
 
     /* Set up the texture memory area for the video */
     tex_packet.ptr = tags;
-    tex_packet.len = 8 * sizeof (*tags);
+    tex_packet.len = 8 * sizeof(*tags);
     tags[0] = 3 | (1LL << 60);  /* GIFtag */
     tags[1] = 0x0e;             /* A+D */
     tags[2] = ((screen_image.y + screen_image.h) * screen_image.w) / 64 +
         ((unsigned long long) fbw << 14) +
         ((unsigned long long) psm << 20) +
-        ((unsigned long long) power_of_2 (width) << 26) +
-        ((unsigned long long) power_of_2 (height) << 30) +
+        ((unsigned long long) power_of_2(width) << 26) +
+        ((unsigned long long) power_of_2(height) << 30) +
         ((unsigned long long) 1 << 34) + ((unsigned long long) 1 << 35);
     tags[3] = PS2_GS_TEX0_1;
     tags[4] = (1 << 5) + (1 << 6);
     tags[5] = PS2_GS_TEX1_1;
     tags[6] = 0;
     tags[7] = PS2_GS_TEXFLUSH;
-    ioctl (console_fd, PS2IOC_SEND, &tex_packet);
+    ioctl(console_fd, PS2IOC_SEND, &tex_packet);
 
     /* Set up the tags for scaling the image */
     packet[pnum].ptr = tags;
-    packet[pnum].len = 12 * sizeof (*tags);
+    packet[pnum].len = 12 * sizeof(*tags);
     ++pnum;
     tags[0] = 5 | (1LL << 60);  /* GIFtag */
     tags[1] = 0x0e;             /* A+D */
@@ -310,20 +310,20 @@ GS_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
 }
 
 int
-GS_LockYUVOverlay (_THIS, SDL_Overlay * overlay)
+GS_LockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     return (0);
 }
 
 void
-GS_UnlockYUVOverlay (_THIS, SDL_Overlay * overlay)
+GS_UnlockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     return;
 }
 
 int
-GS_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
-                      SDL_Rect * dst)
+GS_DisplayYUVOverlay(_THIS, SDL_Overlay * overlay, SDL_Rect * src,
+                     SDL_Rect * dst)
 {
     struct private_yuvhwdata *hwdata;
     __u32 cmd;
@@ -350,7 +350,7 @@ GS_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
         Cr = (Uint32 *) overlay->pixels[2];
         Cb = (Uint32 *) overlay->pixels[1];
     default:
-        SDL_SetError ("Unsupported YUV format in blit (?)");
+        SDL_SetError("Unsupported YUV format in blit (?)");
         return (-1);
     }
     dstp = (Uint32 *) hwdata->ipu_imem;
@@ -397,37 +397,37 @@ GS_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
 
     /* Send the macroblock data to the IPU */
 #ifdef DEBUG_YUV
-    fprintf (stderr, "Sending data to IPU..\n");
+    fprintf(stderr, "Sending data to IPU..\n");
 #endif
     packet.ptr = hwdata->ipu_imem;
     packet.len = hwdata->macroblocks * (16 * 16 + 8 * 8 + 8 * 8);
-    ioctl (hwdata->ipu_fd, PS2IOC_SENDA, &packet);
+    ioctl(hwdata->ipu_fd, PS2IOC_SENDA, &packet);
 
     /* Trigger the DMA to the IPU for conversion */
 #ifdef DEBUG_YUV
-    fprintf (stderr, "Trigging conversion command\n");
+    fprintf(stderr, "Trigging conversion command\n");
 #endif
     cmd = (7 << 28) + hwdata->macroblocks;
     if (screen_image.psm == PS2_GS_PSMCT16) {
         cmd += (1 << 27) +      /* Output RGB 555 */
             (1 << 26);          /* Dither output */
     }
-    ioctl (hwdata->ipu_fd, PS2IOC_SIPUCMD, &cmd);
+    ioctl(hwdata->ipu_fd, PS2IOC_SIPUCMD, &cmd);
 
     /* Retrieve the converted image from the IPU */
 #ifdef DEBUG_YUV
-    fprintf (stderr, "Retrieving data from IPU..\n");
+    fprintf(stderr, "Retrieving data from IPU..\n");
 #endif
     packet.ptr = hwdata->ipu_omem;
     packet.len = overlay->w * overlay->h *
         this->screen->format->BytesPerPixel;
-    ioctl (hwdata->ipu_fd, PS2IOC_RECV, &packet);
+    ioctl(hwdata->ipu_fd, PS2IOC_RECV, &packet);
 
 #ifdef DEBUG_YUV
-    fprintf (stderr, "Copying image to screen..\n");
+    fprintf(stderr, "Copying image to screen..\n");
 #endif
     /* Wait for previous DMA to complete */
-    ioctl (console_fd, PS2IOC_SENDQCT, 1);
+    ioctl(console_fd, PS2IOC_SENDQCT, 1);
 
     /* Send the current image to the screen and scale it */
     screen = this->screen;
@@ -442,29 +442,29 @@ GS_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
     x += (unsigned int) dst->w;
     y += (unsigned int) dst->h;
     *hwdata->stretch_x2y2 = (x * 16) + ((y * 16) << 16);
-    return ioctl (console_fd, PS2IOC_SENDL, &hwdata->plist);
+    return ioctl(console_fd, PS2IOC_SENDL, &hwdata->plist);
 }
 
 void
-GS_FreeYUVOverlay (_THIS, SDL_Overlay * overlay)
+GS_FreeYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     struct private_yuvhwdata *hwdata;
 
     hwdata = overlay->hwdata;
     if (hwdata) {
         if (hwdata->ipu_fd >= 0) {
-            close (hwdata->ipu_fd);
+            close(hwdata->ipu_fd);
         }
         if (hwdata->dma_mem) {
-            munmap (hwdata->dma_mem, hwdata->dma_len);
+            munmap(hwdata->dma_mem, hwdata->dma_len);
         }
         if (hwdata->plist.packet) {
-            SDL_free (hwdata->plist.packet);
+            SDL_free(hwdata->plist.packet);
         }
         if (hwdata->pixels) {
-            SDL_free (hwdata->pixels);
+            SDL_free(hwdata->pixels);
         }
-        SDL_free (hwdata);
+        SDL_free(hwdata);
     }
 }
 

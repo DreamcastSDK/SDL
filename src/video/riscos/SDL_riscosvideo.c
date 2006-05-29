@@ -48,78 +48,78 @@
 #define RISCOSVID_DRIVER_NAME "riscos"
 
 /* Initialization/Query functions */
-static int RISCOS_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static void RISCOS_VideoQuit (_THIS);
+static int RISCOS_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static void RISCOS_VideoQuit(_THIS);
 
-static SDL_Rect **RISCOS_ListModes (_THIS, SDL_PixelFormat * format,
-                                    Uint32 flags);
-static SDL_Surface *RISCOS_SetVideoMode (_THIS, SDL_Surface * current,
-                                         int width, int height, int bpp,
-                                         Uint32 flags);
+static SDL_Rect **RISCOS_ListModes(_THIS, SDL_PixelFormat * format,
+                                   Uint32 flags);
+static SDL_Surface *RISCOS_SetVideoMode(_THIS, SDL_Surface * current,
+                                        int width, int height, int bpp,
+                                        Uint32 flags);
 
-int RISCOS_GetWmInfo (_THIS, SDL_SysWMinfo * info);
+int RISCOS_GetWmInfo(_THIS, SDL_SysWMinfo * info);
 
-int RISCOS_ToggleFullScreen (_THIS, int fullscreen);
+int RISCOS_ToggleFullScreen(_THIS, int fullscreen);
 /* Mouse checking */
-void RISCOS_CheckMouseMode (_THIS);
-extern SDL_GrabMode RISCOS_GrabInput (_THIS, SDL_GrabMode mode);
+void RISCOS_CheckMouseMode(_THIS);
+extern SDL_GrabMode RISCOS_GrabInput(_THIS, SDL_GrabMode mode);
 
 /* Fullscreen mode functions */
-extern SDL_Surface *FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
-                                             int width, int height, int bpp,
-                                             Uint32 flags);
-extern void FULLSCREEN_BuildModeList (_THIS);
-extern void FULLSCREEN_SetDeviceMode (_THIS);
-extern int FULLSCREEN_ToggleFromWimp (_THIS);
+extern SDL_Surface *FULLSCREEN_SetVideoMode(_THIS, SDL_Surface * current,
+                                            int width, int height, int bpp,
+                                            Uint32 flags);
+extern void FULLSCREEN_BuildModeList(_THIS);
+extern void FULLSCREEN_SetDeviceMode(_THIS);
+extern int FULLSCREEN_ToggleFromWimp(_THIS);
 
 /* Wimp mode functions */
-extern SDL_Surface *WIMP_SetVideoMode (_THIS, SDL_Surface * current,
-                                       int width, int height, int bpp,
-                                       Uint32 flags);
-extern void WIMP_DeleteWindow (_THIS);
-extern int WIMP_ToggleFromFullScreen (_THIS);
+extern SDL_Surface *WIMP_SetVideoMode(_THIS, SDL_Surface * current,
+                                      int width, int height, int bpp,
+                                      Uint32 flags);
+extern void WIMP_DeleteWindow(_THIS);
+extern int WIMP_ToggleFromFullScreen(_THIS);
 
 /* Hardware surface functions - common to WIMP and FULLSCREEN */
-static int RISCOS_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int RISCOS_LockHWSurface (_THIS, SDL_Surface * surface);
-static void RISCOS_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void RISCOS_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int RISCOS_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int RISCOS_LockHWSurface(_THIS, SDL_Surface * surface);
+static void RISCOS_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void RISCOS_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* RISC OS driver bootstrap functions */
 
 static int
-RISCOS_Available (void)
+RISCOS_Available(void)
 {
     return (1);
 }
 
 static void
-RISCOS_DeleteDevice (SDL_VideoDevice * device)
+RISCOS_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-RISCOS_CreateDevice (int devindex)
+RISCOS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = RISCOS_VideoInit;
@@ -153,7 +153,7 @@ RISCOS_CreateDevice (int devindex)
     device->ToggleFullScreen = NULL;    /*RISCOS_ToggleFullScreen; */
 
     /* Set other entries for fullscreen mode */
-    FULLSCREEN_SetDeviceMode (device);
+    FULLSCREEN_SetDeviceMode(device);
 
     /* Mouse pointer needs to use the WIMP ShowCursor version so
        that it doesn't modify the pointer until the SDL Window is
@@ -170,13 +170,13 @@ VideoBootStrap RISCOS_bootstrap = {
 
 
 int
-RISCOS_VideoInit (_THIS, SDL_PixelFormat * vformat)
+RISCOS_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     _kernel_swi_regs regs;
     int vars[4], vals[3];
 
-    if (RISCOS_InitTask () == 0) {
-        SDL_SetError ("Unable to start task");
+    if (RISCOS_InitTask() == 0) {
+        SDL_SetError("Unable to start task");
         return 0;
     }
 
@@ -187,7 +187,7 @@ RISCOS_VideoInit (_THIS, SDL_PixelFormat * vformat)
     regs.r[0] = (int) vars;
     regs.r[1] = (int) vals;
 
-    _kernel_swi (OS_ReadVduVariables, &regs, &regs);
+    _kernel_swi(OS_ReadVduVariables, &regs, &regs);
     vformat->BitsPerPixel = (1 << vals[0]);
 
     /* Determine the current screen size */
@@ -236,23 +236,23 @@ RISCOS_VideoInit (_THIS, SDL_PixelFormat * vformat)
    another SDL video routine -- notably UpdateRects.
 */
 void
-RISCOS_VideoQuit (_THIS)
+RISCOS_VideoQuit(_THIS)
 {
-    RISCOS_ExitTask ();
+    RISCOS_ExitTask();
 
     if (this->hidden->alloc_bank)
-        SDL_free (this->hidden->alloc_bank);
+        SDL_free(this->hidden->alloc_bank);
     this->hidden->alloc_bank = 0;
 }
 
 
 SDL_Rect **
-RISCOS_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+RISCOS_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     if (flags & SDL_FULLSCREEN) {
         /* Build mode list when first required. */
         if (SDL_nummodes[0] == 0)
-            FULLSCREEN_BuildModeList (this);
+            FULLSCREEN_BuildModeList(this);
 
         return (SDL_modelist[((format->BitsPerPixel + 7) / 8) - 1]);
     } else
@@ -262,56 +262,56 @@ RISCOS_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
 
 /* Set up video mode */
 SDL_Surface *
-RISCOS_SetVideoMode (_THIS, SDL_Surface * current,
-                     int width, int height, int bpp, Uint32 flags)
+RISCOS_SetVideoMode(_THIS, SDL_Surface * current,
+                    int width, int height, int bpp, Uint32 flags)
 {
     if (flags & SDL_FULLSCREEN) {
-        RISCOS_StoreWimpMode ();
+        RISCOS_StoreWimpMode();
         /* Dump wimp window on switch to full screen */
         if (this->hidden->window_handle)
-            WIMP_DeleteWindow (this);
+            WIMP_DeleteWindow(this);
 
-        return FULLSCREEN_SetVideoMode (this, current, width, height, bpp,
-                                        flags);
+        return FULLSCREEN_SetVideoMode(this, current, width, height, bpp,
+                                       flags);
     } else {
-        RISCOS_RestoreWimpMode ();
-        return WIMP_SetVideoMode (this, current, width, height, bpp, flags);
+        RISCOS_RestoreWimpMode();
+        return WIMP_SetVideoMode(this, current, width, height, bpp, flags);
     }
 }
 
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-RISCOS_AllocHWSurface (_THIS, SDL_Surface * surface)
+RISCOS_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-RISCOS_FreeHWSurface (_THIS, SDL_Surface * surface)
+RISCOS_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-RISCOS_LockHWSurface (_THIS, SDL_Surface * surface)
+RISCOS_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     return (0);
 }
 
 static void
-RISCOS_UnlockHWSurface (_THIS, SDL_Surface * surface)
+RISCOS_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 
 int
-RISCOS_GetWmInfo (_THIS, SDL_SysWMinfo * info)
+RISCOS_GetWmInfo(_THIS, SDL_SysWMinfo * info)
 {
-    SDL_VERSION (&(info->version));
-    info->wimpVersion = RISCOS_GetWimpVersion ();
-    info->taskHandle = RISCOS_GetTaskHandle ();
+    SDL_VERSION(&(info->version));
+    info->wimpVersion = RISCOS_GetWimpVersion();
+    info->taskHandle = RISCOS_GetTaskHandle();
     info->window = this->hidden->window_handle;
 
     return 1;
@@ -322,12 +322,12 @@ RISCOS_GetWmInfo (_THIS, SDL_SysWMinfo * info)
 */
 
 int
-RISCOS_ToggleFullScreen (_THIS, int fullscreen)
+RISCOS_ToggleFullScreen(_THIS, int fullscreen)
 {
     if (fullscreen) {
-        return FULLSCREEN_ToggleFromWimp (this);
+        return FULLSCREEN_ToggleFromWimp(this);
     } else {
-        return WIMP_ToggleFromFullScreen (this);
+        return WIMP_ToggleFromFullScreen(this);
     }
 
     return 0;

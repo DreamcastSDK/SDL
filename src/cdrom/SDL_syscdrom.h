@@ -41,7 +41,7 @@ extern struct CDcaps
     /* Return the current status and play position, in frames, of the
        drive.  'position' may be NULL, and if so, should be ignored.
      */
-      CDstatus (*Status) (SDL_CD * cdrom, int *position);
+      CDstatus(*Status) (SDL_CD * cdrom, int *position);
 
     /* Play from frame 'start' to 'start+len' */
     int (*Play) (SDL_CD * cdrom, int start, int len);
@@ -70,8 +70,8 @@ extern int SDL_numcds;
  * drives.  Drive 0 should be the system default CD-ROM.
  * It should return 0, or -1 on an unrecoverable fatal error.
 */
-extern int SDL_SYS_CDInit (void);
+extern int SDL_SYS_CDInit(void);
 
 /* Function to perform any system-specific CD-ROM related cleanup */
-extern void SDL_SYS_CDQuit (void);
+extern void SDL_SYS_CDQuit(void);
 /* vi: set ts=4 sw=4 expandtab: */

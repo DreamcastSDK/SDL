@@ -45,19 +45,19 @@ static long long hires_start_ticks;
 static ULONG hires_ticks_per_second;
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
-    DosTmrQueryFreq (&hires_ticks_per_second);
-    DosTmrQueryTime ((PQWORD) & hires_start_ticks);
+    DosTmrQueryFreq(&hires_ticks_per_second);
+    DosTmrQueryTime((PQWORD) & hires_start_ticks);
 }
 
 DECLSPEC Uint32 SDLCALL
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
     long long hires_now;
     ULONG ticks = ticks;
 
-    DosTmrQueryTime ((PQWORD) & hires_now);
+    DosTmrQueryTime((PQWORD) & hires_now);
 /*
         hires_now -= hires_start_ticks;
         hires_now *= 1000;
@@ -90,7 +90,7 @@ SDL_GetTicks (void)
 
 /* High resolution sleep, originally made by Ilya Zakharevich */
 DECLSPEC void SDLCALL
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
     /* This is similar to DosSleep(), but has 8ms granularity in time-critical
        threads even on Warp3. */
@@ -105,15 +105,15 @@ SDL_Delay (Uint32 ms)
     APIRET badrc;
     int switch_priority = 50;
 
-    DosCreateEventSem (NULL,    /* Unnamed */
-                       &hevEvent1,      /* Handle of semaphore returned */
-                       DC_SEM_SHARED,   /* Shared needed for DosAsyncTimer */
-                       FALSE);  /* Semaphore is in RESET state  */
+    DosCreateEventSem(NULL,     /* Unnamed */
+                      &hevEvent1,       /* Handle of semaphore returned */
+                      DC_SEM_SHARED,    /* Shared needed for DosAsyncTimer */
+                      FALSE);   /* Semaphore is in RESET state  */
 
     if (ms >= switch_priority)
         switch_priority = 0;
     if (switch_priority) {
-        if (DosGetInfoBlocks (&tib, &pib) != NO_ERROR)
+        if (DosGetInfoBlocks(&tib, &pib) != NO_ERROR)
             switch_priority = 0;
         else {
             /* In Warp3, to switch scheduling to 8ms step, one needs to do 
@@ -131,47 +131,46 @@ SDL_Delay (Uint32 ms)
             /* tib->tib_ptib2->tib2_ulpri = 0x0300; */
             /* We do not want to run at high priority if a signal causes us
                to longjmp() out of this section... */
-            if (DosEnterMustComplete (&nesting))
+            if (DosEnterMustComplete(&nesting))
                 switch_priority = 0;
             else
-                DosSetPriority (PRTYS_THREAD, PRTYC_TIMECRITICAL, 0, 0);
+                DosSetPriority(PRTYS_THREAD, PRTYC_TIMECRITICAL, 0, 0);
         }
     }
 
-    if ((badrc = DosAsyncTimer (ms, (HSEM) hevEvent1,   /* Semaphore to post        */
-                                &htimerEvent1)))        /* Timer handler (returned) */
+    if ((badrc = DosAsyncTimer(ms, (HSEM) hevEvent1,    /* Semaphore to post        */
+                               &htimerEvent1))) /* Timer handler (returned) */
         e = "DosAsyncTimer";
 
     if (switch_priority && tib->tib_ptib2->tib2_ulpri == 0x0300) {
         /* Nobody switched priority while we slept...  Ignore errors... */
         /* tib->tib_ptib2->tib2_ulpri = priority; *//* Get back... */
         if (!
-            (rc =
-             DosSetPriority (PRTYS_THREAD, (priority >> 8) & 0xFF, 0, 0)))
-            rc = DosSetPriority (PRTYS_THREAD, 0, priority & 0xFF, 0);
+            (rc = DosSetPriority(PRTYS_THREAD, (priority >> 8) & 0xFF, 0, 0)))
+            rc = DosSetPriority(PRTYS_THREAD, 0, priority & 0xFF, 0);
     }
     if (switch_priority)
-        rc = DosExitMustComplete (&nesting);    /* Ignore errors */
+        rc = DosExitMustComplete(&nesting);     /* Ignore errors */
 
     /* The actual blocking call is made with "normal" priority.  This way we
        should not bother with DosSleep(0) etc. to compensate for us interrupting
        higher-priority threads.  The goal is to prohibit the system spending too
        much time halt()ing, not to run us "no matter what". */
     if (!e)                     /* Wait for AsyncTimer event */
-        badrc = DosWaitEventSem (hevEvent1, SEM_INDEFINITE_WAIT);
+        badrc = DosWaitEventSem(hevEvent1, SEM_INDEFINITE_WAIT);
 
     if (e);                     /* Do nothing */
     else if (badrc == ERROR_INTERRUPT)
         ret = 0;
     else if (badrc)
         e = "DosWaitEventSem";
-    if ((rc = DosCloseEventSem (hevEvent1)) && !e) {    /* Get rid of semaphore */
+    if ((rc = DosCloseEventSem(hevEvent1)) && !e) {     /* Get rid of semaphore */
         e = "DosCloseEventSem";
         badrc = rc;
     }
     if (e) {
-        SDL_SetError ("[SDL_Delay] : Had error in %s(), rc is 0x%x\n", e,
-                      badrc);
+        SDL_SetError("[SDL_Delay] : Had error in %s(), rc is 0x%x\n", e,
+                     badrc);
     }
 }
 
@@ -180,48 +179,48 @@ static int timer_alive = 0;
 static SDL_Thread *timer = NULL;
 
 static int
-RunTimer (void *unused)
+RunTimer(void *unused)
 {
-    DosSetPriority (PRTYS_THREAD, PRTYC_TIMECRITICAL, 0, 0);
+    DosSetPriority(PRTYS_THREAD, PRTYC_TIMECRITICAL, 0, 0);
     while (timer_alive) {
         if (SDL_timer_running) {
-            SDL_ThreadedTimerCheck ();
+            SDL_ThreadedTimerCheck();
         }
-        SDL_Delay (10);
+        SDL_Delay(10);
     }
     return (0);
 }
 
 /* This is only called if the event thread is not running */
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     timer_alive = 1;
-    timer = SDL_CreateThread (RunTimer, NULL);
+    timer = SDL_CreateThread(RunTimer, NULL);
     if (timer == NULL)
         return (-1);
-    return (SDL_SetTimerThreaded (1));
+    return (SDL_SetTimerThreaded(1));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     timer_alive = 0;
     if (timer) {
-        SDL_WaitThread (timer, NULL);
+        SDL_WaitThread(timer, NULL);
         timer = NULL;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    SDL_SetError ("Internal logic error: OS/2 uses threaded timer");
+    SDL_SetError("Internal logic error: OS/2 uses threaded timer");
     return (-1);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     return;
 }

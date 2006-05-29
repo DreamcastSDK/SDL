@@ -33,7 +33,7 @@
 #include "SDL_xbios_blowup.h"
 
 void
-SDL_XBIOS_BlowupInit (_THIS, blow_cookie_t * cookie_blow)
+SDL_XBIOS_BlowupInit(_THIS, blow_cookie_t * cookie_blow)
 {
     int i, num_mode, bank;
     blow_mode_t *blow_mode;
@@ -57,11 +57,11 @@ SDL_XBIOS_BlowupInit (_THIS, blow_cookie_t * cookie_blow)
                 || ((blow_mode->monitor == MONITOR_RGB)
                     && (cookie_blow->montype == MONITOR_TV))) {
                 /* we can use this extended mode */
-                SDL_XBIOS_AddMode (this,
-                                   num_mode == 3 ? BPS8 : BPS16,
-                                   blow_mode->width + 1,
-                                   blow_mode->height + 1,
-                                   num_mode == 3 ? 8 : 16, SDL_FALSE);
+                SDL_XBIOS_AddMode(this,
+                                  num_mode == 3 ? BPS8 : BPS16,
+                                  blow_mode->width + 1,
+                                  blow_mode->height + 1,
+                                  num_mode == 3 ? 8 : 16, SDL_FALSE);
             }
         }
     }

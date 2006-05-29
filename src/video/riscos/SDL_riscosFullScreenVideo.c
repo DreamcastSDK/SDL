@@ -57,51 +57,50 @@ typedef struct tagScreenModeBlock
 
 
 /* Helper functions */
-void FULLSCREEN_SetDeviceMode (_THIS);
-int FULLSCREEN_SetMode (int width, int height, int bpp);
-void FULLSCREEN_SetupBanks (_THIS);
+void FULLSCREEN_SetDeviceMode(_THIS);
+int FULLSCREEN_SetMode(int width, int height, int bpp);
+void FULLSCREEN_SetupBanks(_THIS);
 
 /* SDL video device functions for fullscreen mode */
-static int FULLSCREEN_SetColors (_THIS, int firstcolor, int ncolors,
-                                 SDL_Color * colors);
-static int FULLSCREEN_FlipHWSurface (_THIS, SDL_Surface * surface);
-void FULLSCREEN_SetWMCaption (_THIS, const char *title, const char *icon);
-extern int RISCOS_GetWmInfo (_THIS, SDL_SysWMinfo * info);
+static int FULLSCREEN_SetColors(_THIS, int firstcolor, int ncolors,
+                                SDL_Color * colors);
+static int FULLSCREEN_FlipHWSurface(_THIS, SDL_Surface * surface);
+void FULLSCREEN_SetWMCaption(_THIS, const char *title, const char *icon);
+extern int RISCOS_GetWmInfo(_THIS, SDL_SysWMinfo * info);
 
 /* UpdateRects variants */
-static void FULLSCREEN_UpdateRects (_THIS, int numrects, SDL_Rect * rects);
-static void FULLSCREEN_UpdateRectsMemCpy (_THIS, int numrects,
-                                          SDL_Rect * rects);
-static void FULLSCREEN_UpdateRects8bpp (_THIS, int numrects,
+static void FULLSCREEN_UpdateRects(_THIS, int numrects, SDL_Rect * rects);
+static void FULLSCREEN_UpdateRectsMemCpy(_THIS, int numrects,
+                                         SDL_Rect * rects);
+static void FULLSCREEN_UpdateRects8bpp(_THIS, int numrects, SDL_Rect * rects);
+static void FULLSCREEN_UpdateRects16bpp(_THIS, int numrects,
                                         SDL_Rect * rects);
-static void FULLSCREEN_UpdateRects16bpp (_THIS, int numrects,
-                                         SDL_Rect * rects);
-static void FULLSCREEN_UpdateRects32bpp (_THIS, int numrects,
-                                         SDL_Rect * rects);
-static void FULLSCREEN_UpdateRectsOS (_THIS, int numrects, SDL_Rect * rects);
+static void FULLSCREEN_UpdateRects32bpp(_THIS, int numrects,
+                                        SDL_Rect * rects);
+static void FULLSCREEN_UpdateRectsOS(_THIS, int numrects, SDL_Rect * rects);
 
 /* Local helper functions */
-static int cmpmodes (const void *va, const void *vb);
-static int FULLSCREEN_AddMode (_THIS, int bpp, int w, int h);
-void FULLSCREEN_SetWriteBank (int bank);
-void FULLSCREEN_SetDisplayBank (int bank);
-static void FULLSCREEN_DisableEscape ();
-static void FULLSCREEN_EnableEscape ();
-void FULLSCREEN_BuildModeList (_THIS);
+static int cmpmodes(const void *va, const void *vb);
+static int FULLSCREEN_AddMode(_THIS, int bpp, int w, int h);
+void FULLSCREEN_SetWriteBank(int bank);
+void FULLSCREEN_SetDisplayBank(int bank);
+static void FULLSCREEN_DisableEscape();
+static void FULLSCREEN_EnableEscape();
+void FULLSCREEN_BuildModeList(_THIS);
 
 /* Following variable is set up in riskosTask.c */
 extern int riscos_backbuffer;   /* Create a back buffer in system memory for full screen mode */
 
 /* Following is used to create a sprite back buffer */
-extern unsigned char *WIMP_CreateBuffer (int width, int height, int bpp);
+extern unsigned char *WIMP_CreateBuffer(int width, int height, int bpp);
 
 /* Fast assembler copy */
-extern void RISCOS_Put32 (void *to, int pixels, int pitch, int rows,
-                          void *from, int src_skip_bytes);
+extern void RISCOS_Put32(void *to, int pixels, int pitch, int rows,
+                         void *from, int src_skip_bytes);
 
 SDL_Surface *
-FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
-                         int width, int height, int bpp, Uint32 flags)
+FULLSCREEN_SetVideoMode(_THIS, SDL_Surface * current,
+                        int width, int height, int bpp, Uint32 flags)
 {
     _kernel_swi_regs regs;
     Uint32 Rmask = 0;
@@ -128,23 +127,22 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
         break;
 
     default:
-        SDL_SetError ("Pixel depth not supported");
+        SDL_SetError("Pixel depth not supported");
         return NULL;
         break;
     }
 
-    if (FULLSCREEN_SetMode (width, height, bpp) == 0) {
-        SDL_SetError ("Couldn't set requested mode");
+    if (FULLSCREEN_SetMode(width, height, bpp) == 0) {
+        SDL_SetError("Couldn't set requested mode");
         return (NULL);
     }
 
 /* 	printf("Setting mode %dx%d\n", width, height); */
 
     /* Allocate the new pixel format for the screen */
-    if (!SDL_ReallocFormat (current, bpp, Rmask, Gmask, Bmask, 0)) {
-        RISCOS_RestoreWimpMode ();
-        SDL_SetError
-            ("Couldn't allocate new pixel format for requested mode");
+    if (!SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, 0)) {
+        RISCOS_RestoreWimpMode();
+        SDL_SetError("Couldn't allocate new pixel format for requested mode");
         return (NULL);
     }
 
@@ -156,18 +154,18 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* Get screen width in bytes */
     regs.r[1] = 6;              // Screen Width in bytes
-    _kernel_swi (OS_ReadModeVariable, &regs, &regs);
+    _kernel_swi(OS_ReadModeVariable, &regs, &regs);
 
     current->pitch = regs.r[2];
 
     if (flags & SDL_DOUBLEBUF) {
         regs.r[0] = 2;          /* Screen area */
-        _kernel_swi (OS_ReadDynamicArea, &regs, &regs);
+        _kernel_swi(OS_ReadDynamicArea, &regs, &regs);
 
         /* Reg 1 has amount of memory currently used for display */
         regs.r[0] = 2;          /* Screen area */
         regs.r[1] = (current->pitch * height * 2) - regs.r[1];
-        if (_kernel_swi (OS_ChangeDynamicArea, &regs, &regs) != NULL) {
+        if (_kernel_swi(OS_ChangeDynamicArea, &regs, &regs) != NULL) {
             /* Can't allocate enough screen memory for double buffer */
             flags &= ~SDL_DOUBLEBUF;
         }
@@ -178,13 +176,13 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* Need to set display banks here for double buffering */
     if (flags & SDL_DOUBLEBUF) {
-        FULLSCREEN_SetWriteBank (0);
-        FULLSCREEN_SetDisplayBank (1);
+        FULLSCREEN_SetWriteBank(0);
+        FULLSCREEN_SetDisplayBank(1);
 
         create_back_buffer = 0; /* Don't need a back buffer for a double buffered display */
     }
 
-    FULLSCREEN_SetupBanks (this);
+    FULLSCREEN_SetupBanks(this);
 
     if (create_back_buffer) {
         /* If not double buffered we may need to create a memory
@@ -193,12 +191,12 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
          ** SDL$<name>$BackBuffer >= 1
          */
         if (riscos_backbuffer == 3)
-            this->hidden->bank[0] = WIMP_CreateBuffer (width, height, bpp);
+            this->hidden->bank[0] = WIMP_CreateBuffer(width, height, bpp);
         else
-            this->hidden->bank[0] = SDL_malloc (height * current->pitch);
+            this->hidden->bank[0] = SDL_malloc(height * current->pitch);
         if (this->hidden->bank[0] == 0) {
-            RISCOS_RestoreWimpMode ();
-            SDL_SetError ("Couldnt allocate memory for back buffer");
+            RISCOS_RestoreWimpMode();
+            SDL_SetError("Couldnt allocate memory for back buffer");
             return (NULL);
         }
         /* Surface updated in programs is now a software surface */
@@ -207,7 +205,7 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* Store address of allocated screen bank to be freed later */
     if (this->hidden->alloc_bank)
-        SDL_free (this->hidden->alloc_bank);
+        SDL_free(this->hidden->alloc_bank);
     if (create_back_buffer) {
         this->hidden->alloc_bank = this->hidden->bank[0];
         if (riscos_backbuffer == 3) {
@@ -219,8 +217,8 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
         this->hidden->alloc_bank = 0;
 
     // Clear both banks to black
-    SDL_memset (this->hidden->bank[0], 0, height * current->pitch);
-    SDL_memset (this->hidden->bank[1], 0, height * current->pitch);
+    SDL_memset(this->hidden->bank[0], 0, height * current->pitch);
+    SDL_memset(this->hidden->bank[1], 0, height * current->pitch);
 
     this->hidden->current_bank = 0;
     current->pixels = this->hidden->bank[0];
@@ -229,7 +227,7 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
     this->screen = current;
 
     /* Reset device functions for the wimp */
-    FULLSCREEN_SetDeviceMode (this);
+    FULLSCREEN_SetDeviceMode(this);
 
 /*	FULLSCREEN_DisableEscape(); */
 
@@ -239,7 +237,7 @@ FULLSCREEN_SetVideoMode (_THIS, SDL_Surface * current,
 
 /* Reset any device functions that have been changed because we have run in WIMP mode */
 void
-FULLSCREEN_SetDeviceMode (_THIS)
+FULLSCREEN_SetDeviceMode(_THIS)
 {
     /* Update rects is different if we have a backbuffer */
 
@@ -290,7 +288,7 @@ FULLSCREEN_SetDeviceMode (_THIS)
 
 /* Query for the list of available video modes */
 void
-FULLSCREEN_BuildModeList (_THIS)
+FULLSCREEN_BuildModeList(_THIS)
 {
     _kernel_swi_regs regs;
     char *enumInfo = NULL;
@@ -304,23 +302,23 @@ FULLSCREEN_BuildModeList (_THIS)
     regs.r[2] = 0;              /* Number of modes to skip */
     regs.r[6] = 0;              /* pointer to block or 0 for count */
     regs.r[7] = 0;              /* Size of block in bytes */
-    _kernel_swi (OS_ScreenMode, &regs, &regs);
+    _kernel_swi(OS_ScreenMode, &regs, &regs);
 
     num_modes = -regs.r[2];
 
     /* Video memory should be in r[5] */
     this->info.video_mem = regs.r[5] / 1024;
 
-    enumInfo = (unsigned char *) SDL_malloc (-regs.r[7]);
+    enumInfo = (unsigned char *) SDL_malloc(-regs.r[7]);
     if (enumInfo == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return;
     }
     /* Read mode information into block */
     regs.r[2] = 0;
     regs.r[6] = (int) enumInfo;
     regs.r[7] = -regs.r[7];
-    _kernel_swi (OS_ScreenMode, &regs, &regs);
+    _kernel_swi(OS_ScreenMode, &regs, &regs);
 
     enum_ptr = enumInfo;
 
@@ -329,13 +327,13 @@ FULLSCREEN_BuildModeList (_THIS)
         if ((blockInfo[1] & 255) == 1) {        /* We understand this format */
             switch (blockInfo[4]) {
             case 3:            /* 8 bits per pixel */
-                FULLSCREEN_AddMode (this, 8, blockInfo[2], blockInfo[3]);
+                FULLSCREEN_AddMode(this, 8, blockInfo[2], blockInfo[3]);
                 break;
             case 4:            /* 15 bits per pixel */
-                FULLSCREEN_AddMode (this, 15, blockInfo[2], blockInfo[3]);
+                FULLSCREEN_AddMode(this, 15, blockInfo[2], blockInfo[3]);
                 break;
             case 5:            /* 32 bits per pixel */
-                FULLSCREEN_AddMode (this, 32, blockInfo[2], blockInfo[3]);
+                FULLSCREEN_AddMode(this, 32, blockInfo[2], blockInfo[3]);
                 break;
             }
         }
@@ -343,43 +341,43 @@ FULLSCREEN_BuildModeList (_THIS)
         enum_ptr += blockInfo[0];
     }
 
-    SDL_free (enumInfo);
+    SDL_free(enumInfo);
 
     /* Sort the mode lists */
     for (j = 0; j < NUM_MODELISTS; ++j) {
         if (SDL_nummodes[j] > 0) {
-            SDL_qsort (SDL_modelist[j], SDL_nummodes[j],
-                       sizeof *SDL_modelist[j], cmpmodes);
+            SDL_qsort(SDL_modelist[j], SDL_nummodes[j],
+                      sizeof *SDL_modelist[j], cmpmodes);
         }
     }
 }
 
 static int
-FULLSCREEN_FlipHWSurface (_THIS, SDL_Surface * surface)
+FULLSCREEN_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 19;
 
-    FULLSCREEN_SetDisplayBank (this->hidden->current_bank);
+    FULLSCREEN_SetDisplayBank(this->hidden->current_bank);
     this->hidden->current_bank ^= 1;
-    FULLSCREEN_SetWriteBank (this->hidden->current_bank);
+    FULLSCREEN_SetWriteBank(this->hidden->current_bank);
     surface->pixels = this->hidden->bank[this->hidden->current_bank];
 
     /* Wait for Vsync */
-    _kernel_swi (OS_Byte, &regs, &regs);
+    _kernel_swi(OS_Byte, &regs, &regs);
 
     return (0);
 }
 
 /* Nothing to do if we are writing direct to hardware */
 static void
-FULLSCREEN_UpdateRects (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRects(_THIS, int numrects, SDL_Rect * rects)
 {
 }
 
 /* Safe but slower Memory copy from our allocated back buffer */
 static void
-FULLSCREEN_UpdateRectsMemCpy (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRectsMemCpy(_THIS, int numrects, SDL_Rect * rects)
 {
     int j;
     char *to, *from;
@@ -390,7 +388,7 @@ FULLSCREEN_UpdateRectsMemCpy (_THIS, int numrects, SDL_Rect * rects)
         from = this->hidden->bank[0] + rects->x * xmult + rects->y * pitch;
         to = this->hidden->bank[1] + rects->x * xmult + rects->y * pitch;
         for (row = 0; row < rects->h; row++) {
-            SDL_memcpy (to, from, rects->w * xmult);
+            SDL_memcpy(to, from, rects->w * xmult);
             from += pitch;
             to += pitch;
         }
@@ -401,7 +399,7 @@ FULLSCREEN_UpdateRectsMemCpy (_THIS, int numrects, SDL_Rect * rects)
 /* Use optimized assembler memory copy. Deliberately copies extra columns if
    necessary to ensure the rectangle is word aligned. */
 static void
-FULLSCREEN_UpdateRects8bpp (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRects8bpp(_THIS, int numrects, SDL_Rect * rects)
 {
     int j;
     char *to, *from;
@@ -423,8 +421,8 @@ FULLSCREEN_UpdateRects8bpp (_THIS, int numrects, SDL_Rect * rects)
             width_bytes += 4 - (width_bytes & 3);
         src_skip_bytes = pitch - width_bytes;
 
-        RISCOS_Put32 (to, (width_bytes >> 2), pitch, (int) rects->h, from,
-                      src_skip_bytes);
+        RISCOS_Put32(to, (width_bytes >> 2), pitch, (int) rects->h, from,
+                     src_skip_bytes);
         rects++;
     }
 }
@@ -432,7 +430,7 @@ FULLSCREEN_UpdateRects8bpp (_THIS, int numrects, SDL_Rect * rects)
 /* Use optimized assembler memory copy. Deliberately copies extra columns if
    necessary to ensure the rectangle is word aligned. */
 static void
-FULLSCREEN_UpdateRects16bpp (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRects16bpp(_THIS, int numrects, SDL_Rect * rects)
 {
     int j;
     char *to, *from;
@@ -453,15 +451,15 @@ FULLSCREEN_UpdateRects16bpp (_THIS, int numrects, SDL_Rect * rects)
             width_bytes += 2;
         src_skip_bytes = pitch - width_bytes;
 
-        RISCOS_Put32 (to, (width_bytes >> 2), pitch, (int) rects->h, from,
-                      src_skip_bytes);
+        RISCOS_Put32(to, (width_bytes >> 2), pitch, (int) rects->h, from,
+                     src_skip_bytes);
         rects++;
     }
 }
 
 /* Use optimized assembler memory copy. 32 bpp modes are always word aligned */
 static void
-FULLSCREEN_UpdateRects32bpp (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRects32bpp(_THIS, int numrects, SDL_Rect * rects)
 {
     int j;
     char *to, *from;
@@ -473,8 +471,8 @@ FULLSCREEN_UpdateRects32bpp (_THIS, int numrects, SDL_Rect * rects)
         to = this->hidden->bank[1] + (rects->x << 2) + rects->y * pitch;
         width = (int) rects->w;
 
-        RISCOS_Put32 (to, width, pitch, (int) rects->h, from,
-                      pitch - (width << 2));
+        RISCOS_Put32(to, width, pitch, (int) rects->h, from,
+                     pitch - (width << 2));
         rects++;
     }
 }
@@ -483,7 +481,7 @@ FULLSCREEN_UpdateRects32bpp (_THIS, int numrects, SDL_Rect * rects)
    other variants however accelerated sprite plotting can be seen on the horizon
    so this prepares for it. */
 static void
-FULLSCREEN_UpdateRectsOS (_THIS, int numrects, SDL_Rect * rects)
+FULLSCREEN_UpdateRectsOS(_THIS, int numrects, SDL_Rect * rects)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *err;
@@ -497,44 +495,44 @@ FULLSCREEN_UpdateRectsOS (_THIS, int numrects, SDL_Rect * rects)
 
     for (j = 0; j < numrects; j++) {
         y = this->screen->h - rects->y; /* top of clipping region */
-        _kernel_oswrch (24);    /* Set graphics clip region */
-        _kernel_oswrch ((rects->x << this->hidden->xeig) & 0xFF);       /* left */
-        _kernel_oswrch (((rects->x << this->hidden->xeig) >> 8) & 0xFF);
-        _kernel_oswrch (((y - rects->h) << this->hidden->yeig) & 0xFF); /* bottom */
-        _kernel_oswrch ((((y - rects->h) << this->hidden->yeig) >> 8) & 0xFF);
-        _kernel_oswrch (((rects->x + rects->w - 1) << this->hidden->xeig) & 0xFF);      /* right */
-        _kernel_oswrch ((((rects->x + rects->w -
-                           1) << this->hidden->xeig) >> 8) & 0xFF);
-        _kernel_oswrch (((y - 1) << this->hidden->yeig) & 0xFF);        /* top */
-        _kernel_oswrch ((((y - 1) << this->hidden->yeig) >> 8) & 0xFF);
+        _kernel_oswrch(24);     /* Set graphics clip region */
+        _kernel_oswrch((rects->x << this->hidden->xeig) & 0xFF);        /* left */
+        _kernel_oswrch(((rects->x << this->hidden->xeig) >> 8) & 0xFF);
+        _kernel_oswrch(((y - rects->h) << this->hidden->yeig) & 0xFF);  /* bottom */
+        _kernel_oswrch((((y - rects->h) << this->hidden->yeig) >> 8) & 0xFF);
+        _kernel_oswrch(((rects->x + rects->w - 1) << this->hidden->xeig) & 0xFF);       /* right */
+        _kernel_oswrch((((rects->x + rects->w -
+                          1) << this->hidden->xeig) >> 8) & 0xFF);
+        _kernel_oswrch(((y - 1) << this->hidden->yeig) & 0xFF); /* top */
+        _kernel_oswrch((((y - 1) << this->hidden->yeig) >> 8) & 0xFF);
 
         regs.r[3] = 0;
         regs.r[4] = 0;
 
-        if ((err = _kernel_swi (OS_SpriteOp, &regs, &regs)) != 0) {
-            printf ("OS_SpriteOp failed \n%s\n", err->errmess);
+        if ((err = _kernel_swi(OS_SpriteOp, &regs, &regs)) != 0) {
+            printf("OS_SpriteOp failed \n%s\n", err->errmess);
         }
 
         rects++;
 
         /* Reset to full screen clipping */
-        _kernel_oswrch (24);    /* Set graphics clip region */
-        _kernel_oswrch (0);     /* left */
-        _kernel_oswrch (0);
-        _kernel_oswrch (0);     /* bottom */
-        _kernel_oswrch (0);
-        _kernel_oswrch (((this->screen->w - 1) << this->hidden->xeig) & 0xFF);  /* right */
-        _kernel_oswrch ((((this->screen->w -
-                           1) << this->hidden->xeig) >> 8) & 0xFF);
-        _kernel_oswrch (((this->screen->h - 1) << this->hidden->yeig) & 0xFF);  /* top */
-        _kernel_oswrch ((((this->screen->h -
-                           1) << this->hidden->yeig) >> 8) & 0xFF);
+        _kernel_oswrch(24);     /* Set graphics clip region */
+        _kernel_oswrch(0);      /* left */
+        _kernel_oswrch(0);
+        _kernel_oswrch(0);      /* bottom */
+        _kernel_oswrch(0);
+        _kernel_oswrch(((this->screen->w - 1) << this->hidden->xeig) & 0xFF);   /* right */
+        _kernel_oswrch((((this->screen->w -
+                          1) << this->hidden->xeig) >> 8) & 0xFF);
+        _kernel_oswrch(((this->screen->h - 1) << this->hidden->yeig) & 0xFF);   /* top */
+        _kernel_oswrch((((this->screen->h -
+                          1) << this->hidden->yeig) >> 8) & 0xFF);
     }
 }
 
 
 int
-FULLSCREEN_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+FULLSCREEN_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     _kernel_swi_regs regs;
     int palette[256];
@@ -544,7 +542,7 @@ FULLSCREEN_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
     regs.r[2] = (int) palette;
     regs.r[3] = 1024;
     regs.r[4] = 0;
-    _kernel_swi (ColourTrans_ReadPalette, &regs, &regs);
+    _kernel_swi(ColourTrans_ReadPalette, &regs, &regs);
 
     while (ncolors--) {
         palette[firstcolor] =
@@ -558,14 +556,14 @@ FULLSCREEN_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
     regs.r[2] = (int) palette;
     regs.r[3] = 0;
     regs.r[4] = 0;
-    _kernel_swi (ColourTrans_WritePalette, &regs, &regs);
+    _kernel_swi(ColourTrans_WritePalette, &regs, &regs);
 
     return (1);
 }
 
 
 static int
-cmpmodes (const void *va, const void *vb)
+cmpmodes(const void *va, const void *vb)
 {
     SDL_Rect *a = *(SDL_Rect **) va;
     SDL_Rect *b = *(SDL_Rect **) vb;
@@ -576,7 +574,7 @@ cmpmodes (const void *va, const void *vb)
 }
 
 static int
-FULLSCREEN_AddMode (_THIS, int bpp, int w, int h)
+FULLSCREEN_AddMode(_THIS, int bpp, int w, int h)
 {
     SDL_Rect *mode;
     int i, index;
@@ -595,9 +593,9 @@ FULLSCREEN_AddMode (_THIS, int bpp, int w, int h)
     }
 
     /* Set up the new video mode rectangle */
-    mode = (SDL_Rect *) SDL_malloc (sizeof *mode);
+    mode = (SDL_Rect *) SDL_malloc(sizeof *mode);
     if (mode == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
     mode->x = 0;
@@ -608,12 +606,12 @@ FULLSCREEN_AddMode (_THIS, int bpp, int w, int h)
     /* Allocate the new list of modes, and fill in the new mode */
     next_mode = SDL_nummodes[index];
     SDL_modelist[index] = (SDL_Rect **)
-        SDL_realloc (SDL_modelist[index],
-                     (1 + next_mode + 1) * sizeof (SDL_Rect *));
+        SDL_realloc(SDL_modelist[index],
+                    (1 + next_mode + 1) * sizeof(SDL_Rect *));
     if (SDL_modelist[index] == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         SDL_nummodes[index] = 0;
-        SDL_free (mode);
+        SDL_free(mode);
         return (-1);
     }
     SDL_modelist[index][next_mode] = mode;
@@ -624,54 +622,54 @@ FULLSCREEN_AddMode (_THIS, int bpp, int w, int h)
 }
 
 void
-FULLSCREEN_SetWriteBank (int bank)
+FULLSCREEN_SetWriteBank(int bank)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 112;
     regs.r[1] = bank + 1;
-    _kernel_swi (OS_Byte, &regs, &regs);
+    _kernel_swi(OS_Byte, &regs, &regs);
 }
 
 void
-FULLSCREEN_SetDisplayBank (int bank)
+FULLSCREEN_SetDisplayBank(int bank)
 {
     _kernel_swi_regs regs;
     regs.r[0] = 113;
     regs.r[1] = bank + 1;
-    _kernel_swi (OS_Byte, &regs, &regs);
+    _kernel_swi(OS_Byte, &regs, &regs);
 }
 
 
 /** Disable special escape key processing */
 static void
-FULLSCREEN_DisableEscape ()
+FULLSCREEN_DisableEscape()
 {
     _kernel_swi_regs regs;
     regs.r[0] = 229;
     regs.r[1] = 1;
     regs.r[2] = 0;
-    _kernel_swi (OS_Byte, &regs, &regs);
+    _kernel_swi(OS_Byte, &regs, &regs);
 
 }
 
 /** Enable special escape key processing */
 static void
-FULLSCREEN_EnableEscape ()
+FULLSCREEN_EnableEscape()
 {
     _kernel_swi_regs regs;
     regs.r[0] = 229;
     regs.r[1] = 0;
     regs.r[2] = 0;
-    _kernel_swi (OS_Byte, &regs, &regs);
+    _kernel_swi(OS_Byte, &regs, &regs);
 
 }
 
 /** Store caption in case this is called before we create a window */
 void
-FULLSCREEN_SetWMCaption (_THIS, const char *title, const char *icon)
+FULLSCREEN_SetWMCaption(_THIS, const char *title, const char *icon)
 {
-    SDL_strlcpy (this->hidden->title, title,
-                 SDL_arraysize (this->hidden->title));
+    SDL_strlcpy(this->hidden->title, title,
+                SDL_arraysize(this->hidden->title));
 }
 
 /* Set screen mode
@@ -680,7 +678,7 @@ FULLSCREEN_SetWMCaption (_THIS, const char *title, const char *icon)
 */
 
 int
-FULLSCREEN_SetMode (int width, int height, int bpp)
+FULLSCREEN_SetMode(int width, int height, int bpp)
 {
     SCREENMODEBLOCK smb;
     _kernel_swi_regs regs;
@@ -711,7 +709,7 @@ FULLSCREEN_SetMode (int width, int height, int bpp)
         break;
 
     default:
-        SDL_SetError ("Pixel depth not supported");
+        SDL_SetError("Pixel depth not supported");
         return 0;
         break;
     }
@@ -721,30 +719,30 @@ FULLSCREEN_SetMode (int width, int height, int bpp)
     regs.r[0] = 0;
     regs.r[1] = (int) &smb;
 
-    if (_kernel_swi (OS_ScreenMode, &regs, &regs) != 0) {
-        SDL_SetError ("Couldn't set requested mode");
+    if (_kernel_swi(OS_ScreenMode, &regs, &regs) != 0) {
+        SDL_SetError("Couldn't set requested mode");
         return 0;
     }
 
     /* Turn cursor off */
-    _kernel_oswrch (23);
-    _kernel_oswrch (1);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
-    _kernel_oswrch (0);
+    _kernel_oswrch(23);
+    _kernel_oswrch(1);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
+    _kernel_oswrch(0);
 
     return 1;
 }
 
 /* Get Start addresses for the screen banks */
 void
-FULLSCREEN_SetupBanks (_THIS)
+FULLSCREEN_SetupBanks(_THIS)
 {
     _kernel_swi_regs regs;
     int block[5];
@@ -756,7 +754,7 @@ FULLSCREEN_SetupBanks (_THIS)
 
     regs.r[0] = (int) block;
     regs.r[1] = (int) block;
-    _kernel_swi (OS_ReadVduVariables, &regs, &regs);
+    _kernel_swi(OS_ReadVduVariables, &regs, &regs);
 
     this->hidden->bank[0] = (void *) block[0];
     this->hidden->bank[1] = (void *) block[1];
@@ -767,20 +765,20 @@ FULLSCREEN_SetupBanks (_THIS)
 /* Toggle to full screen mode from the WIMP */
 
 int
-FULLSCREEN_ToggleFromWimp (_THIS)
+FULLSCREEN_ToggleFromWimp(_THIS)
 {
     int width = this->screen->w;
     int height = this->screen->h;
     int bpp = this->screen->format->BitsPerPixel;
 
-    RISCOS_StoreWimpMode ();
-    if (FULLSCREEN_SetMode (width, height, bpp)) {
+    RISCOS_StoreWimpMode();
+    if (FULLSCREEN_SetMode(width, height, bpp)) {
         char *buffer = this->hidden->alloc_bank;        /* This is start of sprite data */
         /* Support back buffer mode only */
         if (riscos_backbuffer == 0)
             riscos_backbuffer = 1;
 
-        FULLSCREEN_SetupBanks (this);
+        FULLSCREEN_SetupBanks(this);
 
         this->hidden->bank[0] = buffer + 60;    /* Start of sprite data */
         if (bpp == 8)
@@ -790,13 +788,13 @@ FULLSCREEN_ToggleFromWimp (_THIS)
         this->screen->pixels = this->hidden->bank[0];
 
         /* Copy back buffer to screen memory */
-        SDL_memcpy (this->hidden->bank[1], this->hidden->bank[0],
-                    width * height * this->screen->format->BytesPerPixel);
+        SDL_memcpy(this->hidden->bank[1], this->hidden->bank[0],
+                   width * height * this->screen->format->BytesPerPixel);
 
-        FULLSCREEN_SetDeviceMode (this);
+        FULLSCREEN_SetDeviceMode(this);
         return 1;
     } else
-        RISCOS_RestoreWimpMode ();
+        RISCOS_RestoreWimpMode();
 
     return 0;
 }

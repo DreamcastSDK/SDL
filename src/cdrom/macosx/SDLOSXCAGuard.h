@@ -109,8 +109,8 @@ typedef struct S_SDLOSXCAGuard
     pthread_t mOwner;
 } SDLOSXCAGuard;
 
-SDLOSXCAGuard *new_SDLOSXCAGuard (void);
-void delete_SDLOSXCAGuard (SDLOSXCAGuard * cag);
+SDLOSXCAGuard *new_SDLOSXCAGuard(void);
+void delete_SDLOSXCAGuard(SDLOSXCAGuard * cag);
 
 #endif
 /* vi: set ts=4 sw=4 expandtab: */

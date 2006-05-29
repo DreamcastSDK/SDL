@@ -72,7 +72,7 @@
     This is a workaround to directly access NSOpenGLContext's CGL context
     We need this to check for errors NSOpenGLContext doesn't support
 */
-@ interface NSOpenGLContext (CGLContextAccess) - (CGLContextObj) cglContext;
+@ interface NSOpenGLContext(CGLContextAccess) - (CGLContextObj) cglContext;
 @end
 /* Main driver structure to store required state information */
      typedef struct SDL_PrivateVideoData
@@ -220,79 +220,79 @@
 
 /* Gamma Functions */
      int
-     QZ_SetGamma (_THIS, float red, float green, float blue);
+     QZ_SetGamma(_THIS, float red, float green, float blue);
      int
-     QZ_GetGamma (_THIS, float *red, float *green, float *blue);
+     QZ_GetGamma(_THIS, float *red, float *green, float *blue);
      int
-     QZ_SetGammaRamp (_THIS, Uint16 * ramp);
+     QZ_SetGammaRamp(_THIS, Uint16 * ramp);
      int
-     QZ_GetGammaRamp (_THIS, Uint16 * ramp);
+     QZ_GetGammaRamp(_THIS, Uint16 * ramp);
 
 /* OpenGL functions */
      int
-     QZ_SetupOpenGL (_THIS, int bpp, Uint32 flags);
+     QZ_SetupOpenGL(_THIS, int bpp, Uint32 flags);
      void
-     QZ_TearDownOpenGL (_THIS);
+     QZ_TearDownOpenGL(_THIS);
      void *
-     QZ_GL_GetProcAddress (_THIS, const char *proc);
+     QZ_GL_GetProcAddress(_THIS, const char *proc);
      int
-     QZ_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value);
+     QZ_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
      int
-     QZ_GL_MakeCurrent (_THIS);
+     QZ_GL_MakeCurrent(_THIS);
      void
-     QZ_GL_SwapBuffers (_THIS);
+     QZ_GL_SwapBuffers(_THIS);
      int
-     QZ_GL_LoadLibrary (_THIS, const char *location);
+     QZ_GL_LoadLibrary(_THIS, const char *location);
 
 /* Cursor and Mouse functions */
      void
-     QZ_FreeWMCursor (_THIS, WMcursor * cursor);
+     QZ_FreeWMCursor(_THIS, WMcursor * cursor);
      WMcursor *
-     QZ_CreateWMCursor (_THIS, Uint8 * data, Uint8 * mask,
-                        int w, int h, int hot_x, int hot_y);
+     QZ_CreateWMCursor(_THIS, Uint8 * data, Uint8 * mask,
+                       int w, int h, int hot_x, int hot_y);
      int
-     QZ_ShowWMCursor (_THIS, WMcursor * cursor);
+     QZ_ShowWMCursor(_THIS, WMcursor * cursor);
      void
-     QZ_WarpWMCursor (_THIS, Uint16 x, Uint16 y);
+     QZ_WarpWMCursor(_THIS, Uint16 x, Uint16 y);
      void
-     QZ_MoveWMCursor (_THIS, int x, int y);
+     QZ_MoveWMCursor(_THIS, int x, int y);
      void
-     QZ_CheckMouseMode (_THIS);
+     QZ_CheckMouseMode(_THIS);
      void
-     QZ_UpdateMouse (_THIS);
+     QZ_UpdateMouse(_THIS);
 
 /* Event functions */
      void
-     QZ_InitOSKeymap (_THIS);
+     QZ_InitOSKeymap(_THIS);
      void
-     QZ_PumpEvents (_THIS);
+     QZ_PumpEvents(_THIS);
 
 /* Window Manager functions */
      void
-     QZ_SetCaption (_THIS, const char *title, const char *icon);
+     QZ_SetCaption(_THIS, const char *title, const char *icon);
      void
-     QZ_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask);
+     QZ_SetIcon(_THIS, SDL_Surface * icon, Uint8 * mask);
      int
-     QZ_IconifyWindow (_THIS);
+     QZ_IconifyWindow(_THIS);
 SDL_GrabMode
-QZ_GrabInput (_THIS, SDL_GrabMode grab_mode);
+QZ_GrabInput(_THIS, SDL_GrabMode grab_mode);
 /*int          QZ_GetWMInfo        (_THIS, SDL_SysWMinfo *info);*/
 
 /* YUV functions */
-     SDL_Overlay *QZ_CreateYUVOverlay (_THIS, int width, int height,
-                                       Uint32 format, SDL_Surface * display);
+     SDL_Overlay *QZ_CreateYUVOverlay(_THIS, int width, int height,
+                                      Uint32 format, SDL_Surface * display);
 
 
 /* Private functions (used internally) */
-     void QZ_PrivateWarpCursor (_THIS, int x, int y);
-     void QZ_ChangeGrabState (_THIS, int action);
-     void QZ_RegisterForSleepNotifications (_THIS);
-     void QZ_ShowMouse (_THIS);
-     void QZ_HideMouse (_THIS);
-     void QZ_PrivateGlobalToLocal (_THIS, NSPoint * p);
-     void QZ_PrivateCocoaToSDL (_THIS, NSPoint * p);
+     void QZ_PrivateWarpCursor(_THIS, int x, int y);
+     void QZ_ChangeGrabState(_THIS, int action);
+     void QZ_RegisterForSleepNotifications(_THIS);
+     void QZ_ShowMouse(_THIS);
+     void QZ_HideMouse(_THIS);
+     void QZ_PrivateGlobalToLocal(_THIS, NSPoint * p);
+     void QZ_PrivateCocoaToSDL(_THIS, NSPoint * p);
 BOOL
-QZ_IsMouseInWindow (_THIS);
-     void QZ_DoActivate (_THIS);
-     void QZ_DoDeactivate (_THIS);
+QZ_IsMouseInWindow(_THIS);
+     void QZ_DoActivate(_THIS);
+     void QZ_DoDeactivate(_THIS);
 /* vi: set ts=4 sw=4 expandtab: */

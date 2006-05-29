@@ -108,16 +108,16 @@ extern "C"
         void *dli_saddr;        /* Address of nearest symbol */
     } SDL_OSX_Dl_info;
 
-    static int SDL_OSX_dladdr (const void *dl_restrict,
-                               SDL_OSX_Dl_info * dl_restrict);
+    static int SDL_OSX_dladdr(const void *dl_restrict,
+                              SDL_OSX_Dl_info * dl_restrict);
 #endif                          /* ! _POSIX_SOURCE */
 #endif                          /* 0 */
 
-    static int SDL_OSX_dlclose (void *handle);
-    static const char *SDL_OSX_dlerror (void);
-    static void *SDL_OSX_dlopen (const char *path, int mode);
-    static void *SDL_OSX_dlsym (void *dl_restrict handle,
-                                const char *dl_restrict symbol);
+    static int SDL_OSX_dlclose(void *handle);
+    static const char *SDL_OSX_dlerror(void);
+    static void *SDL_OSX_dlopen(const char *path, int mode);
+    static void *SDL_OSX_dlsym(void *dl_restrict handle,
+                               const char *dl_restrict symbol);
 
 #define RTLD_LAZY	0x1
 #define RTLD_NOW	0x2
@@ -170,8 +170,8 @@ static const struct mach_header *(*dyld_NSAddImage) (const char *,
                                                      unsigned long) = 0;
 static int (*dyld_NSIsSymbolNameDefinedInImage) (const struct mach_header *,
                                                  const char *) = 0;
-static NSSymbol (*dyld_NSLookupSymbolInImage) (const struct mach_header *,
-                                               const char *, unsigned long) =
+static NSSymbol(*dyld_NSLookupSymbolInImage) (const struct mach_header *,
+                                              const char *, unsigned long) =
     0;
 
 /* Define this to make dlcompat reuse data block. This way in theory we save
@@ -232,93 +232,93 @@ static struct dlstatus *stqueue = &mainStatus;
 /* static int err_filled = 0; */
 
 /* Prototypes to internal functions */
-static void debug (const char *fmt, ...);
-static void error (const char *str, ...);
-static const char *safegetenv (const char *s);
-static const char *searchList (void);
-static const char *getSearchPath (int i);
-static const char *getFullPath (int i, const char *file);
-static const struct stat *findFile (const char *file, const char **fullPath);
-static int isValidStatus (struct dlstatus *status);
-static inline int isFlagSet (int mode, int flag);
-static struct dlstatus *lookupStatus (const struct stat *sbuf);
-static void insertStatus (struct dlstatus *dls, const struct stat *sbuf);
-static int promoteLocalToGlobal (struct dlstatus *dls);
-static void *reference (struct dlstatus *dls, int mode);
-static void *dlsymIntern (struct dlstatus *dls, const char *symbol,
-                          int canSetError);
-static struct dlstatus *allocStatus (void);
-static struct dlstatus *loadModule (const char *path, const struct stat *sbuf,
-                                    int mode);
-static NSSymbol search_linked_libs (const struct mach_header *mh,
-                                    const char *symbol);
-static const char *get_lib_name (const struct mach_header *mh);
-static const struct mach_header *get_mach_header_from_NSModule (NSModule mod);
-static void dlcompat_init_func (void);
-static inline void dlcompat_init_check (void);
-static inline void dolock (void);
-static inline void dounlock (void);
-static void dlerrorfree (void *data);
-static void resetdlerror (void);
-static const struct mach_header *my_find_image (const char *name);
-static const struct mach_header *image_for_address (const void *address);
-static inline char *dyld_error_str (void);
+static void debug(const char *fmt, ...);
+static void error(const char *str, ...);
+static const char *safegetenv(const char *s);
+static const char *searchList(void);
+static const char *getSearchPath(int i);
+static const char *getFullPath(int i, const char *file);
+static const struct stat *findFile(const char *file, const char **fullPath);
+static int isValidStatus(struct dlstatus *status);
+static inline int isFlagSet(int mode, int flag);
+static struct dlstatus *lookupStatus(const struct stat *sbuf);
+static void insertStatus(struct dlstatus *dls, const struct stat *sbuf);
+static int promoteLocalToGlobal(struct dlstatus *dls);
+static void *reference(struct dlstatus *dls, int mode);
+static void *dlsymIntern(struct dlstatus *dls, const char *symbol,
+                         int canSetError);
+static struct dlstatus *allocStatus(void);
+static struct dlstatus *loadModule(const char *path, const struct stat *sbuf,
+                                   int mode);
+static NSSymbol search_linked_libs(const struct mach_header *mh,
+                                   const char *symbol);
+static const char *get_lib_name(const struct mach_header *mh);
+static const struct mach_header *get_mach_header_from_NSModule(NSModule mod);
+static void dlcompat_init_func(void);
+static inline void dlcompat_init_check(void);
+static inline void dolock(void);
+static inline void dounlock(void);
+static void dlerrorfree(void *data);
+static void resetdlerror(void);
+static const struct mach_header *my_find_image(const char *name);
+static const struct mach_header *image_for_address(const void *address);
+static inline char *dyld_error_str(void);
 
 #if FINK_BUILD
 /* Two Global Functions */
-static void *dlsym_prepend_underscore (void *handle, const char *symbol);
-static void *dlsym_auto_underscore (void *handle, const char *symbol);
+static void *dlsym_prepend_underscore(void *handle, const char *symbol);
+static void *dlsym_auto_underscore(void *handle, const char *symbol);
 
 /* And their _intern counterparts */
-static void *dlsym_prepend_underscore_intern (void *handle,
-                                              const char *symbol);
-static void *dlsym_auto_underscore_intern (void *handle, const char *symbol);
+static void *dlsym_prepend_underscore_intern(void *handle,
+                                             const char *symbol);
+static void *dlsym_auto_underscore_intern(void *handle, const char *symbol);
 #endif
 
 /* Functions */
 
 static void
-debug (const char *fmt, ...)
+debug(const char *fmt, ...)
 {
 #if DEBUG > 1
     va_list arg;
-    va_start (arg, fmt);
-    fprintf (stderr, "DLDEBUG: ");
-    vfprintf (stderr, fmt, arg);
-    fprintf (stderr, "\n");
-    fflush (stderr);
-    va_end (arg);
+    va_start(arg, fmt);
+    fprintf(stderr, "DLDEBUG: ");
+    vfprintf(stderr, fmt, arg);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+    va_end(arg);
 #endif
 }
 
 static void
-error (const char *str, ...)
+error(const char *str, ...)
 {
     va_list arg;
     struct dlthread *tss;
     char *err_str;
-    va_start (arg, str);
-    tss = pthread_getspecific (dlerror_key);
+    va_start(arg, str);
+    tss = pthread_getspecific(dlerror_key);
     err_str = tss->errstr;
-    SDL_strlcpy (err_str, "dlcompat: ", ERR_STR_LEN);
-    vsnprintf (err_str + 10, ERR_STR_LEN - 10, str, arg);
-    va_end (arg);
-    debug ("ERROR: %s\n", err_str);
+    SDL_strlcpy(err_str, "dlcompat: ", ERR_STR_LEN);
+    vsnprintf(err_str + 10, ERR_STR_LEN - 10, str, arg);
+    va_end(arg);
+    debug("ERROR: %s\n", err_str);
     tss->errset = 1;
 }
 
 static void
-warning (const char *str)
+warning(const char *str)
 {
 #if DEBUG > 0
-    fprintf (stderr, "WARNING: dlcompat: %s\n", str);
+    fprintf(stderr, "WARNING: dlcompat: %s\n", str);
 #endif
 }
 
 static const char *
-safegetenv (const char *s)
+safegetenv(const char *s)
 {
-    const char *ss = SDL_getenv (s);
+    const char *ss = SDL_getenv(s);
     return ss ? ss : "";
 }
 
@@ -327,15 +327,15 @@ safegetenv (const char *s)
  * commands to find the install name of the library, but...
  */
 static const char *
-get_lib_name (const struct mach_header *mh)
+get_lib_name(const struct mach_header *mh)
 {
-    unsigned long count = _dyld_image_count ();
+    unsigned long count = _dyld_image_count();
     unsigned long i;
     const char *val = NULL;
     if (mh) {
         for (i = 0; i < count; i++) {
-            if (mh == _dyld_get_image_header (i)) {
-                val = _dyld_get_image_name (i);
+            if (mh == _dyld_get_image_header(i)) {
+                val = _dyld_get_image_name(i);
                 break;
             }
         }
@@ -348,16 +348,16 @@ get_lib_name (const struct mach_header *mh)
  * an api for doing this, would be faster, but there isn't one right now
  */
 static const struct mach_header *
-get_mach_header_from_NSModule (NSModule mod)
+get_mach_header_from_NSModule(NSModule mod)
 {
-    const char *mod_name = NSNameOfModule (mod);
+    const char *mod_name = NSNameOfModule(mod);
     const struct mach_header *mh = NULL;
-    unsigned long count = _dyld_image_count ();
+    unsigned long count = _dyld_image_count();
     unsigned long i;
-    debug ("Module name: %s", mod_name);
+    debug("Module name: %s", mod_name);
     for (i = 0; i < count; i++) {
-        if (!SDL_strcmp (mod_name, _dyld_get_image_name (i))) {
-            mh = _dyld_get_image_header (i);
+        if (!SDL_strcmp(mod_name, _dyld_get_image_name(i))) {
+            mh = _dyld_get_image_header(i);
             break;
         }
     }
@@ -374,30 +374,29 @@ get_mach_header_from_NSModule (NSModule mod)
  * Splitting this string into the actual path list is done by getSearchPath()
  */
 static const char *
-searchList ()
+searchList()
 {
     size_t buf_size;
     static char *buf = NULL;
-    const char *ldlp = safegetenv ("LD_LIBRARY_PATH");
-    const char *dyldlp = safegetenv ("DYLD_LIBRARY_PATH");
-    const char *stdpath = SDL_getenv ("DYLD_FALLBACK_LIBRARY_PATH");
+    const char *ldlp = safegetenv("LD_LIBRARY_PATH");
+    const char *dyldlp = safegetenv("DYLD_LIBRARY_PATH");
+    const char *stdpath = SDL_getenv("DYLD_FALLBACK_LIBRARY_PATH");
     if (!stdpath)
         stdpath = "/usr/local/lib:/lib:/usr/lib";
     if (!buf) {
         buf_size =
-            SDL_strlen (ldlp) + SDL_strlen (dyldlp) + SDL_strlen (stdpath) +
-            4;
-        buf = SDL_malloc (buf_size);
-        SDL_snprintf (buf, buf_size, "%s%s%s%s%s%c", dyldlp,
-                      (dyldlp[0] ? ":" : ""), ldlp, (ldlp[0] ? ":" : ""),
-                      stdpath, '\0');
+            SDL_strlen(ldlp) + SDL_strlen(dyldlp) + SDL_strlen(stdpath) + 4;
+        buf = SDL_malloc(buf_size);
+        SDL_snprintf(buf, buf_size, "%s%s%s%s%s%c", dyldlp,
+                     (dyldlp[0] ? ":" : ""), ldlp, (ldlp[0] ? ":" : ""),
+                     stdpath, '\0');
     }
     return buf;
 }
 
 /* Returns the ith search path from the list as computed by searchList() */
 static const char *
-getSearchPath (int i)
+getSearchPath(int i)
 {
     static const char *list = 0;
     static char **path = (char **) 0;
@@ -409,18 +408,18 @@ getSearchPath (int i)
         return (const char *) path;
     }
     if (!path) {
-        path = (char **) SDL_calloc (MAX_SEARCH_PATHS, sizeof (char **));
+        path = (char **) SDL_calloc(MAX_SEARCH_PATHS, sizeof(char **));
     }
     if (!list && !end)
-        list = searchList ();
+        list = searchList();
     if (i >= (numsize)) {
-        debug ("Increasing size for long PATH");
+        debug("Increasing size for long PATH");
         tmp =
-            (char **) SDL_calloc ((MAX_SEARCH_PATHS + numsize),
-                                  sizeof (char **));
+            (char **) SDL_calloc((MAX_SEARCH_PATHS + numsize),
+                                 sizeof(char **));
         if (tmp) {
-            SDL_memcpy (tmp, path, sizeof (char **) * numsize);
-            SDL_free (path);
+            SDL_memcpy(tmp, path, sizeof(char **) * numsize);
+            SDL_free(path);
             path = tmp;
             numsize += MAX_SEARCH_PATHS;
         } else {
@@ -429,7 +428,7 @@ getSearchPath (int i)
     }
 
     while (!path[i] && !end) {
-        path[i] = strsep ((char **) &list, ":");
+        path[i] = strsep((char **) &list, ":");
 
         if (path[i][0] == 0)
             path[i] = 0;
@@ -439,12 +438,12 @@ getSearchPath (int i)
 }
 
 static const char *
-getFullPath (int i, const char *file)
+getFullPath(int i, const char *file)
 {
     static char buf[PATH_MAX];
-    const char *path = getSearchPath (i);
+    const char *path = getSearchPath(i);
     if (path) {
-        SDL_snprintf (buf, PATH_MAX, "%s/%s", path, file);
+        SDL_snprintf(buf, PATH_MAX, "%s/%s", path, file);
     }
     return path ? buf : 0;
 }
@@ -454,22 +453,22 @@ getFullPath (int i, const char *file)
  * search list in the order they are specified there.
  */
 static const struct stat *
-findFile (const char *file, const char **fullPath)
+findFile(const char *file, const char **fullPath)
 {
     int i = 0;
     static struct stat sbuf;
     char *fileName;
-    debug ("finding file %s", file);
+    debug("finding file %s", file);
     *fullPath = file;
-    if (0 == stat (file, &sbuf))
+    if (0 == stat(file, &sbuf))
         return &sbuf;
-    if (SDL_strchr (file, '/'))
+    if (SDL_strchr(file, '/'))
         return 0;               /* If the path had a / we don't look in env var places */
     fileName = NULL;
     if (!fileName)
         fileName = (char *) file;
-    while ((*fullPath = getFullPath (i++, fileName))) {
-        if (0 == stat (*fullPath, &sbuf))
+    while ((*fullPath = getFullPath(i++, fileName))) {
+        if (0 == stat(*fullPath, &sbuf))
             return &sbuf;
     }
     ;
@@ -478,32 +477,32 @@ findFile (const char *file, const char **fullPath)
 
 /* Determine whether a given dlstatus is valid or not */
 static int
-isValidStatus (struct dlstatus *status)
+isValidStatus(struct dlstatus *status)
 {
     /* Walk the list to verify status is contained in it */
     struct dlstatus *dls = stqueue;
     while (dls && status != dls)
         dls = dls->next;
     if (dls == 0)
-        error ("invalid handle");
+        error("invalid handle");
     else if ((dls->module == 0) || (dls->refs == 0))
-        error ("handle to closed library");
+        error("handle to closed library");
     else
         return TRUE;
     return FALSE;
 }
 
 static inline int
-isFlagSet (int mode, int flag)
+isFlagSet(int mode, int flag)
 {
     return (mode & flag) == flag;
 }
 
 static struct dlstatus *
-lookupStatus (const struct stat *sbuf)
+lookupStatus(const struct stat *sbuf)
 {
     struct dlstatus *dls = stqueue;
-    debug ("looking for status");
+    debug("looking for status");
     while (dls && ( /* isFlagSet(dls->mode, RTLD_UNSHARED) */ 0
                    || sbuf->st_dev != dls->device
                    || sbuf->st_ino != dls->inode))
@@ -512,9 +511,9 @@ lookupStatus (const struct stat *sbuf)
 }
 
 static void
-insertStatus (struct dlstatus *dls, const struct stat *sbuf)
+insertStatus(struct dlstatus *dls, const struct stat *sbuf)
 {
-    debug ("inserting status");
+    debug("inserting status");
     dls->inode = sbuf->st_ino;
     dls->device = sbuf->st_dev;
     dls->refs = 0;
@@ -527,7 +526,7 @@ insertStatus (struct dlstatus *dls, const struct stat *sbuf)
 }
 
 static struct dlstatus *
-allocStatus ()
+allocStatus()
 {
     struct dlstatus *dls;
 #ifdef REUSE_STATUS
@@ -536,58 +535,57 @@ allocStatus ()
         dls = dls->next;
     if (!dls)
 #endif
-        dls = SDL_calloc (sizeof (*dls), 1);
+        dls = SDL_calloc(sizeof(*dls), 1);
     return dls;
 }
 
 static int
-promoteLocalToGlobal (struct dlstatus *dls)
+promoteLocalToGlobal(struct dlstatus *dls)
 {
     static int (*p) (NSModule module) = 0;
-    debug ("promoting");
+    debug("promoting");
     if (!p)
-        _dyld_func_lookup ("__dyld_NSMakePrivateModulePublic", (void **) &p);
-    return (dls->module == MAGIC_DYLIB_MOD) || (p && p (dls->module));
+        _dyld_func_lookup("__dyld_NSMakePrivateModulePublic", (void **) &p);
+    return (dls->module == MAGIC_DYLIB_MOD) || (p && p(dls->module));
 }
 
 static void *
-reference (struct dlstatus *dls, int mode)
+reference(struct dlstatus *dls, int mode)
 {
     if (dls) {
-        if (dls->module == MAGIC_DYLIB_MOD && isFlagSet (mode, RTLD_LOCAL)) {
-            warning ("trying to open a .dylib with RTLD_LOCAL");
-            error ("unable to open a .dylib with RTLD_LOCAL");
+        if (dls->module == MAGIC_DYLIB_MOD && isFlagSet(mode, RTLD_LOCAL)) {
+            warning("trying to open a .dylib with RTLD_LOCAL");
+            error("unable to open a .dylib with RTLD_LOCAL");
             return NULL;
         }
-        if (isFlagSet (mode, RTLD_GLOBAL) &&
-            !isFlagSet (dls->mode, RTLD_GLOBAL)
-            && !promoteLocalToGlobal (dls)) {
-            error ("unable to promote local module to global");
+        if (isFlagSet(mode, RTLD_GLOBAL) && !isFlagSet(dls->mode, RTLD_GLOBAL)
+            && !promoteLocalToGlobal(dls)) {
+            error("unable to promote local module to global");
             return NULL;
         }
         dls->mode |= mode;
         dls->refs++;
     } else
-        debug ("reference called with NULL argument");
+        debug("reference called with NULL argument");
 
     return dls;
 }
 
 static const struct mach_header *
-my_find_image (const char *name)
+my_find_image(const char *name)
 {
     const struct mach_header *mh = 0;
     const char *id = NULL;
-    int i = _dyld_image_count ();
+    int i = _dyld_image_count();
     int j;
     mh = (struct mach_header *)
-        dyld_NSAddImage (name, NSADDIMAGE_OPTION_RETURN_ONLY_IF_LOADED |
-                         NSADDIMAGE_OPTION_RETURN_ON_ERROR);
+        dyld_NSAddImage(name, NSADDIMAGE_OPTION_RETURN_ONLY_IF_LOADED |
+                        NSADDIMAGE_OPTION_RETURN_ON_ERROR);
     if (!mh) {
         for (j = 0; j < i; j++) {
-            id = _dyld_get_image_name (j);
-            if (!SDL_strcmp (id, name)) {
-                mh = _dyld_get_image_header (j);
+            id = _dyld_get_image_name(j);
+            if (!SDL_strcmp(id, name)) {
+                mh = _dyld_get_image_header(j);
                 break;
             }
         }
@@ -602,7 +600,7 @@ my_find_image (const char *name)
  * any of it's direct dependencies, then it probably isn't there.
  */
 static NSSymbol
-search_linked_libs (const struct mach_header *mh, const char *symbol)
+search_linked_libs(const struct mach_header *mh, const char *symbol)
 {
     unsigned int n;
     struct load_command *lc = 0;
@@ -611,29 +609,29 @@ search_linked_libs (const struct mach_header *mh, const char *symbol)
     if (dyld_NSAddImage && dyld_NSIsSymbolNameDefinedInImage
         && dyld_NSLookupSymbolInImage) {
         lc = (struct load_command *) ((char *) mh +
-                                      sizeof (struct mach_header));
+                                      sizeof(struct mach_header));
         for (n = 0; n < mh->ncmds;
              n++, lc = (struct load_command *) ((char *) lc + lc->cmdsize)) {
             if ((LC_LOAD_DYLIB == lc->cmd)
                 || (LC_LOAD_WEAK_DYLIB == lc->cmd)) {
                 if ((wh = (struct mach_header *)
-                     my_find_image ((char
-                                     *) (((struct dylib_command *) lc)->
-                                         dylib.name.offset + (char *) lc)))) {
-                    if (dyld_NSIsSymbolNameDefinedInImage (wh, symbol)) {
-                        nssym = dyld_NSLookupSymbolInImage (wh,
-                                                            symbol,
-                                                            NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
-                                                            |
-                                                            NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+                     my_find_image((char
+                                    *) (((struct dylib_command *) lc)->
+                                        dylib.name.offset + (char *) lc)))) {
+                    if (dyld_NSIsSymbolNameDefinedInImage(wh, symbol)) {
+                        nssym = dyld_NSLookupSymbolInImage(wh,
+                                                           symbol,
+                                                           NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
+                                                           |
+                                                           NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
                         break;
                     }
                 }
             }
         }
-        if ((!nssym) && NSIsSymbolNameDefined (symbol)) {
+        if ((!nssym) && NSIsSymbolNameDefined(symbol)) {
             /* I've never seen this debug message... */
-            debug ("Symbol \"%s\" is defined but was not found", symbol);
+            debug("Symbol \"%s\" is defined but was not found", symbol);
         }
     }
     return nssym;
@@ -641,32 +639,32 @@ search_linked_libs (const struct mach_header *mh, const char *symbol)
 
 /* Up to the caller to SDL_free() returned string */
 static inline char *
-dyld_error_str ()
+dyld_error_str()
 {
     NSLinkEditErrors dylder;
     int dylderno;
     const char *dylderrstr;
     const char *dyldfile;
     char *retStr = NULL;
-    NSLinkEditError (&dylder, &dylderno, &dyldfile, &dylderrstr);
+    NSLinkEditError(&dylder, &dylderno, &dyldfile, &dylderrstr);
     if (dylderrstr && *dylderrstr) {
-        retStr = SDL_strdup (dylderrstr);
+        retStr = SDL_strdup(dylderrstr);
     }
     return retStr;
 }
 
 static void *
-dlsymIntern (struct dlstatus *dls, const char *symbol, int canSetError)
+dlsymIntern(struct dlstatus *dls, const char *symbol, int canSetError)
 {
     NSSymbol nssym = 0;
 #ifdef __GCC__
-    void *caller = __builtin_return_address (1);        /* Be *very* careful about inlining */
+    void *caller = __builtin_return_address(1); /* Be *very* careful about inlining */
 #else
     void *caller = NULL;
 #endif
     const struct mach_header *caller_mh = 0;
     char *savedErrorStr = NULL;
-    resetdlerror ();
+    resetdlerror();
 #ifndef RTLD_SELF
 #define	RTLD_SELF		((void *) -3)
 #endif
@@ -675,28 +673,28 @@ dlsymIntern (struct dlstatus *dls, const char *symbol, int canSetError)
     if ((RTLD_NEXT == dls) || (RTLD_SELF == dls)) {
         if (dyld_NSIsSymbolNameDefinedInImage && dyld_NSLookupSymbolInImage
             && caller) {
-            caller_mh = image_for_address (caller);
+            caller_mh = image_for_address(caller);
             if (RTLD_SELF == dls) {
                 /* FIXME: We should be using the NSModule api, if SELF is an MH_BUNDLE
                  * But it appears to work anyway, and looking at the code in dyld_libfuncs.c
                  * this is acceptable.
                  */
-                if (dyld_NSIsSymbolNameDefinedInImage (caller_mh, symbol)) {
-                    nssym = dyld_NSLookupSymbolInImage (caller_mh,
-                                                        symbol,
-                                                        NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
-                                                        |
-                                                        NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+                if (dyld_NSIsSymbolNameDefinedInImage(caller_mh, symbol)) {
+                    nssym = dyld_NSLookupSymbolInImage(caller_mh,
+                                                       symbol,
+                                                       NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
+                                                       |
+                                                       NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
                 }
             }
             if (!nssym) {
                 if (RTLD_SELF == dls)
-                    savedErrorStr = dyld_error_str ();
-                nssym = search_linked_libs (caller_mh, symbol);
+                    savedErrorStr = dyld_error_str();
+                nssym = search_linked_libs(caller_mh, symbol);
             }
         } else {
             if (canSetError)
-                error ("RTLD_SELF and RTLD_NEXT are not supported");
+                error("RTLD_SELF and RTLD_NEXT are not supported");
             return NULL;
         }
     }
@@ -705,70 +703,70 @@ dlsymIntern (struct dlstatus *dls, const char *symbol, int canSetError)
         if (RTLD_DEFAULT == dls) {
             dls = &mainStatus;
         }
-        if (!isValidStatus (dls))
+        if (!isValidStatus(dls))
             return NULL;
 
         if (dls->module != MAGIC_DYLIB_MOD) {
-            nssym = NSLookupSymbolInModule (dls->module, symbol);
-            if (!nssym && NSIsSymbolNameDefined (symbol)) {
-                debug ("Searching dependencies");
-                savedErrorStr = dyld_error_str ();
+            nssym = NSLookupSymbolInModule(dls->module, symbol);
+            if (!nssym && NSIsSymbolNameDefined(symbol)) {
+                debug("Searching dependencies");
+                savedErrorStr = dyld_error_str();
                 nssym =
-                    search_linked_libs (get_mach_header_from_NSModule
-                                        (dls->module), symbol);
+                    search_linked_libs(get_mach_header_from_NSModule
+                                       (dls->module), symbol);
             }
         } else if (dls->lib && dyld_NSIsSymbolNameDefinedInImage
                    && dyld_NSLookupSymbolInImage) {
-            if (dyld_NSIsSymbolNameDefinedInImage (dls->lib, symbol)) {
-                nssym = dyld_NSLookupSymbolInImage (dls->lib,
-                                                    symbol,
-                                                    NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
-                                                    |
-                                                    NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
-            } else if (NSIsSymbolNameDefined (symbol)) {
-                debug ("Searching dependencies");
-                savedErrorStr = dyld_error_str ();
-                nssym = search_linked_libs (dls->lib, symbol);
+            if (dyld_NSIsSymbolNameDefinedInImage(dls->lib, symbol)) {
+                nssym = dyld_NSLookupSymbolInImage(dls->lib,
+                                                   symbol,
+                                                   NSLOOKUPSYMBOLINIMAGE_OPTION_BIND
+                                                   |
+                                                   NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR);
+            } else if (NSIsSymbolNameDefined(symbol)) {
+                debug("Searching dependencies");
+                savedErrorStr = dyld_error_str();
+                nssym = search_linked_libs(dls->lib, symbol);
             }
         } else if (dls->module == MAGIC_DYLIB_MOD) {
             /* Global context, use NSLookupAndBindSymbol */
-            if (NSIsSymbolNameDefined (symbol)) {
+            if (NSIsSymbolNameDefined(symbol)) {
                 /* There doesn't seem to be a return on error option for this call???
                    this is potentially broken, if binding fails, it will improperly
                    exit the application. */
-                nssym = NSLookupAndBindSymbol (symbol);
+                nssym = NSLookupAndBindSymbol(symbol);
             } else {
                 if (savedErrorStr)
-                    SDL_free (savedErrorStr);
-                savedErrorStr = SDL_malloc (256);
-                SDL_snprintf (savedErrorStr, 256,
-                              "Symbol \"%s\" not in global context", symbol);
+                    SDL_free(savedErrorStr);
+                savedErrorStr = SDL_malloc(256);
+                SDL_snprintf(savedErrorStr, 256,
+                             "Symbol \"%s\" not in global context", symbol);
             }
         }
     }
     /* Error reporting */
     if (!nssym) {
-        if (!savedErrorStr || !SDL_strlen (savedErrorStr)) {
+        if (!savedErrorStr || !SDL_strlen(savedErrorStr)) {
             if (savedErrorStr)
-                SDL_free (savedErrorStr);
-            savedErrorStr = SDL_malloc (256);
-            SDL_snprintf (savedErrorStr, 256, "Symbol \"%s\" not found",
-                          symbol);
+                SDL_free(savedErrorStr);
+            savedErrorStr = SDL_malloc(256);
+            SDL_snprintf(savedErrorStr, 256, "Symbol \"%s\" not found",
+                         symbol);
         }
         if (canSetError) {
-            error (savedErrorStr);
+            error(savedErrorStr);
         } else {
-            debug (savedErrorStr);
+            debug(savedErrorStr);
         }
         if (savedErrorStr)
-            SDL_free (savedErrorStr);
+            SDL_free(savedErrorStr);
         return NULL;
     }
-    return NSAddressOfSymbol (nssym);
+    return NSAddressOfSymbol(nssym);
 }
 
 static struct dlstatus *
-loadModule (const char *path, const struct stat *sbuf, int mode)
+loadModule(const char *path, const struct stat *sbuf, int mode)
 {
     NSObjectFileImage ofi = 0;
     NSObjectFileImageReturnCode ofirc;
@@ -779,52 +777,52 @@ loadModule (const char *path, const struct stat *sbuf, int mode)
     const char *file;
     void (*init) (void);
 
-    ofirc = NSCreateObjectFileImageFromFile (path, &ofi);
+    ofirc = NSCreateObjectFileImageFromFile(path, &ofi);
     switch (ofirc) {
     case NSObjectFileImageSuccess:
         break;
     case NSObjectFileImageInappropriateFile:
         if (dyld_NSAddImage && dyld_NSIsSymbolNameDefinedInImage
             && dyld_NSLookupSymbolInImage) {
-            if (isFlagSet (mode, RTLD_LOCAL)) {
-                warning ("trying to open a .dylib with RTLD_LOCAL");
-                error ("unable to open this file with RTLD_LOCAL");
+            if (isFlagSet(mode, RTLD_LOCAL)) {
+                warning("trying to open a .dylib with RTLD_LOCAL");
+                error("unable to open this file with RTLD_LOCAL");
                 return NULL;
             }
         } else {
-            error ("opening this file is unsupported on this system");
+            error("opening this file is unsupported on this system");
             return NULL;
         }
         break;
     case NSObjectFileImageFailure:
-        error ("object file setup failure");
+        error("object file setup failure");
         return NULL;
     case NSObjectFileImageArch:
-        error ("no object for this architecture");
+        error("no object for this architecture");
         return NULL;
     case NSObjectFileImageFormat:
-        error ("bad object file format");
+        error("bad object file format");
         return NULL;
     case NSObjectFileImageAccess:
-        error ("can't read object file");
+        error("can't read object file");
         return NULL;
     default:
-        error ("unknown error from NSCreateObjectFileImageFromFile()");
+        error("unknown error from NSCreateObjectFileImageFromFile()");
         return NULL;
     }
-    dls = lookupStatus (sbuf);
+    dls = lookupStatus(sbuf);
     if (!dls) {
-        dls = allocStatus ();
+        dls = allocStatus();
     }
     if (!dls) {
-        error ("unable to allocate memory");
+        error("unable to allocate memory");
         return NULL;
     }
     //      dls->lib = 0;
     if (ofirc == NSObjectFileImageInappropriateFile) {
         if ((dls->lib =
-             dyld_NSAddImage (path, NSADDIMAGE_OPTION_RETURN_ON_ERROR))) {
-            debug ("Dynamic lib loaded at %ld", dls->lib);
+             dyld_NSAddImage(path, NSADDIMAGE_OPTION_RETURN_ON_ERROR))) {
+            debug("Dynamic lib loaded at %ld", dls->lib);
             ofi = MAGIC_DYLIB_OFI;
             dls->module = MAGIC_DYLIB_MOD;
             ofirc = NSObjectFileImageSuccess;
@@ -832,85 +830,85 @@ loadModule (const char *path, const struct stat *sbuf, int mode)
                functions with RTLD_NOW, I don't deem it necessary at the moment */
         }
         if (!(dls->module)) {
-            NSLinkEditError (&ler, &lerno, &file, &errstr);
-            if (!errstr || (!SDL_strlen (errstr)))
-                error ("Can't open this file type");
+            NSLinkEditError(&ler, &lerno, &file, &errstr);
+            if (!errstr || (!SDL_strlen(errstr)))
+                error("Can't open this file type");
             else
-                error (errstr);
+                error(errstr);
             if ((dls->flags & DL_IN_LIST) == 0) {
-                SDL_free (dls);
+                SDL_free(dls);
             }
             return NULL;
         }
     } else {
-        dls->module = NSLinkModule (ofi, path,
-                                    NSLINKMODULE_OPTION_RETURN_ON_ERROR |
-                                    NSLINKMODULE_OPTION_PRIVATE |
-                                    (isFlagSet (mode, RTLD_NOW) ?
-                                     NSLINKMODULE_OPTION_BINDNOW : 0));
-        NSDestroyObjectFileImage (ofi);
+        dls->module = NSLinkModule(ofi, path,
+                                   NSLINKMODULE_OPTION_RETURN_ON_ERROR |
+                                   NSLINKMODULE_OPTION_PRIVATE |
+                                   (isFlagSet(mode, RTLD_NOW) ?
+                                    NSLINKMODULE_OPTION_BINDNOW : 0));
+        NSDestroyObjectFileImage(ofi);
         if (dls->module) {
-            dls->lib = get_mach_header_from_NSModule (dls->module);
+            dls->lib = get_mach_header_from_NSModule(dls->module);
         }
     }
     if (!dls->module) {
-        NSLinkEditError (&ler, &lerno, &file, &errstr);
+        NSLinkEditError(&ler, &lerno, &file, &errstr);
         if ((dls->flags & DL_IN_LIST) == 0) {
-            SDL_free (dls);
+            SDL_free(dls);
         }
-        error (errstr);
+        error(errstr);
         return NULL;
     }
 
-    insertStatus (dls, sbuf);
-    dls = reference (dls, mode);
-    if ((init = dlsymIntern (dls, "__init", 0))) {
-        debug ("calling _init()");
-        init ();
+    insertStatus(dls, sbuf);
+    dls = reference(dls, mode);
+    if ((init = dlsymIntern(dls, "__init", 0))) {
+        debug("calling _init()");
+        init();
     }
     return dls;
 }
 
 inline static void
-dlcompat_init_check (void)
+dlcompat_init_check(void)
 {
     static pthread_mutex_t l = PTHREAD_MUTEX_INITIALIZER;
     static int init_done = 0;
 
-    pthread_mutex_lock (&l);
+    pthread_mutex_lock(&l);
     if (!init_done) {
-        dlcompat_init_func ();
+        dlcompat_init_func();
         init_done = 1;
     }
-    pthread_mutex_unlock (&l);
+    pthread_mutex_unlock(&l);
 }
 
 static void
-dlcompat_init_func (void)
+dlcompat_init_func(void)
 {
-    _dyld_func_lookup ("__dyld_NSAddImage", (void **) &dyld_NSAddImage);
-    _dyld_func_lookup ("__dyld_NSIsSymbolNameDefinedInImage",
-                       (void **) &dyld_NSIsSymbolNameDefinedInImage);
-    _dyld_func_lookup ("__dyld_NSLookupSymbolInImage",
-                       (void **) &dyld_NSLookupSymbolInImage);
-    if (pthread_mutex_init (&dlcompat_mutex, NULL))
-        exit (1);
-    if (pthread_key_create (&dlerror_key, &dlerrorfree))
-        exit (1);
+    _dyld_func_lookup("__dyld_NSAddImage", (void **) &dyld_NSAddImage);
+    _dyld_func_lookup("__dyld_NSIsSymbolNameDefinedInImage",
+                      (void **) &dyld_NSIsSymbolNameDefinedInImage);
+    _dyld_func_lookup("__dyld_NSLookupSymbolInImage",
+                      (void **) &dyld_NSLookupSymbolInImage);
+    if (pthread_mutex_init(&dlcompat_mutex, NULL))
+        exit(1);
+    if (pthread_key_create(&dlerror_key, &dlerrorfree))
+        exit(1);
 }
 
 static void
-resetdlerror ()
+resetdlerror()
 {
     struct dlthread *tss;
-    tss = pthread_getspecific (dlerror_key);
+    tss = pthread_getspecific(dlerror_key);
     tss->errset = 0;
 }
 
 static void
-dlerrorfree (void *data)
+dlerrorfree(void *data)
 {
-    SDL_free (data);
+    SDL_free(data);
 }
 
 /* We kind of want a recursive lock here, but meet a little trouble
@@ -918,105 +916,105 @@ dlerrorfree (void *data)
  * using thread specific storage to keep a lock count
  */
 static inline void
-dolock (void)
+dolock(void)
 {
     int err = 0;
     struct dlthread *tss;
-    dlcompat_init_check ();
-    tss = pthread_getspecific (dlerror_key);
+    dlcompat_init_check();
+    tss = pthread_getspecific(dlerror_key);
     if (!tss) {
-        tss = SDL_malloc (sizeof (struct dlthread));
+        tss = SDL_malloc(sizeof(struct dlthread));
         tss->lockcnt = 0;
         tss->errset = 0;
-        if (pthread_setspecific (dlerror_key, tss)) {
-            fprintf (stderr, "dlcompat: pthread_setspecific failed\n");
-            exit (1);
+        if (pthread_setspecific(dlerror_key, tss)) {
+            fprintf(stderr, "dlcompat: pthread_setspecific failed\n");
+            exit(1);
         }
     }
     if (!tss->lockcnt)
-        err = pthread_mutex_lock (&dlcompat_mutex);
+        err = pthread_mutex_lock(&dlcompat_mutex);
     tss->lockcnt = tss->lockcnt + 1;
     if (err)
-        exit (err);
+        exit(err);
 }
 
 static inline void
-dounlock (void)
+dounlock(void)
 {
     int err = 0;
     struct dlthread *tss;
-    tss = pthread_getspecific (dlerror_key);
+    tss = pthread_getspecific(dlerror_key);
     tss->lockcnt = tss->lockcnt - 1;
     if (!tss->lockcnt)
-        err = pthread_mutex_unlock (&dlcompat_mutex);
+        err = pthread_mutex_unlock(&dlcompat_mutex);
     if (err)
-        exit (err);
+        exit(err);
 }
 
 static void *
-SDL_OSX_dlopen (const char *path, int mode)
+SDL_OSX_dlopen(const char *path, int mode)
 {
     const struct stat *sbuf;
     struct dlstatus *dls;
     const char *fullPath;
 
-    dolock ();
-    resetdlerror ();
+    dolock();
+    resetdlerror();
     if (!path) {
         dls = &mainStatus;
         goto dlopenok;
     }
-    if (!(sbuf = findFile (path, &fullPath))) {
-        error ("file \"%s\" not found", path);
+    if (!(sbuf = findFile(path, &fullPath))) {
+        error("file \"%s\" not found", path);
         goto dlopenerror;
     }
     /* Now checks that it hasn't been closed already */
-    if ((dls = lookupStatus (sbuf)) && (dls->refs > 0)) {
+    if ((dls = lookupStatus(sbuf)) && (dls->refs > 0)) {
         /* debug("status found"); */
-        dls = reference (dls, mode);
+        dls = reference(dls, mode);
         goto dlopenok;
     }
 #ifdef 	RTLD_NOLOAD
-    if (isFlagSet (mode, RTLD_NOLOAD)) {
-        error ("no existing handle and RTLD_NOLOAD specified");
+    if (isFlagSet(mode, RTLD_NOLOAD)) {
+        error("no existing handle and RTLD_NOLOAD specified");
         goto dlopenerror;
     }
 #endif
-    if (isFlagSet (mode, RTLD_LAZY) && isFlagSet (mode, RTLD_NOW)) {
-        error ("how can I load something both RTLD_LAZY and RTLD_NOW?");
+    if (isFlagSet(mode, RTLD_LAZY) && isFlagSet(mode, RTLD_NOW)) {
+        error("how can I load something both RTLD_LAZY and RTLD_NOW?");
         goto dlopenerror;
     }
-    dls = loadModule (fullPath, sbuf, mode);
+    dls = loadModule(fullPath, sbuf, mode);
 
   dlopenok:
-    dounlock ();
+    dounlock();
     return (void *) dls;
   dlopenerror:
-    dounlock ();
+    dounlock();
     return NULL;
 }
 
 #if !FINK_BUILD
 static void *
-SDL_OSX_dlsym (void *dl_restrict handle, const char *dl_restrict symbol)
+SDL_OSX_dlsym(void *dl_restrict handle, const char *dl_restrict symbol)
 {
-    int sym_len = SDL_strlen (symbol);
+    int sym_len = SDL_strlen(symbol);
     void *value = NULL;
     char *malloc_sym = NULL;
-    dolock ();
-    malloc_sym = SDL_malloc (sym_len + 2);
+    dolock();
+    malloc_sym = SDL_malloc(sym_len + 2);
     if (malloc_sym) {
-        SDL_snprintf (malloc_sym, sym_len + 2, "_%s", symbol);
-        value = dlsymIntern (handle, malloc_sym, 1);
-        SDL_free (malloc_sym);
+        SDL_snprintf(malloc_sym, sym_len + 2, "_%s", symbol);
+        value = dlsymIntern(handle, malloc_sym, 1);
+        SDL_free(malloc_sym);
     } else {
-        error ("Unable to allocate memory");
+        error("Unable to allocate memory");
         goto dlsymerror;
     }
-    dounlock ();
+    dounlock();
     return value;
   dlsymerror:
-    dounlock ();
+    dounlock();
     return NULL;
 }
 #endif
@@ -1024,17 +1022,17 @@ SDL_OSX_dlsym (void *dl_restrict handle, const char *dl_restrict symbol)
 #if FINK_BUILD
 
 static void *
-dlsym_prepend_underscore (void *handle, const char *symbol)
+dlsym_prepend_underscore(void *handle, const char *symbol)
 {
     void *answer;
-    dolock ();
-    answer = dlsym_prepend_underscore_intern (handle, symbol);
-    dounlock ();
+    dolock();
+    answer = dlsym_prepend_underscore_intern(handle, symbol);
+    dounlock();
     return answer;
 }
 
 static void *
-dlsym_prepend_underscore_intern (void *handle, const char *symbol)
+dlsym_prepend_underscore_intern(void *handle, const char *symbol)
 {
 /*
  *	A quick and easy way for porting packages which call dlsym(handle,"sym")
@@ -1045,61 +1043,61 @@ dlsym_prepend_underscore_intern (void *handle, const char *symbol)
  *	the underscore always, or not at all. These global functions need to go away
  *	for opendarwin.
  */
-    int sym_len = SDL_strlen (symbol);
+    int sym_len = SDL_strlen(symbol);
     void *value = NULL;
     char *malloc_sym = NULL;
-    malloc_sym = SDL_malloc (sym_len + 2);
+    malloc_sym = SDL_malloc(sym_len + 2);
     if (malloc_sym) {
-        SDL_snprintf (malloc_sym, sym_len + 2, "_%s", symbol);
-        value = dlsymIntern (handle, malloc_sym, 1);
-        SDL_free (malloc_sym);
+        SDL_snprintf(malloc_sym, sym_len + 2, "_%s", symbol);
+        value = dlsymIntern(handle, malloc_sym, 1);
+        SDL_free(malloc_sym);
     } else {
-        error ("Unable to allocate memory");
+        error("Unable to allocate memory");
     }
     return value;
 }
 
 static void *
-dlsym_auto_underscore (void *handle, const char *symbol)
+dlsym_auto_underscore(void *handle, const char *symbol)
 {
     void *answer;
-    dolock ();
-    answer = dlsym_auto_underscore_intern (handle, symbol);
-    dounlock ();
+    dolock();
+    answer = dlsym_auto_underscore_intern(handle, symbol);
+    dounlock();
     return answer;
 
 }
 static void *
-dlsym_auto_underscore_intern (void *handle, const char *symbol)
+dlsym_auto_underscore_intern(void *handle, const char *symbol)
 {
     struct dlstatus *dls = handle;
     void *addr = 0;
-    addr = dlsymIntern (dls, symbol, 0);
+    addr = dlsymIntern(dls, symbol, 0);
     if (!addr)
-        addr = dlsym_prepend_underscore_intern (handle, symbol);
+        addr = dlsym_prepend_underscore_intern(handle, symbol);
     return addr;
 }
 
 
 static void *
-SDL_OSX_dlsym (void *dl_restrict handle, const char *dl_restrict symbol)
+SDL_OSX_dlsym(void *dl_restrict handle, const char *dl_restrict symbol)
 {
     struct dlstatus *dls = handle;
     void *addr = 0;
-    dolock ();
-    addr = dlsymIntern (dls, symbol, 1);
-    dounlock ();
+    dolock();
+    addr = dlsymIntern(dls, symbol, 1);
+    dounlock();
     return addr;
 }
 #endif
 
 static int
-SDL_OSX_dlclose (void *handle)
+SDL_OSX_dlclose(void *handle)
 {
     struct dlstatus *dls = handle;
-    dolock ();
-    resetdlerror ();
-    if (!isValidStatus (dls)) {
+    dolock();
+    resetdlerror();
+    if (!isValidStatus(dls)) {
         goto dlcloseerror;
     }
     if (dls->module == MAGIC_DYLIB_MOD) {
@@ -1107,32 +1105,32 @@ SDL_OSX_dlclose (void *handle)
         if (!dls->lib) {
             name = "global context";
         } else {
-            name = get_lib_name (dls->lib);
+            name = get_lib_name(dls->lib);
         }
-        warning ("trying to close a .dylib!");
-        error ("Not closing \"%s\" - dynamic libraries cannot be closed",
-               name);
+        warning("trying to close a .dylib!");
+        error("Not closing \"%s\" - dynamic libraries cannot be closed",
+              name);
         goto dlcloseerror;
     }
     if (!dls->module) {
-        error ("module already closed");
+        error("module already closed");
         goto dlcloseerror;
     }
 
     if (dls->refs == 1) {
         unsigned long options = 0;
         void (*fini) (void);
-        if ((fini = dlsymIntern (dls, "__fini", 0))) {
-            debug ("calling _fini()");
-            fini ();
+        if ((fini = dlsymIntern(dls, "__fini", 0))) {
+            debug("calling _fini()");
+            fini();
         }
         options |= NSUNLINKMODULE_OPTION_RESET_LAZY_REFERENCES;
 #ifdef RTLD_NODELETE
-        if (isFlagSet (dls->mode, RTLD_NODELETE))
+        if (isFlagSet(dls->mode, RTLD_NODELETE))
             options |= NSUNLINKMODULE_OPTION_KEEP_MEMORY_MAPPED;
 #endif
-        if (!NSUnLinkModule (dls->module, options)) {
-            error ("unable to unlink module");
+        if (!NSUnLinkModule(dls->module, options)) {
+            error("unable to unlink module");
             goto dlcloseerror;
         }
         dls->refs--;
@@ -1142,20 +1140,20 @@ SDL_OSX_dlclose (void *handle)
          * problem in mostly all cases, though.
          */
     }
-    dounlock ();
+    dounlock();
     return 0;
   dlcloseerror:
-    dounlock ();
+    dounlock();
     return 1;
 }
 
 static const char *
-SDL_OSX_dlerror (void)
+SDL_OSX_dlerror(void)
 {
     struct dlthread *tss;
     const char *err_str = NULL;
-    dlcompat_init_check ();
-    tss = pthread_getspecific (dlerror_key);
+    dlcompat_init_check();
+    tss = pthread_getspecific(dlerror_key);
     if (tss != NULL && tss->errset != 0) {
         tss->errset = 0;
         err_str = tss->errstr;
@@ -1167,20 +1165,20 @@ SDL_OSX_dlerror (void)
  * or zero if the given address is not contained in any loaded images.
  */
 static const struct mach_header *
-image_for_address (const void *address)
+image_for_address(const void *address)
 {
     unsigned long i;
     unsigned long j;
-    unsigned long count = _dyld_image_count ();
+    unsigned long count = _dyld_image_count();
     const struct mach_header *mh = 0;
     struct load_command *lc = 0;
     unsigned long addr = 0;
     for (i = 0; i < count; i++) {
-        addr = (unsigned long) address - _dyld_get_image_vmaddr_slide (i);
-        mh = _dyld_get_image_header (i);
+        addr = (unsigned long) address - _dyld_get_image_vmaddr_slide(i);
+        mh = _dyld_get_image_header(i);
         if (mh) {
             lc = (struct load_command *) ((char *) mh +
-                                          sizeof (struct mach_header));
+                                          sizeof(struct mach_header));
             for (j = 0; j < mh->ncmds;
                  j++, lc =
                  (struct load_command *) ((char *) lc + lc->cmdsize)) {
@@ -1201,14 +1199,14 @@ image_for_address (const void *address)
 
 #if 0                           /* unused */
 static int
-SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
+SDL_OSX_dladdr(const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
 {
 /*
 	FIXME: USe the routine image_for_address.
 */
     unsigned long i;
     unsigned long j;
-    unsigned long count = _dyld_image_count ();
+    unsigned long count = _dyld_image_count();
     struct mach_header *mh = 0;
     struct load_command *lc = 0;
     unsigned long addr = NULL;
@@ -1216,8 +1214,8 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
     int found = 0;
     if (!info)
         return 0;
-    dolock ();
-    resetdlerror ();
+    dolock();
+    resetdlerror();
     info->dli_fname = 0;
     info->dli_fbase = 0;
     info->dli_sname = 0;
@@ -1226,11 +1224,11 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
  * to darwin-development AT lists DOT apple DOT com and slightly modified
  */
     for (i = 0; i < count; i++) {
-        addr = (unsigned long) p - _dyld_get_image_vmaddr_slide (i);
-        mh = _dyld_get_image_header (i);
+        addr = (unsigned long) p - _dyld_get_image_vmaddr_slide(i);
+        mh = _dyld_get_image_header(i);
         if (mh) {
             lc = (struct load_command *) ((char *) mh +
-                                          sizeof (struct mach_header));
+                                          sizeof(struct mach_header));
             for (j = 0; j < mh->ncmds;
                  j++, lc =
                  (struct load_command *) ((char *) lc + lc->cmdsize)) {
@@ -1239,7 +1237,7 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
                     addr <
                     ((struct segment_command *) lc)->vmaddr +
                     ((struct segment_command *) lc)->vmsize) {
-                    info->dli_fname = _dyld_get_image_name (i);
+                    info->dli_fname = _dyld_get_image_name(i);
                     info->dli_fbase = (void *) mh;
                     found = 1;
                     break;
@@ -1250,10 +1248,10 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
         }
     }
     if (!found) {
-        dounlock ();
+        dounlock();
         return 0;
     }
-    lc = (struct load_command *) ((char *) mh + sizeof (struct mach_header));
+    lc = (struct load_command *) ((char *) mh + sizeof(struct mach_header));
     for (j = 0; j < mh->ncmds;
          j++, lc = (struct load_command *) ((char *) lc + lc->cmdsize)) {
         if (LC_SEGMENT == lc->cmd) {
@@ -1265,10 +1263,10 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
     table_off =
         ((unsigned long) ((struct segment_command *) lc)->vmaddr) -
         ((unsigned long) ((struct segment_command *) lc)->fileoff) +
-        _dyld_get_image_vmaddr_slide (i);
-    debug ("table off %x", table_off);
+        _dyld_get_image_vmaddr_slide(i);
+    debug("table off %x", table_off);
 
-    lc = (struct load_command *) ((char *) mh + sizeof (struct mach_header));
+    lc = (struct load_command *) ((char *) mh + sizeof(struct mach_header));
     for (j = 0; j < mh->ncmds;
          j++, lc = (struct load_command *) ((char *) lc + lc->cmdsize)) {
         if (LC_SYMTAB == lc->cmd) {
@@ -1282,7 +1280,7 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
             unsigned long strtable =
                 (unsigned long) (((struct symtab_command *) lc)->stroff +
                                  table_off);
-            debug ("symtable %x", symtable);
+            debug("symtable %x", symtable);
             for (i = 0; i < numsyms; i++) {
                 /* Ignore the following kinds of Symbols */
                 if ((!symtable->n_value)        /* Undefined */
@@ -1305,7 +1303,7 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
             }
         }
     }
-    dounlock ();
+    dounlock();
     return 1;
 }
 #endif
@@ -1321,29 +1319,29 @@ SDL_OSX_dladdr (const void *dl_restrict p, SDL_OSX_Dl_info * dl_restrict info)
  */
 #if 0
 static dlfunc_t
-SDL_OSX_dlfunc (void *dl_restrict handle, const char *dl_restrict symbol)
+SDL_OSX_dlfunc(void *dl_restrict handle, const char *dl_restrict symbol)
 {
     union
     {
         void *d;
         dlfunc_t f;
     } rv;
-    int sym_len = SDL_strlen (symbol);
+    int sym_len = SDL_strlen(symbol);
     char *malloc_sym = NULL;
-    dolock ();
-    malloc_sym = SDL_malloc (sym_len + 2);
+    dolock();
+    malloc_sym = SDL_malloc(sym_len + 2);
     if (malloc_sym) {
-        SDL_snprintf (malloc_sym, sym_len + 2, "_%s", symbol);
-        rv.d = dlsymIntern (handle, malloc_sym, 1);
-        SDL_free (malloc_sym);
+        SDL_snprintf(malloc_sym, sym_len + 2, "_%s", symbol);
+        rv.d = dlsymIntern(handle, malloc_sym, 1);
+        SDL_free(malloc_sym);
     } else {
-        error ("Unable to allocate memory");
+        error("Unable to allocate memory");
         goto dlfuncerror;
     }
-    dounlock ();
+    dounlock();
     return rv.f;
   dlfuncerror:
-    dounlock ();
+    dounlock();
     return NULL;
 }
 #endif
@@ -1359,31 +1357,31 @@ SDL_OSX_dlfunc (void *dl_restrict handle, const char *dl_restrict symbol)
 #include "SDL_loadso.h"
 
 void *
-SDL_LoadObject (const char *sofile)
+SDL_LoadObject(const char *sofile)
 {
-    void *handle = SDL_OSX_dlopen (sofile, RTLD_NOW);
-    const char *loaderror = SDL_OSX_dlerror ();
+    void *handle = SDL_OSX_dlopen(sofile, RTLD_NOW);
+    const char *loaderror = SDL_OSX_dlerror();
     if (handle == NULL) {
-        SDL_SetError ("Failed loading %s: %s", sofile, loaderror);
+        SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
     return (handle);
 }
 
 void *
-SDL_LoadFunction (void *handle, const char *name)
+SDL_LoadFunction(void *handle, const char *name)
 {
-    void *symbol = SDL_OSX_dlsym (handle, name);
+    void *symbol = SDL_OSX_dlsym(handle, name);
     if (symbol == NULL) {
-        SDL_SetError ("Failed loading %s: %s", name, SDL_OSX_dlerror ());
+        SDL_SetError("Failed loading %s: %s", name, SDL_OSX_dlerror());
     }
     return (symbol);
 }
 
 void
-SDL_UnloadObject (void *handle)
+SDL_UnloadObject(void *handle)
 {
     if (handle != NULL) {
-        SDL_OSX_dlclose (handle);
+        SDL_OSX_dlclose(handle);
     }
 }
 

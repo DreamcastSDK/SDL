@@ -33,10 +33,10 @@ _XFUNCPROTOBEGIN
                                            _Xconst char *);
 
 extern XExtensionErrorHandler
-XSetExtensionErrorHandler (XExtensionErrorHandler handler);
+XSetExtensionErrorHandler(XExtensionErrorHandler handler);
 
-extern int XMissingExtension (Display * /* dpy */ ,
-                              _Xconst char *    /* ext_name */
+extern int XMissingExtension(Display * /* dpy */ ,
+                             _Xconst char *     /* ext_name */
     );
 
 _XFUNCPROTOEND

@@ -62,7 +62,7 @@ struct SDL_Thread
 };
 
 /* This is the function called to run a thread */
-extern void SDL_RunThread (void *data);
+extern void SDL_RunThread(void *data);
 
 #endif /* _SDL_thread_c_h */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -49,8 +49,8 @@ struct private_yuvhwdata
 };
 
 static DFBEnumerationResult
-enum_layers_callback (DFBDisplayLayerID id,
-                      DFBDisplayLayerDescription desc, void *data)
+enum_layers_callback(DFBDisplayLayerID id,
+                     DFBDisplayLayerDescription desc, void *data)
 {
     struct private_yuvhwdata *hwdata = (struct private_yuvhwdata *) data;
 
@@ -70,26 +70,26 @@ enum_layers_callback (DFBDisplayLayerID id,
 
 
 static DFBResult
-CreateYUVSurface (_THIS, struct private_yuvhwdata *hwdata,
-                  int width, int height, Uint32 format)
+CreateYUVSurface(_THIS, struct private_yuvhwdata *hwdata,
+                 int width, int height, Uint32 format)
 {
     DFBResult ret;
     IDirectFB *dfb = HIDDEN->dfb;
     IDirectFBDisplayLayer *layer;
     DFBDisplayLayerConfig conf;
 
-    ret = dfb->EnumDisplayLayers (dfb, enum_layers_callback, hwdata);
+    ret = dfb->EnumDisplayLayers(dfb, enum_layers_callback, hwdata);
     if (ret) {
-        SetDirectFBerror ("IDirectFB::EnumDisplayLayers", ret);
+        SetDirectFBerror("IDirectFB::EnumDisplayLayers", ret);
         return ret;
     }
 
     if (!hwdata->layer_id)
         return DFB_UNSUPPORTED;
 
-    ret = dfb->GetDisplayLayer (dfb, hwdata->layer_id, &layer);
+    ret = dfb->GetDisplayLayer(dfb, hwdata->layer_id, &layer);
     if (ret) {
-        SetDirectFBerror ("IDirectFB::GetDisplayLayer", ret);
+        SetDirectFBerror("IDirectFB::GetDisplayLayer", ret);
         return ret;
     }
 
@@ -111,22 +111,22 @@ CreateYUVSurface (_THIS, struct private_yuvhwdata *hwdata,
         conf.pixelformat = DSPF_UYVY;
         break;
     default:
-        fprintf (stderr, "SDL_DirectFB: Unsupported YUV format (0x%08x)!\n",
-                 format);
+        fprintf(stderr, "SDL_DirectFB: Unsupported YUV format (0x%08x)!\n",
+                format);
         break;
     }
 
-    ret = layer->SetConfiguration (layer, &conf);
+    ret = layer->SetConfiguration(layer, &conf);
     if (ret) {
-        SetDirectFBerror ("IDirectFBDisplayLayer::SetConfiguration", ret);
-        layer->Release (layer);
+        SetDirectFBerror("IDirectFBDisplayLayer::SetConfiguration", ret);
+        layer->Release(layer);
         return ret;
     }
 
-    ret = layer->GetSurface (layer, &hwdata->surface);
+    ret = layer->GetSurface(layer, &hwdata->surface);
     if (ret) {
-        SetDirectFBerror ("IDirectFBDisplayLayer::GetSurface", ret);
-        layer->Release (layer);
+        SetDirectFBerror("IDirectFBDisplayLayer::GetSurface", ret);
+        layer->Release(layer);
         return ret;
     }
 
@@ -136,16 +136,16 @@ CreateYUVSurface (_THIS, struct private_yuvhwdata *hwdata,
 }
 
 SDL_Overlay *
-DirectFB_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
-                           SDL_Surface * display)
+DirectFB_CreateYUVOverlay(_THIS, int width, int height, Uint32 format,
+                          SDL_Surface * display)
 {
     SDL_Overlay *overlay;
     struct private_yuvhwdata *hwdata;
 
     /* Create the overlay structure */
-    overlay = SDL_calloc (1, sizeof (SDL_Overlay));
+    overlay = SDL_calloc(1, sizeof(SDL_Overlay));
     if (!overlay) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -158,16 +158,16 @@ DirectFB_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     overlay->hwfuncs = &directfb_yuvfuncs;
 
     /* Create the pixel data and lookup tables */
-    hwdata = SDL_calloc (1, sizeof (struct private_yuvhwdata));
+    hwdata = SDL_calloc(1, sizeof(struct private_yuvhwdata));
     overlay->hwdata = hwdata;
     if (!hwdata) {
-        SDL_OutOfMemory ();
-        SDL_FreeYUVOverlay (overlay);
+        SDL_OutOfMemory();
+        SDL_FreeYUVOverlay(overlay);
         return NULL;
     }
 
-    if (CreateYUVSurface (this, hwdata, width, height, format)) {
-        SDL_FreeYUVOverlay (overlay);
+    if (CreateYUVSurface(this, hwdata, width, height, format)) {
+        SDL_FreeYUVOverlay(overlay);
         return NULL;
     }
 
@@ -191,16 +191,16 @@ DirectFB_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
 }
 
 int
-DirectFB_LockYUVOverlay (_THIS, SDL_Overlay * overlay)
+DirectFB_LockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     DFBResult ret;
     void *data;
     int pitch;
     IDirectFBSurface *surface = overlay->hwdata->surface;
 
-    ret = surface->Lock (surface, DSLF_READ | DSLF_WRITE, &data, &pitch);
+    ret = surface->Lock(surface, DSLF_READ | DSLF_WRITE, &data, &pitch);
     if (ret) {
-        SetDirectFBerror ("IDirectFBSurface::Lock", ret);
+        SetDirectFBerror("IDirectFBSurface::Lock", ret);
         return -1;
     }
 
@@ -228,33 +228,33 @@ DirectFB_LockYUVOverlay (_THIS, SDL_Overlay * overlay)
 }
 
 void
-DirectFB_UnlockYUVOverlay (_THIS, SDL_Overlay * overlay)
+DirectFB_UnlockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     IDirectFBSurface *surface = overlay->hwdata->surface;
 
     overlay->pixels[0] = overlay->pixels[1] = overlay->pixels[2] = NULL;
 
-    surface->Unlock (surface);
+    surface->Unlock(surface);
 }
 
 int
-DirectFB_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
-                            SDL_Rect * dst)
+DirectFB_DisplayYUVOverlay(_THIS, SDL_Overlay * overlay, SDL_Rect * src,
+                           SDL_Rect * dst)
 {
     DFBResult ret;
     DFBDisplayLayerConfig conf;
     IDirectFBDisplayLayer *primary = HIDDEN->layer;
     IDirectFBDisplayLayer *layer = overlay->hwdata->layer;
 
-    primary->GetConfiguration (primary, &conf);
+    primary->GetConfiguration(primary, &conf);
 
-    ret = layer->SetScreenLocation (layer,
-                                    dst->x / (float) conf.width,
-                                    dst->y / (float) conf.height,
-                                    dst->w / (float) conf.width,
-                                    dst->h / (float) conf.height);
+    ret = layer->SetScreenLocation(layer,
+                                   dst->x / (float) conf.width,
+                                   dst->y / (float) conf.height,
+                                   dst->w / (float) conf.width,
+                                   dst->h / (float) conf.height);
     if (ret) {
-        SetDirectFBerror ("IDirectFBDisplayLayer::SetScreenLocation", ret);
+        SetDirectFBerror("IDirectFBDisplayLayer::SetScreenLocation", ret);
         return -1;
     }
 
@@ -262,19 +262,19 @@ DirectFB_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
 }
 
 void
-DirectFB_FreeYUVOverlay (_THIS, SDL_Overlay * overlay)
+DirectFB_FreeYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     struct private_yuvhwdata *hwdata;
 
     hwdata = overlay->hwdata;
     if (hwdata) {
         if (hwdata->surface)
-            hwdata->surface->Release (hwdata->surface);
+            hwdata->surface->Release(hwdata->surface);
 
         if (hwdata->layer)
-            hwdata->layer->Release (hwdata->layer);
+            hwdata->layer->Release(hwdata->layer);
 
-        free (hwdata);
+        free(hwdata);
     }
 }
 

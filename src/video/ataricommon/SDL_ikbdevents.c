@@ -71,18 +71,18 @@ _KEYTAB *curtables;
 static unsigned char *tab_unshift, *tab_shift, *tab_caps;
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
 
-static SDL_keysym *TranslateKey (int scancode, int numkeytable,
-                                 SDL_keysym * keysym, SDL_bool pressed);
+static SDL_keysym *TranslateKey(int scancode, int numkeytable,
+                                SDL_keysym * keysym, SDL_bool pressed);
 
 void
-AtariIkbd_InitOSKeymap (_THIS)
+AtariIkbd_InitOSKeymap(_THIS)
 {
     int i;
 
-    SDL_memset (SDL_AtariIkbd_keyboard, KEY_UNDEFINED, ATARIBIOS_MAXKEYS);
+    SDL_memset(SDL_AtariIkbd_keyboard, KEY_UNDEFINED, ATARIBIOS_MAXKEYS);
 
     /* Initialize keymap */
-    for (i = 0; i < sizeof (keymap); i++)
+    for (i = 0; i < sizeof(keymap); i++)
         keymap[i] = SDLK_UNKNOWN;
 
     /* Functions keys */
@@ -112,23 +112,23 @@ AtariIkbd_InitOSKeymap (_THIS)
     keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
 
     /* Read XBIOS tables for scancode -> ascii translation */
-    curtables = Keytbl (KT_NOCHANGE, KT_NOCHANGE, KT_NOCHANGE);
+    curtables = Keytbl(KT_NOCHANGE, KT_NOCHANGE, KT_NOCHANGE);
     tab_unshift = curtables->unshift;
     tab_shift = curtables->shift;
     tab_caps = curtables->caps;
 
     /* Set Caps lock initial state */
-    caps_state = (Kbshift (-1) & (1 << K_CAPSLOCK));
+    caps_state = (Kbshift(-1) & (1 << K_CAPSLOCK));
 
     /* Now install our handler */
     SDL_AtariIkbd_mouseb = SDL_AtariIkbd_mousex = SDL_AtariIkbd_mousey = 0;
     atari_prevmouseb = 0;
 
-    Supexec (SDL_AtariIkbdInstall);
+    Supexec(SDL_AtariIkbdInstall);
 }
 
 static int
-atari_GetButton (int button)
+atari_GetButton(int button)
 {
     switch (button) {
     case 0:
@@ -142,7 +142,7 @@ atari_GetButton (int button)
 }
 
 void
-AtariIkbd_PumpEvents (_THIS)
+AtariIkbd_PumpEvents(_THIS)
 {
     int i;
     SDL_keysym keysym;
@@ -169,17 +169,17 @@ AtariIkbd_PumpEvents (_THIS)
     for (i = 0; i < ATARIBIOS_MAXKEYS; i++) {
         /* Key pressed ? */
         if (SDL_AtariIkbd_keyboard[i] == KEY_PRESSED) {
-            SDL_PrivateKeyboard (SDL_PRESSED,
-                                 TranslateKey (i, specialkeys, &keysym,
-                                               SDL_TRUE));
+            SDL_PrivateKeyboard(SDL_PRESSED,
+                                TranslateKey(i, specialkeys, &keysym,
+                                             SDL_TRUE));
             SDL_AtariIkbd_keyboard[i] = KEY_UNDEFINED;
         }
 
         /* Key released ? */
         if (SDL_AtariIkbd_keyboard[i] == KEY_RELEASED) {
-            SDL_PrivateKeyboard (SDL_RELEASED,
-                                 TranslateKey (i, specialkeys, &keysym,
-                                               SDL_FALSE));
+            SDL_PrivateKeyboard(SDL_RELEASED,
+                                TranslateKey(i, specialkeys, &keysym,
+                                             SDL_FALSE));
             SDL_AtariIkbd_keyboard[i] = KEY_UNDEFINED;
         }
     }
@@ -188,8 +188,8 @@ AtariIkbd_PumpEvents (_THIS)
 
     /* Mouse motion ? */
     if (SDL_AtariIkbd_mousex || SDL_AtariIkbd_mousey) {
-        SDL_PrivateMouseMotion (0, 1, SDL_AtariIkbd_mousex,
-                                SDL_AtariIkbd_mousey);
+        SDL_PrivateMouseMotion(0, 1, SDL_AtariIkbd_mousex,
+                               SDL_AtariIkbd_mousey);
         SDL_AtariIkbd_mousex = SDL_AtariIkbd_mousey = 0;
     }
 
@@ -202,12 +202,11 @@ AtariIkbd_PumpEvents (_THIS)
             prevbutton = atari_prevmouseb & (1 << i);
 
             if (curbutton && !prevbutton) {
-                SDL_PrivateMouseButton (SDL_PRESSED,
-                                        atari_GetButton (i), 0, 0);
+                SDL_PrivateMouseButton(SDL_PRESSED, atari_GetButton(i), 0, 0);
             }
             if (!curbutton && prevbutton) {
-                SDL_PrivateMouseButton (SDL_RELEASED,
-                                        atari_GetButton (i), 0, 0);
+                SDL_PrivateMouseButton(SDL_RELEASED,
+                                       atari_GetButton(i), 0, 0);
             }
         }
         atari_prevmouseb = SDL_AtariIkbd_mouseb;
@@ -215,8 +214,8 @@ AtariIkbd_PumpEvents (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, int numkeytable, SDL_keysym * keysym,
-              SDL_bool pressed)
+TranslateKey(int scancode, int numkeytable, SDL_keysym * keysym,
+             SDL_bool pressed)
 {
     unsigned char asciicode;
 
@@ -251,9 +250,9 @@ TranslateKey (int scancode, int numkeytable, SDL_keysym * keysym,
 }
 
 void
-AtariIkbd_ShutdownEvents (void)
+AtariIkbd_ShutdownEvents(void)
 {
-    Supexec (SDL_AtariIkbdUninstall);
+    Supexec(SDL_AtariIkbdUninstall);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

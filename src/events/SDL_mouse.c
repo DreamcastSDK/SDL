@@ -39,7 +39,7 @@ static Uint8 SDL_ButtonState = 0;
 
 /* Public functions */
 int
-SDL_MouseInit (void)
+SDL_MouseInit(void)
 {
     /* The mouse is at (0,0) */
     SDL_MouseX = 0;
@@ -53,24 +53,24 @@ SDL_MouseInit (void)
 }
 
 void
-SDL_MouseQuit (void)
+SDL_MouseQuit(void)
 {
 }
 
 /* We lost the mouse, so post button up messages for all pressed buttons */
 void
-SDL_ResetMouse (void)
+SDL_ResetMouse(void)
 {
     Uint8 i;
-    for (i = 0; i < sizeof (SDL_ButtonState) * 8; ++i) {
-        if (SDL_ButtonState & SDL_BUTTON (i)) {
-            SDL_PrivateMouseButton (SDL_RELEASED, i, 0, 0);
+    for (i = 0; i < sizeof(SDL_ButtonState) * 8; ++i) {
+        if (SDL_ButtonState & SDL_BUTTON(i)) {
+            SDL_PrivateMouseButton(SDL_RELEASED, i, 0, 0);
         }
     }
 }
 
 Uint8
-SDL_GetMouseState (int *x, int *y)
+SDL_GetMouseState(int *x, int *y)
 {
     if (x) {
         *x = SDL_MouseX;
@@ -82,7 +82,7 @@ SDL_GetMouseState (int *x, int *y)
 }
 
 Uint8
-SDL_GetRelativeMouseState (int *x, int *y)
+SDL_GetRelativeMouseState(int *x, int *y)
 {
     if (x)
         *x = SDL_DeltaX;
@@ -94,9 +94,9 @@ SDL_GetRelativeMouseState (int *x, int *y)
 }
 
 static void
-ClipOffset (Sint16 * x, Sint16 * y)
+ClipOffset(Sint16 * x, Sint16 * y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* This clips absolute mouse coordinates when the apparent
        display surface is smaller than the real display surface.
@@ -110,9 +110,9 @@ ClipOffset (Sint16 * x, Sint16 * y)
 
 /* These are global for SDL_eventloop.c */
 int
-SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
+SDL_PrivateMouseMotion(Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int posted;
     Uint16 X, Y;
     Sint16 Xrel;
@@ -136,7 +136,7 @@ SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
         y = (SDL_MouseY + y);
     } else {
         /* Do we need to clip {x,y} ? */
-        ClipOffset (&x, &y);
+        ClipOffset(&x, &y);
     }
 
     /* Mouse coordinates range from 0 - width-1 and 0 - height-1 */
@@ -166,7 +166,7 @@ SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
     /* Drop events that don't change state */
     if (!Xrel && !Yrel) {
 #if 0
-        printf ("Mouse event didn't change state - dropped!\n");
+        printf("Mouse event didn't change state - dropped!\n");
 #endif
         return (0);
     }
@@ -177,13 +177,13 @@ SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
     SDL_MouseY = Y;
     SDL_DeltaX += Xrel;
     SDL_DeltaY += Yrel;
-    SDL_MoveCursor (SDL_MouseX, SDL_MouseY);
+    SDL_MoveCursor(SDL_MouseX, SDL_MouseY);
 
     /* Post the event, if desired */
     posted = 0;
     if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE) {
         SDL_Event event;
-        SDL_memset (&event, 0, sizeof (event));
+        SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_MOUSEMOTION;
         event.motion.state = buttonstate;
         event.motion.x = X;
@@ -192,26 +192,26 @@ SDL_PrivateMouseMotion (Uint8 buttonstate, int relative, Sint16 x, Sint16 y)
         event.motion.yrel = Yrel;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
-            SDL_PushEvent (&event);
+            SDL_PushEvent(&event);
         }
     }
     return (posted);
 }
 
 int
-SDL_PrivateMouseButton (Uint8 state, Uint8 button, Sint16 x, Sint16 y)
+SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Event event;
     int posted;
     int move_mouse;
     Uint8 buttonstate;
 
-    SDL_memset (&event, 0, sizeof (event));
+    SDL_memset(&event, 0, sizeof(event));
 
     /* Check parameters */
     if (x || y) {
-        ClipOffset (&x, &y);
+        ClipOffset(&x, &y);
         move_mouse = 1;
         /* Mouse coordinates range from 0 - width-1 and 0 - height-1 */
         if (x < 0)
@@ -236,11 +236,11 @@ SDL_PrivateMouseButton (Uint8 state, Uint8 button, Sint16 x, Sint16 y)
     switch (state) {
     case SDL_PRESSED:
         event.type = SDL_MOUSEBUTTONDOWN;
-        buttonstate |= SDL_BUTTON (button);
+        buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
         event.type = SDL_MOUSEBUTTONUP;
-        buttonstate &= ~SDL_BUTTON (button);
+        buttonstate &= ~SDL_BUTTON(button);
         break;
     default:
         /* Invalid state -- bail */
@@ -252,7 +252,7 @@ SDL_PrivateMouseButton (Uint8 state, Uint8 button, Sint16 x, Sint16 y)
     if (move_mouse) {
         SDL_MouseX = x;
         SDL_MouseY = y;
-        SDL_MoveCursor (SDL_MouseX, SDL_MouseY);
+        SDL_MoveCursor(SDL_MouseX, SDL_MouseY);
     }
 
     /* Post the event, if desired */
@@ -264,7 +264,7 @@ SDL_PrivateMouseButton (Uint8 state, Uint8 button, Sint16 x, Sint16 y)
         event.button.y = y;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
-            SDL_PushEvent (&event);
+            SDL_PushEvent(&event);
         }
     }
     return (posted);

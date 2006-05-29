@@ -44,14 +44,14 @@
 /* The translation tables from a photon keysym to a SDL keysym */
 static SDLKey ODD_keymap[256];
 static SDLKey MISC_keymap[0xFF + 1];
-SDL_keysym *ph_TranslateKey (PhKeyEvent_t * key, SDL_keysym * keysym);
+SDL_keysym *ph_TranslateKey(PhKeyEvent_t * key, SDL_keysym * keysym);
 
 /* Check to see if this is a repeated key.
    (idea shamelessly lifted from GII -- thanks guys! :) */
 static int
-ph_WarpedMotion (_THIS, PhEvent_t * winEvent)
+ph_WarpedMotion(_THIS, PhEvent_t * winEvent)
 {
-    PhRect_t *rect = PhGetRects (winEvent);
+    PhRect_t *rect = PhGetRects(winEvent);
 
     int centre_x, centre_y;
     int dx, dy;
@@ -64,11 +64,11 @@ ph_WarpedMotion (_THIS, PhEvent_t * winEvent)
     dx = rect->ul.x - centre_x;
     dy = rect->ul.y - centre_y;
 
-    posted = SDL_PrivateMouseMotion (0, 1, dx, dy);
+    posted = SDL_PrivateMouseMotion(0, 1, dx, dy);
 
     /* Move mouse cursor to middle of the window */
-    PtGetAbsPosition (window, &abs_x, &abs_y);
-    PhMoveCursorAbs (PhInputGroup (NULL), abs_x + centre_x, abs_y + centre_y);
+    PtGetAbsPosition(window, &abs_x, &abs_y);
+    PhMoveCursorAbs(PhInputGroup(NULL), abs_x + centre_x, abs_y + centre_y);
 
     return (posted);
 }
@@ -77,25 +77,25 @@ ph_WarpedMotion (_THIS, PhEvent_t * winEvent)
  * MOTION_BUTTON and MOTION_NOBUTTON */
 
 static void
-set_motion_sensitivity (_THIS, unsigned int flags)
+set_motion_sensitivity(_THIS, unsigned int flags)
 {
     int rid;
     int fields = Ph_EV_PTR_MOTION_BUTTON | Ph_EV_PTR_MOTION_NOBUTTON;
     PhRegion_t region;
 
     if (window) {
-        rid = PtWidgetRid (window);
-        if (rid != 0 && PhRegionQuery (rid, &region, NULL, NULL, 0) == 0) {
+        rid = PtWidgetRid(window);
+        if (rid != 0 && PhRegionQuery(rid, &region, NULL, NULL, 0) == 0) {
             region.events_sense =
                 (region.events_sense & ~fields) | (flags & fields);
-            PhRegionChange (Ph_REGION_EV_SENSE, 0, &region, NULL, NULL);
+            PhRegionChange(Ph_REGION_EV_SENSE, 0, &region, NULL, NULL);
         }
     }
 }
 
 /* Convert the photon button state value to an SDL value */
 static Uint8
-ph2sdl_mousebutton (unsigned short button_state)
+ph2sdl_mousebutton(unsigned short button_state)
 {
     Uint8 mouse_button = 0;
 
@@ -110,7 +110,7 @@ ph2sdl_mousebutton (unsigned short button_state)
 }
 
 static int
-ph_DispatchEvent (_THIS)
+ph_DispatchEvent(_THIS)
 {
     int posted;
     PhRect_t *rect;
@@ -126,9 +126,9 @@ ph_DispatchEvent (_THIS)
     case Ph_EV_BOUNDARY:
         {
             if (phevent->subtype == Ph_EV_PTR_ENTER) {
-                posted = SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+                posted = SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
             } else if (phevent->subtype == Ph_EV_PTR_LEAVE) {
-                posted = SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+                posted = SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
             }
         }
         break;
@@ -137,14 +137,14 @@ ph_DispatchEvent (_THIS)
     case Ph_EV_PTR_MOTION_NOBUTTON:
         {
             if (SDL_VideoSurface) {
-                pointerEvent = PhGetData (phevent);
-                rect = PhGetRects (phevent);
+                pointerEvent = PhGetData(phevent);
+                rect = PhGetRects(phevent);
 
                 if (mouse_relative) {
-                    posted = ph_WarpedMotion (this, phevent);
+                    posted = ph_WarpedMotion(this, phevent);
                 } else {
                     posted =
-                        SDL_PrivateMouseMotion (0, 0, rect->ul.x, rect->ul.y);
+                        SDL_PrivateMouseMotion(0, 0, rect->ul.x, rect->ul.y);
                 }
             }
         }
@@ -152,20 +152,20 @@ ph_DispatchEvent (_THIS)
 
     case Ph_EV_BUT_PRESS:
         {
-            pointerEvent = PhGetData (phevent);
-            buttons = ph2sdl_mousebutton (pointerEvent->buttons);
+            pointerEvent = PhGetData(phevent);
+            buttons = ph2sdl_mousebutton(pointerEvent->buttons);
             if (buttons != 0) {
-                posted = SDL_PrivateMouseButton (SDL_PRESSED, buttons, 0, 0);
+                posted = SDL_PrivateMouseButton(SDL_PRESSED, buttons, 0, 0);
             }
         }
         break;
 
     case Ph_EV_BUT_RELEASE:
         {
-            pointerEvent = PhGetData (phevent);
-            buttons = ph2sdl_mousebutton (pointerEvent->buttons);
+            pointerEvent = PhGetData(phevent);
+            buttons = ph2sdl_mousebutton(pointerEvent->buttons);
             if (phevent->subtype == Ph_EV_RELEASE_REAL && buttons != 0) {
-                posted = SDL_PrivateMouseButton (SDL_RELEASED, buttons, 0, 0);
+                posted = SDL_PrivateMouseButton(SDL_RELEASED, buttons, 0, 0);
             } else if (phevent->subtype == Ph_EV_RELEASE_PHANTOM) {
                 /* If the mouse is outside the window,
                  * only a phantom release event is sent, so
@@ -173,9 +173,9 @@ ph_DispatchEvent (_THIS)
                  * Not perfect, maybe checking the mouse button
                  * state for Ph_EV_BOUNDARY events would be
                  * better. */
-                if ((SDL_GetAppState () & SDL_APPMOUSEFOCUS) == 0) {
+                if ((SDL_GetAppState() & SDL_APPMOUSEFOCUS) == 0) {
                     posted =
-                        SDL_PrivateMouseButton (SDL_RELEASED, buttons, 0, 0);
+                        SDL_PrivateMouseButton(SDL_RELEASED, buttons, 0, 0);
                 }
             }
         }
@@ -183,23 +183,23 @@ ph_DispatchEvent (_THIS)
 
     case Ph_EV_WM:
         {
-            winEvent = PhGetData (phevent);
+            winEvent = PhGetData(phevent);
 
             /* losing focus */
             if ((winEvent->event_f == Ph_WM_FOCUS)
                 && (winEvent->event_state == Ph_WM_EVSTATE_FOCUSLOST)) {
-                set_motion_sensitivity (this, Ph_EV_PTR_MOTION_BUTTON);
-                posted = SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+                set_motion_sensitivity(this, Ph_EV_PTR_MOTION_BUTTON);
+                posted = SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
             }
             /* gaining focus */
             else if ((winEvent->event_f == Ph_WM_FOCUS)
                      && (winEvent->event_state == Ph_WM_EVSTATE_FOCUS)) {
-                set_motion_sensitivity (this, -1);
-                posted = SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+                set_motion_sensitivity(this, -1);
+                posted = SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
             }
             /* request quit */
             else if (winEvent->event_f == Ph_WM_CLOSE) {
-                posted = SDL_PrivateQuit ();
+                posted = SDL_PrivateQuit();
             }
             /* request hide/unhide */
             else if (winEvent->event_f == Ph_WM_HIDE) {
@@ -217,11 +217,10 @@ ph_DispatchEvent (_THIS)
             else if (winEvent->event_f == Ph_WM_RESIZE) {
                 currently_maximized = 0;
 #if (_NTO_VERSION < 630)
-                SDL_PrivateResize (winEvent->size.w + 1,
-                                   winEvent->size.h + 1);
+                SDL_PrivateResize(winEvent->size.w + 1, winEvent->size.h + 1);
 #else
                 /* QNX 6.3.0 have this bug fixed */
-                SDL_PrivateResize (winEvent->size.w, winEvent->size.h);
+                SDL_PrivateResize(winEvent->size.w, winEvent->size.h);
 #endif /* _NTO_VERSION */
             }
             /* request to move */
@@ -243,8 +242,8 @@ ph_DispatchEvent (_THIS)
                     dst.h = current_overlay->hwdata->CurrentViewPort.size.h;
                     current_overlay->hwdata->ischromakey = 0;
                     error =
-                        ph_DisplayYUVOverlay (this, current_overlay,
-                                              &src, &dst);
+                        ph_DisplayYUVOverlay(this, current_overlay,
+                                             &src, &dst);
                     if (!error) {
                         current_overlay->hwdata->ischromakey = chromastate;
                         current_overlay->hwdata->locked = lockedstate;
@@ -271,7 +270,7 @@ ph_DispatchEvent (_THIS)
                 int numrects;
 
                 if (SDL_VideoSurface) {
-                    rect = PhGetRects (phevent);
+                    rect = PhGetRects(phevent);
                     if (phevent->num_rects > PH_SDL_MAX_RECTS) {
                         /* sorry, buffers underrun, we'll update only first PH_SDL_MAX_RECTS rects */
                         numrects = PH_SDL_MAX_RECTS;
@@ -284,7 +283,7 @@ ph_DispatchEvent (_THIS)
                         sdlrects[i].h = rect[i].lr.y - rect[i].ul.y + 1;
                     }
 
-                    this->UpdateRects (this, phevent->num_rects, sdlrects);
+                    this->UpdateRects(this, phevent->num_rects, sdlrects);
 
                     if (current_overlay != NULL) {
                         int lockedstate = current_overlay->hwdata->locked;
@@ -306,9 +305,8 @@ ph_DispatchEvent (_THIS)
                             current_overlay->hwdata->CurrentViewPort.size.h;
                         current_overlay->hwdata->forcedredraw = 1;
                         error =
-                            ph_DisplayYUVOverlay (this,
-                                                  current_overlay,
-                                                  &src, &dst);
+                            ph_DisplayYUVOverlay(this,
+                                                 current_overlay, &src, &dst);
                         if (!error) {
                             current_overlay->hwdata->forcedredraw = 0;
                             current_overlay->hwdata->locked = lockedstate;
@@ -325,7 +323,7 @@ ph_DispatchEvent (_THIS)
 
             posted = 0;
 
-            keyEvent = PhGetData (phevent);
+            keyEvent = PhGetData(phevent);
 
             if (Pk_KF_Key_Down & keyEvent->key_flags) {
                 /* split the wheel events from real key events */
@@ -334,8 +332,8 @@ ph_DispatchEvent (_THIS)
                     && ((keyEvent->key_flags & Pk_KF_Scan_Valid) ==
                         Pk_KF_Scan_Valid)) {
                     posted =
-                        SDL_PrivateMouseButton (SDL_PRESSED,
-                                                SDL_BUTTON_WHEELUP, 0, 0);
+                        SDL_PrivateMouseButton(SDL_PRESSED,
+                                               SDL_BUTTON_WHEELUP, 0, 0);
                     break;
                 }
                 if ((keyEvent->key_cap == Pk_Down)
@@ -343,13 +341,13 @@ ph_DispatchEvent (_THIS)
                     && ((keyEvent->key_flags & Pk_KF_Scan_Valid) ==
                         Pk_KF_Scan_Valid)) {
                     posted =
-                        SDL_PrivateMouseButton (SDL_PRESSED,
-                                                SDL_BUTTON_WHEELDOWN, 0, 0);
+                        SDL_PrivateMouseButton(SDL_PRESSED,
+                                               SDL_BUTTON_WHEELDOWN, 0, 0);
                     break;
                 }
                 posted =
-                    SDL_PrivateKeyboard (SDL_PRESSED,
-                                         ph_TranslateKey (keyEvent, &keysym));
+                    SDL_PrivateKeyboard(SDL_PRESSED,
+                                        ph_TranslateKey(keyEvent, &keysym));
             } else {            /* must be key release */
 
                 /* split the wheel events from real key events */
@@ -358,8 +356,8 @@ ph_DispatchEvent (_THIS)
                     && ((keyEvent->key_flags & Pk_KF_Scan_Valid) ==
                         Pk_KF_Scan_Valid)) {
                     posted =
-                        SDL_PrivateMouseButton (SDL_RELEASED,
-                                                SDL_BUTTON_WHEELUP, 0, 0);
+                        SDL_PrivateMouseButton(SDL_RELEASED,
+                                               SDL_BUTTON_WHEELUP, 0, 0);
                     break;
                 }
                 if ((keyEvent->key_cap == Pk_Down)
@@ -367,13 +365,13 @@ ph_DispatchEvent (_THIS)
                     && ((keyEvent->key_flags & Pk_KF_Scan_Valid) ==
                         Pk_KF_Scan_Valid)) {
                     posted =
-                        SDL_PrivateMouseButton (SDL_RELEASED,
-                                                SDL_BUTTON_WHEELDOWN, 0, 0);
+                        SDL_PrivateMouseButton(SDL_RELEASED,
+                                               SDL_BUTTON_WHEELDOWN, 0, 0);
                     break;
                 }
                 posted =
-                    SDL_PrivateKeyboard (SDL_RELEASED,
-                                         ph_TranslateKey (keyEvent, &keysym));
+                    SDL_PrivateKeyboard(SDL_RELEASED,
+                                        ph_TranslateKey(keyEvent, &keysym));
             }
         }
         break;
@@ -383,7 +381,7 @@ ph_DispatchEvent (_THIS)
             if (phevent->subtype == Ph_OFFSCREEN_INVALID) {
                 unsigned long *EvInfoData;
 
-                EvInfoData = (unsigned long *) PhGetData (phevent);
+                EvInfoData = (unsigned long *) PhGetData(phevent);
 
                 switch (*EvInfoData) {
                 case Pg_VIDEO_MODE_SWITCHED:
@@ -413,17 +411,17 @@ ph_DispatchEvent (_THIS)
 
 /* perform a blocking read if no events available */
 int
-ph_Pending (_THIS)
+ph_Pending(_THIS)
 {
     /* Flush the display connection and look to see if events are queued */
-    PgFlush ();
+    PgFlush();
 
     while (1) {
-        switch (PhEventPeek (phevent, EVENT_SIZE)) {
+        switch (PhEventPeek(phevent, EVENT_SIZE)) {
         case Ph_EVENT_MSG:
             return 1;
         case -1:
-            SDL_SetError ("ph_Pending(): PhEventNext failed.\n");
+            SDL_SetError("ph_Pending(): PhEventNext failed.\n");
             return 0;
         default:
             return 0;
@@ -435,29 +433,29 @@ ph_Pending (_THIS)
 }
 
 void
-ph_PumpEvents (_THIS)
+ph_PumpEvents(_THIS)
 {
     /* Flush the display connection and look to see if events are queued */
-    PgFlush ();
+    PgFlush();
 
-    while (ph_Pending (this)) {
-        PtEventHandler (phevent);
-        ph_DispatchEvent (this);
+    while (ph_Pending(this)) {
+        PtEventHandler(phevent);
+        ph_DispatchEvent(this);
     }
 }
 
 void
-ph_InitKeymap (void)
+ph_InitKeymap(void)
 {
     int i;
 
     /* Odd keys used in international keyboards */
-    for (i = 0; i < SDL_arraysize (ODD_keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(ODD_keymap); ++i) {
         ODD_keymap[i] = SDLK_UNKNOWN;
     }
 
     /* Map the miscellaneous keys */
-    for (i = 0; i < SDL_arraysize (MISC_keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(MISC_keymap); ++i) {
         MISC_keymap[i] = SDLK_UNKNOWN;
     }
 
@@ -543,7 +541,7 @@ ph_InitKeymap (void)
 static unsigned long cap;
 
 SDL_keysym *
-ph_TranslateKey (PhKeyEvent_t * key, SDL_keysym * keysym)
+ph_TranslateKey(PhKeyEvent_t * key, SDL_keysym * keysym)
 {
     /* 'sym' is set to the value of the key with modifiers applied to it.
        This member is valid only if Pk_KF_Sym_Valid is set in the key_flags.
@@ -601,9 +599,9 @@ ph_TranslateKey (PhKeyEvent_t * key, SDL_keysym * keysym)
             keysym->unicode = 10;
             break;
         default:
-            utf8len = PhKeyToMb (utf8, key);
+            utf8len = PhKeyToMb(utf8, key);
             if (utf8len > 0) {
-                utf8len = mbtowc (&unicode, utf8, utf8len);
+                utf8len = mbtowc(&unicode, utf8, utf8len);
                 if (utf8len > 0) {
                     keysym->unicode = unicode;
                 }
@@ -617,9 +615,9 @@ ph_TranslateKey (PhKeyEvent_t * key, SDL_keysym * keysym)
 }
 
 void
-ph_InitOSKeymap (_THIS)
+ph_InitOSKeymap(_THIS)
 {
-    ph_InitKeymap ();
+    ph_InitKeymap();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

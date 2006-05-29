@@ -54,31 +54,31 @@ static struct
 static StringPtr gDriverName = "\p.AppleCD";
 
 /* The system-dependent CD control functions */
-static const char *SDL_SYS_CDName (int drive);
-static int SDL_SYS_CDOpen (int drive);
-static int SDL_SYS_CDGetTOC (SDL_CD * cdrom);
-static CDstatus SDL_SYS_CDStatus (SDL_CD * cdrom, int *position);
-static int SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length);
-static int SDL_SYS_CDPause (SDL_CD * cdrom);
-static int SDL_SYS_CDResume (SDL_CD * cdrom);
-static int SDL_SYS_CDStop (SDL_CD * cdrom);
-static int SDL_SYS_CDEject (SDL_CD * cdrom);
-static void SDL_SYS_CDClose (SDL_CD * cdrom);
+static const char *SDL_SYS_CDName(int drive);
+static int SDL_SYS_CDOpen(int drive);
+static int SDL_SYS_CDGetTOC(SDL_CD * cdrom);
+static CDstatus SDL_SYS_CDStatus(SDL_CD * cdrom, int *position);
+static int SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length);
+static int SDL_SYS_CDPause(SDL_CD * cdrom);
+static int SDL_SYS_CDResume(SDL_CD * cdrom);
+static int SDL_SYS_CDStop(SDL_CD * cdrom);
+static int SDL_SYS_CDEject(SDL_CD * cdrom);
+static void SDL_SYS_CDClose(SDL_CD * cdrom);
 
 static short
-SDL_SYS_ShortToBCD (short value)
+SDL_SYS_ShortToBCD(short value)
 {
     return ((value % 10) + (value / 10) * 0x10);        /* Convert value to BCD */
 }
 
 static short
-SDL_SYS_BCDToShort (short value)
+SDL_SYS_BCDToShort(short value)
 {
     return ((value % 0x10) + (value / 0x10) * 10);      /* Convert value from BCD */
 }
 
 int
-SDL_SYS_CDInit (void)
+SDL_SYS_CDInit(void)
 {
     SInt16 dRefNum = 0;
     SInt16 first, last;
@@ -86,7 +86,7 @@ SDL_SYS_CDInit (void)
     SDL_numcds = 0;
 
     /* Check that the software is available */
-    if (Gestalt (kGestaltAudioCDSelector, &SDL_cdversion) || !SDL_cdversion)
+    if (Gestalt(kGestaltAudioCDSelector, &SDL_cdversion) || !SDL_cdversion)
         return (0);
 
     /* Fill in our driver capabilities */
@@ -103,13 +103,13 @@ SDL_SYS_CDInit (void)
 
     /* Walk the list, count each AudioCD driver, and save the refnums */
     first = -1;
-    last = 0 - LMGetUnitTableEntryCount ();
+    last = 0 - LMGetUnitTableEntryCount();
     for (dRefNum = first; dRefNum >= last; dRefNum--) {
         Str255 driverName;
         StringPtr namePtr;
         DCtlHandle deviceEntry;
 
-        deviceEntry = GetDCtlEntry (dRefNum);
+        deviceEntry = GetDCtlEntry(dRefNum);
         if (!deviceEntry)
             continue;
 
@@ -117,15 +117,15 @@ SDL_SYS_CDInit (void)
         namePtr = (*deviceEntry)->dCtlFlags & (1L << dRAMBased) ?
             ((StringPtr) ((DCtlPtr) deviceEntry)->dCtlDriver + 18) :
             ((StringPtr) (*deviceEntry)->dCtlDriver + 18);
-        BlockMoveData (namePtr, driverName, namePtr[0] + 1);
+        BlockMoveData(namePtr, driverName, namePtr[0] + 1);
         if (driverName[0] > gDriverName[0])
             driverName[0] = gDriverName[0];
-        if (!EqualString (driverName, gDriverName, false, false))
+        if (!EqualString(driverName, gDriverName, false, false))
             continue;
 
         /* Record the basic info for each drive */
         SDL_cdlist[SDL_numcds].dRefNum = dRefNum;
-        BlockMoveData (namePtr + 1, SDL_cdlist[SDL_numcds].name, namePtr[0]);
+        BlockMoveData(namePtr + 1, SDL_cdlist[SDL_numcds].name, namePtr[0]);
         SDL_cdlist[SDL_numcds].name[namePtr[0]] = 0;
         SDL_cdlist[SDL_numcds].hasAudio = false;
         SDL_numcds++;
@@ -134,15 +134,15 @@ SDL_SYS_CDInit (void)
 }
 
 static const char *
-SDL_SYS_CDName (int drive)
+SDL_SYS_CDName(int drive)
 {
     return (SDL_cdlist[drive].name);
 }
 
 static int
-get_drivenum (int drive)
+get_drivenum(int drive)
 {
-    QHdr *driveQ = GetDrvQHdr ();
+    QHdr *driveQ = GetDrvQHdr();
     DrvQEl *driveElem;
 
     /* Update the drive number */
@@ -161,32 +161,32 @@ get_drivenum (int drive)
 }
 
 static int
-SDL_SYS_CDOpen (int drive)
+SDL_SYS_CDOpen(int drive)
 {
     return (drive);
 }
 
 static int
-SDL_SYS_CDGetTOC (SDL_CD * cdrom)
+SDL_SYS_CDGetTOC(SDL_CD * cdrom)
 {
     CDCntrlParam cdpb;
     CDTrackData tracks[SDL_MAX_TRACKS];
     long i, leadout;
 
     /* Get the number of tracks on the CD by examining the TOC */
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kReadTOC;
     cdpb.csParam.words[0] = kGetTrackRange;
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 
     cdrom->numtracks =
-        SDL_SYS_BCDToShort (cdpb.csParam.bytes[1]) -
-        SDL_SYS_BCDToShort (cdpb.csParam.bytes[0]) + 1;
+        SDL_SYS_BCDToShort(cdpb.csParam.bytes[1]) -
+        SDL_SYS_BCDToShort(cdpb.csParam.bytes[0]) + 1;
     if (cdrom->numtracks > SDL_MAX_TRACKS)
         cdrom->numtracks = SDL_MAX_TRACKS;
     cdrom->status = CD_STOPPED;
@@ -195,32 +195,32 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
 
 
     /* Get the lead out area of the CD by examining the TOC */
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kReadTOC;
     cdpb.csParam.words[0] = kGetLeadOutArea;
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 
-    leadout = MSF_TO_FRAMES (SDL_SYS_BCDToShort (cdpb.csParam.bytes[0]),
-                             SDL_SYS_BCDToShort (cdpb.csParam.bytes[1]),
-                             SDL_SYS_BCDToShort (cdpb.csParam.bytes[2]));
+    leadout = MSF_TO_FRAMES(SDL_SYS_BCDToShort(cdpb.csParam.bytes[0]),
+                            SDL_SYS_BCDToShort(cdpb.csParam.bytes[1]),
+                            SDL_SYS_BCDToShort(cdpb.csParam.bytes[2]));
 
     /* Get an array of track locations by examining the TOC */
-    SDL_memset (tracks, 0, sizeof (tracks));
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(tracks, 0, sizeof(tracks));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kReadTOC;
     cdpb.csParam.words[0] = kGetTrackEntries;   /* Type of Query */
     *((long *) (cdpb.csParam.words + 1)) = (long) tracks;
-    cdpb.csParam.words[3] = cdrom->numtracks * sizeof (tracks[0]);
+    cdpb.csParam.words[3] = cdrom->numtracks * sizeof(tracks[0]);
     *((char *) (cdpb.csParam.words + 4)) = 1;   /* First track */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 
@@ -236,13 +236,13 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
         }
 
         cdrom->track[i].offset =
-            MSF_TO_FRAMES (SDL_SYS_BCDToShort (tracks[i].entry.min),
-                           SDL_SYS_BCDToShort (tracks[i].entry.min),
-                           SDL_SYS_BCDToShort (tracks[i].entry.frame));
+            MSF_TO_FRAMES(SDL_SYS_BCDToShort(tracks[i].entry.min),
+                          SDL_SYS_BCDToShort(tracks[i].entry.min),
+                          SDL_SYS_BCDToShort(tracks[i].entry.frame));
         cdrom->track[i].length =
-            MSF_TO_FRAMES (SDL_SYS_BCDToShort (tracks[i + 1].entry.min),
-                           SDL_SYS_BCDToShort (tracks[i + 1].entry.min),
-                           SDL_SYS_BCDToShort (tracks[i + 1].entry.frame)) -
+            MSF_TO_FRAMES(SDL_SYS_BCDToShort(tracks[i + 1].entry.min),
+                          SDL_SYS_BCDToShort(tracks[i + 1].entry.min),
+                          SDL_SYS_BCDToShort(tracks[i + 1].entry.frame)) -
             cdrom->track[i].offset;
     }
 
@@ -255,7 +255,7 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
 
 /* Get CD-ROM status */
 static CDstatus
-SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
+SDL_SYS_CDStatus(SDL_CD * cdrom, int *position)
 {
     CDCntrlParam cdpb;
     CDstatus status = CD_ERROR;
@@ -265,22 +265,22 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
         *position = 0;
 
     /* Get the number of tracks on the CD by examining the TOC */
-    if (!get_drivenum (cdrom->id)) {
+    if (!get_drivenum(cdrom->id)) {
         return (CD_TRAYEMPTY);
     }
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kReadTOC;
     cdpb.csParam.words[0] = kGetTrackRange;
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (CD_ERROR);
     }
 
     cdrom->numtracks =
-        SDL_SYS_BCDToShort (cdpb.csParam.bytes[1]) -
-        SDL_SYS_BCDToShort (cdpb.csParam.bytes[0]) + 1;
+        SDL_SYS_BCDToShort(cdpb.csParam.bytes[1]) -
+        SDL_SYS_BCDToShort(cdpb.csParam.bytes[0]) + 1;
     if (cdrom->numtracks > SDL_MAX_TRACKS)
         cdrom->numtracks = SDL_MAX_TRACKS;
     cdrom->cur_track = 0;       /* Apparently these are set elsewhere */
@@ -289,12 +289,12 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
 
     if (1 || SDL_cdlist[cdrom->id].hasAudio) {
         /* Get the current playback status */
-        SDL_memset (&cdpb, 0, sizeof (cdpb));
+        SDL_memset(&cdpb, 0, sizeof(cdpb));
         cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
         cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
         cdpb.csCode = kAudioStatus;
-        if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-            SDL_SetError ("PBControlSync() failed");
+        if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+            SDL_SetError("PBControlSync() failed");
             return (-1);
         }
 
@@ -328,9 +328,9 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
 
         if (spinning && position)
             *position =
-                MSF_TO_FRAMES (SDL_SYS_BCDToShort (cdpb.csParam.cd.minute),
-                               SDL_SYS_BCDToShort (cdpb.csParam.cd.second),
-                               SDL_SYS_BCDToShort (cdpb.csParam.cd.frame));
+                MSF_TO_FRAMES(SDL_SYS_BCDToShort(cdpb.csParam.cd.minute),
+                              SDL_SYS_BCDToShort(cdpb.csParam.cd.second),
+                              SDL_SYS_BCDToShort(cdpb.csParam.cd.frame));
     } else
         status = CD_ERROR;      /* What should I do here? */
 
@@ -339,40 +339,40 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
 
 /* Start play */
 static int
-SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
+SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length)
 {
     CDCntrlParam cdpb;
 
     /* Pause the current audio playback to avoid audible artifacts */
-    if (SDL_SYS_CDPause (cdrom) < 0) {
+    if (SDL_SYS_CDPause(cdrom) < 0) {
         return (-1);
     }
 
     /* Specify the AudioCD playback mode */
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kSetPlayMode;
     cdpb.csParam.bytes[0] = false;      /* Repeat? */
     cdpb.csParam.bytes[1] = kPlayModeSequential;        /* Play mode */
     /* ¥¥¥ÊTreat as soft error, NEC Drive doesnt support this call ¥¥¥ */
-    PBControlSync ((ParmBlkPtr) & cdpb);
+    PBControlSync((ParmBlkPtr) & cdpb);
 
 #if 1
     /* Specify the end of audio playback */
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioStop;
     cdpb.csParam.words[0] = kBlockPosition;     /* Position Mode */
     *(long *) (cdpb.csParam.words + 1) = start + length - 1;    /* Search Address */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 
     /* Specify the start of audio playback, and start it */
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioPlay;
@@ -380,39 +380,39 @@ SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
     *(long *) (cdpb.csParam.words + 1) = start + 1;     /* Search Address */
     cdpb.csParam.words[3] = false;      /* Stop address? */
     cdpb.csParam.words[4] = kStereoPlayMode;    /* Audio Play Mode */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 #else
     /* Specify the end of audio playback */
-    FRAMES_TO_MSF (start + length, &m, &s, &f);
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    FRAMES_TO_MSF(start + length, &m, &s, &f);
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioStop;
     cdpb.csParam.words[0] = kTrackPosition;     /* Position Mode */
     cdpb.csParam.words[1] = 0;  /* Search Address (hiword) */
     cdpb.csParam.words[2] =     /* Search Address (loword) */
-        SDL_SYS_ShortToBCD (cdrom->numtracks);
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+        SDL_SYS_ShortToBCD(cdrom->numtracks);
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 
     /* Specify the start of audio playback, and start it */
-    FRAMES_TO_MSF (start, &m, &s, &f);
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    FRAMES_TO_MSF(start, &m, &s, &f);
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioPlay;
     cdpb.csParam.words[0] = kTrackPosition;     /* Position Mode */
     cdpb.csParam.words[1] = 0;  /* Search Address (hiword) */
-    cdpb.csParam.words[2] = SDL_SYS_ShortToBCD (1);     /* Search Address (loword) */
+    cdpb.csParam.words[2] = SDL_SYS_ShortToBCD(1);      /* Search Address (loword) */
     cdpb.csParam.words[3] = false;      /* Stop address? */
     cdpb.csParam.words[4] = kStereoPlayMode;    /* Audio Play Mode */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
 #endif
@@ -422,18 +422,18 @@ SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
 
 /* Pause play */
 static int
-SDL_SYS_CDPause (SDL_CD * cdrom)
+SDL_SYS_CDPause(SDL_CD * cdrom)
 {
     CDCntrlParam cdpb;
 
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioPause;
     cdpb.csParam.words[0] = 0;  /* Pause/Continue Flag (hiword) */
     cdpb.csParam.words[1] = 1;  /* Pause/Continue Flag (loword) */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
     return (0);
@@ -441,18 +441,18 @@ SDL_SYS_CDPause (SDL_CD * cdrom)
 
 /* Resume play */
 static int
-SDL_SYS_CDResume (SDL_CD * cdrom)
+SDL_SYS_CDResume(SDL_CD * cdrom)
 {
     CDCntrlParam cdpb;
 
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioPause;
     cdpb.csParam.words[0] = 0;  /* Pause/Continue Flag (hiword) */
     cdpb.csParam.words[1] = 0;  /* Pause/Continue Flag (loword) */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
     return (0);
@@ -460,19 +460,19 @@ SDL_SYS_CDResume (SDL_CD * cdrom)
 
 /* Stop play */
 static int
-SDL_SYS_CDStop (SDL_CD * cdrom)
+SDL_SYS_CDStop(SDL_CD * cdrom)
 {
     CDCntrlParam cdpb;
 
-    SDL_memset (&cdpb, 0, sizeof (cdpb));
+    SDL_memset(&cdpb, 0, sizeof(cdpb));
     cdpb.ioVRefNum = SDL_cdlist[cdrom->id].driveNum;
     cdpb.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
     cdpb.csCode = kAudioStop;
     cdpb.csParam.words[0] = 0;  /* Position Mode */
     cdpb.csParam.words[1] = 0;  /* Search Address (hiword) */
     cdpb.csParam.words[2] = 0;  /* Search Address (loword) */
-    if (PBControlSync ((ParmBlkPtr) & cdpb) != noErr) {
-        SDL_SetError ("PBControlSync() failed");
+    if (PBControlSync((ParmBlkPtr) & cdpb) != noErr) {
+        SDL_SetError("PBControlSync() failed");
         return (-1);
     }
     return (0);
@@ -480,10 +480,10 @@ SDL_SYS_CDStop (SDL_CD * cdrom)
 
 /* Eject the CD-ROM */
 static int
-SDL_SYS_CDEject (SDL_CD * cdrom)
+SDL_SYS_CDEject(SDL_CD * cdrom)
 {
     Boolean disk = false;
-    QHdr *driveQ = GetDrvQHdr ();
+    QHdr *driveQ = GetDrvQHdr();
     DrvQEl *driveElem;
     HParamBlockRec hpb;
     ParamBlockRec cpb;
@@ -499,13 +499,13 @@ SDL_SYS_CDEject (SDL_CD * cdrom)
         }
 
         /* Does drive contain mounted volume? If not, skip */
-        SDL_memset (&hpb, 0, sizeof (hpb));
+        SDL_memset(&hpb, 0, sizeof(hpb));
         hpb.volumeParam.ioVRefNum = driveElem->dQDrive;
-        if (PBHGetVInfoSync (&hpb) != noErr) {
+        if (PBHGetVInfoSync(&hpb) != noErr) {
             continue;
         }
-        if ((UnmountVol (0, driveElem->dQDrive) == noErr) &&
-            (Eject (0, driveElem->dQDrive) == noErr)) {
+        if ((UnmountVol(0, driveElem->dQDrive) == noErr) &&
+            (Eject(0, driveElem->dQDrive) == noErr)) {
             driveElem = 0;      /* Clear pointer to reset our loop */
             disk = true;
         }
@@ -513,12 +513,12 @@ SDL_SYS_CDEject (SDL_CD * cdrom)
 
     /* If no disk is present, just eject the tray */
     if (!disk) {
-        SDL_memset (&cpb, 0, sizeof (cpb));
+        SDL_memset(&cpb, 0, sizeof(cpb));
         cpb.cntrlParam.ioVRefNum = 0;   /* No Drive */
         cpb.cntrlParam.ioCRefNum = SDL_cdlist[cdrom->id].dRefNum;
         cpb.cntrlParam.csCode = kEjectTheDisc;
-        if (PBControlSync ((ParmBlkPtr) & cpb) != noErr) {
-            SDL_SetError ("PBControlSync() failed");
+        if (PBControlSync((ParmBlkPtr) & cpb) != noErr) {
+            SDL_SetError("PBControlSync() failed");
             return (-1);
         }
     }
@@ -527,16 +527,16 @@ SDL_SYS_CDEject (SDL_CD * cdrom)
 
 /* Close the CD-ROM handle */
 static void
-SDL_SYS_CDClose (SDL_CD * cdrom)
+SDL_SYS_CDClose(SDL_CD * cdrom)
 {
     return;
 }
 
 void
-SDL_SYS_CDQuit (void)
+SDL_SYS_CDQuit(void)
 {
     while (SDL_numcds--)
-        SDL_memset (SDL_cdlist + SDL_numcds, 0, sizeof (SDL_cdlist[0]));
+        SDL_memset(SDL_cdlist + SDL_numcds, 0, sizeof(SDL_cdlist[0]));
 }
 
 #endif /* SDL_CDROM_MACOS */

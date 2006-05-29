@@ -15,11 +15,11 @@ typedef struct _SYNCH_HANDLE_STRUCTURE
         /* Error codes - all must have bit 29 set */
 #define SYNCH_ERROR 0X20000000  /* EXERCISE - REFINE THE ERROR NUMBERS */
 
-extern SYNCHHANDLE CreateSemaphoreCE (LPSECURITY_ATTRIBUTES, LONG, LONG,
-                                      LPCTSTR);
+extern SYNCHHANDLE CreateSemaphoreCE(LPSECURITY_ATTRIBUTES, LONG, LONG,
+                                     LPCTSTR);
 
-extern BOOL ReleaseSemaphoreCE (SYNCHHANDLE, LONG, LPLONG);
-extern DWORD WaitForSemaphoreCE (SYNCHHANDLE, DWORD);
+extern BOOL ReleaseSemaphoreCE(SYNCHHANDLE, LONG, LPLONG);
+extern DWORD WaitForSemaphoreCE(SYNCHHANDLE, DWORD);
 
-extern BOOL CloseSynchHandle (SYNCHHANDLE);
+extern BOOL CloseSynchHandle(SYNCHHANDLE);
 /* vi: set ts=4 sw=4 expandtab: */

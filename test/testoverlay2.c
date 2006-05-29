@@ -127,10 +127,10 @@ SDL_Color MooseColors[84] = {
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
-quit (int rc)
+quit(int rc)
 {
-    SDL_Quit ();
-    exit (rc);
+    SDL_Quit();
+    exit(rc);
 }
 
 /* All RGB2YUV conversion code and some other parts of code has been taken from testoverlay.c */
@@ -140,7 +140,7 @@ quit (int rc)
 */
 
 void
-RGBtoYUV (Uint8 * rgb, int *yuv, int monochrome, int luminance)
+RGBtoYUV(Uint8 * rgb, int *yuv, int monochrome, int luminance)
 {
     if (monochrome) {
 #if 1                           /* these are the two formulas that I found on the FourCC site... */
@@ -172,15 +172,15 @@ RGBtoYUV (Uint8 * rgb, int *yuv, int monochrome, int luminance)
 }
 
 void
-ConvertRGBtoYV12 (SDL_Surface * s, SDL_Overlay * o, int monochrome,
-                  int luminance)
+ConvertRGBtoYV12(SDL_Surface * s, SDL_Overlay * o, int monochrome,
+                 int luminance)
 {
     int x, y;
     int yuv[3];
     Uint8 *p, *op[3];
 
-    SDL_LockSurface (s);
-    SDL_LockYUVOverlay (o);
+    SDL_LockSurface(s);
+    SDL_LockYUVOverlay(o);
 
     /* Convert */
     for (y = 0; y < s->h && y < o->h; y++) {
@@ -189,7 +189,7 @@ ConvertRGBtoYV12 (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         op[1] = o->pixels[1] + o->pitches[1] * (y / 2);
         op[2] = o->pixels[2] + o->pitches[2] * (y / 2);
         for (x = 0; x < s->w && x < o->w; x++) {
-            RGBtoYUV (p, yuv, monochrome, luminance);
+            RGBtoYUV(p, yuv, monochrome, luminance);
             *(op[0]++) = yuv[0];
             if (x % 2 == 0 && y % 2 == 0) {
                 *(op[1]++) = yuv[2];
@@ -199,20 +199,20 @@ ConvertRGBtoYV12 (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         }
     }
 
-    SDL_UnlockYUVOverlay (o);
-    SDL_UnlockSurface (s);
+    SDL_UnlockYUVOverlay(o);
+    SDL_UnlockSurface(s);
 }
 
 void
-ConvertRGBtoIYUV (SDL_Surface * s, SDL_Overlay * o, int monochrome,
-                  int luminance)
+ConvertRGBtoIYUV(SDL_Surface * s, SDL_Overlay * o, int monochrome,
+                 int luminance)
 {
     int x, y;
     int yuv[3];
     Uint8 *p, *op[3];
 
-    SDL_LockSurface (s);
-    SDL_LockYUVOverlay (o);
+    SDL_LockSurface(s);
+    SDL_LockYUVOverlay(o);
 
     /* Convert */
     for (y = 0; y < s->h && y < o->h; y++) {
@@ -221,7 +221,7 @@ ConvertRGBtoIYUV (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         op[1] = o->pixels[1] + o->pitches[1] * (y / 2);
         op[2] = o->pixels[2] + o->pitches[2] * (y / 2);
         for (x = 0; x < s->w && x < o->w; x++) {
-            RGBtoYUV (p, yuv, monochrome, luminance);
+            RGBtoYUV(p, yuv, monochrome, luminance);
             *(op[0]++) = yuv[0];
             if (x % 2 == 0 && y % 2 == 0) {
                 *(op[1]++) = yuv[1];
@@ -231,26 +231,26 @@ ConvertRGBtoIYUV (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         }
     }
 
-    SDL_UnlockYUVOverlay (o);
-    SDL_UnlockSurface (s);
+    SDL_UnlockYUVOverlay(o);
+    SDL_UnlockSurface(s);
 }
 
 void
-ConvertRGBtoUYVY (SDL_Surface * s, SDL_Overlay * o, int monochrome,
-                  int luminance)
+ConvertRGBtoUYVY(SDL_Surface * s, SDL_Overlay * o, int monochrome,
+                 int luminance)
 {
     int x, y;
     int yuv[3];
     Uint8 *p, *op;
 
-    SDL_LockSurface (s);
-    SDL_LockYUVOverlay (o);
+    SDL_LockSurface(s);
+    SDL_LockYUVOverlay(o);
 
     for (y = 0; y < s->h && y < o->h; y++) {
         p = ((Uint8 *) s->pixels) + s->pitch * y;
         op = o->pixels[0] + o->pitches[0] * y;
         for (x = 0; x < s->w && x < o->w; x++) {
-            RGBtoYUV (p, yuv, monochrome, luminance);
+            RGBtoYUV(p, yuv, monochrome, luminance);
             if (x % 2 == 0) {
                 *(op++) = yuv[1];
                 *(op++) = yuv[0];
@@ -262,26 +262,26 @@ ConvertRGBtoUYVY (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         }
     }
 
-    SDL_UnlockYUVOverlay (o);
-    SDL_UnlockSurface (s);
+    SDL_UnlockYUVOverlay(o);
+    SDL_UnlockSurface(s);
 }
 
 void
-ConvertRGBtoYVYU (SDL_Surface * s, SDL_Overlay * o, int monochrome,
-                  int luminance)
+ConvertRGBtoYVYU(SDL_Surface * s, SDL_Overlay * o, int monochrome,
+                 int luminance)
 {
     int x, y;
     int yuv[3];
     Uint8 *p, *op;
 
-    SDL_LockSurface (s);
-    SDL_LockYUVOverlay (o);
+    SDL_LockSurface(s);
+    SDL_LockYUVOverlay(o);
 
     for (y = 0; y < s->h && y < o->h; y++) {
         p = ((Uint8 *) s->pixels) + s->pitch * y;
         op = o->pixels[0] + o->pitches[0] * y;
         for (x = 0; x < s->w && x < o->w; x++) {
-            RGBtoYUV (p, yuv, monochrome, luminance);
+            RGBtoYUV(p, yuv, monochrome, luminance);
             if (x % 2 == 0) {
                 *(op++) = yuv[0];
                 *(op++) = yuv[2];
@@ -295,26 +295,26 @@ ConvertRGBtoYVYU (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         }
     }
 
-    SDL_UnlockYUVOverlay (o);
-    SDL_UnlockSurface (s);
+    SDL_UnlockYUVOverlay(o);
+    SDL_UnlockSurface(s);
 }
 
 void
-ConvertRGBtoYUY2 (SDL_Surface * s, SDL_Overlay * o, int monochrome,
-                  int luminance)
+ConvertRGBtoYUY2(SDL_Surface * s, SDL_Overlay * o, int monochrome,
+                 int luminance)
 {
     int x, y;
     int yuv[3];
     Uint8 *p, *op;
 
-    SDL_LockSurface (s);
-    SDL_LockYUVOverlay (o);
+    SDL_LockSurface(s);
+    SDL_LockYUVOverlay(o);
 
     for (y = 0; y < s->h && y < o->h; y++) {
         p = ((Uint8 *) s->pixels) + s->pitch * y;
         op = o->pixels[0] + o->pitches[0] * y;
         for (x = 0; x < s->w && x < o->w; x++) {
-            RGBtoYUV (p, yuv, monochrome, luminance);
+            RGBtoYUV(p, yuv, monochrome, luminance);
             if (x % 2 == 0) {
                 *(op++) = yuv[0];
                 *(op++) = yuv[1];
@@ -328,31 +328,31 @@ ConvertRGBtoYUY2 (SDL_Surface * s, SDL_Overlay * o, int monochrome,
         }
     }
 
-    SDL_UnlockYUVOverlay (o);
-    SDL_UnlockSurface (s);
+    SDL_UnlockYUVOverlay(o);
+    SDL_UnlockSurface(s);
 }
 
 static void
-PrintUsage (char *argv0)
+PrintUsage(char *argv0)
 {
-    fprintf (stderr, "Usage: %s [arg] [arg] [arg] ...\n", argv0);
-    fprintf (stderr, "\n");
-    fprintf (stderr, "Where 'arg' is any of the following options:\n");
-    fprintf (stderr, "\n");
-    fprintf (stderr, "	-fps <frames per second>\n");
-    fprintf (stderr,
-             "	-format <fmt> (one of the: YV12, IYUV, YUY2, UYVY, YVYU)\n");
-    fprintf (stderr,
-             "	-scale <scale factor> (initial scale of the overlay)\n");
-    fprintf (stderr, "	-help (shows this help)\n");
-    fprintf (stderr, "\n");
-    fprintf (stderr,
-             "Press ESC to exit, or SPACE to freeze the movie while application running.\n");
-    fprintf (stderr, "\n");
+    fprintf(stderr, "Usage: %s [arg] [arg] [arg] ...\n", argv0);
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Where 'arg' is any of the following options:\n");
+    fprintf(stderr, "\n");
+    fprintf(stderr, "	-fps <frames per second>\n");
+    fprintf(stderr,
+            "	-format <fmt> (one of the: YV12, IYUV, YUY2, UYVY, YVYU)\n");
+    fprintf(stderr,
+            "	-scale <scale factor> (initial scale of the overlay)\n");
+    fprintf(stderr, "	-help (shows this help)\n");
+    fprintf(stderr, "\n");
+    fprintf(stderr,
+            "Press ESC to exit, or SPACE to freeze the movie while application running.\n");
+    fprintf(stderr, "\n");
 }
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
     Uint8 *RawMooseData;
     SDL_RWops *handle;
@@ -370,131 +370,131 @@ main (int argc, char **argv)
     int overlay_format = SDL_YUY2_OVERLAY;
     int scale = 5;
 
-    if (SDL_Init (SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
-        fprintf (stderr, "Couldn't initialize SDL: %s\n", SDL_GetError ());
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 3;
     }
 
     while (argc > 1) {
-        if (strcmp (argv[1], "-fps") == 0) {
+        if (strcmp(argv[1], "-fps") == 0) {
             if (argv[2]) {
-                fps = atoi (argv[2]);
+                fps = atoi(argv[2]);
                 if (fps == 0) {
-                    fprintf (stderr,
-                             "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                    quit (10);
+                    fprintf(stderr,
+                            "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
+                    quit(10);
                 }
                 if ((fps < 0) || (fps > 1000)) {
-                    fprintf (stderr,
-                             "The -fps option must be in range from 1 to 1000, default is 12.\n");
-                    quit (10);
+                    fprintf(stderr,
+                            "The -fps option must be in range from 1 to 1000, default is 12.\n");
+                    quit(10);
                 }
                 argv += 2;
                 argc -= 2;
             } else {
-                fprintf (stderr,
-                         "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                quit (10);
+                fprintf(stderr,
+                        "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
+                quit(10);
             }
-        } else if (strcmp (argv[1], "-format") == 0) {
+        } else if (strcmp(argv[1], "-format") == 0) {
             if (argv[2]) {
-                if (!strcmp (argv[2], "YV12"))
+                if (!strcmp(argv[2], "YV12"))
                     overlay_format = SDL_YV12_OVERLAY;
-                else if (!strcmp (argv[2], "IYUV"))
+                else if (!strcmp(argv[2], "IYUV"))
                     overlay_format = SDL_IYUV_OVERLAY;
-                else if (!strcmp (argv[2], "YUY2"))
+                else if (!strcmp(argv[2], "YUY2"))
                     overlay_format = SDL_YUY2_OVERLAY;
-                else if (!strcmp (argv[2], "UYVY"))
+                else if (!strcmp(argv[2], "UYVY"))
                     overlay_format = SDL_UYVY_OVERLAY;
-                else if (!strcmp (argv[2], "YVYU"))
+                else if (!strcmp(argv[2], "YVYU"))
                     overlay_format = SDL_YVYU_OVERLAY;
                 else {
-                    fprintf (stderr,
-                             "The -format option %s is not recognized, see help for info.\n",
-                             argv[2]);
-                    quit (10);
+                    fprintf(stderr,
+                            "The -format option %s is not recognized, see help for info.\n",
+                            argv[2]);
+                    quit(10);
                 }
                 argv += 2;
                 argc -= 2;
             } else {
-                fprintf (stderr,
-                         "The -format option requires an argument, default is YUY2.\n");
-                quit (10);
+                fprintf(stderr,
+                        "The -format option requires an argument, default is YUY2.\n");
+                quit(10);
             }
-        } else if (strcmp (argv[1], "-scale") == 0) {
+        } else if (strcmp(argv[1], "-scale") == 0) {
             if (argv[2]) {
-                scale = atoi (argv[2]);
+                scale = atoi(argv[2]);
                 if (scale == 0) {
-                    fprintf (stderr,
-                             "The -scale option requires an argument [from 1 to 50], default is 5.\n");
-                    quit (10);
+                    fprintf(stderr,
+                            "The -scale option requires an argument [from 1 to 50], default is 5.\n");
+                    quit(10);
                 }
                 if ((scale < 0) || (scale > 50)) {
-                    fprintf (stderr,
-                             "The -scale option must be in range from 1 to 50, default is 5.\n");
-                    quit (10);
+                    fprintf(stderr,
+                            "The -scale option must be in range from 1 to 50, default is 5.\n");
+                    quit(10);
                 }
                 argv += 2;
                 argc -= 2;
             } else {
-                fprintf (stderr,
-                         "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
-                quit (10);
+                fprintf(stderr,
+                        "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
+                quit(10);
             }
-        } else if ((strcmp (argv[1], "-help") == 0)
-                   || (strcmp (argv[1], "-h") == 0)) {
-            PrintUsage (argv[0]);
-            quit (0);
+        } else if ((strcmp(argv[1], "-help") == 0)
+                   || (strcmp(argv[1], "-h") == 0)) {
+            PrintUsage(argv[0]);
+            quit(0);
         } else {
-            fprintf (stderr, "Unrecognized option: %s.\n", argv[1]);
-            quit (10);
+            fprintf(stderr, "Unrecognized option: %s.\n", argv[1]);
+            quit(10);
         }
         break;
     }
 
-    RawMooseData = (Uint8 *) malloc (MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
+    RawMooseData = (Uint8 *) malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (RawMooseData == NULL) {
-        fprintf (stderr, "Can't allocate memory for movie !\n");
-        free (RawMooseData);
-        quit (1);
+        fprintf(stderr, "Can't allocate memory for movie !\n");
+        free(RawMooseData);
+        quit(1);
     }
 
     /* load the trojan moose images */
-    handle = SDL_RWFromFile ("moose.dat", "rb");
+    handle = SDL_RWFromFile("moose.dat", "rb");
     if (handle == NULL) {
-        fprintf (stderr, "Can't find the file moose.dat !\n");
-        free (RawMooseData);
-        quit (2);
+        fprintf(stderr, "Can't find the file moose.dat !\n");
+        free(RawMooseData);
+        quit(2);
     }
 
-    SDL_RWread (handle, RawMooseData, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
+    SDL_RWread(handle, RawMooseData, MOOSEFRAME_SIZE, MOOSEFRAMES_COUNT);
 
-    SDL_RWclose (handle);
+    SDL_RWclose(handle);
 
     /* Set video mode */
     if ((screen =
-         SDL_SetVideoMode (MOOSEPIC_W * scale, MOOSEPIC_H * scale, 0,
-                           SDL_RESIZABLE | SDL_SWSURFACE)) == NULL) {
-        fprintf (stderr, "Couldn't set video mode: %s\n", SDL_GetError ());
-        free (RawMooseData);
-        quit (4);
+         SDL_SetVideoMode(MOOSEPIC_W * scale, MOOSEPIC_H * scale, 0,
+                          SDL_RESIZABLE | SDL_SWSURFACE)) == NULL) {
+        fprintf(stderr, "Couldn't set video mode: %s\n", SDL_GetError());
+        free(RawMooseData);
+        quit(4);
     }
 
     /* Set the window manager title bar */
-    SDL_WM_SetCaption ("SDL test overlay: running moose", "testoverlay2");
+    SDL_WM_SetCaption("SDL test overlay: running moose", "testoverlay2");
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
         MooseFrame[i] =
-            SDL_CreateRGBSurfaceFrom (RawMooseData + i * MOOSEFRAME_SIZE,
-                                      MOOSEPIC_W, MOOSEPIC_H, 8, MOOSEPIC_W,
-                                      0, 0, 0, 0);
+            SDL_CreateRGBSurfaceFrom(RawMooseData + i * MOOSEFRAME_SIZE,
+                                     MOOSEPIC_W, MOOSEPIC_H, 8, MOOSEPIC_W,
+                                     0, 0, 0, 0);
         if (MooseFrame[i] == NULL) {
-            fprintf (stderr, "Couldn't create SDL_Surfaces:%s\n",
-                     SDL_GetError ());
-            free (RawMooseData);
-            quit (5);
+            fprintf(stderr, "Couldn't create SDL_Surfaces:%s\n",
+                    SDL_GetError());
+            free(RawMooseData);
+            quit(5);
         }
-        SDL_SetColors (MooseFrame[i], MooseColors, 0, 84);
+        SDL_SetColors(MooseFrame[i], MooseColors, 0, 84);
 
         {
             SDL_Surface *newsurf;
@@ -525,37 +525,37 @@ main (int argc, char **argv)
             format.alpha = 0;
 
             newsurf =
-                SDL_ConvertSurface (MooseFrame[i], &format, SDL_SWSURFACE);
+                SDL_ConvertSurface(MooseFrame[i], &format, SDL_SWSURFACE);
             if (!newsurf) {
-                fprintf (stderr,
-                         "Couldn't convert picture to 32bits RGB: %s\n",
-                         SDL_GetError ());
-                quit (6);
+                fprintf(stderr,
+                        "Couldn't convert picture to 32bits RGB: %s\n",
+                        SDL_GetError());
+                quit(6);
             }
-            SDL_FreeSurface (MooseFrame[i]);
+            SDL_FreeSurface(MooseFrame[i]);
             MooseFrame[i] = newsurf;
         }
     }
 
-    free (RawMooseData);
+    free(RawMooseData);
 
     overlay =
-        SDL_CreateYUVOverlay (MOOSEPIC_W, MOOSEPIC_H, overlay_format, screen);
+        SDL_CreateYUVOverlay(MOOSEPIC_W, MOOSEPIC_H, overlay_format, screen);
     if (!overlay) {
-        fprintf (stderr, "Couldn't create overlay: %s\n", SDL_GetError ());
-        quit (7);
+        fprintf(stderr, "Couldn't create overlay: %s\n", SDL_GetError());
+        quit(7);
     }
 
-    printf ("Created %dx%dx%d %s %s overlay\n", overlay->w, overlay->h,
-            overlay->planes, overlay->hw_overlay ? "hardware" : "software",
-            overlay->format == SDL_YV12_OVERLAY ? "YV12" : overlay->format ==
-            SDL_IYUV_OVERLAY ? "IYUV" : overlay->format ==
-            SDL_YUY2_OVERLAY ? "YUY2" : overlay->format ==
-            SDL_UYVY_OVERLAY ? "UYVY" : overlay->format ==
-            SDL_YVYU_OVERLAY ? "YVYU" : "Unknown");
+    printf("Created %dx%dx%d %s %s overlay\n", overlay->w, overlay->h,
+           overlay->planes, overlay->hw_overlay ? "hardware" : "software",
+           overlay->format == SDL_YV12_OVERLAY ? "YV12" : overlay->format ==
+           SDL_IYUV_OVERLAY ? "IYUV" : overlay->format ==
+           SDL_YUY2_OVERLAY ? "YUY2" : overlay->format ==
+           SDL_UYVY_OVERLAY ? "UYVY" : overlay->format ==
+           SDL_YVYU_OVERLAY ? "YVYU" : "Unknown");
 
     for (i = 0; i < overlay->planes; i++) {
-        printf ("  plane %d: pitch=%d\n", i, overlay->pitches[i]);
+        printf("  plane %d: pitch=%d\n", i, overlay->pitches[i]);
     }
 
     overlayrect.x = 0;
@@ -568,18 +568,18 @@ main (int argc, char **argv)
     fpsdelay = 1000 / fps;
 
     /* Ignore key up events, they don't even get filtered */
-    SDL_EventState (SDL_KEYUP, SDL_IGNORE);
+    SDL_EventState(SDL_KEYUP, SDL_IGNORE);
 
-    lastftick = SDL_GetTicks ();
+    lastftick = SDL_GetTicks();
 
     /* Loop, waiting for QUIT or RESIZE */
     while (1) {
-        if (SDL_PollEvent (&event)) {
+        if (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_VIDEORESIZE:
                 screen =
-                    SDL_SetVideoMode (event.resize.w, event.resize.h, 0,
-                                      SDL_RESIZABLE | SDL_SWSURFACE);
+                    SDL_SetVideoMode(event.resize.w, event.resize.h, 0,
+                                     SDL_RESIZABLE | SDL_SWSURFACE);
                 overlayrect.w = event.resize.w;
                 overlayrect.h = event.resize.h;
                 if (paused) {
@@ -599,37 +599,37 @@ main (int argc, char **argv)
                     break;
                 }
             case SDL_QUIT:
-                SDL_FreeYUVOverlay (overlay);
+                SDL_FreeYUVOverlay(overlay);
                 for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-                    SDL_FreeSurface (MooseFrame[i]);
+                    SDL_FreeSurface(MooseFrame[i]);
                 }
-                quit (0);
+                quit(0);
             }
         }
 
         if ((!paused) || (resized)) {
-            if (((SDL_GetTicks () - lastftick) > fpsdelay) || (resized)) {
-                lastftick = SDL_GetTicks ();
+            if (((SDL_GetTicks() - lastftick) > fpsdelay) || (resized)) {
+                lastftick = SDL_GetTicks();
 
                 switch (overlay_format) {
                 case SDL_YUY2_OVERLAY:
-                    ConvertRGBtoYUY2 (MooseFrame[i], overlay, 0, 100);
+                    ConvertRGBtoYUY2(MooseFrame[i], overlay, 0, 100);
                     break;
                 case SDL_YV12_OVERLAY:
-                    ConvertRGBtoYV12 (MooseFrame[i], overlay, 0, 100);
+                    ConvertRGBtoYV12(MooseFrame[i], overlay, 0, 100);
                     break;
                 case SDL_UYVY_OVERLAY:
-                    ConvertRGBtoUYVY (MooseFrame[i], overlay, 0, 100);
+                    ConvertRGBtoUYVY(MooseFrame[i], overlay, 0, 100);
                     break;
                 case SDL_YVYU_OVERLAY:
-                    ConvertRGBtoYVYU (MooseFrame[i], overlay, 0, 100);
+                    ConvertRGBtoYVYU(MooseFrame[i], overlay, 0, 100);
                     break;
                 case SDL_IYUV_OVERLAY:
-                    ConvertRGBtoIYUV (MooseFrame[i], overlay, 0, 100);
+                    ConvertRGBtoIYUV(MooseFrame[i], overlay, 0, 100);
                     break;
                 }
 
-                SDL_DisplayYUVOverlay (overlay, &overlayrect);
+                SDL_DisplayYUVOverlay(overlay, &overlayrect);
                 if (!resized) {
                     i++;
                     if (i == 10) {
@@ -641,9 +641,9 @@ main (int argc, char **argv)
             }
         }
         /* kind of timeslice to OS */
-        SDL_Delay (1);
+        SDL_Delay(1);
     }
 
-    SDL_Quit ();
+    SDL_Quit();
     return 0;
 }

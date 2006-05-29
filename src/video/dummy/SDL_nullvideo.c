@@ -49,19 +49,19 @@
 #define DUMMYVID_DRIVER_NAME "dummy"
 
 /* Initialization/Query functions */
-static int DUMMY_VideoInit (_THIS);
-static int DUMMY_SetDisplayMode (_THIS, const SDL_DisplayMode * mode);
-static void DUMMY_CreateWindowSurface (_THIS, SDL_Window * window,
-                                       Uint32 flags);
-static void DUMMY_VideoQuit (_THIS);
+static int DUMMY_VideoInit(_THIS);
+static int DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode);
+static void DUMMY_CreateWindowSurface(_THIS, SDL_Window * window,
+                                      Uint32 flags);
+static void DUMMY_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */
 
 static int
-DUMMY_Available (void)
+DUMMY_Available(void)
 {
-    const char *envr = SDL_getenv ("SDL_VIDEODRIVER");
-    if ((envr) && (SDL_strcmp (envr, DUMMYVID_DRIVER_NAME) == 0)) {
+    const char *envr = SDL_getenv("SDL_VIDEODRIVER");
+    if ((envr) && (SDL_strcmp(envr, DUMMYVID_DRIVER_NAME) == 0)) {
         return (1);
     }
 
@@ -69,32 +69,32 @@ DUMMY_Available (void)
 }
 
 static void
-DUMMY_DeleteDevice (SDL_VideoDevice * device)
+DUMMY_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-DUMMY_CreateDevice (int devindex)
+DUMMY_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
@@ -116,11 +116,11 @@ VideoBootStrap DUMMY_bootstrap = {
 
 
 int
-DUMMY_VideoInit (_THIS)
+DUMMY_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
 
-    SDL_AddBasicVideoDisplay (NULL);
+    SDL_AddBasicVideoDisplay(NULL);
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
@@ -130,29 +130,29 @@ DUMMY_VideoInit (_THIS)
 }
 
 static int
-DUMMY_SetDisplayMode (_THIS, const SDL_DisplayMode * mode)
+DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode)
 {
     return 0;
 }
 
 static void
-DUMMY_CreateWindowSurface (_THIS, SDL_Window * window, Uint32 flags)
+DUMMY_CreateWindowSurface(_THIS, SDL_Window * window, Uint32 flags)
 {
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
 
-    SDL_PixelFormatEnumToMasks (SDL_GetCurrentDisplayMode ()->format, &bpp,
-                                &Rmask, &Gmask, &Bmask, &Amask);
+    SDL_PixelFormatEnumToMasks(SDL_GetCurrentDisplayMode()->format, &bpp,
+                               &Rmask, &Gmask, &Bmask, &Amask);
     window->surface =
-        SDL_CreateRGBSurface (flags, window->w, window->h, bpp, Rmask, Gmask,
-                              Bmask, Amask);
+        SDL_CreateRGBSurface(flags, window->w, window->h, bpp, Rmask, Gmask,
+                             Bmask, Amask);
 }
 
 /* Note:  If we are terminated, this could be called in the middle of
    another SDL video routine -- notably UpdateRects.
 */
 void
-DUMMY_VideoQuit (_THIS)
+DUMMY_VideoQuit(_THIS)
 {
 }
 

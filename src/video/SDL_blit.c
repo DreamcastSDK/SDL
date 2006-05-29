@@ -38,8 +38,8 @@
 
 /* The general purpose software blit routine */
 static int
-SDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
-              SDL_Surface * dst, SDL_Rect * dstrect)
+SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
+             SDL_Surface * dst, SDL_Rect * dstrect)
 {
     int okay;
     int src_locked;
@@ -50,8 +50,8 @@ SDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
 
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
-    if (SDL_MUSTLOCK (dst)) {
-        if (SDL_LockSurface (dst) < 0) {
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) < 0) {
             okay = 0;
         } else {
             dst_locked = 1;
@@ -59,8 +59,8 @@ SDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
     }
     /* Lock the source if it's in hardware */
     src_locked = 0;
-    if (SDL_MUSTLOCK (src)) {
-        if (SDL_LockSurface (src) < 0) {
+    if (SDL_MUSTLOCK(src)) {
+        if (SDL_LockSurface(src) < 0) {
             okay = 0;
         } else {
             src_locked = 1;
@@ -92,15 +92,15 @@ SDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
         RunBlit = src->map->sw_data->blit;
 
         /* Run the actual software blit */
-        RunBlit (&info);
+        RunBlit(&info);
     }
 
     /* We need to unlock the surfaces if they're locked */
     if (dst_locked) {
-        SDL_UnlockSurface (dst);
+        SDL_UnlockSurface(dst);
     }
     if (src_locked) {
-        SDL_UnlockSurface (src);
+        SDL_UnlockSurface(src);
     }
     /* Blit is done! */
     return (okay ? 0 : -1);
@@ -108,46 +108,46 @@ SDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
 
 #ifdef MMX_ASMBLIT
 static __inline__ void
-SDL_memcpyMMX (Uint8 * to, const Uint8 * from, int len)
+SDL_memcpyMMX(Uint8 * to, const Uint8 * from, int len)
 {
     int i;
 
     for (i = 0; i < len / 8; i++) {
-        __asm__ __volatile__ ("	movq (%0), %%mm0\n"
-                              "	movq %%mm0, (%1)\n"::"r" (from),
-                              "r" (to):"memory");
+        __asm__ __volatile__("	movq (%0), %%mm0\n"
+                             "	movq %%mm0, (%1)\n"::"r"(from),
+                             "r"(to):"memory");
         from += 8;
         to += 8;
     }
     if (len & 7)
-        SDL_memcpy (to, from, len & 7);
+        SDL_memcpy(to, from, len & 7);
 }
 
 static __inline__ void
-SDL_memcpySSE (Uint8 * to, const Uint8 * from, int len)
+SDL_memcpySSE(Uint8 * to, const Uint8 * from, int len)
 {
     int i;
 
-    __asm__ __volatile__ ("	prefetchnta (%0)\n"
-                          "	prefetchnta 64(%0)\n"
-                          "	prefetchnta 128(%0)\n"
-                          "	prefetchnta 192(%0)\n"::"r" (from));
+    __asm__ __volatile__("	prefetchnta (%0)\n"
+                         "	prefetchnta 64(%0)\n"
+                         "	prefetchnta 128(%0)\n"
+                         "	prefetchnta 192(%0)\n"::"r"(from));
 
     for (i = 0; i < len / 8; i++) {
-        __asm__ __volatile__ ("	prefetchnta 256(%0)\n"
-                              "	movq (%0), %%mm0\n"
-                              "	movntq %%mm0, (%1)\n"::"r" (from),
-                              "r" (to):"memory");
+        __asm__ __volatile__("	prefetchnta 256(%0)\n"
+                             "	movq (%0), %%mm0\n"
+                             "	movntq %%mm0, (%1)\n"::"r"(from),
+                             "r"(to):"memory");
         from += 8;
         to += 8;
     }
     if (len & 7)
-        SDL_memcpy (to, from, len & 7);
+        SDL_memcpy(to, from, len & 7);
 }
 #endif
 
 static void
-SDL_BlitCopy (SDL_BlitInfo * info)
+SDL_BlitCopy(SDL_BlitInfo * info)
 {
     Uint8 *src, *dst;
     int w, h;
@@ -160,31 +160,31 @@ SDL_BlitCopy (SDL_BlitInfo * info)
     srcskip = w + info->s_skip;
     dstskip = w + info->d_skip;
 #ifdef MMX_ASMBLIT
-    if (SDL_HasSSE ()) {
+    if (SDL_HasSSE()) {
         while (h--) {
-            SDL_memcpySSE (dst, src, w);
+            SDL_memcpySSE(dst, src, w);
             src += srcskip;
             dst += dstskip;
         }
-        __asm__ __volatile__ ("	emms\n"::);
-    } else if (SDL_HasMMX ()) {
+        __asm__ __volatile__("	emms\n"::);
+    } else if (SDL_HasMMX()) {
         while (h--) {
-            SDL_memcpyMMX (dst, src, w);
+            SDL_memcpyMMX(dst, src, w);
             src += srcskip;
             dst += dstskip;
         }
-        __asm__ __volatile__ ("	emms\n"::);
+        __asm__ __volatile__("	emms\n"::);
     } else
 #endif
         while (h--) {
-            SDL_memcpy (dst, src, w);
+            SDL_memcpy(dst, src, w);
             src += srcskip;
             dst += dstskip;
         }
 }
 
 static void
-SDL_BlitCopyOverlap (SDL_BlitInfo * info)
+SDL_BlitCopyOverlap(SDL_BlitInfo * info)
 {
     Uint8 *src, *dst;
     int w, h;
@@ -198,7 +198,7 @@ SDL_BlitCopyOverlap (SDL_BlitInfo * info)
     dstskip = w + info->d_skip;
     if (dst < src) {
         while (h--) {
-            SDL_memcpy (dst, src, w);
+            SDL_memcpy(dst, src, w);
             src += srcskip;
             dst += dstskip;
         }
@@ -206,7 +206,7 @@ SDL_BlitCopyOverlap (SDL_BlitInfo * info)
         src += ((h - 1) * srcskip);
         dst += ((h - 1) * dstskip);
         while (h--) {
-            SDL_revcpy (dst, src, w);
+            SDL_revcpy(dst, src, w);
             src -= srcskip;
             dst -= dstskip;
         }
@@ -215,15 +215,15 @@ SDL_BlitCopyOverlap (SDL_BlitInfo * info)
 
 /* Figure out which of many blit routines to set up on a surface */
 int
-SDL_CalculateBlit (SDL_Surface * surface)
+SDL_CalculateBlit(SDL_Surface * surface)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
-    const SDL_VideoInfo *info = SDL_GetVideoInfo ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    const SDL_VideoInfo *info = SDL_GetVideoInfo();
     int blit_index;
 
     /* Clean everything out to start */
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
-        SDL_UnRLESurface (surface, 1);
+        SDL_UnRLESurface(surface, 1);
     }
     surface->map->sw_blit = NULL;
 
@@ -260,7 +260,7 @@ SDL_CalculateBlit (SDL_Surface * surface)
             }
         }
         if (hw_blit_ok) {
-            _this->CheckHWBlit (_this, surface, surface->map->dst);
+            _this->CheckHWBlit(_this, surface, surface->map->dst);
         }
     }
 
@@ -269,7 +269,7 @@ SDL_CalculateBlit (SDL_Surface * surface)
         && (_this->displayformatalphapixel)) {
         if ((surface->flags & SDL_SRCALPHA))
             if (info->blit_hw_A) {
-                _this->CheckHWBlit (_this, surface, surface->map->dst);
+                _this->CheckHWBlit(_this, surface, surface->map->dst);
             }
     }
 
@@ -294,18 +294,18 @@ SDL_CalculateBlit (SDL_Surface * surface)
     } else {
         if (surface->format->BitsPerPixel < 8) {
             surface->map->sw_data->blit =
-                SDL_CalculateBlit0 (surface, blit_index);
+                SDL_CalculateBlit0(surface, blit_index);
         } else {
             switch (surface->format->BytesPerPixel) {
             case 1:
                 surface->map->sw_data->blit =
-                    SDL_CalculateBlit1 (surface, blit_index);
+                    SDL_CalculateBlit1(surface, blit_index);
                 break;
             case 2:
             case 3:
             case 4:
                 surface->map->sw_data->blit =
-                    SDL_CalculateBlitN (surface, blit_index);
+                    SDL_CalculateBlitN(surface, blit_index);
                 break;
             default:
                 surface->map->sw_data->blit = NULL;
@@ -315,8 +315,8 @@ SDL_CalculateBlit (SDL_Surface * surface)
     }
     /* Make sure we have a blit function */
     if (surface->map->sw_data->blit == NULL) {
-        SDL_InvalidateMap (surface->map);
-        SDL_SetError ("Blit combination not supported");
+        SDL_InvalidateMap(surface->map);
+        SDL_SetError("Blit combination not supported");
         return (-1);
     }
 
@@ -327,10 +327,10 @@ SDL_CalculateBlit (SDL_Surface * surface)
         if (surface->map->identity
             && (blit_index == 1
                 || (blit_index == 3 && !surface->format->Amask))) {
-            if (SDL_RLESurface (surface) == 0)
+            if (SDL_RLESurface(surface) == 0)
                 surface->map->sw_blit = SDL_RLEBlit;
         } else if (blit_index == 2 && surface->format->Amask) {
-            if (SDL_RLESurface (surface) == 0)
+            if (SDL_RLESurface(surface) == 0)
                 surface->map->sw_blit = SDL_RLEAlphaBlit;
         }
     }

@@ -37,8 +37,8 @@
 
 extern void (*Atari_ShutdownEvents) (void);
 
-extern void Atari_InitOSKeymap (_THIS);
-extern void Atari_PumpEvents (_THIS);
+extern void Atari_InitOSKeymap(_THIS);
+extern void Atari_PumpEvents(_THIS);
 
 /* Atari to Unicode charset translation table */
 extern Uint16 SDL_AtariToUnicodeTable[256];

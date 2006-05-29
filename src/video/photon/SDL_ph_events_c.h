@@ -31,8 +31,8 @@
 #define EVENT_SIZE (sizeof(PhEvent_t) + 1000 + PH_EVENT_SAFETY_POOL)
 
 /* Functions to be exported */
-extern void ph_InitOSKeymap (_THIS);
-extern void ph_PumpEvents (_THIS);
+extern void ph_InitOSKeymap(_THIS);
+extern void ph_PumpEvents(_THIS);
 
 #endif /* __SDL_PH_EVENTS_H__ */
 /* vi: set ts=4 sw=4 expandtab: */

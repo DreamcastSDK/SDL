@@ -37,46 +37,46 @@ struct SDL_mutex
 
 /* Create a mutex */
 SDL_mutex *
-SDL_CreateMutex (void)
+SDL_CreateMutex(void)
 {
     SDL_mutex *mutex;
 
     /* Allocate mutex memory */
-    mutex = (SDL_mutex *) SDL_malloc (sizeof (*mutex));
+    mutex = (SDL_mutex *) SDL_malloc(sizeof(*mutex));
     if (mutex) {
-        spinlock_init (&mutex->mutex);
+        spinlock_init(&mutex->mutex);
         mutex->recursive = 0;
         mutex->owner = 0;
     } else {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
     }
     return mutex;
 }
 
 /* Free the mutex */
 void
-SDL_DestroyMutex (SDL_mutex * mutex)
+SDL_DestroyMutex(SDL_mutex * mutex)
 {
     if (mutex) {
-        SDL_free (mutex);
+        SDL_free(mutex);
     }
 }
 
 /* Lock the semaphore */
 int
-SDL_mutexP (SDL_mutex * mutex)
+SDL_mutexP(SDL_mutex * mutex)
 {
 #if SDL_THREADS_DISABLED
-    return SDL_arraysize (return), 0;
+    return SDL_arraysize(return), 0;
 #else
     Uint32 this_thread;
 
     if (mutex == NULL) {
-        SDL_SetError ("Passed a NULL mutex");
+        SDL_SetError("Passed a NULL mutex");
         return -1;
     }
 
-    this_thread = SDL_ThreadID ();
+    this_thread = SDL_ThreadID();
     if (mutex->owner == this_thread) {
         ++mutex->recursive;
     } else {
@@ -84,7 +84,7 @@ SDL_mutexP (SDL_mutex * mutex)
            We set the locking thread id after we obtain the lock
            so unlocks from other threads will fail.
          */
-        spinlock_lock (&mutex->mutex);
+        spinlock_lock(&mutex->mutex);
         mutex->owner = this_thread;
         mutex->recursive = 0;
     }
@@ -95,19 +95,19 @@ SDL_mutexP (SDL_mutex * mutex)
 
 /* Unlock the mutex */
 int
-SDL_mutexV (SDL_mutex * mutex)
+SDL_mutexV(SDL_mutex * mutex)
 {
 #if SDL_THREADS_DISABLED
     return 0;
 #else
     if (mutex == NULL) {
-        SDL_SetError ("Passed a NULL mutex");
+        SDL_SetError("Passed a NULL mutex");
         return -1;
     }
 
     /* If we don't own the mutex, we can't unlock it */
-    if (SDL_ThreadID () != mutex->owner) {
-        SDL_SetError ("mutex not owned by this thread");
+    if (SDL_ThreadID() != mutex->owner) {
+        SDL_SetError("mutex not owned by this thread");
         return -1;
     }
 
@@ -120,7 +120,7 @@ SDL_mutexV (SDL_mutex * mutex)
            then release the lock semaphore.
          */
         mutex->owner = 0;
-        spinlock_unlock (&mutex->mutex);
+        spinlock_unlock(&mutex->mutex);
     }
     return 0;
 #endif /* SDL_THREADS_DISABLED */

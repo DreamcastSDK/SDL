@@ -48,41 +48,41 @@
 
 /*--- Functions prototypes ---*/
 
-static void SDL_AtariGL_UnloadLibrary (_THIS);
+static void SDL_AtariGL_UnloadLibrary(_THIS);
 
 #if SDL_VIDEO_OPENGL
-static void CopyShadowNull (_THIS, SDL_Surface * surface);
-static void CopyShadowDirect (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBTo555 (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBTo565 (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBSwap (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBToARGB (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBToABGR (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBToBGRA (_THIS, SDL_Surface * surface);
-static void CopyShadowRGBToRGBA (_THIS, SDL_Surface * surface);
-static void CopyShadow8888To555 (_THIS, SDL_Surface * surface);
-static void CopyShadow8888To565 (_THIS, SDL_Surface * surface);
+static void CopyShadowNull(_THIS, SDL_Surface * surface);
+static void CopyShadowDirect(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBTo555(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBTo565(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBSwap(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBToARGB(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBToABGR(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBToBGRA(_THIS, SDL_Surface * surface);
+static void CopyShadowRGBToRGBA(_THIS, SDL_Surface * surface);
+static void CopyShadow8888To555(_THIS, SDL_Surface * surface);
+static void CopyShadow8888To565(_THIS, SDL_Surface * surface);
 
-static void ConvertNull (_THIS, SDL_Surface * surface);
-static void Convert565To555be (_THIS, SDL_Surface * surface);
-static void Convert565To555le (_THIS, SDL_Surface * surface);
-static void Convert565le (_THIS, SDL_Surface * surface);
-static void ConvertBGRAToABGR (_THIS, SDL_Surface * surface);
+static void ConvertNull(_THIS, SDL_Surface * surface);
+static void Convert565To555be(_THIS, SDL_Surface * surface);
+static void Convert565To555le(_THIS, SDL_Surface * surface);
+static void Convert565le(_THIS, SDL_Surface * surface);
+static void ConvertBGRAToABGR(_THIS, SDL_Surface * surface);
 
-static int InitNew (_THIS, SDL_Surface * current);
-static int InitOld (_THIS, SDL_Surface * current);
+static int InitNew(_THIS, SDL_Surface * current);
+static int InitOld(_THIS, SDL_Surface * current);
 #endif
 
 /*--- Public functions ---*/
 
 int
-SDL_AtariGL_Init (_THIS, SDL_Surface * current)
+SDL_AtariGL_Init(_THIS, SDL_Surface * current)
 {
 #if SDL_VIDEO_OPENGL
     if (gl_oldmesa) {
-        gl_active = InitOld (this, current);
+        gl_active = InitOld(this, current);
     } else {
-        gl_active = InitNew (this, current);
+        gl_active = InitNew(this, current);
     }
 #endif
 
@@ -90,37 +90,37 @@ SDL_AtariGL_Init (_THIS, SDL_Surface * current)
 }
 
 void
-SDL_AtariGL_Quit (_THIS, SDL_bool unload)
+SDL_AtariGL_Quit(_THIS, SDL_bool unload)
 {
 #if SDL_VIDEO_OPENGL
     if (gl_oldmesa) {
         /* Old mesa implementations */
         if (this->gl_data->OSMesaDestroyLDG) {
-            this->gl_data->OSMesaDestroyLDG ();
+            this->gl_data->OSMesaDestroyLDG();
         }
         if (gl_shadow) {
-            Mfree (gl_shadow);
+            Mfree(gl_shadow);
             gl_shadow = NULL;
         }
     } else {
         /* New mesa implementation */
         if (gl_ctx) {
             if (this->gl_data->OSMesaDestroyContext) {
-                this->gl_data->OSMesaDestroyContext (gl_ctx);
+                this->gl_data->OSMesaDestroyContext(gl_ctx);
             }
             gl_ctx = NULL;
         }
     }
 
     if (unload) {
-        SDL_AtariGL_UnloadLibrary (this);
+        SDL_AtariGL_UnloadLibrary(this);
     }
 #endif /* SDL_VIDEO_OPENGL */
     gl_active = 0;
 }
 
 int
-SDL_AtariGL_LoadLibrary (_THIS, const char *path)
+SDL_AtariGL_LoadLibrary(_THIS, const char *path)
 {
 #if SDL_VIDEO_OPENGL
 
@@ -129,47 +129,47 @@ SDL_AtariGL_LoadLibrary (_THIS, const char *path)
     SDL_bool cancel_load;
 
     if (gl_active) {
-        SDL_SetError ("OpenGL context already created");
+        SDL_SetError("OpenGL context already created");
         return -1;
     }
 
     /* Unload previous driver */
-    SDL_AtariGL_UnloadLibrary (this);
+    SDL_AtariGL_UnloadLibrary(this);
 
     /* Load library given by path */
-    handle = SDL_LoadObject (path);
+    handle = SDL_LoadObject(path);
     if (handle == NULL) {
         /* Try to load another one */
-        path = SDL_getenv ("SDL_VIDEO_GL_DRIVER");
+        path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
         if (path != NULL) {
-            handle = SDL_LoadObject (path);
+            handle = SDL_LoadObject(path);
         }
 
         /* If it does not work, try some other */
         if (handle == NULL) {
             path = PATH_OSMESA_LDG;
-            handle = SDL_LoadObject (path);
+            handle = SDL_LoadObject(path);
         }
 
         if (handle == NULL) {
             path = PATH_MESAGL_LDG;
-            handle = SDL_LoadObject (path);
+            handle = SDL_LoadObject(path);
         }
 
         if (handle == NULL) {
             path = PATH_TINYGL_LDG;
-            handle = SDL_LoadObject (path);
+            handle = SDL_LoadObject(path);
         }
     }
 
     if (handle == NULL) {
-        SDL_SetError ("Could not load OpenGL library");
+        SDL_SetError("Could not load OpenGL library");
         return -1;
     }
 
-    this->gl_data->glGetIntegerv = SDL_LoadFunction (handle, "glGetIntegerv");
-    this->gl_data->glFinish = SDL_LoadFunction (handle, "glFinish");
-    this->gl_data->glFlush = SDL_LoadFunction (handle, "glFlush");
+    this->gl_data->glGetIntegerv = SDL_LoadFunction(handle, "glGetIntegerv");
+    this->gl_data->glFinish = SDL_LoadFunction(handle, "glFinish");
+    this->gl_data->glFlush = SDL_LoadFunction(handle, "glFlush");
 
     cancel_load = SDL_FALSE;
     if (this->gl_data->glGetIntegerv == NULL) {
@@ -182,30 +182,30 @@ SDL_AtariGL_LoadLibrary (_THIS, const char *path)
         }
     }
     if (cancel_load) {
-        SDL_SetError ("Could not retrieve OpenGL functions");
-        SDL_UnloadObject (handle);
+        SDL_SetError("Could not retrieve OpenGL functions");
+        SDL_UnloadObject(handle);
         /* Restore pointers to static library */
-        SDL_AtariGL_InitPointers (this);
+        SDL_AtariGL_InitPointers(this);
         return -1;
     }
 
     /* Load functions pointers (osmesa.ldg) */
     this->gl_data->OSMesaCreateContextExt =
-        SDL_LoadFunction (handle, "OSMesaCreateContextExt");
+        SDL_LoadFunction(handle, "OSMesaCreateContextExt");
     this->gl_data->OSMesaDestroyContext =
-        SDL_LoadFunction (handle, "OSMesaDestroyContext");
+        SDL_LoadFunction(handle, "OSMesaDestroyContext");
     this->gl_data->OSMesaMakeCurrent =
-        SDL_LoadFunction (handle, "OSMesaMakeCurrent");
+        SDL_LoadFunction(handle, "OSMesaMakeCurrent");
     this->gl_data->OSMesaPixelStore =
-        SDL_LoadFunction (handle, "OSMesaPixelStore");
+        SDL_LoadFunction(handle, "OSMesaPixelStore");
     this->gl_data->OSMesaGetProcAddress =
-        SDL_LoadFunction (handle, "OSMesaGetProcAddress");
+        SDL_LoadFunction(handle, "OSMesaGetProcAddress");
 
     /* Load old functions pointers (mesa_gl.ldg, tiny_gl.ldg) */
     this->gl_data->OSMesaCreateLDG =
-        SDL_LoadFunction (handle, "OSMesaCreateLDG");
+        SDL_LoadFunction(handle, "OSMesaCreateLDG");
     this->gl_data->OSMesaDestroyLDG =
-        SDL_LoadFunction (handle, "OSMesaDestroyLDG");
+        SDL_LoadFunction(handle, "OSMesaDestroyLDG");
 
     gl_oldmesa = 0;
 
@@ -217,10 +217,10 @@ SDL_AtariGL_LoadLibrary (_THIS, const char *path)
         /* Hum, maybe old library ? */
         if ((this->gl_data->OSMesaCreateLDG == NULL) ||
             (this->gl_data->OSMesaDestroyLDG == NULL)) {
-            SDL_SetError ("Could not retrieve OSMesa functions");
-            SDL_UnloadObject (handle);
+            SDL_SetError("Could not retrieve OSMesa functions");
+            SDL_UnloadObject(handle);
             /* Restore pointers to static library */
-            SDL_AtariGL_InitPointers (this);
+            SDL_AtariGL_InitPointers(this);
             return -1;
         } else {
             gl_oldmesa = 1;
@@ -229,8 +229,8 @@ SDL_AtariGL_LoadLibrary (_THIS, const char *path)
 
     this->gl_config.dll_handle = handle;
     if (path) {
-        SDL_strlcpy (this->gl_config.driver_path, path,
-                     SDL_arraysize (this->gl_config.driver_path));
+        SDL_strlcpy(this->gl_config.driver_path, path,
+                    SDL_arraysize(this->gl_config.driver_path));
     } else {
         *this->gl_config.driver_path = '\0';
     }
@@ -245,22 +245,22 @@ SDL_AtariGL_LoadLibrary (_THIS, const char *path)
 }
 
 void *
-SDL_AtariGL_GetProcAddress (_THIS, const char *proc)
+SDL_AtariGL_GetProcAddress(_THIS, const char *proc)
 {
     void *func = NULL;
 #if SDL_VIDEO_OPENGL
 
     if (this->gl_config.dll_handle) {
-        func = SDL_LoadFunction (this->gl_config.dll_handle, (void *) proc);
+        func = SDL_LoadFunction(this->gl_config.dll_handle, (void *) proc);
     } else if (this->gl_data->OSMesaGetProcAddress) {
-        func = this->gl_data->OSMesaGetProcAddress (proc);
+        func = this->gl_data->OSMesaGetProcAddress(proc);
     }
 #endif
     return func;
 }
 
 int
-SDL_AtariGL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+SDL_AtariGL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
 #if SDL_VIDEO_OPENGL
     GLenum mesa_attrib;
@@ -309,7 +309,7 @@ SDL_AtariGL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
         return -1;
     }
 
-    this->gl_data->glGetIntegerv (mesa_attrib, value);
+    this->gl_data->glGetIntegerv(mesa_attrib, value);
     return 0;
 #else
     return -1;
@@ -317,7 +317,7 @@ SDL_AtariGL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
 }
 
 int
-SDL_AtariGL_MakeCurrent (_THIS)
+SDL_AtariGL_MakeCurrent(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     SDL_Surface *surface;
@@ -335,7 +335,7 @@ SDL_AtariGL_MakeCurrent (_THIS)
     }
 
     if (!gl_active) {
-        SDL_SetError ("Invalid OpenGL context");
+        SDL_SetError("Invalid OpenGL context");
         return -1;
     }
 
@@ -350,14 +350,14 @@ SDL_AtariGL_MakeCurrent (_THIS)
 
     if (!
         (this->gl_data->
-         OSMesaMakeCurrent (gl_ctx, surface->pixels, type, surface->w,
-                            surface->h))) {
-        SDL_SetError ("Can not make OpenGL context current");
+         OSMesaMakeCurrent(gl_ctx, surface->pixels, type, surface->w,
+                           surface->h))) {
+        SDL_SetError("Can not make OpenGL context current");
         return -1;
     }
 
     /* OSMesa draws upside down */
-    this->gl_data->OSMesaPixelStore (OSMESA_Y_UP, 0);
+    this->gl_data->OSMesaPixelStore(OSMESA_Y_UP, 0);
 
     return 0;
 #else
@@ -366,27 +366,27 @@ SDL_AtariGL_MakeCurrent (_THIS)
 }
 
 void
-SDL_AtariGL_SwapBuffers (_THIS)
+SDL_AtariGL_SwapBuffers(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     if (gl_active) {
         if (this->gl_config.dll_handle) {
             if (this->gl_data->glFinish) {
-                this->gl_data->glFinish ();
+                this->gl_data->glFinish();
             } else if (this->gl_data->glFlush) {
-                this->gl_data->glFlush ();
+                this->gl_data->glFlush();
             }
         } else {
-            this->gl_data->glFinish ();
+            this->gl_data->glFinish();
         }
-        gl_copyshadow (this, this->screen);
-        gl_convert (this, this->screen);
+        gl_copyshadow(this, this->screen);
+        gl_convert(this, this->screen);
     }
 #endif
 }
 
 void
-SDL_AtariGL_InitPointers (_THIS)
+SDL_AtariGL_InitPointers(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     this->gl_data->OSMesaCreateContextExt = OSMesaCreateContextExt;
@@ -407,15 +407,15 @@ SDL_AtariGL_InitPointers (_THIS)
 /*--- Private functions ---*/
 
 static void
-SDL_AtariGL_UnloadLibrary (_THIS)
+SDL_AtariGL_UnloadLibrary(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     if (this->gl_config.dll_handle) {
-        SDL_UnloadObject (this->gl_config.dll_handle);
+        SDL_UnloadObject(this->gl_config.dll_handle);
         this->gl_config.dll_handle = NULL;
 
         /* Restore pointers to static library */
-        SDL_AtariGL_InitPointers (this);
+        SDL_AtariGL_InitPointers(this);
     }
 #endif
 }
@@ -424,7 +424,7 @@ SDL_AtariGL_UnloadLibrary (_THIS)
 
 #if SDL_VIDEO_OPENGL
 static int
-InitNew (_THIS, SDL_Surface * current)
+InitNew(_THIS, SDL_Surface * current)
 {
     GLenum osmesa_format;
     SDL_PixelFormat *pixel_format;
@@ -508,15 +508,15 @@ InitNew (_THIS, SDL_Surface * current)
         recreatecontext = 0;
     }
     if (recreatecontext) {
-        SDL_AtariGL_Quit (this, SDL_FALSE);
+        SDL_AtariGL_Quit(this, SDL_FALSE);
 
         gl_ctx =
-            this->gl_data->OSMesaCreateContextExt (osmesa_format,
-                                                   this->gl_config.
-                                                   depth_size,
-                                                   this->gl_config.
-                                                   stencil_size,
-                                                   newaccumsize, NULL);
+            this->gl_data->OSMesaCreateContextExt(osmesa_format,
+                                                  this->gl_config.
+                                                  depth_size,
+                                                  this->gl_config.
+                                                  stencil_size,
+                                                  newaccumsize, NULL);
 
         if (gl_ctx) {
             gl_curformat = osmesa_format;
@@ -536,7 +536,7 @@ InitNew (_THIS, SDL_Surface * current)
 
 
 static int
-InitOld (_THIS, SDL_Surface * current)
+InitOld(_THIS, SDL_Surface * current)
 {
     GLenum osmesa_format;
     SDL_PixelFormat *pixel_format;
@@ -658,7 +658,7 @@ InitOld (_THIS, SDL_Surface * current)
         break;
     default:
         if (tinygl_present) {
-            SDL_AtariGL_Quit (this, SDL_FALSE);
+            SDL_AtariGL_Quit(this, SDL_FALSE);
             return 0;
         }
         gl_pixelsize = 1;
@@ -675,11 +675,11 @@ InitOld (_THIS, SDL_Surface * current)
         recreatecontext = 0;
     }
     if (recreatecontext) {
-        SDL_AtariGL_Quit (this, SDL_FALSE);
+        SDL_AtariGL_Quit(this, SDL_FALSE);
 
         gl_shadow =
-            this->gl_data->OSMesaCreateLDG (osmesa_format, GL_UNSIGNED_BYTE,
-                                            current->w, current->h);
+            this->gl_data->OSMesaCreateLDG(osmesa_format, GL_UNSIGNED_BYTE,
+                                           current->w, current->h);
 
         if (gl_shadow) {
             gl_curformat = osmesa_format;
@@ -698,12 +698,12 @@ InitOld (_THIS, SDL_Surface * current)
 /*--- Conversions routines from shadow buffer to the screen ---*/
 
 static void
-CopyShadowNull (_THIS, SDL_Surface * surface)
+CopyShadowNull(_THIS, SDL_Surface * surface)
 {
 }
 
 static void
-CopyShadowDirect (_THIS, SDL_Surface * surface)
+CopyShadowDirect(_THIS, SDL_Surface * surface)
 {
     int y, srcpitch, dstpitch;
     Uint8 *srcline, *dstline;
@@ -718,7 +718,7 @@ CopyShadowDirect (_THIS, SDL_Surface * surface)
     }
 
     for (y = 0; y < surface->h; y++) {
-        SDL_memcpy (dstline, srcline, srcpitch);
+        SDL_memcpy(dstline, srcline, srcpitch);
 
         srcline += srcpitch;
         dstline += dstpitch;
@@ -726,7 +726,7 @@ CopyShadowDirect (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBTo555 (_THIS, SDL_Surface * surface)
+CopyShadowRGBTo555(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint16 *dstline, *dstcol;
@@ -759,7 +759,7 @@ CopyShadowRGBTo555 (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBTo565 (_THIS, SDL_Surface * surface)
+CopyShadowRGBTo565(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint16 *dstline, *dstcol;
@@ -793,7 +793,7 @@ CopyShadowRGBTo565 (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBSwap (_THIS, SDL_Surface * surface)
+CopyShadowRGBSwap(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint8 *dstline, *dstcol;
@@ -825,7 +825,7 @@ CopyShadowRGBSwap (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBToARGB (_THIS, SDL_Surface * surface)
+CopyShadowRGBToARGB(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint32 *dstline, *dstcol;
@@ -860,7 +860,7 @@ CopyShadowRGBToARGB (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBToABGR (_THIS, SDL_Surface * surface)
+CopyShadowRGBToABGR(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint32 *dstline, *dstcol;
@@ -895,7 +895,7 @@ CopyShadowRGBToABGR (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBToBGRA (_THIS, SDL_Surface * surface)
+CopyShadowRGBToBGRA(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint32 *dstline, *dstcol;
@@ -930,7 +930,7 @@ CopyShadowRGBToBGRA (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadowRGBToRGBA (_THIS, SDL_Surface * surface)
+CopyShadowRGBToRGBA(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint32 *dstline, *dstcol;
@@ -965,7 +965,7 @@ CopyShadowRGBToRGBA (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadow8888To555 (_THIS, SDL_Surface * surface)
+CopyShadow8888To555(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint16 *dstline, *dstcol;
@@ -1000,7 +1000,7 @@ CopyShadow8888To555 (_THIS, SDL_Surface * surface)
 }
 
 static void
-CopyShadow8888To565 (_THIS, SDL_Surface * surface)
+CopyShadow8888To565(_THIS, SDL_Surface * surface)
 {
     int x, y, srcpitch, dstpitch;
     Uint16 *dstline, *dstcol;
@@ -1038,12 +1038,12 @@ CopyShadow8888To565 (_THIS, SDL_Surface * surface)
 /*--- Conversions routines in the screen ---*/
 
 static void
-ConvertNull (_THIS, SDL_Surface * surface)
+ConvertNull(_THIS, SDL_Surface * surface)
 {
 }
 
 static void
-Convert565To555be (_THIS, SDL_Surface * surface)
+Convert565To555be(_THIS, SDL_Surface * surface)
 {
     int x, y, pitch;
     unsigned short *line, *pixel;
@@ -1063,7 +1063,7 @@ Convert565To555be (_THIS, SDL_Surface * surface)
 }
 
 static void
-Convert565To555le (_THIS, SDL_Surface * surface)
+Convert565To555le(_THIS, SDL_Surface * surface)
 {
     int x, y, pitch;
     unsigned short *line, *pixel;
@@ -1076,7 +1076,7 @@ Convert565To555le (_THIS, SDL_Surface * surface)
             unsigned short color = *pixel;
 
             color = (color & 0x1f) | ((color >> 1) & 0xffe0);
-            *pixel++ = SDL_Swap16 (color);
+            *pixel++ = SDL_Swap16(color);
         }
 
         line += pitch;
@@ -1084,7 +1084,7 @@ Convert565To555le (_THIS, SDL_Surface * surface)
 }
 
 static void
-Convert565le (_THIS, SDL_Surface * surface)
+Convert565le(_THIS, SDL_Surface * surface)
 {
     int x, y, pitch;
     unsigned short *line, *pixel;
@@ -1096,7 +1096,7 @@ Convert565le (_THIS, SDL_Surface * surface)
         for (x = 0; x < surface->w; x++) {
             unsigned short color = *pixel;
 
-            *pixel++ = SDL_Swap16 (color);
+            *pixel++ = SDL_Swap16(color);
         }
 
         line += pitch;
@@ -1104,7 +1104,7 @@ Convert565le (_THIS, SDL_Surface * surface)
 }
 
 static void
-ConvertBGRAToABGR (_THIS, SDL_Surface * surface)
+ConvertBGRAToABGR(_THIS, SDL_Surface * surface)
 {
     int x, y, pitch;
     unsigned long *line, *pixel;

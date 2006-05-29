@@ -41,7 +41,7 @@
 /* FIXME: Free the keymap when we shut down the video mode */
 static keymap_t *vga_keymap = NULL;
 static SDLKey keymap[128];
-static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
+static SDL_keysym *TranslateKey(int scancode, SDL_keysym * keysym);
 
 static int posted = 0;
 static int oldx = -1;
@@ -54,29 +54,29 @@ static struct mouse_info mouseinfo;
    FIXME: Add keyboard LED handling code
  */
 int
-VGL_initkeymaps (int fd)
+VGL_initkeymaps(int fd)
 {
-    vga_keymap = SDL_malloc (sizeof (keymap_t));
+    vga_keymap = SDL_malloc(sizeof(keymap_t));
     if (!vga_keymap) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    if (ioctl (fd, GIO_KEYMAP, vga_keymap) == -1) {
-        SDL_free (vga_keymap);
+    if (ioctl(fd, GIO_KEYMAP, vga_keymap) == -1) {
+        SDL_free(vga_keymap);
         vga_keymap = NULL;
-        SDL_SetError ("Unable to get keyboard map");
+        SDL_SetError("Unable to get keyboard map");
         return (-1);
     }
     return (0);
 }
 
 static void
-handle_keyboard (_THIS)
+handle_keyboard(_THIS)
 {
     SDL_keysym keysym;
     int c, pressed, scancode;
 
-    while ((c = VGLKeyboardGetCh ()) != 0) {
+    while ((c = VGLKeyboardGetCh()) != 0) {
         scancode = c & 0x7F;
         if (c & 0x80) {
             pressed = SDL_RELEASED;
@@ -84,42 +84,42 @@ handle_keyboard (_THIS)
             pressed = SDL_PRESSED;
         }
 
-        posted += SDL_PrivateKeyboard (pressed,
-                                       TranslateKey (scancode, &keysym));
+        posted += SDL_PrivateKeyboard(pressed,
+                                      TranslateKey(scancode, &keysym));
     }
 }
 
 int
-VGL_initmouse (int fd)
+VGL_initmouse(int fd)
 {
     mouseinfo.operation = MOUSE_GETINFO;
-    if (ioctl (fd, CONS_MOUSECTL, &mouseinfo) != 0)
+    if (ioctl(fd, CONS_MOUSECTL, &mouseinfo) != 0)
         return -1;
 
     return 0;
 }
 
 static void
-handle_mouse (_THIS)
+handle_mouse(_THIS)
 {
     char buttons;
     int x, y;
     int button_state, state_changed, state;
     int i;
 
-    ioctl (0, CONS_MOUSECTL, &mouseinfo);
+    ioctl(0, CONS_MOUSECTL, &mouseinfo);
     x = mouseinfo.u.data.x;
     y = mouseinfo.u.data.y;
     buttons = mouseinfo.u.data.buttons;
 
     if ((x != oldx) || (y != oldy)) {
-        posted += SDL_PrivateMouseMotion (0, 0, x, y);
+        posted += SDL_PrivateMouseMotion(0, 0, x, y);
         oldx = x;
         oldy = y;
     }
 
     /* See what's changed */
-    button_state = SDL_GetMouseState (NULL, NULL);
+    button_state = SDL_GetMouseState(NULL, NULL);
     state_changed = button_state ^ buttons;
     for (i = 0; i < 8; i++) {
         if (state_changed & (1 << i)) {
@@ -128,30 +128,30 @@ handle_mouse (_THIS)
             } else {
                 state = SDL_RELEASED;
             }
-            posted += SDL_PrivateMouseButton (state, i + 1, 0, 0);
+            posted += SDL_PrivateMouseButton(state, i + 1, 0, 0);
         }
     }
 }
 
 
 void
-VGL_PumpEvents (_THIS)
+VGL_PumpEvents(_THIS)
 {
     do {
         posted = 0;
-        handle_keyboard (this);
-        handle_mouse (this);
+        handle_keyboard(this);
+        handle_mouse(this);
     }
     while (posted != 0);
 }
 
 void
-VGL_InitOSKeymap (_THIS)
+VGL_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Initialize the BeOS key translation table */
-    for (i = 0; i < SDL_arraysize (keymap); ++i)
+    for (i = 0; i < SDL_arraysize(keymap); ++i)
         keymap[i] = SDLK_UNKNOWN;
 
     keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
@@ -273,7 +273,7 @@ VGL_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, SDL_keysym * keysym)
+TranslateKey(int scancode, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -286,7 +286,7 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         int map;
         SDLMod modstate;
 
-        modstate = SDL_GetModState ();
+        modstate = SDL_GetModState();
         map = 0;
         if (modstate & KMOD_SHIFT) {
             map += 1;

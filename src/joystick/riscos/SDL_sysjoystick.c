@@ -53,13 +53,13 @@ struct joystick_hwdata
  * It should return number of joysticks, or -1 on an unrecoverable fatal error.
  */
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     _kernel_swi_regs regs;
 
     /* Try to read joystick 0 */
     regs.r[0] = 0;
-    if (_kernel_swi (JOYSTICK_READ, &regs, &regs) == NULL) {
+    if (_kernel_swi(JOYSTICK_READ, &regs, &regs) == NULL) {
         /* Switch works so assume we've got a joystick */
         return 1;
     }
@@ -70,13 +70,13 @@ SDL_SYS_JoystickInit (void)
 
 /* Function to get the device-dependent name of a joystick */
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     if (index == 0) {
         return "RISC OS Joystick 0";
     }
 
-    SDL_SetError ("No joystick available with that index");
+    SDL_SetError("No joystick available with that index");
     return (NULL);
 }
 
@@ -86,11 +86,11 @@ SDL_SYS_JoystickName (int index)
    It returns 0, or -1 if there is an error.
  */
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     _kernel_swi_regs regs;
 
-    if (!(joystick->hwdata = SDL_malloc (sizeof (struct joystick_hwdata))))
+    if (!(joystick->hwdata = SDL_malloc(sizeof(struct joystick_hwdata))))
         return -1;
 
     regs.r[0] = joystick->index;
@@ -113,12 +113,12 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
  * and update joystick device state.
  */
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     _kernel_swi_regs regs;
     regs.r[0] = joystick->index;
 
-    if (_kernel_swi (JOYSTICK_READ, &regs, &regs) == NULL) {
+    if (_kernel_swi(JOYSTICK_READ, &regs, &regs) == NULL) {
         int newstate = regs.r[0];
         int oldstate = joystick->hwdata->joystate;
         if (newstate != oldstate) {
@@ -127,13 +127,13 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                 /* Convert to signed values */
                 if (y >= 128)
                     y -= 256;
-                SDL_PrivateJoystickAxis (joystick, 1, -y * 256);        /* Up and down opposite to result in SDL */
+                SDL_PrivateJoystickAxis(joystick, 1, -y * 256); /* Up and down opposite to result in SDL */
             }
             if ((newstate & 0xFF00) != (oldstate & 0xFF00)) {
                 int x = (regs.r[0] & 0xFF00) >> 8;
                 if (x >= 128)
                     x -= 256;
-                SDL_PrivateJoystickAxis (joystick, 0, x * 256);
+                SDL_PrivateJoystickAxis(joystick, 0, x * 256);
             }
 
             if ((newstate & 0xFF0000) != (oldstate & 0xFF0000)) {
@@ -143,11 +143,11 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                 for (i = 0; i < joystick->nbuttons; i++) {
                     if ((buttons & (1 << i)) != (oldbuttons & (1 << i))) {
                         if (buttons & (1 << i))
-                            SDL_PrivateJoystickButton (joystick, i,
-                                                       SDL_PRESSED);
+                            SDL_PrivateJoystickButton(joystick, i,
+                                                      SDL_PRESSED);
                         else
-                            SDL_PrivateJoystickButton (joystick, i,
-                                                       SDL_RELEASED);
+                            SDL_PrivateJoystickButton(joystick, i,
+                                                      SDL_RELEASED);
                     }
                 }
             }
@@ -160,16 +160,16 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
 
 /* Function to close a joystick after use */
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata)
-        SDL_free (joystick->hwdata);
+        SDL_free(joystick->hwdata);
     return;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     SDL_numjoysticks = 0;
 

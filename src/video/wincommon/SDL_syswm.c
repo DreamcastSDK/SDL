@@ -43,20 +43,20 @@ HICON screen_icn = NULL;
 
 #ifdef _WIN32_WCE
 
-BOOL (WINAPI * CoreCatchInput) (int flag) = NULL;
+BOOL(WINAPI * CoreCatchInput) (int flag) = NULL;
 int input_catched = 0;
 HINSTANCE coredll = NULL;
 
 // the same API call that gx.dll does to catch the input
 void
-LoadInputCatchFunc ()
+LoadInputCatchFunc()
 {
-    coredll = SDL_LoadObject ("coredll.dll");
+    coredll = SDL_LoadObject("coredll.dll");
     if (coredll) {
         CoreCatchInput =
-            (int (WINAPI *) (int)) GetProcAddress (coredll,
-                                                   (const unsigned short *)
-                                                   1453);
+            (int (WINAPI *) (int)) GetProcAddress(coredll,
+                                                  (const unsigned short *)
+                                                  1453);
     }
 }
 
@@ -70,7 +70,7 @@ LoadInputCatchFunc ()
    then inverted and passed to Win32.
 */
 void
-WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
+WIN_SetWMIcon(_THIS, SDL_Surface * icon, Uint8 * mask)
 {
 #ifdef DISABLE_ICON_SUPPORT
     return;
@@ -120,15 +120,15 @@ WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     mask_pitch = ((icon->w + 7) / 8);
     icon_plen = icon->h * icon_pitch;
     icon_mlen = icon->h * mask_pitch;
-    icon_len = sizeof (*icon_win32) + icon_plen + icon_mlen;
-    icon_win32 = (struct Win32Icon *) SDL_stack_alloc (Uint8, icon_len);
+    icon_len = sizeof(*icon_win32) + icon_plen + icon_mlen;
+    icon_win32 = (struct Win32Icon *) SDL_stack_alloc(Uint8, icon_len);
     if (icon_win32 == NULL) {
         return;
     }
-    SDL_memset (icon_win32, 0, icon_len);
+    SDL_memset(icon_win32, 0, icon_len);
 
     /* Set the basic BMP parameters */
-    icon_win32->biSize = sizeof (*icon_win32) - sizeof (icon_win32->biColors);
+    icon_win32->biSize = sizeof(*icon_win32) - sizeof(icon_win32->biColors);
     icon_win32->biWidth = icon->w;
     icon_win32->biHeight = icon->h * 2;
     icon_win32->biPlanes = 1;
@@ -136,26 +136,26 @@ WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     icon_win32->biSizeImage = icon_plen + icon_mlen;
 
     /* Allocate a standard 256 color icon surface */
-    icon_256 = SDL_CreateRGBSurface (SDL_SWSURFACE, icon->w, icon->h,
-                                     icon_win32->biBitCount, 0, 0, 0, 0);
+    icon_256 = SDL_CreateRGBSurface(SDL_SWSURFACE, icon->w, icon->h,
+                                    icon_win32->biBitCount, 0, 0, 0, 0);
     if (icon_256 == NULL) {
-        SDL_stack_free (icon_win32);
+        SDL_stack_free(icon_win32);
         return;
     }
     pal_256 = icon_256->format->palette;
     if (icon->format->palette &&
         (icon->format->BitsPerPixel == icon_256->format->BitsPerPixel)) {
         Uint8 black;
-        SDL_memcpy (pal_256->colors, icon->format->palette->colors,
-                    pal_256->ncolors * sizeof (SDL_Color));
+        SDL_memcpy(pal_256->colors, icon->format->palette->colors,
+                   pal_256->ncolors * sizeof(SDL_Color));
         /* Make sure that 0 is black! */
-        black = SDL_FindColor (pal_256, 0x00, 0x00, 0x00);
+        black = SDL_FindColor(pal_256, 0x00, 0x00, 0x00);
         pal_256->colors[black] = pal_256->colors[0];
         pal_256->colors[0].r = 0x00;
         pal_256->colors[0].g = 0x00;
         pal_256->colors[0].b = 0x00;
     } else {
-        SDL_DitherColors (pal_256->colors, icon_256->format->BitsPerPixel);
+        SDL_DitherColors(pal_256->colors, icon_256->format->BitsPerPixel);
     }
 
     /* Now copy color data to the icon BMP */
@@ -173,23 +173,23 @@ WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     bounds.y = 0;
     bounds.w = icon->w;
     bounds.h = icon->h;
-    if (SDL_LowerBlit (icon, &bounds, icon_256, &bounds) < 0) {
-        SDL_stack_free (icon_win32);
-        SDL_FreeSurface (icon_256);
+    if (SDL_LowerBlit(icon, &bounds, icon_256, &bounds) < 0) {
+        SDL_stack_free(icon_win32);
+        SDL_FreeSurface(icon_256);
         return;
     }
 
     /* Copy pixels upside-down to icon BMP, masked with the icon mask */
-    if (SDL_MUSTLOCK (icon_256) || (icon_256->pitch != icon_pitch)) {
-        SDL_stack_free (icon_win32);
-        SDL_FreeSurface (icon_256);
-        SDL_SetError ("Warning: Unexpected icon_256 characteristics");
+    if (SDL_MUSTLOCK(icon_256) || (icon_256->pitch != icon_pitch)) {
+        SDL_stack_free(icon_win32);
+        SDL_FreeSurface(icon_256);
+        SDL_SetError("Warning: Unexpected icon_256 characteristics");
         return;
     }
     pdata = (Uint8 *) icon_256->pixels;
     mdata = mask;
     pwin32 =
-        (Uint8 *) icon_win32 + sizeof (*icon_win32) + icon_plen - icon_pitch;
+        (Uint8 *) icon_win32 + sizeof(*icon_win32) + icon_plen - icon_pitch;
     skip = icon_pitch - icon->w;
     for (row = 0; row < icon->h; ++row) {
         for (col = 0; col < icon->w; ++col) {
@@ -207,12 +207,12 @@ WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
         pwin32 += skip;
         pwin32 -= 2 * icon_pitch;
     }
-    SDL_FreeSurface (icon_256);
+    SDL_FreeSurface(icon_256);
 
     /* Copy mask inverted and upside-down to icon BMP */
     mdata = mask;
     mwin32 = (Uint8 *) icon_win32
-        + sizeof (*icon_win32) + icon_plen + icon_mlen - mask_pitch;
+        + sizeof(*icon_win32) + icon_plen + icon_mlen - mask_pitch;
     for (row = 0; row < icon->h; ++row) {
         for (col = 0; col < mask_pitch; ++col) {
             *mwin32++ = ~*mdata++;
@@ -221,68 +221,68 @@ WIN_SetWMIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
     }
 
     /* Finally, create the icon handle and set the window icon */
-    screen_icn = CreateIconFromResourceEx ((Uint8 *) icon_win32, icon_len,
-                                           TRUE, 0x00030000, icon->w, icon->h,
-                                           LR_DEFAULTCOLOR);
+    screen_icn = CreateIconFromResourceEx((Uint8 *) icon_win32, icon_len,
+                                          TRUE, 0x00030000, icon->w, icon->h,
+                                          LR_DEFAULTCOLOR);
     if (screen_icn == NULL) {
-        SDL_SetError ("Couldn't create Win32 icon handle");
+        SDL_SetError("Couldn't create Win32 icon handle");
     } else {
-        SetClassLongPtr (SDL_Window, GCLP_HICON, (LONG_PTR) screen_icn);
+        SetClassLongPtr(SDL_Window, GCLP_HICON, (LONG_PTR) screen_icn);
     }
-    SDL_stack_free (icon_win32);
+    SDL_stack_free(icon_win32);
 #endif /* DISABLE_ICON_SUPPORT */
 }
 
 void
-WIN_SetWMCaption (_THIS, const char *title, const char *icon)
+WIN_SetWMCaption(_THIS, const char *title, const char *icon)
 {
 #ifdef _WIN32_WCE
     /* WinCE uses the UNICODE version */
-    LPWSTR lpszW = SDL_iconv_utf8_ucs2 ((char *) title);
-    SetWindowText (SDL_Window, lpszW);
-    SDL_free (lpszW);
+    LPWSTR lpszW = SDL_iconv_utf8_ucs2((char *) title);
+    SetWindowText(SDL_Window, lpszW);
+    SDL_free(lpszW);
 #else
-    char *lpsz = SDL_iconv_utf8_latin1 ((char *) title);
-    SetWindowText (SDL_Window, lpsz);
-    SDL_free (lpsz);
+    char *lpsz = SDL_iconv_utf8_latin1((char *) title);
+    SetWindowText(SDL_Window, lpsz);
+    SDL_free(lpsz);
 #endif
 }
 
 int
-WIN_IconifyWindow (_THIS)
+WIN_IconifyWindow(_THIS)
 {
-    ShowWindow (SDL_Window, SW_MINIMIZE);
+    ShowWindow(SDL_Window, SW_MINIMIZE);
     return (1);
 }
 
 SDL_GrabMode
-WIN_GrabInput (_THIS, SDL_GrabMode mode)
+WIN_GrabInput(_THIS, SDL_GrabMode mode)
 {
     if (mode == SDL_GRAB_OFF) {
-        ClipCursor (NULL);
+        ClipCursor(NULL);
         if (!(SDL_cursorstate & CURSOR_VISIBLE)) {
             /*      RJR: March 28, 2000
                must be leaving relative mode, move mouse from
                center of window to where it belongs ... */
             POINT pt;
             int x, y;
-            SDL_GetMouseState (&x, &y);
+            SDL_GetMouseState(&x, &y);
             pt.x = x;
             pt.y = y;
-            ClientToScreen (SDL_Window, &pt);
-            SetCursorPos (pt.x, pt.y);
+            ClientToScreen(SDL_Window, &pt);
+            SetCursorPos(pt.x, pt.y);
         }
 #ifdef _WIN32_WCE
         if (input_catched) {
             if (!CoreCatchInput)
-                LoadInputCatchFunc ();
+                LoadInputCatchFunc();
 
             if (CoreCatchInput)
-                CoreCatchInput (0);
+                CoreCatchInput(0);
         }
 #endif
     } else {
-        ClipCursor (&SDL_bounds);
+        ClipCursor(&SDL_bounds);
         if (!(SDL_cursorstate & CURSOR_VISIBLE)) {
             /*      RJR: March 28, 2000
                must be entering relative mode, get ready by
@@ -290,16 +290,16 @@ WIN_GrabInput (_THIS, SDL_GrabMode mode)
             POINT pt;
             pt.x = (SDL_VideoSurface->w / 2);
             pt.y = (SDL_VideoSurface->h / 2);
-            ClientToScreen (SDL_Window, &pt);
-            SetCursorPos (pt.x, pt.y);
+            ClientToScreen(SDL_Window, &pt);
+            SetCursorPos(pt.x, pt.y);
         }
 #ifdef _WIN32_WCE
         if (!input_catched) {
             if (!CoreCatchInput)
-                LoadInputCatchFunc ();
+                LoadInputCatchFunc();
 
             if (CoreCatchInput)
-                CoreCatchInput (1);
+                CoreCatchInput(1);
         }
 #endif
     }
@@ -310,14 +310,13 @@ WIN_GrabInput (_THIS, SDL_GrabMode mode)
    Otherwise, in case of a version mismatch, it returns -1.
 */
 int
-WIN_GetWMInfo (_THIS, SDL_SysWMinfo * info)
+WIN_GetWMInfo(_THIS, SDL_SysWMinfo * info)
 {
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->window = SDL_Window;
-        if (SDL_VERSIONNUM (info->version.major,
-                            info->version.minor,
-                            info->version.patch) >=
-            SDL_VERSIONNUM (1, 2, 5)) {
+        if (SDL_VERSIONNUM(info->version.major,
+                           info->version.minor,
+                           info->version.patch) >= SDL_VERSIONNUM(1, 2, 5)) {
 #if SDL_VIDEO_OPENGL
             info->hglrc = GL_hrc;
 #else
@@ -326,8 +325,8 @@ WIN_GetWMInfo (_THIS, SDL_SysWMinfo * info)
         }
         return (1);
     } else {
-        SDL_SetError ("Application not compiled with SDL %d.%d\n",
-                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d.%d\n",
+                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return (-1);
     }
 }

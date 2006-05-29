@@ -55,56 +55,56 @@
 #define OPEN_FLAGS	O_WRONLY
 
 /* Audio driver functions */
-static int Paud_OpenAudio (_THIS, SDL_AudioSpec * spec);
-static void Paud_WaitAudio (_THIS);
-static void Paud_PlayAudio (_THIS);
-static Uint8 *Paud_GetAudioBuf (_THIS);
-static void Paud_CloseAudio (_THIS);
+static int Paud_OpenAudio(_THIS, SDL_AudioSpec * spec);
+static void Paud_WaitAudio(_THIS);
+static void Paud_PlayAudio(_THIS);
+static Uint8 *Paud_GetAudioBuf(_THIS);
+static void Paud_CloseAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 
 static int
-Audio_Available (void)
+Audio_Available(void)
 {
     int fd;
     int available;
 
     available = 0;
-    fd = SDL_OpenAudioPath (NULL, 0, OPEN_FLAGS, 0);
+    fd = SDL_OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);
     if (fd >= 0) {
         available = 1;
-        close (fd);
+        close(fd);
     }
     return (available);
 }
 
 static void
-Audio_DeleteDevice (SDL_AudioDevice * device)
+Audio_DeleteDevice(SDL_AudioDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_AudioDevice *
-Audio_CreateDevice (int devindex)
+Audio_CreateDevice(int devindex)
 {
     SDL_AudioDevice *this;
 
     /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc (sizeof (SDL_AudioDevice));
+    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
     if (this) {
-        SDL_memset (this, 0, (sizeof *this));
+        SDL_memset(this, 0, (sizeof *this));
         this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc ((sizeof *this->hidden));
+            SDL_malloc((sizeof *this->hidden));
     }
     if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (this) {
-            SDL_free (this);
+            SDL_free(this);
         }
         return (0);
     }
-    SDL_memset (this->hidden, 0, (sizeof *this->hidden));
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
     audio_fd = -1;
 
     /* Set the function pointers */
@@ -126,7 +126,7 @@ AudioBootStrap Paud_bootstrap = {
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-Paud_WaitAudio (_THIS)
+Paud_WaitAudio(_THIS)
 {
     fd_set fdset;
 
@@ -135,21 +135,21 @@ Paud_WaitAudio (_THIS)
         /* Use timer for general audio synchronization */
         Sint32 ticks;
 
-        ticks = ((Sint32) (next_frame - SDL_GetTicks ())) - FUDGE_TICKS;
+        ticks = ((Sint32) (next_frame - SDL_GetTicks())) - FUDGE_TICKS;
         if (ticks > 0) {
-            SDL_Delay (ticks);
+            SDL_Delay(ticks);
         }
     } else {
         audio_buffer paud_bufinfo;
 
         /* Use select() for audio synchronization */
         struct timeval timeout;
-        FD_ZERO (&fdset);
-        FD_SET (audio_fd, &fdset);
+        FD_ZERO(&fdset);
+        FD_SET(audio_fd, &fdset);
 
-        if (ioctl (audio_fd, AUDIO_BUFFER, &paud_bufinfo) < 0) {
+        if (ioctl(audio_fd, AUDIO_BUFFER, &paud_bufinfo) < 0) {
 #ifdef DEBUG_AUDIO
-            fprintf (stderr, "Couldn't get audio buffer information\n");
+            fprintf(stderr, "Couldn't get audio buffer information\n");
 #endif
             timeout.tv_sec = 10;
             timeout.tv_usec = 0;
@@ -159,16 +159,16 @@ Paud_WaitAudio (_THIS)
             ms_in_buf = ms_in_buf - timeout.tv_sec * 1000;
             timeout.tv_usec = ms_in_buf * 1000;
 #ifdef DEBUG_AUDIO
-            fprintf (stderr,
-                     "Waiting for write_buf_time=%ld,%ld\n",
-                     timeout.tv_sec, timeout.tv_usec);
+            fprintf(stderr,
+                    "Waiting for write_buf_time=%ld,%ld\n",
+                    timeout.tv_sec, timeout.tv_usec);
 #endif
         }
 
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Waiting for audio to get ready\n");
+        fprintf(stderr, "Waiting for audio to get ready\n");
 #endif
-        if (select (audio_fd + 1, NULL, &fdset, NULL, &timeout) <= 0) {
+        if (select(audio_fd + 1, NULL, &fdset, NULL, &timeout) <= 0) {
             const char *message =
                 "Audio timeout - buggy audio driver? (disabled)";
             /*
@@ -176,30 +176,30 @@ Paud_WaitAudio (_THIS)
              * but in this case we have no other way of letting
              * the user know what happened.
              */
-            fprintf (stderr, "SDL: %s - %s\n", strerror (errno), message);
+            fprintf(stderr, "SDL: %s - %s\n", strerror(errno), message);
             this->enabled = 0;
             /* Don't try to close - may hang */
             audio_fd = -1;
 #ifdef DEBUG_AUDIO
-            fprintf (stderr, "Done disabling audio\n");
+            fprintf(stderr, "Done disabling audio\n");
 #endif
         }
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Ready!\n");
+        fprintf(stderr, "Ready!\n");
 #endif
     }
 }
 
 static void
-Paud_PlayAudio (_THIS)
+Paud_PlayAudio(_THIS)
 {
     int written;
 
     /* Write the audio data, checking for EAGAIN on broken audio drivers */
     do {
-        written = write (audio_fd, mixbuf, mixlen);
+        written = write(audio_fd, mixbuf, mixlen);
         if ((written < 0) && ((errno == 0) || (errno == EAGAIN))) {
-            SDL_Delay (1);      /* Let a little CPU time go by */
+            SDL_Delay(1);       /* Let a little CPU time go by */
         }
     }
     while ((written < 0) &&
@@ -215,31 +215,31 @@ Paud_PlayAudio (_THIS)
         this->enabled = 0;
     }
 #ifdef DEBUG_AUDIO
-    fprintf (stderr, "Wrote %d bytes of audio data\n", written);
+    fprintf(stderr, "Wrote %d bytes of audio data\n", written);
 #endif
 }
 
 static Uint8 *
-Paud_GetAudioBuf (_THIS)
+Paud_GetAudioBuf(_THIS)
 {
     return mixbuf;
 }
 
 static void
-Paud_CloseAudio (_THIS)
+Paud_CloseAudio(_THIS)
 {
     if (mixbuf != NULL) {
-        SDL_FreeAudioMem (mixbuf);
+        SDL_FreeAudioMem(mixbuf);
         mixbuf = NULL;
     }
     if (audio_fd >= 0) {
-        close (audio_fd);
+        close(audio_fd);
         audio_fd = -1;
     }
 }
 
 static int
-Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
+Paud_OpenAudio(_THIS, SDL_AudioSpec * spec)
 {
     char audiodev[1024];
     int format;
@@ -255,9 +255,9 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
     frame_ticks = 0.0;
 
     /* Open the audio device */
-    audio_fd = SDL_OpenAudioPath (audiodev, sizeof (audiodev), OPEN_FLAGS, 0);
+    audio_fd = SDL_OpenAudioPath(audiodev, sizeof(audiodev), OPEN_FLAGS, 0);
     if (audio_fd < 0) {
-        SDL_SetError ("Couldn't open %s: %s", audiodev, strerror (errno));
+        SDL_SetError("Couldn't open %s: %s", audiodev, strerror(errno));
         return -1;
     }
 
@@ -265,8 +265,8 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
      * We can't set the buffer size - just ask the device for the maximum
      * that we can have.
      */
-    if (ioctl (audio_fd, AUDIO_BUFFER, &paud_bufinfo) < 0) {
-        SDL_SetError ("Couldn't get audio buffer information");
+    if (ioctl(audio_fd, AUDIO_BUFFER, &paud_bufinfo) < 0) {
+        SDL_SetError("Couldn't get audio buffer information");
         return -1;
     }
 
@@ -329,10 +329,10 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
 
     /* Try for a closest match on audio format */
     format = 0;
-    for (test_format = SDL_FirstAudioFormat (spec->format);
+    for (test_format = SDL_FirstAudioFormat(spec->format);
          !format && test_format;) {
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Trying format 0x%4.4x\n", test_format);
+        fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
 #endif
         switch (test_format) {
         case AUDIO_U8:
@@ -375,14 +375,14 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
             break;
         }
         if (!format) {
-            test_format = SDL_NextAudioFormat ();
+            test_format = SDL_NextAudioFormat();
         }
     }
     if (format == 0) {
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Couldn't find any hardware audio formats\n");
+        fprintf(stderr, "Couldn't find any hardware audio formats\n");
 #endif
-        SDL_SetError ("Couldn't find any hardware audio formats");
+        SDL_SetError("Couldn't find any hardware audio formats");
         return -1;
     }
     spec->format = test_format;
@@ -406,7 +406,7 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
     }
     paud_init.bsize = bytes_per_sample * spec->channels;
 
-    SDL_CalculateAudioSpec (spec);
+    SDL_CalculateAudioSpec(spec);
 
     /*
      * The AIX paud device init can't modify the values of the audio_init
@@ -416,7 +416,7 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
      * /dev/paud supports all of the encoding formats, so we don't need
      * to do anything like reopening the device, either.
      */
-    if (ioctl (audio_fd, AUDIO_INIT, &paud_init) < 0) {
+    if (ioctl(audio_fd, AUDIO_INIT, &paud_init) < 0) {
         switch (paud_init.rc) {
         case 1:
             SDL_SetError
@@ -429,7 +429,7 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
             return -1;
             break;
         case 4:
-            SDL_SetError ("Couldn't set audio format: request was invalid");
+            SDL_SetError("Couldn't set audio format: request was invalid");
             return -1;
             break;
         case 5:
@@ -452,11 +452,11 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
 
     /* Allocate mixing buffer */
     mixlen = spec->size;
-    mixbuf = (Uint8 *) SDL_AllocAudioMem (mixlen);
+    mixbuf = (Uint8 *) SDL_AllocAudioMem(mixlen);
     if (mixbuf == NULL) {
         return -1;
     }
-    SDL_memset (mixbuf, spec->silence, spec->size);
+    SDL_memset(mixbuf, spec->silence, spec->size);
 
     /*
      * Set some paramters: full volume, first speaker that we can find.
@@ -475,9 +475,9 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
 
     paud_control.ioctl_request = AUDIO_CHANGE;
     paud_control.request_info = (char *) &paud_change;
-    if (ioctl (audio_fd, AUDIO_CONTROL, &paud_control) < 0) {
+    if (ioctl(audio_fd, AUDIO_CONTROL, &paud_control) < 0) {
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Can't change audio display settings\n");
+        fprintf(stderr, "Can't change audio display settings\n");
 #endif
     }
 
@@ -487,26 +487,26 @@ Paud_OpenAudio (_THIS, SDL_AudioSpec * spec)
      */
     paud_control.ioctl_request = AUDIO_START;
     paud_control.position = 0;
-    if (ioctl (audio_fd, AUDIO_CONTROL, &paud_control) < 0) {
+    if (ioctl(audio_fd, AUDIO_CONTROL, &paud_control) < 0) {
 #ifdef DEBUG_AUDIO
-        fprintf (stderr, "Can't start audio play\n");
+        fprintf(stderr, "Can't start audio play\n");
 #endif
-        SDL_SetError ("Can't start audio play");
+        SDL_SetError("Can't start audio play");
         return -1;
     }
 
     /* Check to see if we need to use select() workaround */
     {
         char *workaround;
-        workaround = SDL_getenv ("SDL_DSP_NOSELECT");
+        workaround = SDL_getenv("SDL_DSP_NOSELECT");
         if (workaround) {
             frame_ticks = (float) (spec->samples * 1000) / spec->freq;
-            next_frame = SDL_GetTicks () + frame_ticks;
+            next_frame = SDL_GetTicks() + frame_ticks;
         }
     }
 
     /* Get the parent process id (we're the parent of the audio thread) */
-    parent = getpid ();
+    parent = getpid();
 
     /* We're ready to rock and roll. :-) */
     return 0;

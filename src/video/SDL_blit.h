@@ -71,13 +71,13 @@ typedef struct SDL_BlitMap
 
 
 /* Functions found in SDL_blit.c */
-extern int SDL_CalculateBlit (SDL_Surface * surface);
+extern int SDL_CalculateBlit(SDL_Surface * surface);
 
 /* Functions found in SDL_blit_{0,1,N,A}.c */
-extern SDL_loblit SDL_CalculateBlit0 (SDL_Surface * surface, int complex);
-extern SDL_loblit SDL_CalculateBlit1 (SDL_Surface * surface, int complex);
-extern SDL_loblit SDL_CalculateBlitN (SDL_Surface * surface, int complex);
-extern SDL_loblit SDL_CalculateAlphaBlit (SDL_Surface * surface, int complex);
+extern SDL_loblit SDL_CalculateBlit0(SDL_Surface * surface, int complex);
+extern SDL_loblit SDL_CalculateBlit1(SDL_Surface * surface, int complex);
+extern SDL_loblit SDL_CalculateBlitN(SDL_Surface * surface, int complex);
+extern SDL_loblit SDL_CalculateAlphaBlit(SDL_Surface * surface, int complex);
 
 /*
  * Useful macros for blitting routines

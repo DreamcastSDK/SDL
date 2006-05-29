@@ -32,7 +32,7 @@
 static SDL_error SDL_global_error;
 #define SDL_GetErrBuf()	(&SDL_global_error)
 #else
-extern SDL_error *SDL_GetErrBuf (void);
+extern SDL_error *SDL_GetErrBuf(void);
 #endif /* SDL_THREADS_DISABLED */
 
 #define SDL_ERRBUFIZE	1024
@@ -40,7 +40,7 @@ extern SDL_error *SDL_GetErrBuf (void);
 /* Private functions */
 
 static const char *
-SDL_LookupString (const char *key)
+SDL_LookupString(const char *key)
 {
     /* FIXME: Add code to lookup key in language string hash-table */
     return key;
@@ -49,17 +49,17 @@ SDL_LookupString (const char *key)
 /* Public functions */
 
 void
-SDL_SetError (const char *fmt, ...)
+SDL_SetError(const char *fmt, ...)
 {
     va_list ap;
     SDL_error *error;
 
     /* Copy in the key, mark error as valid */
-    error = SDL_GetErrBuf ();
+    error = SDL_GetErrBuf();
     error->error = 1;
-    SDL_strlcpy ((char *) error->key, fmt, sizeof (error->key));
+    SDL_strlcpy((char *) error->key, fmt, sizeof(error->key));
 
-    va_start (ap, fmt);
+    va_start(ap, fmt);
     error->argc = 0;
     while (*fmt) {
         if (*fmt++ == '%') {
@@ -77,22 +77,22 @@ SDL_SetError (const char *fmt, ...)
             case 'o':
             case 'x':
             case 'X':
-                error->args[error->argc++].value_i = va_arg (ap, int);
+                error->args[error->argc++].value_i = va_arg(ap, int);
                 break;
             case 'f':
-                error->args[error->argc++].value_f = va_arg (ap, double);
+                error->args[error->argc++].value_f = va_arg(ap, double);
                 break;
             case 'p':
-                error->args[error->argc++].value_ptr = va_arg (ap, void *);
+                error->args[error->argc++].value_ptr = va_arg(ap, void *);
                 break;
             case 's':
                 {
                     int i = error->argc;
-                    const char *str = va_arg (ap, const char *);
+                    const char *str = va_arg(ap, const char *);
                     if (str == NULL)
                         str = "(null)";
-                    SDL_strlcpy ((char *) error->args[i].buf, str,
-                                 ERR_MAX_STRLEN);
+                    SDL_strlcpy((char *) error->args[i].buf, str,
+                                ERR_MAX_STRLEN);
                     error->argc++;
                 }
                 break;
@@ -104,11 +104,11 @@ SDL_SetError (const char *fmt, ...)
             }
         }
     }
-    va_end (ap);
+    va_end(ap);
 
     /* If we are in debug mode, print out an error message */
 #ifdef DEBUG_ERROR
-    fprintf (stderr, "SDL_SetError: %s\n", SDL_GetError ());
+    fprintf(stderr, "SDL_SetError: %s\n", SDL_GetError());
 #endif
 }
 
@@ -116,7 +116,7 @@ SDL_SetError (const char *fmt, ...)
    so that it supports internationalization and thread-safe errors.
 */
 char *
-SDL_GetErrorMsg (char *errstr, unsigned int maxlen)
+SDL_GetErrorMsg(char *errstr, unsigned int maxlen)
 {
     SDL_error *error;
 
@@ -125,21 +125,21 @@ SDL_GetErrorMsg (char *errstr, unsigned int maxlen)
     --maxlen;
 
     /* Get the thread-safe error, and print it out */
-    error = SDL_GetErrBuf ();
+    error = SDL_GetErrBuf();
     if (error->error) {
         const char *fmt;
         char *msg = errstr;
         int len;
         int argi;
 
-        fmt = SDL_LookupString (error->key);
+        fmt = SDL_LookupString(error->key);
         argi = 0;
         while (*fmt && (maxlen > 0)) {
             if (*fmt == '%') {
                 char tmp[32], *spot = tmp;
                 *spot++ = *fmt++;
                 while ((*fmt == '.' || (*fmt >= '0' && *fmt <= '9'))
-                       && spot < (tmp + SDL_arraysize (tmp) - 2)) {
+                       && spot < (tmp + SDL_arraysize(tmp) - 2)) {
                     *spot++ = *fmt++;
                 }
                 *spot++ = *fmt++;
@@ -157,30 +157,30 @@ SDL_GetErrorMsg (char *errstr, unsigned int maxlen)
                 case 'x':
                 case 'X':
                     len =
-                        SDL_snprintf (msg, maxlen, tmp,
-                                      error->args[argi++].value_i);
+                        SDL_snprintf(msg, maxlen, tmp,
+                                     error->args[argi++].value_i);
                     msg += len;
                     maxlen -= len;
                     break;
                 case 'f':
                     len =
-                        SDL_snprintf (msg, maxlen, tmp,
-                                      error->args[argi++].value_f);
+                        SDL_snprintf(msg, maxlen, tmp,
+                                     error->args[argi++].value_f);
                     msg += len;
                     maxlen -= len;
                     break;
                 case 'p':
                     len =
-                        SDL_snprintf (msg, maxlen, tmp,
-                                      error->args[argi++].value_ptr);
+                        SDL_snprintf(msg, maxlen, tmp,
+                                     error->args[argi++].value_ptr);
                     msg += len;
                     maxlen -= len;
                     break;
                 case 's':
                     len =
-                        SDL_snprintf (msg, maxlen, tmp,
-                                      SDL_LookupString (error->
-                                                        args[argi++].buf));
+                        SDL_snprintf(msg, maxlen, tmp,
+                                     SDL_LookupString(error->
+                                                      args[argi++].buf));
                     msg += len;
                     maxlen -= len;
                     break;
@@ -197,59 +197,59 @@ SDL_GetErrorMsg (char *errstr, unsigned int maxlen)
 
 /* Available for backwards compatibility */
 char *
-SDL_GetError (void)
+SDL_GetError(void)
 {
     static char errmsg[SDL_ERRBUFIZE];
 
-    return ((char *) SDL_GetErrorMsg (errmsg, SDL_ERRBUFIZE));
+    return ((char *) SDL_GetErrorMsg(errmsg, SDL_ERRBUFIZE));
 }
 
 void
-SDL_ClearError (void)
+SDL_ClearError(void)
 {
     SDL_error *error;
 
-    error = SDL_GetErrBuf ();
+    error = SDL_GetErrBuf();
     error->error = 0;
 }
 
 /* Very common errors go here */
 void
-SDL_Error (SDL_errorcode code)
+SDL_Error(SDL_errorcode code)
 {
     switch (code) {
     case SDL_ENOMEM:
-        SDL_SetError ("Out of memory");
+        SDL_SetError("Out of memory");
         break;
     case SDL_EFREAD:
-        SDL_SetError ("Error reading from datastream");
+        SDL_SetError("Error reading from datastream");
         break;
     case SDL_EFWRITE:
-        SDL_SetError ("Error writing to datastream");
+        SDL_SetError("Error writing to datastream");
         break;
     case SDL_EFSEEK:
-        SDL_SetError ("Error seeking in datastream");
+        SDL_SetError("Error seeking in datastream");
         break;
     default:
-        SDL_SetError ("Unknown SDL error");
+        SDL_SetError("Unknown SDL error");
         break;
     }
 }
 
 #ifdef TEST_ERROR
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     char buffer[BUFSIZ + 1];
 
-    SDL_SetError ("Hi there!");
-    printf ("Error 1: %s\n", SDL_GetError ());
-    SDL_ClearError ();
-    SDL_memset (buffer, '1', BUFSIZ);
+    SDL_SetError("Hi there!");
+    printf("Error 1: %s\n", SDL_GetError());
+    SDL_ClearError();
+    SDL_memset(buffer, '1', BUFSIZ);
     buffer[BUFSIZ] = 0;
-    SDL_SetError ("This is the error: %s (%f)", buffer, 1.0);
-    printf ("Error 2: %s\n", SDL_GetError ());
-    exit (0);
+    SDL_SetError("This is the error: %s (%f)", buffer, 1.0);
+    printf("Error 2: %s\n", SDL_GetError());
+    exit(0);
 }
 #endif
 /* vi: set ts=4 sw=4 expandtab: */

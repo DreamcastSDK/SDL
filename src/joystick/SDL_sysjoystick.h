@@ -57,28 +57,28 @@ struct _SDL_Joystick
  * This function should return the number of available joysticks, or -1
  * on an unrecoverable fatal error.
  */
-extern int SDL_SYS_JoystickInit (void);
+extern int SDL_SYS_JoystickInit(void);
 
 /* Function to get the device-dependent name of a joystick */
-extern const char *SDL_SYS_JoystickName (int index);
+extern const char *SDL_SYS_JoystickName(int index);
 
 /* Function to open a joystick for use.
    The joystick to open is specified by the index field of the joystick.
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-extern int SDL_SYS_JoystickOpen (SDL_Joystick * joystick);
+extern int SDL_SYS_JoystickOpen(SDL_Joystick * joystick);
 
 /* Function to update the state of a joystick - called as a device poll.
  * This function shouldn't update the joystick structure directly,
  * but instead should call SDL_PrivateJoystick*() to deliver events
  * and update joystick device state.
  */
-extern void SDL_SYS_JoystickUpdate (SDL_Joystick * joystick);
+extern void SDL_SYS_JoystickUpdate(SDL_Joystick * joystick);
 
 /* Function to close a joystick after use */
-extern void SDL_SYS_JoystickClose (SDL_Joystick * joystick);
+extern void SDL_SYS_JoystickClose(SDL_Joystick * joystick);
 
 /* Function to perform any system-specific joystick related cleanup */
-extern void SDL_SYS_JoystickQuit (void);
+extern void SDL_SYS_JoystickQuit(void);
 /* vi: set ts=4 sw=4 expandtab: */

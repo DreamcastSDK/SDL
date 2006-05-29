@@ -34,21 +34,21 @@ GLPH_DECLARE_FUNCS;
 
 #if (_NTO_VERSION < 630)
 void
-ph_GL_SwapBuffers (_THIS)
+ph_GL_SwapBuffers(_THIS)
 {
-    PgSetRegion (PtWidgetRid (window));
-    PdOpenGLContextSwapBuffers (oglctx);
+    PgSetRegion(PtWidgetRid(window));
+    PdOpenGLContextSwapBuffers(oglctx);
 }
 #else
 void
-ph_GL_SwapBuffers (_THIS)
+ph_GL_SwapBuffers(_THIS)
 {
-    qnxgl_swap_buffers (oglbuffers);
+    qnxgl_swap_buffers(oglbuffers);
 }
 #endif /* 6.3.0 */
 
 int
-ph_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+ph_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
     switch (attrib) {
     case SDL_GL_DOUBLEBUFFER:
@@ -98,7 +98,7 @@ ph_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
 
 #if (_NTO_VERSION < 630)
 int
-ph_GL_LoadLibrary (_THIS, const char *path)
+ph_GL_LoadLibrary(_THIS, const char *path)
 {
     /* if code compiled with SDL_VIDEO_OPENGL, that mean that library already linked */
     this->gl_config.driver_loaded = 1;
@@ -107,7 +107,7 @@ ph_GL_LoadLibrary (_THIS, const char *path)
 }
 #else
 int
-ph_GL_LoadLibrary (_THIS, const char *path)
+ph_GL_LoadLibrary(_THIS, const char *path)
 {
     void *handle;
     int dlopen_flags = RTLD_WORLD | RTLD_GROUP;
@@ -116,18 +116,18 @@ ph_GL_LoadLibrary (_THIS, const char *path)
         return 0;
     }
 
-    handle = dlopen (path, dlopen_flags);
+    handle = dlopen(path, dlopen_flags);
 
     if (handle == NULL) {
-        SDL_SetError ("ph_GL_LoadLibrary(): Could not load OpenGL library");
+        SDL_SetError("ph_GL_LoadLibrary(): Could not load OpenGL library");
         return -1;
     }
 
     this->gl_config.dll_handle = handle;
     this->gl_config.driver_loaded = 1;
 
-    SDL_strlcpy (this->gl_config.driver_path, path,
-                 SDL_arraysize (this->gl_config.driver_path));
+    SDL_strlcpy(this->gl_config.driver_path, path,
+                SDL_arraysize(this->gl_config.driver_path));
 
     return 0;
 }
@@ -135,26 +135,26 @@ ph_GL_LoadLibrary (_THIS, const char *path)
 
 #if (_NTO_VERSION < 630)
 void *
-ph_GL_GetProcAddress (_THIS, const char *proc)
+ph_GL_GetProcAddress(_THIS, const char *proc)
 {
     return NULL;
 }
 #else
 void *
-ph_GL_GetProcAddress (_THIS, const char *proc)
+ph_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *function;
 
     if (this->gl_config.dll_handle == NULL) {
-        ph_GL_LoadLibrary (this, DEFAULT_OPENGL);
+        ph_GL_LoadLibrary(this, DEFAULT_OPENGL);
         if (this->gl_config.dll_handle == NULL) {
             return NULL;
         }
     }
 
-    function = qnxgl_get_func (proc, oglctx, 0);
+    function = qnxgl_get_func(proc, oglctx, 0);
     if (function == NULL) {
-        function = dlsym (this->gl_config.dll_handle, proc);
+        function = dlsym(this->gl_config.dll_handle, proc);
     }
 
     return function;
@@ -163,24 +163,24 @@ ph_GL_GetProcAddress (_THIS, const char *proc)
 
 #if (_NTO_VERSION < 630)
 int
-ph_GL_MakeCurrent (_THIS)
+ph_GL_MakeCurrent(_THIS)
 {
-    PgSetRegion (PtWidgetRid (window));
+    PgSetRegion(PtWidgetRid(window));
 
     if (oglctx != NULL) {
-        PhDCSetCurrent (oglctx);
+        PhDCSetCurrent(oglctx);
     }
 
     return 0;
 }
 #else
 int
-ph_GL_MakeCurrent (_THIS)
+ph_GL_MakeCurrent(_THIS)
 {
-    PgSetRegion (PtWidgetRid (window));
+    PgSetRegion(PtWidgetRid(window));
 
     if (oglctx != NULL) {
-        if (qnxgl_set_current (oglctx) == -1) {
+        if (qnxgl_set_current(oglctx) == -1) {
             return -1;
         }
     }
@@ -194,7 +194,7 @@ ph_GL_MakeCurrent (_THIS)
 /* This code is actual for the Photon3D Runtime which was available prior to 6.3 only */
 
 int
-ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
+ph_SetupOpenGLContext(_THIS, int width, int height, int bpp, Uint32 flags)
 {
     PhDim_t dim;
     uint64_t OGLAttrib[PH_OGL_MAX_ATTRIBS];
@@ -205,13 +205,13 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
     dim.h = height;
 
     if ((oglctx != NULL) && (oglflags == flags) && (oglbpp == bpp)) {
-        PdOpenGLContextResize (oglctx, &dim);
-        PhDCSetCurrent (oglctx);
+        PdOpenGLContextResize(oglctx, &dim);
+        PhDCSetCurrent(oglctx);
         return 0;
     } else {
         if (oglctx != NULL) {
-            PhDCSetCurrent (NULL);
-            PhDCRelease (oglctx);
+            PhDCSetCurrent(NULL);
+            PhDCRelease(oglctx);
             oglctx = NULL;
             exposepost = 1;
         }
@@ -236,9 +236,9 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
     OGLAttrib[OGLargc++] = PHOGL_ATTRIB_NONE;
 
     if (this->gl_config.double_buffer) {
-        oglctx = PdCreateOpenGLContext (2, &dim, 0, OGLAttrib);
+        oglctx = PdCreateOpenGLContext(2, &dim, 0, OGLAttrib);
     } else {
-        oglctx = PdCreateOpenGLContext (1, &dim, 0, OGLAttrib);
+        oglctx = PdCreateOpenGLContext(1, &dim, 0, OGLAttrib);
     }
 
     if (oglctx == NULL) {
@@ -247,16 +247,16 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
         return -1;
     }
 
-    PhDCSetCurrent (oglctx);
+    PhDCSetCurrent(oglctx);
 
-    PtFlush ();
+    PtFlush();
 
     oglflags = flags;
     oglbpp = bpp;
 
     if (exposepost != 0) {
         /* OpenGL context has been recreated, so report about this fact */
-        SDL_PrivateExpose ();
+        SDL_PrivateExpose();
     }
 
     return 0;
@@ -267,7 +267,7 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
 /* This code is actual for the built-in PhGL support, which became available since 6.3 */
 
 int
-ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
+ph_SetupOpenGLContext(_THIS, int width, int height, int bpp, Uint32 flags)
 {
     qnxgl_buf_attrib_t qnxgl_attribs[PH_OGL_MAX_ATTRIBS];
     qnxgl_buf_attrib_t *qnxgl_attribs_slide;
@@ -276,7 +276,7 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
 
     /* Initialize the OpenGL subsystem */
 
-    num_interfaces = qnxgl_init (NULL, NULL, 0);
+    num_interfaces = qnxgl_init(NULL, NULL, 0);
 
     if (num_interfaces < 0) {
         SDL_SetError
@@ -297,44 +297,43 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
 
     /* Depth size */
     if (this->gl_config.depth_size) {
-        fprintf (stderr, "setted depth size %d\n",
-                 this->gl_config.depth_size);
+        fprintf(stderr, "setted depth size %d\n", this->gl_config.depth_size);
         qnxgl_attribs_slide =
-            qnxgl_attrib_set_depth (qnxgl_attribs_slide,
-                                    this->gl_config.depth_size);
+            qnxgl_attrib_set_depth(qnxgl_attribs_slide,
+                                   this->gl_config.depth_size);
     }
 
     /* Stencil size */
     if (this->gl_config.stencil_size) {
         qnxgl_attribs_slide =
-            qnxgl_attrib_set_stencil (qnxgl_attribs_slide,
-                                      this->gl_config.stencil_size);
+            qnxgl_attrib_set_stencil(qnxgl_attribs_slide,
+                                     this->gl_config.stencil_size);
     }
 
     /* The sum of the accum bits of each channel */
     if ((this->gl_config.accum_red_size != 0)
         && (this->gl_config.accum_blue_size != 0)
         && (this->gl_config.accum_green_size != 0)) {
-        qnxgl_attribs_slide = qnxgl_attrib_set_accum (qnxgl_attribs_slide,
-                                                      this->gl_config.
-                                                      accum_red_size +
-                                                      this->gl_config.
-                                                      accum_blue_size +
-                                                      this->gl_config.
-                                                      accum_green_size +
-                                                      this->gl_config.
-                                                      accum_alpha_size);
+        qnxgl_attribs_slide = qnxgl_attrib_set_accum(qnxgl_attribs_slide,
+                                                     this->gl_config.
+                                                     accum_red_size +
+                                                     this->gl_config.
+                                                     accum_blue_size +
+                                                     this->gl_config.
+                                                     accum_green_size +
+                                                     this->gl_config.
+                                                     accum_alpha_size);
     }
 
     /* Stereo mode */
     if (this->gl_config.stereo) {
-        qnxgl_attribs_slide = qnxgl_attrib_set_stereo (qnxgl_attribs_slide);
+        qnxgl_attribs_slide = qnxgl_attrib_set_stereo(qnxgl_attribs_slide);
     }
 
     /* Fullscreen mode */
     if ((flags & SDL_FULLSCREEN) == SDL_FULLSCREEN) {
         qnxgl_attribs_slide =
-            qnxgl_attrib_set_hint_fullscreen (qnxgl_attribs_slide);
+            qnxgl_attrib_set_hint_fullscreen(qnxgl_attribs_slide);
     }
 
     /* Double buffering mode */
@@ -345,55 +344,55 @@ ph_SetupOpenGLContext (_THIS, int width, int height, int bpp, Uint32 flags)
     }
 
     /* Loading the function pointers so we can use the extensions */
-    GLPH_LOAD_FUNCS_GC (oglctx);
+    GLPH_LOAD_FUNCS_GC(oglctx);
 
     /* Set the buffers region to be that of our window's region */
     qnxgl_attribs_slide =
-        glph_attrib_set_region (qnxgl_attribs_slide, PtWidgetRid (window));
+        glph_attrib_set_region(qnxgl_attribs_slide, PtWidgetRid(window));
 
     /* End of the attributes array */
-    qnxgl_attribs_slide = qnxgl_attrib_set_end (qnxgl_attribs_slide);
+    qnxgl_attribs_slide = qnxgl_attrib_set_end(qnxgl_attribs_slide);
 
     /* Create the buffers with the specified color model */
-    fprintf (stderr, "ARGB: %d, %d, %d, %d\n", this->gl_config.alpha_size,
-             this->gl_config.red_size, this->gl_config.green_size,
-             this->gl_config.blue_size);
-    oglbuffers = qnxgl_buffers_create (QNXGL_FORMAT_BEST_RGB,
+    fprintf(stderr, "ARGB: %d, %d, %d, %d\n", this->gl_config.alpha_size,
+            this->gl_config.red_size, this->gl_config.green_size,
+            this->gl_config.blue_size);
+    oglbuffers = qnxgl_buffers_create(QNXGL_FORMAT_BEST_RGB,
 /*                 __QNXGL_BUILD_FORMAT(0, __QNXGL_COLOR_MODEL_RGB, this->gl_config.alpha_size,
                      this->gl_config.red_size, this->gl_config.green_size, this->gl_config.blue_size), */
-                                       num_buffers, width, height,
-                                       qnxgl_attribs, -1);
+                                      num_buffers, width, height,
+                                      qnxgl_attribs, -1);
 
 
     if (oglbuffers == NULL) {
         SDL_SetError
             ("ph_SetupOpenGLContext(): failed to create OpenGL buffers !\n");
-        qnxgl_finish ();
+        qnxgl_finish();
         return -1;
     }
 
     /* Create a QNXGL context for the previously created buffer */
-    oglctx = qnxgl_context_create (oglbuffers, NULL);
+    oglctx = qnxgl_context_create(oglbuffers, NULL);
 
     if (oglctx == NULL) {
         SDL_SetError
             ("ph_SetupOpenGLContext(): failed to create OpenGL context !\n");
-        qnxgl_buffers_destroy (oglbuffers);
-        qnxgl_finish ();
+        qnxgl_buffers_destroy(oglbuffers);
+        qnxgl_finish();
         return -1;
     }
 
     /* Attempt to make the context current so we can use OpenGL commands */
-    if (qnxgl_set_current (oglctx) == -1) {
+    if (qnxgl_set_current(oglctx) == -1) {
         SDL_SetError
             ("ph_SetupOpenGLContext(): failed to make the OpenGL context current !\n");
-        qnxgl_context_destroy (oglctx);
-        qnxgl_buffers_destroy (oglbuffers);
-        qnxgl_finish ();
+        qnxgl_context_destroy(oglctx);
+        qnxgl_buffers_destroy(oglbuffers);
+        qnxgl_finish();
         return -1;
     }
 
-    PtFlush ();
+    PtFlush();
 
     oglflags = flags;
     oglbpp = bpp;

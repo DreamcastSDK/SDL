@@ -50,22 +50,22 @@ static Uint8 wimp_cursor_palette[2][5] = {
 
 static int cursor_palette_saved = 0;
 
-void WIMP_SaveCursorPalette ();
-void WIMP_RestoreWimpCursor ();
-void WIMP_SetSDLCursorPalette ();
+void WIMP_SaveCursorPalette();
+void WIMP_RestoreWimpCursor();
+void WIMP_SetSDLCursorPalette();
 
 
 void
-RISCOS_FreeWMCursor (_THIS, WMcursor * cursor)
+RISCOS_FreeWMCursor(_THIS, WMcursor * cursor)
 {
-    SDL_free (cursor->data);
-    SDL_free (cursor);
+    SDL_free(cursor->data);
+    SDL_free(cursor);
 }
 
 WMcursor *
-RISCOS_CreateWMCursor (_THIS,
-                       Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
-                       int hot_y)
+RISCOS_CreateWMCursor(_THIS,
+                      Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
+                      int hot_y)
 {
     WMcursor *cursor;
     Uint8 *cursor_data;
@@ -75,22 +75,22 @@ RISCOS_CreateWMCursor (_THIS,
 
     /* Check to make sure the cursor size is okay */
     if ((w > 32) || (h > 32)) {
-        SDL_SetError ("Only with width and height <= 32 pixels are allowed");
+        SDL_SetError("Only with width and height <= 32 pixels are allowed");
         return (NULL);
     }
 
     /* Allocate the cursor */
-    cursor = (WMcursor *) SDL_malloc (sizeof (*cursor));
+    cursor = (WMcursor *) SDL_malloc(sizeof(*cursor));
     if (cursor == NULL) {
-        SDL_SetError ("Out of memory");
+        SDL_SetError("Out of memory");
         return (NULL);
     }
 
     /* Note: SDL says width must be a multiple of 8 */
-    cursor_data = SDL_malloc (w / 4 * h);
+    cursor_data = SDL_malloc(w / 4 * h);
     if (cursor_data == NULL) {
-        SDL_free (cursor);
-        SDL_SetError ("Out of memory");
+        SDL_free(cursor);
+        SDL_SetError("Out of memory");
         return (NULL);
     }
 
@@ -137,12 +137,12 @@ RISCOS_CreateWMCursor (_THIS,
 }
 
 int
-RISCOS_ShowWMCursor (_THIS, WMcursor * cursor)
+RISCOS_ShowWMCursor(_THIS, WMcursor * cursor)
 {
     current_cursor = cursor;
 
     if (cursor == NULL) {
-        _kernel_osbyte (106, 0, 0);
+        _kernel_osbyte(106, 0, 0);
         defined_cursor = NULL;
     } else {
         WMcursor *old_cursor = defined_cursor;
@@ -161,8 +161,8 @@ RISCOS_ShowWMCursor (_THIS, WMcursor * cursor)
             cursor_def[8] = ((int) (cursor->data) >> 16) & 0xFF;        /* ... */
             cursor_def[9] = ((int) (cursor->data) >> 24) & 0xFF;        /* Most significant byte of pointer to data */
 
-            if (_kernel_osword (21, (int *) cursor_def) != 0) {
-                SDL_SetError ("RISCOS couldn't create the cursor to show");
+            if (_kernel_osword(21, (int *) cursor_def) != 0) {
+                SDL_SetError("RISCOS couldn't create the cursor to show");
                 return (0);
             }
             defined_cursor = cursor;
@@ -171,19 +171,19 @@ RISCOS_ShowWMCursor (_THIS, WMcursor * cursor)
         if (old_cursor == NULL) {
             /* First time or reshow in window, so save/setup palette */
             if (!cursor_palette_saved) {
-                WIMP_SaveCursorPalette ();
+                WIMP_SaveCursorPalette();
             }
-            WIMP_SetSDLCursorPalette ();
+            WIMP_SetSDLCursorPalette();
         }
 
-        _kernel_osbyte (106, 2, 0);
+        _kernel_osbyte(106, 2, 0);
     }
 
     return (1);
 }
 
 void
-FULLSCREEN_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+FULLSCREEN_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
 {
     Uint8 move_block[5];
     int eig_block[3];
@@ -196,7 +196,7 @@ FULLSCREEN_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
 
     regs.r[0] = (int) eig_block;
     regs.r[1] = (int) eig_block;
-    _kernel_swi (OS_ReadVduVariables, &regs, &regs);
+    _kernel_swi(OS_ReadVduVariables, &regs, &regs);
 
     os_x = x << eig_block[0];
     os_y = y << eig_block[1];
@@ -207,22 +207,22 @@ FULLSCREEN_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
     move_block[3] = os_y & 0xFF;
     move_block[4] = (os_y >> 8) & 0xFF;
 
-    _kernel_osword (21, (int *) move_block);
-    SDL_PrivateMouseMotion (0, 0, x, y);
+    _kernel_osword(21, (int *) move_block);
+    SDL_PrivateMouseMotion(0, 0, x, y);
 }
 
 
 /* Reshow cursor when mouse re-enters the window */
 void
-WIMP_ReshowCursor (_THIS)
+WIMP_ReshowCursor(_THIS)
 {
     defined_cursor = NULL;
     cursor_palette_saved = 0;
-    RISCOS_ShowWMCursor (this, current_cursor);
+    RISCOS_ShowWMCursor(this, current_cursor);
 }
 
 void
-WIMP_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+WIMP_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
 {
     _kernel_swi_regs regs;
     int window_state[9];
@@ -231,7 +231,7 @@ WIMP_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
 
     window_state[0] = this->hidden->window_handle;
     regs.r[1] = (unsigned int) window_state;
-    _kernel_swi (Wimp_GetWindowState, &regs, &regs);
+    _kernel_swi(Wimp_GetWindowState, &regs, &regs);
 
     osX = (x << this->hidden->xeig) + window_state[1];
     osY = window_state[4] - (y << this->hidden->yeig);
@@ -244,15 +244,15 @@ WIMP_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
 
     regs.r[0] = 21;
     regs.r[1] = (int) block;
-    _kernel_swi (OS_Word, &regs, &regs);
-    SDL_PrivateMouseMotion (0, 0, x, y);
+    _kernel_swi(OS_Word, &regs, &regs);
+    SDL_PrivateMouseMotion(0, 0, x, y);
 }
 
 int
-WIMP_ShowWMCursor (_THIS, WMcursor * cursor)
+WIMP_ShowWMCursor(_THIS, WMcursor * cursor)
 {
     if (mouseInWindow)
-        return RISCOS_ShowWMCursor (this, cursor);
+        return RISCOS_ShowWMCursor(this, cursor);
     else
         current_cursor = cursor;
 
@@ -260,7 +260,7 @@ WIMP_ShowWMCursor (_THIS, WMcursor * cursor)
 }
 
 SDL_GrabMode
-RISCOS_GrabInput (_THIS, SDL_GrabMode mode)
+RISCOS_GrabInput(_THIS, SDL_GrabMode mode)
 {
     /* In fullscreen mode we don't need to do anything */
     if (mode < SDL_GRAB_FULLSCREEN) {
@@ -288,7 +288,7 @@ RISCOS_GrabInput (_THIS, SDL_GrabMode mode)
 
             *((int *) window_state) = this->hidden->window_handle;
             regs.r[1] = (unsigned int) window_state;
-            _kernel_swi (Wimp_GetWindowState, &regs, &regs);
+            _kernel_swi(Wimp_GetWindowState, &regs, &regs);
 
             block[1] = window_state[4];
             block[2] = window_state[5];
@@ -303,7 +303,7 @@ RISCOS_GrabInput (_THIS, SDL_GrabMode mode)
 
         regs.r[0] = 21;         /* OS word code */
         regs.r[1] = (int) block;
-        _kernel_swi (OS_Word, &regs, &regs);
+        _kernel_swi(OS_Word, &regs, &regs);
     }
 
     return mode;
@@ -313,7 +313,7 @@ RISCOS_GrabInput (_THIS, SDL_GrabMode mode)
    defining a cursor */
 
 void
-WIMP_SaveCursorPalette ()
+WIMP_SaveCursorPalette()
 {
     _kernel_swi_regs regs;
     int colour;
@@ -322,7 +322,7 @@ WIMP_SaveCursorPalette ()
         regs.r[0] = (int) wimp_cursor_palette[colour][0];
         regs.r[1] = 25;
         /* Read settings with OS_ReadPalette */
-        if (_kernel_swi (0x2f, &regs, &regs) == NULL) {
+        if (_kernel_swi(0x2f, &regs, &regs) == NULL) {
             wimp_cursor_palette[colour][2] =
                 (unsigned char) ((regs.r[2] >> 8) & 0xFF);
             wimp_cursor_palette[colour][3] =
@@ -337,17 +337,17 @@ WIMP_SaveCursorPalette ()
 
 /* Restore the WIMP's cursor when we leave the SDL window */
 void
-WIMP_RestoreWimpCursor ()
+WIMP_RestoreWimpCursor()
 {
     int colour;
 
     /* Reset to pointer shape 1 */
-    _kernel_osbyte (106, 1, 0);
+    _kernel_osbyte(106, 1, 0);
 
     /* Reset pointer colours */
     if (cursor_palette_saved) {
         for (colour = 0; colour < 2; colour++) {
-            _kernel_osword (12, (int *) wimp_cursor_palette[colour]);
+            _kernel_osword(12, (int *) wimp_cursor_palette[colour]);
         }
     }
     cursor_palette_saved = 0;
@@ -355,7 +355,7 @@ WIMP_RestoreWimpCursor ()
 
 /* Set palette used for SDL mouse cursors */
 void
-WIMP_SetSDLCursorPalette ()
+WIMP_SetSDLCursorPalette()
 {
     /* First time set up the mouse colours */
     Uint8 block[5];
@@ -366,7 +366,7 @@ WIMP_SetSDLCursorPalette ()
     block[2] = 255;             /* red component */
     block[3] = 255;             /* green component */
     block[4] = 255;             /* blue component */
-    _kernel_osword (12, (int *) block);
+    _kernel_osword(12, (int *) block);
 
     /* Set colour 3 to back */
     block[0] = 3;               /* Colour to change 1 - 3 */
@@ -374,7 +374,7 @@ WIMP_SetSDLCursorPalette ()
     block[2] = 0;               /* red component */
     block[3] = 0;               /* green component */
     block[4] = 0;               /* blue component */
-    _kernel_osword (12, (int *) block);
+    _kernel_osword(12, (int *) block);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

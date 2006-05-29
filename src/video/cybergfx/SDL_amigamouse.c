@@ -32,20 +32,20 @@
 typedef void *WMCursor;
 
 void
-amiga_FreeWMCursor (_THIS, WMcursor * cursor)
+amiga_FreeWMCursor(_THIS, WMcursor * cursor)
 {
 }
 
 WMcursor *
-amiga_CreateWMCursor (_THIS,
-                      Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
-                      int hot_y)
+amiga_CreateWMCursor(_THIS,
+                     Uint8 * data, Uint8 * mask, int w, int h, int hot_x,
+                     int hot_y)
 {
     return (WMcursor *) 1;      // Amiga has an Hardware cursor, so it's ok to return something unuseful but true
 }
 
 int
-amiga_ShowWMCursor (_THIS, WMcursor * cursor)
+amiga_ShowWMCursor(_THIS, WMcursor * cursor)
 {
     /* Don't do anything if the display is gone */
     if (SDL_Display == NULL) {
@@ -55,31 +55,30 @@ amiga_ShowWMCursor (_THIS, WMcursor * cursor)
     /* Set the Amiga prefs cursor cursor, or blank if cursor is NULL */
 
     if (SDL_Window) {
-        SDL_Lock_EventThread ();
+        SDL_Lock_EventThread();
         if (cursor == NULL) {
             if (SDL_BlankCursor != NULL) {
 // Hide cursor HERE
-                SetPointer (SDL_Window, (UWORD *) SDL_BlankCursor, 1, 1,
-                            0, 0);
+                SetPointer(SDL_Window, (UWORD *) SDL_BlankCursor, 1, 1, 0, 0);
             }
         } else {
 // Show cursor
-            ClearPointer (SDL_Window);
+            ClearPointer(SDL_Window);
         }
-        SDL_Unlock_EventThread ();
+        SDL_Unlock_EventThread();
     }
     return (1);
 }
 
 void
-amiga_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+amiga_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
 {
 /* FIXME: Not implemented */
 }
 
 /* Check to see if we need to enter or leave mouse relative mode */
 void
-amiga_CheckMouseMode (_THIS)
+amiga_CheckMouseMode(_THIS)
 {
 }
 

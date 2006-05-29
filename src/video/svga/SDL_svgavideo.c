@@ -51,27 +51,27 @@
 #include "SDL_svgamouse_c.h"
 
 /* Initialization/Query functions */
-static int SVGA_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **SVGA_ListModes (_THIS, SDL_PixelFormat * format,
-                                  Uint32 flags);
-static SDL_Surface *SVGA_SetVideoMode (_THIS, SDL_Surface * current,
-                                       int width, int height, int bpp,
-                                       Uint32 flags);
-static int SVGA_SetColors (_THIS, int firstcolor, int ncolors,
-                           SDL_Color * colors);
-static void SVGA_VideoQuit (_THIS);
+static int SVGA_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **SVGA_ListModes(_THIS, SDL_PixelFormat * format,
+                                 Uint32 flags);
+static SDL_Surface *SVGA_SetVideoMode(_THIS, SDL_Surface * current,
+                                      int width, int height, int bpp,
+                                      Uint32 flags);
+static int SVGA_SetColors(_THIS, int firstcolor, int ncolors,
+                          SDL_Color * colors);
+static void SVGA_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int SVGA_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int SVGA_LockHWSurface (_THIS, SDL_Surface * surface);
-static int SVGA_FlipHWSurface (_THIS, SDL_Surface * surface);
-static void SVGA_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void SVGA_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int SVGA_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int SVGA_LockHWSurface(_THIS, SDL_Surface * surface);
+static int SVGA_FlipHWSurface(_THIS, SDL_Surface * surface);
+static void SVGA_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void SVGA_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* SVGAlib driver bootstrap functions */
 
 static int
-SVGA_Available (void)
+SVGA_Available(void)
 {
     /* Check to see if we are root and stdin is a virtual console */
     int console;
@@ -86,49 +86,49 @@ SVGA_Available (void)
         struct stat sb;
         struct vt_mode dummy;
 
-        if ((fstat (console, &sb) < 0) ||
-            (ioctl (console, VT_GETMODE, &dummy) < 0)) {
+        if ((fstat(console, &sb) < 0) ||
+            (ioctl(console, VT_GETMODE, &dummy) < 0)) {
             console = -1;
         }
     }
 #endif /* 0 */
 
     /* See if SVGAlib 2.0 is available */
-    svgalib2 = open ("/dev/svga", O_RDONLY);
+    svgalib2 = open("/dev/svga", O_RDONLY);
     if (svgalib2 != -1) {
-        close (svgalib2);
+        close(svgalib2);
     }
 
-    return (((svgalib2 != -1) || (geteuid () == 0)) && (console >= 0));
+    return (((svgalib2 != -1) || (geteuid() == 0)) && (console >= 0));
 }
 
 static void
-SVGA_DeleteDevice (SDL_VideoDevice * device)
+SVGA_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-SVGA_CreateDevice (int devindex)
+SVGA_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = SVGA_VideoInit;
@@ -165,12 +165,12 @@ VideoBootStrap SVGALIB_bootstrap = {
 };
 
 static int
-SVGA_AddMode (_THIS, int mode, int actually_add)
+SVGA_AddMode(_THIS, int mode, int actually_add)
 {
     int i, j;
     vga_modeinfo *modeinfo;
 
-    modeinfo = vga_getmodeinfo (mode);
+    modeinfo = vga_getmodeinfo(mode);
 
     i = modeinfo->bytesperpixel - 1;
     if (i < 0) {
@@ -218,23 +218,23 @@ SVGA_AddMode (_THIS, int mode, int actually_add)
 }
 
 static void
-SVGA_UpdateVideoInfo (_THIS)
+SVGA_UpdateVideoInfo(_THIS)
 {
     vga_modeinfo *modeinfo;
 
     this->info.wm_available = 0;
     this->info.hw_available = (banked ? 0 : 1);
-    modeinfo = vga_getmodeinfo (vga_getcurrentmode ());
+    modeinfo = vga_getmodeinfo(vga_getcurrentmode());
     this->info.video_mem = modeinfo->memory;
     /* FIXME: Add hardware accelerated blit information */
 #ifdef SVGALIB_DEBUG
-    printf ("Hardware accelerated blit: %savailable\n",
-            modeinfo->haveblit ? "" : "not ");
+    printf("Hardware accelerated blit: %savailable\n",
+           modeinfo->haveblit ? "" : "not ");
 #endif
 }
 
 int
-SVGA_VideoInit (_THIS, SDL_PixelFormat * vformat)
+SVGA_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     int keyboard;
     int i, j;
@@ -248,24 +248,24 @@ SVGA_VideoInit (_THIS, SDL_PixelFormat * vformat)
     }
 
     /* Initialize the library */
-    vga_disabledriverreport ();
-    if (vga_init () < 0) {
-        SDL_SetError ("Unable to initialize SVGAlib");
+    vga_disabledriverreport();
+    if (vga_init() < 0) {
+        SDL_SetError("Unable to initialize SVGAlib");
         return (-1);
     }
-    vga_setmode (TEXT);
+    vga_setmode(TEXT);
 
     /* Enable mouse and keyboard support */
-    vga_setmousesupport (1);
-    keyboard = keyboard_init_return_fd ();
+    vga_setmousesupport(1);
+    keyboard = keyboard_init_return_fd();
     if (keyboard < 0) {
-        SDL_SetError ("Unable to initialize keyboard");
+        SDL_SetError("Unable to initialize keyboard");
         return (-1);
     }
-    if (SVGA_initkeymaps (keyboard) < 0) {
+    if (SVGA_initkeymaps(keyboard) < 0) {
         return (-1);
     }
-    keyboard_seteventhandler (SVGA_keyboardcallback);
+    keyboard_seteventhandler(SVGA_keyboardcallback);
 
     /* Determine the current screen size */
     this->info.current_w = 0;
@@ -276,47 +276,47 @@ SVGA_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
     /* Enumerate the available fullscreen modes */
     total_modes = 0;
-    for (mode = vga_lastmodenumber (); mode; --mode) {
-        if (vga_hasmode (mode)) {
-            if (SVGA_AddMode (this, mode, 0)) {
+    for (mode = vga_lastmodenumber(); mode; --mode) {
+        if (vga_hasmode(mode)) {
+            if (SVGA_AddMode(this, mode, 0)) {
                 ++total_modes;
             }
         }
     }
-    if (SVGA_AddMode (this, G320x200x256, 0))
+    if (SVGA_AddMode(this, G320x200x256, 0))
         ++total_modes;
     if (total_modes == 0) {
-        SDL_SetError ("No linear video modes available");
+        SDL_SetError("No linear video modes available");
         return (-1);
     }
     for (i = 0; i < NUM_MODELISTS; ++i) {
-        SDL_vgamode[i] = (int *) SDL_malloc (SDL_nummodes[i] * sizeof (int));
+        SDL_vgamode[i] = (int *) SDL_malloc(SDL_nummodes[i] * sizeof(int));
         if (SDL_vgamode[i] == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
         SDL_modelist[i] = (SDL_Rect **)
-            SDL_malloc ((SDL_nummodes[i] + 1) * sizeof (SDL_Rect *));
+            SDL_malloc((SDL_nummodes[i] + 1) * sizeof(SDL_Rect *));
         if (SDL_modelist[i] == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
         for (j = 0; j < SDL_nummodes[i]; ++j) {
-            SDL_modelist[i][j] = (SDL_Rect *) SDL_malloc (sizeof (SDL_Rect));
+            SDL_modelist[i][j] = (SDL_Rect *) SDL_malloc(sizeof(SDL_Rect));
             if (SDL_modelist[i][j] == NULL) {
-                SDL_OutOfMemory ();
+                SDL_OutOfMemory();
                 return (-1);
             }
-            SDL_memset (SDL_modelist[i][j], 0, sizeof (SDL_Rect));
+            SDL_memset(SDL_modelist[i][j], 0, sizeof(SDL_Rect));
         }
         SDL_modelist[i][j] = NULL;
     }
-    for (mode = vga_lastmodenumber (); mode; --mode) {
-        if (vga_hasmode (mode)) {
-            SVGA_AddMode (this, mode, 1);
+    for (mode = vga_lastmodenumber(); mode; --mode) {
+        if (vga_hasmode(mode)) {
+            SVGA_AddMode(this, mode, 1);
         }
     }
-    SVGA_AddMode (this, G320x200x256, 1);
+    SVGA_AddMode(this, G320x200x256, 1);
 
     /* Free extra (duplicated) modes */
     for (i = 0; i < NUM_MODELISTS; ++i) {
@@ -325,32 +325,32 @@ SVGA_VideoInit (_THIS, SDL_PixelFormat * vformat)
             j++;
         }
         while (SDL_modelist[i][j]) {
-            SDL_free (SDL_modelist[i][j]);
+            SDL_free(SDL_modelist[i][j]);
             SDL_modelist[i][j] = NULL;
             j++;
         }
     }
 
     /* Fill in our hardware acceleration capabilities */
-    SVGA_UpdateVideoInfo (this);
+    SVGA_UpdateVideoInfo(this);
 
     /* We're done! */
     return (0);
 }
 
 SDL_Rect **
-SVGA_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+SVGA_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     return (SDL_modelist[((format->BitsPerPixel + 7) / 8) - 1]);
 }
 
 /* Various screen update functions available */
-static void SVGA_DirectUpdate (_THIS, int numrects, SDL_Rect * rects);
-static void SVGA_BankedUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void SVGA_DirectUpdate(_THIS, int numrects, SDL_Rect * rects);
+static void SVGA_BankedUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 SDL_Surface *
-SVGA_SetVideoMode (_THIS, SDL_Surface * current,
-                   int width, int height, int bpp, Uint32 flags)
+SVGA_SetVideoMode(_THIS, SDL_Surface * current,
+                  int width, int height, int bpp, Uint32 flags)
 {
     int mode;
     int vgamode;
@@ -359,7 +359,7 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
 
     /* Free old pixels if we were in banked mode */
     if (banked && current->pixels) {
-        free (current->pixels);
+        free(current->pixels);
         current->pixels = NULL;
     }
 
@@ -372,30 +372,30 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
         }
     }
     if (SDL_modelist[bpp][mode] == NULL) {
-        SDL_SetError ("Couldn't find requested mode in list");
+        SDL_SetError("Couldn't find requested mode in list");
         return (NULL);
     }
     vgamode = SDL_vgamode[bpp][mode];
-    vga_setmode (vgamode);
-    vga_setpage (0);
+    vga_setmode(vgamode);
+    vga_setpage(0);
 
-    if ((vga_setlinearaddressing () < 0) && (vgamode != G320x200x256)) {
+    if ((vga_setlinearaddressing() < 0) && (vgamode != G320x200x256)) {
         banked = 1;
     } else {
         banked = 0;
     }
 
-    modeinfo = vga_getmodeinfo (SDL_vgamode[bpp][mode]);
+    modeinfo = vga_getmodeinfo(SDL_vgamode[bpp][mode]);
 
     /* Update hardware acceleration info */
-    SVGA_UpdateVideoInfo (this);
+    SVGA_UpdateVideoInfo(this);
 
     /* Allocate the new pixel format for the screen */
     bpp = (bpp + 1) * 8;
     if ((bpp == 16) && (modeinfo->colors == 32768)) {
         bpp = 15;
     }
-    if (!SDL_ReallocFormat (current, bpp, 0, 0, 0, 0)) {
+    if (!SDL_ReallocFormat(current, bpp, 0, 0, 0, 0)) {
         return (NULL);
     }
 
@@ -412,13 +412,13 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
     current->h = height;
     current->pitch = modeinfo->linewidth;
     if (banked) {
-        current->pixels = SDL_malloc (current->h * current->pitch);
+        current->pixels = SDL_malloc(current->h * current->pitch);
         if (!current->pixels) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (NULL);
         }
     } else {
-        current->pixels = vga_getgraphmem ();
+        current->pixels = vga_getgraphmem();
     }
 
     /* set double-buffering */
@@ -441,9 +441,9 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
             flip_page = 0;
             flip_offset[0] = 0;
             flip_offset[1] = screenpage_len;
-            flip_address[0] = vga_getgraphmem ();
+            flip_address[0] = vga_getgraphmem();
             flip_address[1] = flip_address[0] + screenpage_len;
-            SVGA_FlipHWSurface (this, current);
+            SVGA_FlipHWSurface(this, current);
         }
     }
 
@@ -455,7 +455,7 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
     }
 
     /* Set up the mouse handler again (buggy SVGAlib 1.40) */
-    mouse_seteventhandler (SVGA_mousecallback);
+    mouse_seteventhandler(SVGA_mousecallback);
 
     /* We're done */
     return (current);
@@ -463,49 +463,49 @@ SVGA_SetVideoMode (_THIS, SDL_Surface * current,
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-SVGA_AllocHWSurface (_THIS, SDL_Surface * surface)
+SVGA_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-SVGA_FreeHWSurface (_THIS, SDL_Surface * surface)
+SVGA_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-SVGA_LockHWSurface (_THIS, SDL_Surface * surface)
+SVGA_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     /* The waiting is done in SVGA_FlipHWSurface() */
     return (0);
 }
 static void
-SVGA_UnlockHWSurface (_THIS, SDL_Surface * surface)
+SVGA_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 static int
-SVGA_FlipHWSurface (_THIS, SDL_Surface * surface)
+SVGA_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
     if (!banked) {
-        vga_setdisplaystart (flip_offset[flip_page]);
+        vga_setdisplaystart(flip_offset[flip_page]);
         flip_page = !flip_page;
         surface->pixels = flip_address[flip_page];
-        vga_waitretrace ();
+        vga_waitretrace();
     }
     return (0);
 }
 
 static void
-SVGA_DirectUpdate (_THIS, int numrects, SDL_Rect * rects)
+SVGA_DirectUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     return;
 }
 
 static void
-SVGA_BankedUpdate (_THIS, int numrects, SDL_Rect * rects)
+SVGA_BankedUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     int i, j;
     SDL_Rect *rect;
@@ -516,7 +516,7 @@ SVGA_BankedUpdate (_THIS, int numrects, SDL_Rect * rects)
     int bpp = this->screen->format->BytesPerPixel;
     int pitch = this->screen->pitch;
 
-    dst = vga_getgraphmem ();
+    dst = vga_getgraphmem();
     for (i = 0; i < numrects; ++i) {
         rect = &rects[i];
         x = rect->x;
@@ -528,24 +528,24 @@ SVGA_BankedUpdate (_THIS, int numrects, SDL_Rect * rects)
         src = (unsigned char *) this->screen->pixels + vp;
         page = vp >> 16;
         vp &= 0xffff;
-        vga_setpage (page);
+        vga_setpage(page);
         for (j = 0; j < h; j++) {
             if (vp + w > 0x10000) {
                 if (vp >= 0x10000) {
                     page++;
-                    vga_setpage (page);
+                    vga_setpage(page);
                     vp &= 0xffff;
                 } else {
-                    SDL_memcpy (dst + vp, src, 0x10000 - vp);
+                    SDL_memcpy(dst + vp, src, 0x10000 - vp);
                     page++;
-                    vga_setpage (page);
-                    SDL_memcpy (dst, src + 0x10000 - vp, (vp + w) & 0xffff);
+                    vga_setpage(page);
+                    SDL_memcpy(dst, src + 0x10000 - vp, (vp + w) & 0xffff);
                     vp = (vp + pitch) & 0xffff;
                     src += pitch;
                     continue;
                 }
             }
-            SDL_memcpy (dst + vp, src, w);
+            SDL_memcpy(dst + vp, src, w);
             src += pitch;
             vp += pitch;
         }
@@ -553,13 +553,13 @@ SVGA_BankedUpdate (_THIS, int numrects, SDL_Rect * rects)
 }
 
 int
-SVGA_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+SVGA_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
 
     for (i = 0; i < ncolors; i++) {
-        vga_setpalette (firstcolor + i,
-                        colors[i].r >> 2, colors[i].g >> 2, colors[i].b >> 2);
+        vga_setpalette(firstcolor + i,
+                       colors[i].r >> 2, colors[i].g >> 2, colors[i].b >> 2);
     }
     return (1);
 }
@@ -568,32 +568,32 @@ SVGA_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
    another SDL video routine -- notably UpdateRects.
 */
 void
-SVGA_VideoQuit (_THIS)
+SVGA_VideoQuit(_THIS)
 {
     int i, j;
 
     /* Reset the console video mode */
     if (this->screen && (this->screen->w && this->screen->h)) {
-        vga_setmode (TEXT);
+        vga_setmode(TEXT);
     }
-    keyboard_close ();
+    keyboard_close();
 
     /* Free video mode lists */
     for (i = 0; i < NUM_MODELISTS; ++i) {
         if (SDL_modelist[i] != NULL) {
             for (j = 0; SDL_modelist[i][j]; ++j)
-                SDL_free (SDL_modelist[i][j]);
-            SDL_free (SDL_modelist[i]);
+                SDL_free(SDL_modelist[i][j]);
+            SDL_free(SDL_modelist[i]);
             SDL_modelist[i] = NULL;
         }
         if (SDL_vgamode[i] != NULL) {
-            SDL_free (SDL_vgamode[i]);
+            SDL_free(SDL_vgamode[i]);
             SDL_vgamode[i] = NULL;
         }
     }
     if (this->screen) {
         if (banked && this->screen->pixels) {
-            SDL_free (this->screen->pixels);
+            SDL_free(this->screen->pixels);
         }
         this->screen->pixels = NULL;
     }

@@ -91,8 +91,8 @@ struct SDL_PrivateVideoData
 #define dma_pending		(this->hidden->dma_pending)
 
 /* Shared between the mouse and video code for screen update scaling */
-extern int scaleimage_nonblock (int fd,
-                                unsigned long long *tm,
-                                unsigned long long *sm);
+extern int scaleimage_nonblock(int fd,
+                               unsigned long long *tm,
+                               unsigned long long *sm);
 #endif /* _SDL_gsvideo_h */
 /* vi: set ts=4 sw=4 expandtab: */

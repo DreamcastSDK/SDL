@@ -35,9 +35,9 @@
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
 
-extern void AtariIkbd_InitOSKeymap (_THIS);
-extern void AtariIkbd_PumpEvents (_THIS);
-extern void AtariIkbd_ShutdownEvents (void);
+extern void AtariIkbd_InitOSKeymap(_THIS);
+extern void AtariIkbd_PumpEvents(_THIS);
+extern void AtariIkbd_ShutdownEvents(void);
 
 #endif /* _SDL_ATARI_IKBDEVENTS_H_ */
 /* vi: set ts=4 sw=4 expandtab: */

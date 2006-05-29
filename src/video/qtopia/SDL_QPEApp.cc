@@ -34,15 +34,15 @@ int SDL_QPEAppActive = 0;
 static QPEApplication *app;
 
 int
-SDL_InitQPEApp ()
+SDL_InitQPEApp()
 {
     if (SDL_QPEAppActive <= 0) {
         if (!qApp) {
             int argc = 1;
             char *argv[] = { {"SDLApp"} };
-            app = new QPEApplication (argc, argv);
+            app = new QPEApplication(argc, argv);
             QWidget dummy;
-            app->showMainWidget (&dummy);
+            app->showMainWidget(&dummy);
         } else {
             app = (QPEApplication *) qApp;
         }
@@ -53,7 +53,7 @@ SDL_InitQPEApp ()
 
 /* Quit the QPE Application, if there's nothing left to do */
 void
-SDL_QuitQPEApp (void)
+SDL_QuitQPEApp(void)
 {
     /* Decrement the application reference count */
     SDL_QPEAppActive--;

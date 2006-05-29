@@ -42,29 +42,29 @@ SDL_mutex *SDL_cursorlock = NULL;
 
 /* Public functions */
 void
-SDL_CursorQuit (void)
+SDL_CursorQuit(void)
 {
     if (SDL_cursor != NULL) {
         SDL_Cursor *cursor;
 
         SDL_cursorstate &= ~CURSOR_VISIBLE;
         if (SDL_cursor != SDL_defcursor) {
-            SDL_FreeCursor (SDL_cursor);
+            SDL_FreeCursor(SDL_cursor);
         }
         SDL_cursor = NULL;
         if (SDL_defcursor != NULL) {
             cursor = SDL_defcursor;
             SDL_defcursor = NULL;
-            SDL_FreeCursor (cursor);
+            SDL_FreeCursor(cursor);
         }
     }
     if (SDL_cursorlock != NULL) {
-        SDL_DestroyMutex (SDL_cursorlock);
+        SDL_DestroyMutex(SDL_cursorlock);
         SDL_cursorlock = NULL;
     }
 }
 int
-SDL_CursorInit (Uint32 multithreaded)
+SDL_CursorInit(Uint32 multithreaded)
 {
     /* We don't have mouse focus, and the cursor isn't drawn yet */
 #ifndef IPOD
@@ -73,15 +73,15 @@ SDL_CursorInit (Uint32 multithreaded)
 
     /* Create the default cursor */
     if (SDL_defcursor == NULL) {
-        SDL_defcursor = SDL_CreateCursor (default_cdata, default_cmask,
-                                          DEFAULT_CWIDTH, DEFAULT_CHEIGHT,
-                                          DEFAULT_CHOTX, DEFAULT_CHOTY);
-        SDL_SetCursor (SDL_defcursor);
+        SDL_defcursor = SDL_CreateCursor(default_cdata, default_cmask,
+                                         DEFAULT_CWIDTH, DEFAULT_CHEIGHT,
+                                         DEFAULT_CHOTX, DEFAULT_CHOTY);
+        SDL_SetCursor(SDL_defcursor);
     }
 
     /* Create a lock if necessary */
     if (multithreaded) {
-        SDL_cursorlock = SDL_CreateMutex ();
+        SDL_cursorlock = SDL_CreateMutex();
     }
 
     /* That's it! */
@@ -91,29 +91,29 @@ SDL_CursorInit (Uint32 multithreaded)
 /* Multi-thread support for cursors */
 #ifndef SDL_LockCursor
 void
-SDL_LockCursor (void)
+SDL_LockCursor(void)
 {
     if (SDL_cursorlock) {
-        SDL_mutexP (SDL_cursorlock);
+        SDL_mutexP(SDL_cursorlock);
     }
 }
 #endif
 #ifndef SDL_UnlockCursor
 void
-SDL_UnlockCursor (void)
+SDL_UnlockCursor(void)
 {
     if (SDL_cursorlock) {
-        SDL_mutexV (SDL_cursorlock);
+        SDL_mutexV(SDL_cursorlock);
     }
 }
 #endif
 
 /* Software cursor drawing support */
 SDL_Cursor *
-SDL_CreateCursor (Uint8 * data, Uint8 * mask,
-                  int w, int h, int hot_x, int hot_y)
+SDL_CreateCursor(Uint8 * data, Uint8 * mask,
+                 int w, int h, int hot_x, int hot_y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int savelen;
     int i;
     SDL_Cursor *cursor;
@@ -123,14 +123,14 @@ SDL_CreateCursor (Uint8 * data, Uint8 * mask,
 
     /* Sanity check the hot spot */
     if ((hot_x < 0) || (hot_y < 0) || (hot_x >= w) || (hot_y >= h)) {
-        SDL_SetError ("Cursor hot spot doesn't lie within cursor");
+        SDL_SetError("Cursor hot spot doesn't lie within cursor");
         return (NULL);
     }
 
     /* Allocate memory for the cursor */
-    cursor = (SDL_Cursor *) SDL_malloc (sizeof *cursor);
+    cursor = (SDL_Cursor *) SDL_malloc(sizeof *cursor);
     if (cursor == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
     savelen = (w * 4) * h;
@@ -140,26 +140,26 @@ SDL_CreateCursor (Uint8 * data, Uint8 * mask,
     cursor->area.h = h;
     cursor->hot_x = hot_x;
     cursor->hot_y = hot_y;
-    cursor->data = (Uint8 *) SDL_malloc ((w / 8) * h * 2);
+    cursor->data = (Uint8 *) SDL_malloc((w / 8) * h * 2);
     cursor->mask = cursor->data + ((w / 8) * h);
-    cursor->save[0] = (Uint8 *) SDL_malloc (savelen * 2);
+    cursor->save[0] = (Uint8 *) SDL_malloc(savelen * 2);
     cursor->save[1] = cursor->save[0] + savelen;
     cursor->wm_cursor = NULL;
     if (!cursor->data || !cursor->save[0]) {
-        SDL_FreeCursor (cursor);
-        SDL_OutOfMemory ();
+        SDL_FreeCursor(cursor);
+        SDL_OutOfMemory();
         return (NULL);
     }
     for (i = ((w / 8) * h) - 1; i >= 0; --i) {
         cursor->data[i] = data[i];
         cursor->mask[i] = mask[i] | data[i];
     }
-    SDL_memset (cursor->save[0], 0, savelen * 2);
+    SDL_memset(cursor->save[0], 0, savelen * 2);
 
     /* If the window manager gives us a good cursor, we're done! */
     if (_this->CreateWMCursor) {
-        cursor->wm_cursor = _this->CreateWMCursor (_this, data, mask,
-                                                   w, h, hot_x, hot_y);
+        cursor->wm_cursor = _this->CreateWMCursor(_this, data, mask,
+                                                  w, h, hot_x, hot_y);
     } else {
         cursor->wm_cursor = NULL;
     }
@@ -171,9 +171,9 @@ SDL_CreateCursor (Uint8 * data, Uint8 * mask,
    the video mode and when the SDL window gains the mouse focus.
  */
 void
-SDL_SetCursor (SDL_Cursor * cursor)
+SDL_SetCursor(SDL_Cursor * cursor)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* Make sure that the video subsystem has been initialized */
     if (!_this) {
@@ -181,20 +181,20 @@ SDL_SetCursor (SDL_Cursor * cursor)
     }
 
     /* Prevent the event thread from moving the mouse */
-    SDL_LockCursor ();
+    SDL_LockCursor();
 
     /* Set the new cursor */
     if (cursor && (cursor != SDL_cursor)) {
         /* Erase the current mouse position */
-        if (SHOULD_DRAWCURSOR (SDL_cursorstate)) {
-            SDL_EraseCursor (SDL_VideoSurface);
+        if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
+            SDL_EraseCursor(SDL_VideoSurface);
         } else if (_this->MoveWMCursor) {
             /* If the video driver is moving the cursor directly,
                it needs to hide the old cursor before (possibly)
                showing the new one.  (But don't erase NULL cursor)
              */
             if (SDL_cursor) {
-                _this->ShowWMCursor (_this, NULL);
+                _this->ShowWMCursor(_this, NULL);
             }
         }
         SDL_cursor = cursor;
@@ -204,84 +204,84 @@ SDL_SetCursor (SDL_Cursor * cursor)
     if (SDL_cursor && (SDL_cursorstate & CURSOR_VISIBLE)) {
         /* Use window manager cursor if possible */
         if (SDL_cursor->wm_cursor &&
-            _this->ShowWMCursor (_this, SDL_cursor->wm_cursor)) {
+            _this->ShowWMCursor(_this, SDL_cursor->wm_cursor)) {
             SDL_cursorstate &= ~CURSOR_USINGSW;
         } else {
             SDL_cursorstate |= CURSOR_USINGSW;
             if (_this->ShowWMCursor) {
-                _this->ShowWMCursor (_this, NULL);
+                _this->ShowWMCursor(_this, NULL);
             }
             {
                 int x, y;
-                SDL_GetMouseState (&x, &y);
+                SDL_GetMouseState(&x, &y);
                 SDL_cursor->area.x = (x - SDL_cursor->hot_x);
                 SDL_cursor->area.y = (y - SDL_cursor->hot_y);
             }
-            SDL_DrawCursor (SDL_VideoSurface);
+            SDL_DrawCursor(SDL_VideoSurface);
         }
     } else {
         /* Erase window manager mouse (cursor not visible) */
         if (SDL_cursor && (SDL_cursorstate & CURSOR_USINGSW)) {
-            SDL_EraseCursor (SDL_VideoSurface);
+            SDL_EraseCursor(SDL_VideoSurface);
         } else {
             if (_this) {
-                _this->ShowWMCursor (_this, NULL);
+                _this->ShowWMCursor(_this, NULL);
             }
         }
     }
-    SDL_UnlockCursor ();
+    SDL_UnlockCursor();
 }
 
 SDL_Cursor *
-SDL_GetCursor (void)
+SDL_GetCursor(void)
 {
     return (SDL_cursor);
 }
 
 void
-SDL_FreeCursor (SDL_Cursor * cursor)
+SDL_FreeCursor(SDL_Cursor * cursor)
 {
     if (cursor) {
         if (cursor == SDL_cursor) {
-            SDL_SetCursor (SDL_defcursor);
+            SDL_SetCursor(SDL_defcursor);
         }
         if (cursor != SDL_defcursor) {
-            SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
             if (cursor->data) {
-                SDL_free (cursor->data);
+                SDL_free(cursor->data);
             }
             if (cursor->save[0]) {
-                SDL_free (cursor->save[0]);
+                SDL_free(cursor->save[0]);
             }
             if (_this && cursor->wm_cursor) {
-                _this->FreeWMCursor (_this, cursor->wm_cursor);
+                _this->FreeWMCursor(_this, cursor->wm_cursor);
             }
-            SDL_free (cursor);
+            SDL_free(cursor);
         }
     }
 }
 
 int
-SDL_ShowCursor (int toggle)
+SDL_ShowCursor(int toggle)
 {
     int showing;
 
     showing = (SDL_cursorstate & CURSOR_VISIBLE);
     if (toggle >= 0) {
-        SDL_LockCursor ();
+        SDL_LockCursor();
         if (toggle) {
             SDL_cursorstate |= CURSOR_VISIBLE;
         } else {
             SDL_cursorstate &= ~CURSOR_VISIBLE;
         }
-        SDL_UnlockCursor ();
+        SDL_UnlockCursor();
         if ((SDL_cursorstate & CURSOR_VISIBLE) != showing) {
-            SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+            SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-            SDL_SetCursor (NULL);
+            SDL_SetCursor(NULL);
             if (_this && _this->CheckMouseMode) {
-                _this->CheckMouseMode (_this);
+                _this->CheckMouseMode(_this);
             }
         }
     } else {
@@ -291,12 +291,12 @@ SDL_ShowCursor (int toggle)
 }
 
 void
-SDL_WarpMouse (Uint16 x, Uint16 y)
+SDL_WarpMouse(Uint16 x, Uint16 y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     if (!_this || !SDL_PublicSurface) {
-        SDL_SetError ("A video mode must be set before warping mouse");
+        SDL_SetError("A video mode must be set before warping mouse");
         return;
     }
 
@@ -313,28 +313,28 @@ SDL_WarpMouse (Uint16 x, Uint16 y)
 
     /* This generates a mouse motion event */
     if (_this->WarpWMCursor) {
-        _this->WarpWMCursor (_this, x, y);
+        _this->WarpWMCursor(_this, x, y);
     } else {
-        SDL_PrivateMouseMotion (0, 0, x, y);
+        SDL_PrivateMouseMotion(0, 0, x, y);
     }
 }
 
 void
-SDL_MoveCursor (int x, int y)
+SDL_MoveCursor(int x, int y)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* Erase and update the current mouse position */
-    if (SHOULD_DRAWCURSOR (SDL_cursorstate)) {
+    if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
         /* Erase and redraw mouse cursor in new position */
-        SDL_LockCursor ();
-        SDL_EraseCursor (SDL_VideoSurface);
+        SDL_LockCursor();
+        SDL_EraseCursor(SDL_VideoSurface);
         SDL_cursor->area.x = (x - SDL_cursor->hot_x);
         SDL_cursor->area.y = (y - SDL_cursor->hot_y);
-        SDL_DrawCursor (SDL_VideoSurface);
-        SDL_UnlockCursor ();
+        SDL_DrawCursor(SDL_VideoSurface);
+        SDL_UnlockCursor();
     } else if (_this->MoveWMCursor) {
-        _this->MoveWMCursor (_this, x, y);
+        _this->MoveWMCursor(_this, x, y);
     }
 }
 
@@ -343,15 +343,15 @@ static int palette_changed = 1;
 static Uint8 pixels8[2];
 
 void
-SDL_CursorPaletteChanged (void)
+SDL_CursorPaletteChanged(void)
 {
     palette_changed = 1;
 }
 
 void
-SDL_MouseRect (SDL_Rect * area)
+SDL_MouseRect(SDL_Rect * area)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int clip_diff;
 
     *area = SDL_cursor->area;
@@ -374,7 +374,7 @@ SDL_MouseRect (SDL_Rect * area)
 }
 
 static void
-SDL_DrawCursorFast (SDL_Surface * screen, SDL_Rect * area)
+SDL_DrawCursorFast(SDL_Surface * screen, SDL_Rect * area)
 {
     const Uint32 pixels[2] = { 0xFFFFFFFF, 0x00000000 };
     int i, w, h;
@@ -392,8 +392,8 @@ SDL_DrawCursorFast (SDL_Surface * screen, SDL_Rect * area)
 
             if (palette_changed) {
                 pixels8[0] =
-                    (Uint8) SDL_MapRGB (screen->format, 255, 255, 255);
-                pixels8[1] = (Uint8) SDL_MapRGB (screen->format, 0, 0, 0);
+                    (Uint8) SDL_MapRGB(screen->format, 255, 255, 255);
+                pixels8[1] = (Uint8) SDL_MapRGB(screen->format, 0, 0, 0);
                 palette_changed = 0;
             }
             dst = (Uint8 *) screen->pixels +
@@ -463,7 +463,7 @@ SDL_DrawCursorFast (SDL_Surface * screen, SDL_Rect * area)
                     datab = *data++;
                     for (i = 0; i < 8; ++i) {
                         if (maskb & 0x80) {
-                            SDL_memset (dst, pixels[datab >> 7], 3);
+                            SDL_memset(dst, pixels[datab >> 7], 3);
                         }
                         maskb <<= 1;
                         datab <<= 1;
@@ -506,7 +506,7 @@ SDL_DrawCursorFast (SDL_Surface * screen, SDL_Rect * area)
 }
 
 static void
-SDL_DrawCursorSlow (SDL_Surface * screen, SDL_Rect * area)
+SDL_DrawCursorSlow(SDL_Surface * screen, SDL_Rect * area)
 {
     const Uint32 pixels[2] = { 0xFFFFFF, 0x000000 };
     int h;
@@ -528,8 +528,8 @@ SDL_DrawCursorSlow (SDL_Surface * screen, SDL_Rect * area)
     maxx = area->x + area->w;
     if (screen->format->BytesPerPixel == 1) {
         if (palette_changed) {
-            pixels8[0] = (Uint8) SDL_MapRGB (screen->format, 255, 255, 255);
-            pixels8[1] = (Uint8) SDL_MapRGB (screen->format, 0, 0, 0);
+            pixels8[0] = (Uint8) SDL_MapRGB(screen->format, 255, 255, 255);
+            pixels8[1] = (Uint8) SDL_MapRGB(screen->format, 0, 0, 0);
             palette_changed = 0;
         }
         for (h = area->h; h; h--) {
@@ -540,7 +540,7 @@ SDL_DrawCursorSlow (SDL_Surface * screen, SDL_Rect * area)
                 }
                 if ((x >= minx) && (x < maxx)) {
                     if (maskb & 0x80) {
-                        SDL_memset (dst, pixels8[datab >> 7], dstbpp);
+                        SDL_memset(dst, pixels8[datab >> 7], dstbpp);
                     }
                 }
                 maskb <<= 1;
@@ -558,7 +558,7 @@ SDL_DrawCursorSlow (SDL_Surface * screen, SDL_Rect * area)
                 }
                 if ((x >= minx) && (x < maxx)) {
                     if (maskb & 0x80) {
-                        SDL_memset (dst, pixels[datab >> 7], dstbpp);
+                        SDL_memset(dst, pixels[datab >> 7], dstbpp);
                     }
                 }
                 maskb <<= 1;
@@ -576,9 +576,9 @@ SDL_DrawCursorSlow (SDL_Surface * screen, SDL_Rect * area)
    pixel format than the video surface, and using a software rendered cursor.
 */
 static void
-SDL_ConvertCursorSave (SDL_Surface * screen, int w, int h)
+SDL_ConvertCursorSave(SDL_Surface * screen, int w, int h)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_BlitInfo info;
     SDL_loblit RunBlit;
 
@@ -603,17 +603,17 @@ SDL_ConvertCursorSave (SDL_Surface * screen, int w, int h)
     RunBlit = screen->map->sw_data->blit;
 
     /* Run the actual software blit */
-    RunBlit (&info);
+    RunBlit(&info);
 }
 
 void
-SDL_DrawCursorNoLock (SDL_Surface * screen)
+SDL_DrawCursorNoLock(SDL_Surface * screen)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Rect area;
 
     /* Get the mouse rectangle, clipped to the screen */
-    SDL_MouseRect (&area);
+    SDL_MouseRect(&area);
     if ((area.w == 0) || (area.h == 0)) {
         return;
     }
@@ -626,7 +626,7 @@ SDL_DrawCursorNoLock (SDL_Surface * screen)
         /* Set up the copy pointers */
         screenbpp = screen->format->BytesPerPixel;
         if ((screen == SDL_VideoSurface) ||
-            FORMAT_EQUAL (screen->format, SDL_VideoSurface->format)) {
+            FORMAT_EQUAL(screen->format, SDL_VideoSurface->format)) {
             dst = SDL_cursor->save[0];
         } else {
             dst = SDL_cursor->save[1];
@@ -638,7 +638,7 @@ SDL_DrawCursorNoLock (SDL_Surface * screen)
         w = area.w * screenbpp;
         h = area.h;
         while (h--) {
-            SDL_memcpy (dst, src, w);
+            SDL_memcpy(dst, src, w);
             dst += w;
             src += screen->pitch;
         }
@@ -648,65 +648,65 @@ SDL_DrawCursorNoLock (SDL_Surface * screen)
     area.x -= SDL_cursor->area.x;
     area.y -= SDL_cursor->area.y;
     if ((area.x == 0) && (area.w == SDL_cursor->area.w)) {
-        SDL_DrawCursorFast (screen, &area);
+        SDL_DrawCursorFast(screen, &area);
     } else {
-        SDL_DrawCursorSlow (screen, &area);
+        SDL_DrawCursorSlow(screen, &area);
     }
 }
 
 void
-SDL_DrawCursor (SDL_Surface * screen)
+SDL_DrawCursor(SDL_Surface * screen)
 {
     /* Lock the screen if necessary */
     if (screen == NULL) {
         return;
     }
-    if (SDL_MUSTLOCK (screen)) {
-        if (SDL_LockSurface (screen) < 0) {
+    if (SDL_MUSTLOCK(screen)) {
+        if (SDL_LockSurface(screen) < 0) {
             return;
         }
     }
 
-    SDL_DrawCursorNoLock (screen);
+    SDL_DrawCursorNoLock(screen);
 
     /* Unlock the screen and update if necessary */
-    if (SDL_MUSTLOCK (screen)) {
-        SDL_UnlockSurface (screen);
+    if (SDL_MUSTLOCK(screen)) {
+        SDL_UnlockSurface(screen);
     }
     if ((screen->flags & SDL_SCREEN_SURFACE) &&
         !(screen->flags & SDL_HWSURFACE)) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+        SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_Window *window;
         SDL_Rect area;
 
-        window = SDL_GetWindowFromSurface (screen);
+        window = SDL_GetWindowFromSurface(screen);
         if (!window) {
             return;
         }
 
-        SDL_MouseRect (&area);
+        SDL_MouseRect(&area);
 
         if (_this->UpdateWindowSurface) {
-            _this->UpdateWindowSurface (_this, window, 1, &area);
+            _this->UpdateWindowSurface(_this, window, 1, &area);
         }
     }
 }
 
 void
-SDL_EraseCursorNoLock (SDL_Surface * screen)
+SDL_EraseCursorNoLock(SDL_Surface * screen)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *window;
     SDL_Rect area;
 
     /* Get the window associated with the surface */
-    window = SDL_GetWindowFromSurface (screen);
+    window = SDL_GetWindowFromSurface(screen);
     if (!window || !window->surface) {
         return;
     }
 
     /* Get the mouse rectangle, clipped to the screen */
-    SDL_MouseRect (&area);
+    SDL_MouseRect(&area);
     if ((area.w == 0) || (area.h == 0)) {
         return;
     }
@@ -719,7 +719,7 @@ SDL_EraseCursorNoLock (SDL_Surface * screen)
         /* Set up the copy pointers */
         screenbpp = screen->format->BytesPerPixel;
         if ((screen->flags & SDL_SCREEN_SURFACE) ||
-            FORMAT_EQUAL (screen->format, window->surface->format)) {
+            FORMAT_EQUAL(screen->format, window->surface->format)) {
             src = SDL_cursor->save[0];
         } else {
             src = SDL_cursor->save[1];
@@ -731,52 +731,52 @@ SDL_EraseCursorNoLock (SDL_Surface * screen)
         w = area.w * screenbpp;
         h = area.h;
         while (h--) {
-            SDL_memcpy (dst, src, w);
+            SDL_memcpy(dst, src, w);
             src += w;
             dst += screen->pitch;
         }
 
         /* Perform pixel conversion on cursor background */
         if (src > SDL_cursor->save[1]) {
-            SDL_ConvertCursorSave (screen, area.w, area.h);
+            SDL_ConvertCursorSave(screen, area.w, area.h);
         }
     }
 }
 
 void
-SDL_EraseCursor (SDL_Surface * screen)
+SDL_EraseCursor(SDL_Surface * screen)
 {
     /* Lock the screen if necessary */
     if (screen == NULL) {
         return;
     }
-    if (SDL_MUSTLOCK (screen)) {
-        if (SDL_LockSurface (screen) < 0) {
+    if (SDL_MUSTLOCK(screen)) {
+        if (SDL_LockSurface(screen) < 0) {
             return;
         }
     }
 
-    SDL_EraseCursorNoLock (screen);
+    SDL_EraseCursorNoLock(screen);
 
     /* Unlock the screen and update if necessary */
-    if (SDL_MUSTLOCK (screen)) {
-        SDL_UnlockSurface (screen);
+    if (SDL_MUSTLOCK(screen)) {
+        SDL_UnlockSurface(screen);
     }
     if ((screen->flags & SDL_SCREEN_SURFACE) &&
         !(screen->flags & SDL_HWSURFACE)) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+        SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_Window *window;
         SDL_Rect area;
 
-        window = SDL_GetWindowFromSurface (screen);
+        window = SDL_GetWindowFromSurface(screen);
         if (!window) {
             return;
         }
 
-        SDL_MouseRect (&area);
+        SDL_MouseRect(&area);
 
         if (_this->UpdateWindowSurface) {
-            _this->UpdateWindowSurface (_this, window, 1, &area);
+            _this->UpdateWindowSurface(_this, window, 1, &area);
         }
     }
 }
@@ -785,7 +785,7 @@ SDL_EraseCursor (SDL_Surface * screen)
    FIXME:  Keep track of all cursors, and reset them all.
  */
 void
-SDL_ResetCursor (void)
+SDL_ResetCursor(void)
 {
     int savelen;
 
@@ -793,7 +793,7 @@ SDL_ResetCursor (void)
         savelen = SDL_cursor->area.w * 4 * SDL_cursor->area.h;
         SDL_cursor->area.x = 0;
         SDL_cursor->area.y = 0;
-        SDL_memset (SDL_cursor->save[0], 0, savelen);
+        SDL_memset(SDL_cursor->save[0], 0, savelen);
     }
 }
 

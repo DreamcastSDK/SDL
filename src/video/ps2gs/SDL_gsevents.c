@@ -56,7 +56,7 @@
 static Uint16 vga_keymap[NUM_VGAKEYMAPS][NR_KEYS];
 static SDLKey keymap[128];
 static Uint16 keymap_temp[128]; /* only used at startup */
-static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
+static SDL_keysym *TranslateKey(int scancode, SDL_keysym * keysym);
 
 /* Ugh, we have to duplicate the kernel's keysym mapping code...
    Oh, it's not so bad. :-)
@@ -64,7 +64,7 @@ static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
    FIXME: Add keyboard LED handling code
  */
 static void
-GS_vgainitkeymaps (int fd)
+GS_vgainitkeymaps(int fd)
 {
     struct kbentry entry;
     int map, i;
@@ -76,21 +76,21 @@ GS_vgainitkeymaps (int fd)
 
     /* Load all the keysym mappings */
     for (map = 0; map < NUM_VGAKEYMAPS; ++map) {
-        SDL_memset (vga_keymap[map], 0, NR_KEYS * sizeof (Uint16));
+        SDL_memset(vga_keymap[map], 0, NR_KEYS * sizeof(Uint16));
         for (i = 0; i < NR_KEYS; ++i) {
             entry.kb_table = map;
             entry.kb_index = i;
-            if (ioctl (fd, KDGKBENT, &entry) == 0) {
+            if (ioctl(fd, KDGKBENT, &entry) == 0) {
                 /* fill keytemp. This replaces SDL_fbkeys.h */
                 if ((map == 0) && (i < 128)) {
                     keymap_temp[i] = entry.kb_value;
                 }
                 /* The "Enter" key is a special case */
                 if (entry.kb_value == K_ENTER) {
-                    entry.kb_value = K (KT_ASCII, 13);
+                    entry.kb_value = K(KT_ASCII, 13);
                 }
                 /* Handle numpad specially as well */
-                if (KTYP (entry.kb_value) == KT_PAD) {
+                if (KTYP(entry.kb_value) == KT_PAD) {
                     switch (entry.kb_value) {
                     case K_P0:
                     case K_P1:
@@ -106,34 +106,34 @@ GS_vgainitkeymaps (int fd)
                         vga_keymap[map][i] += '0';
                         break;
                     case K_PPLUS:
-                        vga_keymap[map][i] = K (KT_ASCII, '+');
+                        vga_keymap[map][i] = K(KT_ASCII, '+');
                         break;
                     case K_PMINUS:
-                        vga_keymap[map][i] = K (KT_ASCII, '-');
+                        vga_keymap[map][i] = K(KT_ASCII, '-');
                         break;
                     case K_PSTAR:
-                        vga_keymap[map][i] = K (KT_ASCII, '*');
+                        vga_keymap[map][i] = K(KT_ASCII, '*');
                         break;
                     case K_PSLASH:
-                        vga_keymap[map][i] = K (KT_ASCII, '/');
+                        vga_keymap[map][i] = K(KT_ASCII, '/');
                         break;
                     case K_PENTER:
-                        vga_keymap[map][i] = K (KT_ASCII, '\r');
+                        vga_keymap[map][i] = K(KT_ASCII, '\r');
                         break;
                     case K_PCOMMA:
-                        vga_keymap[map][i] = K (KT_ASCII, ',');
+                        vga_keymap[map][i] = K(KT_ASCII, ',');
                         break;
                     case K_PDOT:
-                        vga_keymap[map][i] = K (KT_ASCII, '.');
+                        vga_keymap[map][i] = K(KT_ASCII, '.');
                         break;
                     default:
                         break;
                     }
                 }
                 /* Do the normal key translation */
-                if ((KTYP (entry.kb_value) == KT_LATIN) ||
-                    (KTYP (entry.kb_value) == KT_ASCII) ||
-                    (KTYP (entry.kb_value) == KT_LETTER)) {
+                if ((KTYP(entry.kb_value) == KT_LATIN) ||
+                    (KTYP(entry.kb_value) == KT_ASCII) ||
+                    (KTYP(entry.kb_value) == KT_LETTER)) {
                     vga_keymap[map][i] = entry.kb_value;
                 }
             }
@@ -142,44 +142,44 @@ GS_vgainitkeymaps (int fd)
 }
 
 int
-GS_InGraphicsMode (_THIS)
+GS_InGraphicsMode(_THIS)
 {
     return ((keyboard_fd >= 0) && (saved_kbd_mode >= 0));
 }
 
 int
-GS_EnterGraphicsMode (_THIS)
+GS_EnterGraphicsMode(_THIS)
 {
     struct termios keyboard_termios;
 
     /* Set medium-raw keyboard mode */
-    if ((keyboard_fd >= 0) && !GS_InGraphicsMode (this)) {
+    if ((keyboard_fd >= 0) && !GS_InGraphicsMode(this)) {
 
         /* Switch to the correct virtual terminal */
         if (current_vt > 0) {
             struct vt_stat vtstate;
 
-            if (ioctl (keyboard_fd, VT_GETSTATE, &vtstate) == 0) {
+            if (ioctl(keyboard_fd, VT_GETSTATE, &vtstate) == 0) {
                 saved_vt = vtstate.v_active;
             }
-            if (ioctl (keyboard_fd, VT_ACTIVATE, current_vt) == 0) {
-                ioctl (keyboard_fd, VT_WAITACTIVE, current_vt);
+            if (ioctl(keyboard_fd, VT_ACTIVATE, current_vt) == 0) {
+                ioctl(keyboard_fd, VT_WAITACTIVE, current_vt);
             }
         }
 
         /* Set the terminal input mode */
-        if (tcgetattr (keyboard_fd, &saved_kbd_termios) < 0) {
-            SDL_SetError ("Unable to get terminal attributes");
+        if (tcgetattr(keyboard_fd, &saved_kbd_termios) < 0) {
+            SDL_SetError("Unable to get terminal attributes");
             if (keyboard_fd > 0) {
-                close (keyboard_fd);
+                close(keyboard_fd);
             }
             keyboard_fd = -1;
             return (-1);
         }
-        if (ioctl (keyboard_fd, KDGKBMODE, &saved_kbd_mode) < 0) {
-            SDL_SetError ("Unable to get current keyboard mode");
+        if (ioctl(keyboard_fd, KDGKBMODE, &saved_kbd_mode) < 0) {
+            SDL_SetError("Unable to get current keyboard mode");
             if (keyboard_fd > 0) {
-                close (keyboard_fd);
+                close(keyboard_fd);
             }
             keyboard_fd = -1;
             return (-1);
@@ -190,20 +190,20 @@ GS_EnterGraphicsMode (_THIS)
             ~(ISTRIP | IGNCR | ICRNL | INLCR | IXOFF | IXON);
         keyboard_termios.c_cc[VMIN] = 0;
         keyboard_termios.c_cc[VTIME] = 0;
-        if (tcsetattr (keyboard_fd, TCSAFLUSH, &keyboard_termios) < 0) {
-            GS_CloseKeyboard (this);
-            SDL_SetError ("Unable to set terminal attributes");
+        if (tcsetattr(keyboard_fd, TCSAFLUSH, &keyboard_termios) < 0) {
+            GS_CloseKeyboard(this);
+            SDL_SetError("Unable to set terminal attributes");
             return (-1);
         }
         /* This will fail if we aren't root or this isn't our tty */
-        if (ioctl (keyboard_fd, KDSKBMODE, K_MEDIUMRAW) < 0) {
-            GS_CloseKeyboard (this);
-            SDL_SetError ("Unable to set keyboard in raw mode");
+        if (ioctl(keyboard_fd, KDSKBMODE, K_MEDIUMRAW) < 0) {
+            GS_CloseKeyboard(this);
+            SDL_SetError("Unable to set keyboard in raw mode");
             return (-1);
         }
-        if (ioctl (keyboard_fd, KDSETMODE, KD_GRAPHICS) < 0) {
-            GS_CloseKeyboard (this);
-            SDL_SetError ("Unable to set keyboard in graphics mode");
+        if (ioctl(keyboard_fd, KDSETMODE, KD_GRAPHICS) < 0) {
+            GS_CloseKeyboard(this);
+            SDL_SetError("Unable to set keyboard in graphics mode");
             return (-1);
         }
     }
@@ -211,35 +211,35 @@ GS_EnterGraphicsMode (_THIS)
 }
 
 void
-GS_LeaveGraphicsMode (_THIS)
+GS_LeaveGraphicsMode(_THIS)
 {
-    if (GS_InGraphicsMode (this)) {
-        ioctl (keyboard_fd, KDSETMODE, KD_TEXT);
-        ioctl (keyboard_fd, KDSKBMODE, saved_kbd_mode);
-        tcsetattr (keyboard_fd, TCSAFLUSH, &saved_kbd_termios);
+    if (GS_InGraphicsMode(this)) {
+        ioctl(keyboard_fd, KDSETMODE, KD_TEXT);
+        ioctl(keyboard_fd, KDSKBMODE, saved_kbd_mode);
+        tcsetattr(keyboard_fd, TCSAFLUSH, &saved_kbd_termios);
         saved_kbd_mode = -1;
 
         /* Head back over to the original virtual terminal */
         if (saved_vt > 0) {
-            ioctl (keyboard_fd, VT_ACTIVATE, saved_vt);
+            ioctl(keyboard_fd, VT_ACTIVATE, saved_vt);
         }
     }
 }
 
 void
-GS_CloseKeyboard (_THIS)
+GS_CloseKeyboard(_THIS)
 {
     if (keyboard_fd >= 0) {
-        GS_LeaveGraphicsMode (this);
+        GS_LeaveGraphicsMode(this);
         if (keyboard_fd > 0) {
-            close (keyboard_fd);
+            close(keyboard_fd);
         }
     }
     keyboard_fd = -1;
 }
 
 int
-GS_OpenKeyboard (_THIS)
+GS_OpenKeyboard(_THIS)
 {
     /* Open only if not already opened */
     if (keyboard_fd < 0) {
@@ -250,33 +250,33 @@ GS_OpenKeyboard (_THIS)
         /* Try to query for a free virtual terminal */
         tty0_fd = -1;
         for (i = 0; tty0[i] && (tty0_fd < 0); ++i) {
-            tty0_fd = open (tty0[i], O_WRONLY, 0);
+            tty0_fd = open(tty0[i], O_WRONLY, 0);
         }
         if (tty0_fd < 0) {
-            tty0_fd = dup (0);  /* Maybe stdin is a VT? */
+            tty0_fd = dup(0);   /* Maybe stdin is a VT? */
         }
-        ioctl (tty0_fd, VT_OPENQRY, &current_vt);
-        close (tty0_fd);
-        if ((geteuid () == 0) && (current_vt > 0)) {
+        ioctl(tty0_fd, VT_OPENQRY, &current_vt);
+        close(tty0_fd);
+        if ((geteuid() == 0) && (current_vt > 0)) {
             for (i = 0; vcs[i] && (keyboard_fd < 0); ++i) {
                 char vtpath[12];
 
-                SDL_snprintf (vtpath, SDL_arraysize (vtpath), vcs[i],
-                              current_vt);
-                keyboard_fd = open (vtpath, O_RDWR, 0);
+                SDL_snprintf(vtpath, SDL_arraysize(vtpath), vcs[i],
+                             current_vt);
+                keyboard_fd = open(vtpath, O_RDWR, 0);
 #ifdef DEBUG_KEYBOARD
-                fprintf (stderr, "vtpath = %s, fd = %d\n",
-                         vtpath, keyboard_fd);
+                fprintf(stderr, "vtpath = %s, fd = %d\n",
+                        vtpath, keyboard_fd);
 #endif /* DEBUG_KEYBOARD */
 
                 /* This needs to be our controlling tty
                    so that the kernel ioctl() calls work
                  */
                 if (keyboard_fd >= 0) {
-                    tty0_fd = open ("/dev/tty", O_RDWR, 0);
+                    tty0_fd = open("/dev/tty", O_RDWR, 0);
                     if (tty0_fd >= 0) {
-                        ioctl (tty0_fd, TIOCNOTTY, 0);
-                        close (tty0_fd);
+                        ioctl(tty0_fd, TIOCNOTTY, 0);
+                        close(tty0_fd);
                     }
                 }
             }
@@ -284,25 +284,25 @@ GS_OpenKeyboard (_THIS)
         if (keyboard_fd < 0) {
             /* Last resort, maybe our tty is a usable VT */
             current_vt = 0;
-            keyboard_fd = open ("/dev/tty", O_RDWR);
+            keyboard_fd = open("/dev/tty", O_RDWR);
         }
 #ifdef DEBUG_KEYBOARD
-        fprintf (stderr, "Current VT: %d\n", current_vt);
+        fprintf(stderr, "Current VT: %d\n", current_vt);
 #endif
         saved_kbd_mode = -1;
 
         /* Make sure that our input is a console terminal */
         {
             int dummy;
-            if (ioctl (keyboard_fd, KDGKBMODE, &dummy) < 0) {
-                close (keyboard_fd);
+            if (ioctl(keyboard_fd, KDGKBMODE, &dummy) < 0) {
+                close(keyboard_fd);
                 keyboard_fd = -1;
-                SDL_SetError ("Unable to open a console terminal");
+                SDL_SetError("Unable to open a console terminal");
             }
         }
 
         /* Set up keymap */
-        GS_vgainitkeymaps (keyboard_fd);
+        GS_vgainitkeymaps(keyboard_fd);
     }
     return (keyboard_fd);
 }
@@ -319,39 +319,39 @@ static enum
 } mouse_drv = MOUSE_NONE;
 
 void
-GS_CloseMouse (_THIS)
+GS_CloseMouse(_THIS)
 {
     if (mouse_fd > 0) {
-        close (mouse_fd);
+        close(mouse_fd);
     }
     mouse_fd = -1;
 }
 
 /* Returns processes listed in /proc with the desired name */
 static int
-find_pid (DIR * proc, const char *wanted_name)
+find_pid(DIR * proc, const char *wanted_name)
 {
     struct dirent *entry;
     int pid;
 
     /* First scan proc for the gpm process */
     pid = 0;
-    while ((pid == 0) && ((entry = readdir (proc)) != NULL)) {
-        if (isdigit (entry->d_name[0])) {
+    while ((pid == 0) && ((entry = readdir(proc)) != NULL)) {
+        if (isdigit(entry->d_name[0])) {
             FILE *status;
             char path[PATH_MAX];
             char name[PATH_MAX];
 
-            SDL_snprintf (path, SDL_arraysize (path), "/proc/%s/status",
-                          entry->d_name);
-            status = fopen (path, "r");
+            SDL_snprintf(path, SDL_arraysize(path), "/proc/%s/status",
+                         entry->d_name);
+            status = fopen(path, "r");
             if (status) {
                 name[0] = '\0';
-                fscanf (status, "Name: %s", name);
-                if (SDL_strcmp (name, wanted_name) == 0) {
-                    pid = atoi (entry->d_name);
+                fscanf(status, "Name: %s", name);
+                if (SDL_strcmp(name, wanted_name) == 0) {
+                    pid = atoi(entry->d_name);
                 }
-                fclose (status);
+                fclose(status);
             }
         }
     }
@@ -360,7 +360,7 @@ find_pid (DIR * proc, const char *wanted_name)
 
 /* Returns true if /dev/gpmdata is being written to by gpm */
 static int
-gpm_available (void)
+gpm_available(void)
 {
     int available;
     DIR *proc;
@@ -370,32 +370,31 @@ gpm_available (void)
     char args[PATH_MAX], *arg;
 
     /* Don't bother looking if the fifo isn't there */
-    if (access (GPM_NODE_FIFO, F_OK) < 0) {
+    if (access(GPM_NODE_FIFO, F_OK) < 0) {
         return (0);
     }
 
     available = 0;
-    proc = opendir ("/proc");
+    proc = opendir("/proc");
     if (proc) {
-        while ((pid = find_pid (proc, "gpm")) > 0) {
-            SDL_snprintf (path, SDL_arraysize (path), "/proc/%d/cmdline",
-                          pid);
-            cmdline = open (path, O_RDONLY, 0);
+        while ((pid = find_pid(proc, "gpm")) > 0) {
+            SDL_snprintf(path, SDL_arraysize(path), "/proc/%d/cmdline", pid);
+            cmdline = open(path, O_RDONLY, 0);
             if (cmdline >= 0) {
-                len = read (cmdline, args, sizeof (args));
+                len = read(cmdline, args, sizeof(args));
                 arg = args;
                 while (len > 0) {
-                    if (SDL_strcmp (arg, "-R") == 0) {
+                    if (SDL_strcmp(arg, "-R") == 0) {
                         available = 1;
                     }
-                    arglen = SDL_strlen (arg) + 1;
+                    arglen = SDL_strlen(arg) + 1;
                     len -= arglen;
                     arg += arglen;
                 }
-                close (cmdline);
+                close(cmdline);
             }
         }
-        closedir (proc);
+        closedir(proc);
     }
     return available;
 }
@@ -407,7 +406,7 @@ gpm_available (void)
  *  device to see which mode it's actually in.
  */
 static int
-set_imps2_mode (int fd)
+set_imps2_mode(int fd)
 {
     /* If you wanted to control the mouse mode (and we do :)  ) ...
        Set IMPS/2 protocol:
@@ -421,20 +420,20 @@ set_imps2_mode (int fd)
     struct timeval tv;
     int retval = 0;
 
-    if (write (fd, &set_imps2, sizeof (set_imps2)) == sizeof (set_imps2)) {
-        if (write (fd, &reset, sizeof (reset)) == sizeof (reset)) {
+    if (write(fd, &set_imps2, sizeof(set_imps2)) == sizeof(set_imps2)) {
+        if (write(fd, &reset, sizeof(reset)) == sizeof(reset)) {
             retval = 1;
         }
     }
 
     /* Get rid of any chatter from the above */
-    FD_ZERO (&fdset);
-    FD_SET (fd, &fdset);
+    FD_ZERO(&fdset);
+    FD_SET(fd, &fdset);
     tv.tv_sec = 0;
     tv.tv_usec = 0;
-    while (select (fd + 1, &fdset, 0, 0, &tv) > 0) {
+    while (select(fd + 1, &fdset, 0, 0, &tv) > 0) {
         char temp[32];
-        read (fd, temp, sizeof (temp));
+        read(fd, temp, sizeof(temp));
     }
 
     return retval;
@@ -443,13 +442,13 @@ set_imps2_mode (int fd)
 
 /* Returns true if the mouse uses the IMPS/2 protocol */
 static int
-detect_imps2 (int fd)
+detect_imps2(int fd)
 {
     int imps2;
 
     imps2 = 0;
 
-    if (SDL_getenv ("SDL_MOUSEDEV_IMPS2")) {
+    if (SDL_getenv("SDL_MOUSEDEV_IMPS2")) {
         imps2 = 1;
     }
     if (!imps2) {
@@ -458,35 +457,35 @@ detect_imps2 (int fd)
         struct timeval tv;
 
         /* Get rid of any mouse motion noise */
-        FD_ZERO (&fdset);
-        FD_SET (fd, &fdset);
+        FD_ZERO(&fdset);
+        FD_SET(fd, &fdset);
         tv.tv_sec = 0;
         tv.tv_usec = 0;
-        while (select (fd + 1, &fdset, 0, 0, &tv) > 0) {
+        while (select(fd + 1, &fdset, 0, 0, &tv) > 0) {
             char temp[32];
-            read (fd, temp, sizeof (temp));
+            read(fd, temp, sizeof(temp));
         }
 
         /* Query for the type of mouse protocol */
-        if (write (fd, &query_ps2, sizeof (query_ps2)) == sizeof (query_ps2)) {
+        if (write(fd, &query_ps2, sizeof(query_ps2)) == sizeof(query_ps2)) {
             Uint8 ch = 0;
 
             /* Get the mouse protocol response */
             do {
-                FD_ZERO (&fdset);
-                FD_SET (fd, &fdset);
+                FD_ZERO(&fdset);
+                FD_SET(fd, &fdset);
                 tv.tv_sec = 1;
                 tv.tv_usec = 0;
-                if (select (fd + 1, &fdset, 0, 0, &tv) < 1) {
+                if (select(fd + 1, &fdset, 0, 0, &tv) < 1) {
                     break;
                 }
             }
-            while ((read (fd, &ch, sizeof (ch)) == sizeof (ch)) &&
+            while ((read(fd, &ch, sizeof(ch)) == sizeof(ch)) &&
                    ((ch == 0xFA) || (ch == 0xAA)));
 
             /* Experimental values (Logitech wheelmouse) */
 #ifdef DEBUG_MOUSE
-            fprintf (stderr, "Last mouse mode: 0x%x\n", ch);
+            fprintf(stderr, "Last mouse mode: 0x%x\n", ch);
 #endif
             if (ch == 3) {
                 imps2 = 1;
@@ -497,14 +496,14 @@ detect_imps2 (int fd)
 }
 
 int
-GS_OpenMouse (_THIS)
+GS_OpenMouse(_THIS)
 {
     int i;
     const char *mousedev;
     const char *mousedrv;
 
-    mousedrv = SDL_getenv ("SDL_MOUSEDRV");
-    mousedev = SDL_getenv ("SDL_MOUSEDEV");
+    mousedrv = SDL_getenv("SDL_MOUSEDRV");
+    mousedev = SDL_getenv("SDL_MOUSEDEV");
     mouse_fd = -1;
 
     /* STD MICE */
@@ -516,11 +515,11 @@ GS_OpenMouse (_THIS)
         };
         /* First try to use GPM in repeater mode */
         if (mouse_fd < 0) {
-            if (gpm_available ()) {
-                mouse_fd = open (GPM_NODE_FIFO, O_RDONLY, 0);
+            if (gpm_available()) {
+                mouse_fd = open(GPM_NODE_FIFO, O_RDONLY, 0);
                 if (mouse_fd >= 0) {
 #ifdef DEBUG_MOUSE
-                    fprintf (stderr, "Using GPM mouse\n");
+                    fprintf(stderr, "Using GPM mouse\n");
 #endif
                     mouse_drv = MOUSE_GPM;
                 }
@@ -528,34 +527,34 @@ GS_OpenMouse (_THIS)
         }
         /* Now try to use a modern PS/2 mouse */
         for (i = 0; (mouse_fd < 0) && ps2mice[i]; ++i) {
-            mouse_fd = open (ps2mice[i], O_RDWR, 0);
+            mouse_fd = open(ps2mice[i], O_RDWR, 0);
             if (mouse_fd < 0) {
-                mouse_fd = open (ps2mice[i], O_RDONLY, 0);
+                mouse_fd = open(ps2mice[i], O_RDONLY, 0);
             }
             if (mouse_fd >= 0) {
                 /* rcg06112001 Attempt to set IMPS/2 mode */
                 if (i == 0) {
-                    set_imps2_mode (mouse_fd);
+                    set_imps2_mode(mouse_fd);
                 }
-                if (detect_imps2 (mouse_fd)) {
+                if (detect_imps2(mouse_fd)) {
 #ifdef DEBUG_MOUSE
-                    fprintf (stderr, "Using IMPS2 mouse\n");
+                    fprintf(stderr, "Using IMPS2 mouse\n");
 #endif
                     mouse_drv = MOUSE_IMPS2;
                 } else {
                     mouse_drv = MOUSE_PS2;
 #ifdef DEBUG_MOUSE
-                    fprintf (stderr, "Using PS2 mouse\n");
+                    fprintf(stderr, "Using PS2 mouse\n");
 #endif
                 }
             }
         }
         /* Next try to use a PPC ADB port mouse */
         if (mouse_fd < 0) {
-            mouse_fd = open ("/dev/adbmouse", O_RDONLY, 0);
+            mouse_fd = open("/dev/adbmouse", O_RDONLY, 0);
             if (mouse_fd >= 0) {
 #ifdef DEBUG_MOUSE
-                fprintf (stderr, "Using ADB mouse\n");
+                fprintf(stderr, "Using ADB mouse\n");
 #endif
                 mouse_drv = MOUSE_BM;
             }
@@ -566,12 +565,12 @@ GS_OpenMouse (_THIS)
         if (mousedev == NULL) {
             mousedev = "/dev/mouse";
         }
-        mouse_fd = open (mousedev, O_RDONLY, 0);
+        mouse_fd = open(mousedev, O_RDONLY, 0);
         if (mouse_fd >= 0) {
             struct termios mouse_termios;
 
             /* Set the sampling speed to 1200 baud */
-            tcgetattr (mouse_fd, &mouse_termios);
+            tcgetattr(mouse_fd, &mouse_termios);
             mouse_termios.c_iflag = IGNBRK | IGNPAR;
             mouse_termios.c_oflag = 0;
             mouse_termios.c_lflag = 0;
@@ -581,9 +580,9 @@ GS_OpenMouse (_THIS)
             mouse_termios.c_cflag = CREAD | CLOCAL | HUPCL;
             mouse_termios.c_cflag |= CS8;
             mouse_termios.c_cflag |= B1200;
-            tcsetattr (mouse_fd, TCSAFLUSH, &mouse_termios);
+            tcsetattr(mouse_fd, TCSAFLUSH, &mouse_termios);
 #ifdef DEBUG_MOUSE
-            fprintf (stderr, "Using Microsoft mouse on %s\n", mousedev);
+            fprintf(stderr, "Using Microsoft mouse on %s\n", mousedev);
 #endif
             mouse_drv = MOUSE_MS;
         }
@@ -597,7 +596,7 @@ GS_OpenMouse (_THIS)
 static int posted = 0;
 
 void
-GS_vgamousecallback (int button, int dx, int dy)
+GS_vgamousecallback(int button, int dx, int dy)
 {
     int button_1, button_3;
     int button_state;
@@ -606,7 +605,7 @@ GS_vgamousecallback (int button, int dx, int dy)
     Uint8 state;
 
     if (dx || dy) {
-        posted += SDL_PrivateMouseMotion (0, 1, dx, dy);
+        posted += SDL_PrivateMouseMotion(0, 1, dx, dy);
     }
 
     /* Swap button 1 and 3 */
@@ -616,7 +615,7 @@ GS_vgamousecallback (int button, int dx, int dy)
     button |= (button_1 | button_3);
 
     /* See what changed */
-    button_state = SDL_GetMouseState (NULL, NULL);
+    button_state = SDL_GetMouseState(NULL, NULL);
     state_changed = button_state ^ button;
     for (i = 0; i < 8; ++i) {
         if (state_changed & (1 << i)) {
@@ -625,7 +624,7 @@ GS_vgamousecallback (int button, int dx, int dy)
             } else {
                 state = SDL_RELEASED;
             }
-            posted += SDL_PrivateMouseButton (state, i + 1, 0, 0);
+            posted += SDL_PrivateMouseButton(state, i + 1, 0, 0);
         }
     }
 }
@@ -634,7 +633,7 @@ GS_vgamousecallback (int button, int dx, int dy)
    Driver adapted from the SVGAlib mouse driver code (taken from gpm, etc.)
  */
 static void
-handle_mouse (_THIS)
+handle_mouse(_THIS)
 {
     static int start = 0;
     static unsigned char mousebuf[BUFSIZ];
@@ -647,7 +646,7 @@ handle_mouse (_THIS)
     switch (mouse_drv) {
     case MOUSE_NONE:
         /* Ack! */
-        read (mouse_fd, mousebuf, BUFSIZ);
+        read(mouse_fd, mousebuf, BUFSIZ);
         return;
     case MOUSE_GPM:
         packetsize = 5;
@@ -667,13 +666,13 @@ handle_mouse (_THIS)
     }
 
     /* Read as many packets as possible */
-    nread = read (mouse_fd, &mousebuf[start], BUFSIZ - start);
+    nread = read(mouse_fd, &mousebuf[start], BUFSIZ - start);
     if (nread < 0) {
         return;
     }
     nread += start;
 #ifdef DEBUG_MOUSE
-    fprintf (stderr, "Read %d bytes from mouse, start = %d\n", nread, start);
+    fprintf(stderr, "Read %d bytes from mouse, start = %d\n", nread, start);
 #endif
     for (i = 0; i < (nread - (packetsize - 1)); i += packetsize) {
         switch (mouse_drv) {
@@ -725,10 +724,10 @@ handle_mouse (_THIS)
             case 0x02:         /* DX = -1 */
                 break;
             case 0x0F:         /* DY = +1 (map button 4) */
-                FB_vgamousecallback (button | (1 << 3), 1, 0, 0);
+                FB_vgamousecallback(button | (1 << 3), 1, 0, 0);
                 break;
             case 0x01:         /* DY = -1 (map button 5) */
-                FB_vgamousecallback (button | (1 << 4), 1, 0, 0);
+                FB_vgamousecallback(button | (1 << 4), 1, 0, 0);
                 break;
             }
             break;
@@ -765,10 +764,10 @@ handle_mouse (_THIS)
             dy = 0;
             break;
         }
-        GS_vgamousecallback (button, dx, dy);
+        GS_vgamousecallback(button, dx, dy);
     }
     if (i < nread) {
-        SDL_memcpy (mousebuf, &mousebuf[i], (nread - i));
+        SDL_memcpy(mousebuf, &mousebuf[i], (nread - i));
         start = (nread - i);
     } else {
         start = 0;
@@ -777,7 +776,7 @@ handle_mouse (_THIS)
 }
 
 static void
-handle_keyboard (_THIS)
+handle_keyboard(_THIS)
 {
     unsigned char keybuf[BUFSIZ];
     int i, nread;
@@ -785,7 +784,7 @@ handle_keyboard (_THIS)
     int scancode;
     SDL_keysym keysym;
 
-    nread = read (keyboard_fd, keybuf, BUFSIZ);
+    nread = read(keyboard_fd, keybuf, BUFSIZ);
     for (i = 0; i < nread; ++i) {
         scancode = keybuf[i] & 0x7F;
         if (keybuf[i] & 0x80) {
@@ -793,13 +792,13 @@ handle_keyboard (_THIS)
         } else {
             pressed = SDL_PRESSED;
         }
-        TranslateKey (scancode, &keysym);
-        posted += SDL_PrivateKeyboard (pressed, &keysym);
+        TranslateKey(scancode, &keysym);
+        posted += SDL_PrivateKeyboard(pressed, &keysym);
     }
 }
 
 void
-GS_PumpEvents (_THIS)
+GS_PumpEvents(_THIS)
 {
     fd_set fdset;
     int max_fd;
@@ -808,29 +807,29 @@ GS_PumpEvents (_THIS)
     do {
         posted = 0;
 
-        FD_ZERO (&fdset);
+        FD_ZERO(&fdset);
         max_fd = 0;
         if (keyboard_fd >= 0) {
-            FD_SET (keyboard_fd, &fdset);
+            FD_SET(keyboard_fd, &fdset);
             if (max_fd < keyboard_fd) {
                 max_fd = keyboard_fd;
             }
         }
         if (mouse_fd >= 0) {
-            FD_SET (mouse_fd, &fdset);
+            FD_SET(mouse_fd, &fdset);
             if (max_fd < mouse_fd) {
                 max_fd = mouse_fd;
             }
         }
-        if (select (max_fd + 1, &fdset, NULL, NULL, &zero) > 0) {
+        if (select(max_fd + 1, &fdset, NULL, NULL, &zero) > 0) {
             if (keyboard_fd >= 0) {
-                if (FD_ISSET (keyboard_fd, &fdset)) {
-                    handle_keyboard (this);
+                if (FD_ISSET(keyboard_fd, &fdset)) {
+                    handle_keyboard(this);
                 }
             }
             if (mouse_fd >= 0) {
-                if (FD_ISSET (mouse_fd, &fdset)) {
-                    handle_mouse (this);
+                if (FD_ISSET(mouse_fd, &fdset)) {
+                    handle_mouse(this);
                 }
             }
         }
@@ -839,14 +838,14 @@ GS_PumpEvents (_THIS)
 }
 
 void
-GS_InitOSKeymap (_THIS)
+GS_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Initialize the Linux key translation table */
 
     /* First get the ascii keys and others not well handled */
-    for (i = 0; i < SDL_arraysize (keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(keymap); ++i) {
         switch (i) {
             /* These aren't handled by the x86 kernel keymapping (?) */
         case SCANCODE_PRINTSCREEN:
@@ -881,11 +880,11 @@ GS_InitOSKeymap (_THIS)
             break;
             /* this should take care of all standard ascii keys */
         default:
-            keymap[i] = KVAL (vga_keymap[0][i]);
+            keymap[i] = KVAL(vga_keymap[0][i]);
             break;
         }
     }
-    for (i = 0; i < SDL_arraysize (keymap); ++i) {
+    for (i = 0; i < SDL_arraysize(keymap); ++i) {
         switch (keymap_temp[i]) {
         case K_F1:
             keymap[i] = SDLK_F1;
@@ -1060,7 +1059,7 @@ GS_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, SDL_keysym * keysym)
+TranslateKey(int scancode, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -1073,7 +1072,7 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         int map;
         SDLMod modstate;
 
-        modstate = SDL_GetModState ();
+        modstate = SDL_GetModState();
         map = 0;
         if (modstate & KMOD_SHIFT) {
             map |= (1 << KG_SHIFT);
@@ -1087,17 +1086,17 @@ TranslateKey (int scancode, SDL_keysym * keysym)
         if (modstate & KMOD_MODE) {
             map |= (1 << KG_ALTGR);
         }
-        if (KTYP (vga_keymap[map][scancode]) == KT_LETTER) {
+        if (KTYP(vga_keymap[map][scancode]) == KT_LETTER) {
             if (modstate & KMOD_CAPS) {
                 map ^= (1 << KG_SHIFT);
             }
         }
-        if (KTYP (vga_keymap[map][scancode]) == KT_PAD) {
+        if (KTYP(vga_keymap[map][scancode]) == KT_PAD) {
             if (modstate & KMOD_NUM) {
-                keysym->unicode = KVAL (vga_keymap[map][scancode]);
+                keysym->unicode = KVAL(vga_keymap[map][scancode]);
             }
         } else {
-            keysym->unicode = KVAL (vga_keymap[map][scancode]);
+            keysym->unicode = KVAL(vga_keymap[map][scancode]);
         }
     }
     return (keysym);

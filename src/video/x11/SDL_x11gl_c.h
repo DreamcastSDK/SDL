@@ -41,12 +41,12 @@ struct SDL_PrivateGLData
     XVisualInfo *(*glXChooseVisual)
       (Display * dpy, int screen, int *attribList);
 
-      GLXContext (*glXCreateContext)
+      GLXContext(*glXCreateContext)
       (Display * dpy, XVisualInfo * vis, GLXContext shareList, Bool direct);
 
     void (*glXDestroyContext) (Display * dpy, GLXContext ctx);
 
-      Bool (*glXMakeCurrent)
+      Bool(*glXMakeCurrent)
       (Display * dpy, GLXDrawable drawable, GLXContext ctx);
 
     void (*glXSwapBuffers) (Display * dpy, GLXDrawable drawable);
@@ -57,8 +57,8 @@ struct SDL_PrivateGLData
     const char *(*glXQueryExtensionsString) (Display * dpy, int screen);
 
     int (*glXSwapIntervalSGI) (int interval);
-      GLint (*glXSwapIntervalMESA) (unsigned interval);
-      GLint (*glXGetSwapIntervalMESA) (void);
+      GLint(*glXSwapIntervalMESA) (unsigned interval);
+      GLint(*glXGetSwapIntervalMESA) (void);
 
 #endif                          /* SDL_VIDEO_OPENGL_GLX */
 };
@@ -69,16 +69,16 @@ struct SDL_PrivateGLData
 #define glx_visualinfo		(this->gl_data->glx_visualinfo)
 
 /* OpenGL functions */
-extern XVisualInfo *X11_GL_GetVisual (_THIS);
-extern int X11_GL_CreateWindow (_THIS, int w, int h);
-extern int X11_GL_CreateContext (_THIS);
-extern void X11_GL_Shutdown (_THIS);
+extern XVisualInfo *X11_GL_GetVisual(_THIS);
+extern int X11_GL_CreateWindow(_THIS, int w, int h);
+extern int X11_GL_CreateContext(_THIS);
+extern void X11_GL_Shutdown(_THIS);
 #if SDL_VIDEO_OPENGL_GLX
-extern int X11_GL_MakeCurrent (_THIS);
-extern int X11_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value);
-extern void X11_GL_SwapBuffers (_THIS);
-extern int X11_GL_LoadLibrary (_THIS, const char *path);
-extern void *X11_GL_GetProcAddress (_THIS, const char *proc);
+extern int X11_GL_MakeCurrent(_THIS);
+extern int X11_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
+extern void X11_GL_SwapBuffers(_THIS);
+extern int X11_GL_LoadLibrary(_THIS, const char *path);
+extern void *X11_GL_GetProcAddress(_THIS, const char *proc);
 #endif
-extern void X11_GL_UnloadLibrary (_THIS);
+extern void X11_GL_UnloadLibrary(_THIS);
 /* vi: set ts=4 sw=4 expandtab: */

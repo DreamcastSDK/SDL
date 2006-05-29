@@ -30,7 +30,7 @@
 
 /* krat: adding OpenGL support */
 int
-Mac_GL_Init (_THIS)
+Mac_GL_Init(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     AGLPixelFormat format;
@@ -41,7 +41,7 @@ Mac_GL_Init (_THIS)
     /* load the gl driver from a default path */
     if (!this->gl_config.driver_loaded) {
         /* no driver has been loaded, use default (ourselves) */
-        if (Mac_GL_LoadLibrary (this, NULL) < 0) {
+        if (Mac_GL_LoadLibrary(this, NULL) < 0) {
             return (-1);
         }
     }
@@ -103,44 +103,44 @@ Mac_GL_Init (_THIS)
     attributes[i++] = AGL_ALL_RENDERERS;
     attributes[i] = AGL_NONE;
 
-    format = aglChoosePixelFormat (NULL, 0, attributes);
+    format = aglChoosePixelFormat(NULL, 0, attributes);
     if (format == NULL) {
-        SDL_SetError ("Couldn't match OpenGL desired format");
+        SDL_SetError("Couldn't match OpenGL desired format");
         return (-1);
     }
 
-    glContext = aglCreateContext (format, NULL);
+    glContext = aglCreateContext(format, NULL);
     if (glContext == NULL) {
-        SDL_SetError ("Couldn't create OpenGL context");
+        SDL_SetError("Couldn't create OpenGL context");
         return (-1);
     }
-    aglDestroyPixelFormat (format);
+    aglDestroyPixelFormat(format);
 
 #if  TARGET_API_MAC_CARBON
-    noerr = aglSetDrawable (glContext, GetWindowPort (SDL_Window));
+    noerr = aglSetDrawable(glContext, GetWindowPort(SDL_Window));
 #else
-    noerr = aglSetDrawable (glContext, (AGLDrawable) SDL_Window);
+    noerr = aglSetDrawable(glContext, (AGLDrawable) SDL_Window);
 #endif
 
     if (!noerr) {
-        SDL_SetError ("Unable to bind GL context to window");
+        SDL_SetError("Unable to bind GL context to window");
         return (-1);
     }
     return (0);
 #else
-    SDL_SetError ("OpenGL support not configured");
+    SDL_SetError("OpenGL support not configured");
     return (-1);
 #endif
 }
 
 void
-Mac_GL_Quit (_THIS)
+Mac_GL_Quit(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     if (glContext != NULL) {
-        aglSetCurrentContext (NULL);
-        aglSetDrawable (glContext, NULL);
-        aglDestroyContext (glContext);
+        aglSetCurrentContext(NULL);
+        aglSetDrawable(glContext, NULL);
+        aglDestroyContext(glContext);
         glContext = NULL;
     }
 #endif
@@ -150,26 +150,26 @@ Mac_GL_Quit (_THIS)
 
 /* Make the current context active */
 int
-Mac_GL_MakeCurrent (_THIS)
+Mac_GL_MakeCurrent(_THIS)
 {
     int retval;
 
     retval = 0;
-    if (!aglSetCurrentContext (glContext)) {
-        SDL_SetError ("Unable to make GL context current");
+    if (!aglSetCurrentContext(glContext)) {
+        SDL_SetError("Unable to make GL context current");
         retval = -1;
     }
     return (retval);
 }
 
 void
-Mac_GL_SwapBuffers (_THIS)
+Mac_GL_SwapBuffers(_THIS)
 {
-    aglSwapBuffers (glContext);
+    aglSwapBuffers(glContext);
 }
 
 int
-Mac_GL_LoadLibrary (_THIS, const char *location)
+Mac_GL_LoadLibrary(_THIS, const char *location)
 {
     if (location == NULL)
 #if __MACH__
@@ -178,25 +178,25 @@ Mac_GL_LoadLibrary (_THIS, const char *location)
         location = "OpenGLLibrary";
 #endif
 
-    this->hidden->libraryHandle = SDL_LoadObject (location);
+    this->hidden->libraryHandle = SDL_LoadObject(location);
 
     this->gl_config.driver_loaded = 1;
     return (this->hidden->libraryHandle != NULL) ? 0 : -1;
 }
 
 void
-Mac_GL_UnloadLibrary (_THIS)
+Mac_GL_UnloadLibrary(_THIS)
 {
-    SDL_UnloadObject (this->hidden->libraryHandle);
+    SDL_UnloadObject(this->hidden->libraryHandle);
 
     this->hidden->libraryHandle = NULL;
     this->gl_config.driver_loaded = 0;
 }
 
 void *
-Mac_GL_GetProcAddress (_THIS, const char *proc)
+Mac_GL_GetProcAddress(_THIS, const char *proc)
 {
-    return SDL_LoadFunction (this->hidden->libraryHandle, proc);
+    return SDL_LoadFunction(this->hidden->libraryHandle, proc);
 }
 
 #endif /* SDL_VIDEO_OPENGL */

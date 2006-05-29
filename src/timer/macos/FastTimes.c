@@ -78,9 +78,9 @@
 
 #if GENERATINGPOWERPC
 
-static asm UnsignedWide PollRTC (void);
-static asm UnsignedWide PollTBR (void);
-static Ptr FindFunctionInSharedLib (StringPtr libName, StringPtr funcName);
+static asm UnsignedWide PollRTC(void);
+static asm UnsignedWide PollTBR(void);
+static Ptr FindFunctionInSharedLib(StringPtr libName, StringPtr funcName);
 
 static Boolean gInited = false;
 static Boolean gNative = false;
@@ -90,8 +90,8 @@ static double gScaleUSec = 1.0 / 1000.0;        /* 1 / ( nsec / usec) */
 static double gScaleMSec = 1.0 / 1000000.0;     /* 1 / ( nsec / msec) */
 
 /* Functions loaded from DriverServicesLib */
-typedef AbsoluteTime (*UpTimeProcPtr) (void);
-typedef Nanoseconds (*A2NSProcPtr) (AbsoluteTime);
+typedef AbsoluteTime(*UpTimeProcPtr) (void);
+typedef Nanoseconds(*A2NSProcPtr) (AbsoluteTime);
 static UpTimeProcPtr gUpTime = NULL;
 static A2NSProcPtr gA2NS = NULL;
 
@@ -101,7 +101,7 @@ static A2NSProcPtr gA2NS = NULL;
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 void
-FastInitialize ()
+FastInitialize()
 {
     SInt32 result;
 
@@ -115,12 +115,12 @@ FastInitialize ()
         /* We use CFM to find and load needed symbols from shared libraries, so
            the application doesn't have to weak-link them, for convenience.   */
         gUpTime =
-            (UpTimeProcPtr) FindFunctionInSharedLib ("\pDriverServicesLib",
-                                                     "\pUpTime");
+            (UpTimeProcPtr) FindFunctionInSharedLib("\pDriverServicesLib",
+                                                    "\pUpTime");
         if (gUpTime)
             gA2NS = (A2NSProcPtr)
-                FindFunctionInSharedLib ("\pDriverServicesLib",
-                                         "\pAbsoluteToNanoseconds");
+                FindFunctionInSharedLib("\pDriverServicesLib",
+                                        "\pAbsoluteToNanoseconds");
         if (!gA2NS)
             gUpTime = nil;      /* Pedantic but necessary */
 
@@ -130,7 +130,7 @@ FastInitialize ()
                pointless to calculate a scale factor against the missing VIA */
 
             /* gestaltNativeTimeMgr = 4 in some future version of the headers */
-            if (!Gestalt (gestaltTimeMgrVersion, &result) &&
+            if (!Gestalt(gestaltTimeMgrVersion, &result) &&
                 (result > gestaltExtendedTimeMgr))
                 gNative = true;
         } else {
@@ -139,7 +139,7 @@ FastInitialize ()
                we know it should either be a 601 or 603. */
 
             /* Use the processor gestalt to determine which register to use */
-            if (!Gestalt (gestaltNativeCPUtype, &result)) {
+            if (!Gestalt(gestaltNativeCPUtype, &result)) {
                 if (result == gestaltCPU601)
                     gUseRTC = true;
                 else if (result > gestaltCPU601)
@@ -153,20 +153,20 @@ FastInitialize ()
             UnsignedWide wide;
 
             /* Wait for the beginning of the very next tick */
-            for (tick = MyLMGetTicks () + 1; tick > MyLMGetTicks (););
+            for (tick = MyLMGetTicks() + 1; tick > MyLMGetTicks(););
 
             /* Poll the selected timer and prepare it (since we have time) */
             wide = (gUpTime) ? (*gA2NS) ((*gUpTime) ()) :
-                ((gUseRTC) ? PollRTC () : PollTBR ());
-            usec1 = (gUseRTC) ? RTCToNano (wide) : WideTo64bit (wide);
+                ((gUseRTC) ? PollRTC() : PollTBR());
+            usec1 = (gUseRTC) ? RTCToNano(wide) : WideTo64bit(wide);
 
             /* Wait for the exact 60th tick to roll over */
-            while (tick + 60 > MyLMGetTicks ());
+            while (tick + 60 > MyLMGetTicks());
 
             /* Poll the selected timer again and prepare it  */
             wide = (gUpTime) ? (*gA2NS) ((*gUpTime) ()) :
-                ((gUseRTC) ? PollRTC () : PollTBR ());
-            usec2 = (gUseRTC) ? RTCToNano (wide) : WideTo64bit (wide);
+                ((gUseRTC) ? PollRTC() : PollTBR());
+            usec2 = (gUseRTC) ? RTCToNano(wide) : WideTo64bit(wide);
 
             /* Calculate a scale value that will give microseconds per second.
                Remember, there are actually 60.15 ticks in a second, not 60.  */
@@ -184,7 +184,7 @@ FastInitialize ()
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 UInt64
-FastMicroseconds ()
+FastMicroseconds()
 {
     UnsignedWide wide;
     UInt64 usec;
@@ -192,30 +192,30 @@ FastMicroseconds ()
 #if GENERATINGPOWERPC
     /* Initialize globals the first time we are called */
     if (!gInited)
-        FastInitialize ();
+        FastInitialize();
 
     if (gNative) {
         /* Use DriverServices if it's available -- it's fast and compatible */
         wide = (*gA2NS) ((*gUpTime) ());
-        usec = (double) WideTo64bit (wide) * gScaleUSec + 0.5;
+        usec = (double) WideTo64bit(wide) * gScaleUSec + 0.5;
     } else if (gUpTime) {
         /* Use DriverServices if it's available -- it's fast and compatible */
         wide = (*gA2NS) ((*gUpTime) ());
-        usec = (double) WideTo64bit (wide) * gScaleUSec + 0.5;
+        usec = (double) WideTo64bit(wide) * gScaleUSec + 0.5;
     } else if (gUseTBR) {
         /* On a recent PowerPC, we poll the TBR directly */
-        wide = PollTBR ();
-        usec = (double) WideTo64bit (wide) * gScaleUSec + 0.5;
+        wide = PollTBR();
+        usec = (double) WideTo64bit(wide) * gScaleUSec + 0.5;
     } else if (gUseRTC) {
         /* On a 601, we can poll the RTC instead */
-        wide = PollRTC ();
-        usec = (double) RTCToNano (wide) * gScaleUSec + 0.5;
+        wide = PollRTC();
+        usec = (double) RTCToNano(wide) * gScaleUSec + 0.5;
     } else
 #endif /* GENERATINGPOWERPC */
     {
         /* If all else fails, suffer the mixed mode overhead */
-        Microseconds (&wide);
-        usec = WideTo64bit (wide);
+        Microseconds(&wide);
+        usec = WideTo64bit(wide);
     }
 
     return (usec);
@@ -225,7 +225,7 @@ FastMicroseconds ()
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 UInt64
-FastMilliseconds ()
+FastMilliseconds()
 {
     UnsignedWide wide;
     UInt64 msec;
@@ -233,30 +233,30 @@ FastMilliseconds ()
 #if GENERATINGPOWERPC
     /* Initialize globals the first time we are called */
     if (!gInited)
-        FastInitialize ();
+        FastInitialize();
 
     if (gNative) {
         /* Use DriverServices if it's available -- it's fast and compatible */
         wide = (*gA2NS) ((*gUpTime) ());
-        msec = (double) WideTo64bit (wide) * gScaleMSec + 0.5;
+        msec = (double) WideTo64bit(wide) * gScaleMSec + 0.5;
     } else if (gUpTime) {
         /* Use DriverServices if it's available -- it's fast and compatible */
         wide = (*gA2NS) ((*gUpTime) ());
-        msec = (double) WideTo64bit (wide) * gScaleMSec + 0.5;
+        msec = (double) WideTo64bit(wide) * gScaleMSec + 0.5;
     } else if (gUseTBR) {
         /* On a recent PowerPC, we poll the TBR directly */
-        wide = PollTBR ();
-        msec = (double) WideTo64bit (wide) * gScaleMSec + 0.5;
+        wide = PollTBR();
+        msec = (double) WideTo64bit(wide) * gScaleMSec + 0.5;
     } else if (gUseRTC) {
         /* On a 601, we can poll the RTC instead */
-        wide = PollRTC ();
-        msec = (double) RTCToNano (wide) * gScaleMSec + 0.5;
+        wide = PollRTC();
+        msec = (double) RTCToNano(wide) * gScaleMSec + 0.5;
     } else
 #endif /* GENERATINGPOWERPC */
     {
         /* If all else fails, suffer the mixed mode overhead */
-        Microseconds (&wide);
-        msec = ((double) WideTo64bit (wide) + 500.0) / 1000.0;
+        Microseconds(&wide);
+        msec = ((double) WideTo64bit(wide) + 500.0) / 1000.0;
     }
 
     return (msec);
@@ -266,14 +266,14 @@ FastMilliseconds ()
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 StringPtr
-FastMethod ()
+FastMethod()
 {
     StringPtr method = "\p<Unknown>";
 
 #if GENERATINGPOWERPC
     /* Initialize globals the first time we are called */
     if (!gInited)
-        FastInitialize ();
+        FastInitialize();
 
     if (gNative) {
         /* The Time Manager and UpTime() are entirely native on this machine */
@@ -303,29 +303,29 @@ FastMethod ()
 
 #if GENERATINGPOWERPC
 asm static UnsignedWide
-PollRTC_ ()
+PollRTC_()
 {
     entry PollRTC               /* Avoid CodeWarrior glue */
       machine 601 @ AGAIN:mfrtcu r4     /* RTCU = SPR 4 */
       mfrtcl r5                 /* RTCL = SPR 5 */
-  mfrtcu r6 cmpw r4, r6 bne @ AGAIN stw r4, 0 (r3) stw r5, 4 (r3) blr}
+  mfrtcu r6 cmpw r4, r6 bne @ AGAIN stw r4, 0(r3) stw r5, 4(r3) blr}
 
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 asm static UnsignedWide
-PollTBR_ ()
+PollTBR_()
 {
     entry PollTBR               /* Avoid CodeWarrior glue */
       machine 604 @ AGAIN:mftbu r4      /* TBRU = SPR 268 */
       mftb r5                   /* TBRL = SPR 269 */
-  mftbu r6 cmpw r4, r6 bne @ AGAIN stw r4, 0 (r3) stw r5, 4 (r3) blr}
+  mftbu r6 cmpw r4, r6 bne @ AGAIN stw r4, 0(r3) stw r5, 4(r3) blr}
 
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
 static Ptr
-FindFunctionInSharedLib (StringPtr libName, StringPtr funcName)
+FindFunctionInSharedLib(StringPtr libName, StringPtr funcName)
 {
     OSErr error = noErr;
     Str255 errorStr;
@@ -335,11 +335,11 @@ FindFunctionInSharedLib (StringPtr libName, StringPtr funcName)
     CFragConnectionID connID;
 
     /* Find CFM containers for the current archecture -- CFM-PPC or CFM-68K */
-    if ( /* error = */ GetSharedLibrary (libName, kCompiledCFragArch,
-                                         kLoadCFrag, &connID, &entry,
-                                         errorStr))
+    if ( /* error = */ GetSharedLibrary(libName, kCompiledCFragArch,
+                                        kLoadCFrag, &connID, &entry,
+                                        errorStr))
         return (NULL);
-    if ( /* error = */ FindSymbol (connID, funcName, &func, &symClass))
+    if ( /* error = */ FindSymbol(connID, funcName, &func, &symClass))
         return (NULL);
 
     return (func);

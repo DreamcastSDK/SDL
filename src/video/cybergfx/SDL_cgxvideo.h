@@ -148,13 +148,12 @@ struct SDL_PrivateVideoData
 /* Used to get the X cursor from a window-manager specific cursor */
 // extern Cursor SDL_GetWMXCursor(WMcursor *cursor);
 
-extern int CGX_CreateWindow (_THIS, SDL_Surface * screen,
-                             int w, int h, int bpp, Uint32 flags);
-extern int CGX_ResizeWindow (_THIS,
-                             SDL_Surface * screen, int w, int h,
-                             Uint32 flags);
+extern int CGX_CreateWindow(_THIS, SDL_Surface * screen,
+                            int w, int h, int bpp, Uint32 flags);
+extern int CGX_ResizeWindow(_THIS,
+                            SDL_Surface * screen, int w, int h, Uint32 flags);
 
-extern void CGX_DestroyWindow (_THIS, SDL_Surface * screen);
+extern void CGX_DestroyWindow(_THIS, SDL_Surface * screen);
 
 extern struct Library *CyberGfxBase;
 extern struct IntuitionBase *IntuitionBase;
@@ -171,9 +170,9 @@ struct private_hwdata
     int allocated;
 };
 
-int CGX_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst);
-int CGX_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * dstrect,
-                    Uint32 color);
-int CGX_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key);
+int CGX_CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dst);
+int CGX_FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * dstrect,
+                   Uint32 color);
+int CGX_SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key);
 #endif /* _SDL_x11video_h */
 /* vi: set ts=4 sw=4 expandtab: */

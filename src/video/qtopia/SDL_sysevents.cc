@@ -42,14 +42,14 @@ extern "C"
    thread.  Normally this function should loop as long as there are input
    states changing, i.e. new events arriving.
 */
-    void QT_PumpEvents (_THIS)
+    void QT_PumpEvents(_THIS)
     {
         if (!qApp) {
             return;
         }
         //  printf("processing events: %p\n", qApp);
         //qApp->processOneEvent(); // wait for a event
-        qApp->processEvents (); // and process all outstanding ones
+        qApp->processEvents();  // and process all outstanding ones
 #if 0
         BView *view;
         BRect bounds;
@@ -63,32 +63,31 @@ extern "C"
         unsigned int i, j;
 
         /* Check out the mouse buttons and position (slight race condition) */
-        if (SDL_Win->Lock ()) {
+        if (SDL_Win->Lock()) {
             /* Don't do anything if we have no view */
-            view = SDL_Win->View ();
+            view = SDL_Win->View();
             if (!view) {
-                SDL_Win->Unlock ();
+                SDL_Win->Unlock();
                 return;
             }
-            bounds = view->Bounds ();
+            bounds = view->Bounds();
             /* Get new input state, if still active */
-            if (SDL_Win->IsActive ()) {
+            if (SDL_Win->IsActive()) {
                 key_flip = !key_flip;
-                get_key_info (&keyinfo[key_flip]);
-                view->GetMouse (&point, &buttons, true);
+                get_key_info(&keyinfo[key_flip]);
+                view->GetMouse(&point, &buttons, true);
             } else {
                 key_flip = key_flip;
                 point = last_point;
                 buttons = last_buttons;
             }
-            SDL_Win->Unlock ();
+            SDL_Win->Unlock();
         } else {
             return;
         }
 
         /* If our view is active, we'll find key changes here */
-        if (SDL_memcmp (keyinfo[0].key_states, keyinfo[1].key_states, 16) !=
-            0) {
+        if (SDL_memcmp(keyinfo[0].key_states, keyinfo[1].key_states, 16) != 0) {
             for (i = 0; i < 16; ++i) {
                 Uint8 new_state, transition;
 
@@ -97,7 +96,7 @@ extern "C"
                     keyinfo[key_flip].key_states[i];
                 for (j = 0; j < 8; ++j) {
                     if (transition & 0x80)
-                        QueueKey (i * 8 + j, new_state & 0x80);
+                        QueueKey(i * 8 + j, new_state & 0x80);
                     transition <<= 1;
                     new_state <<= 1;
                 }
@@ -105,39 +104,39 @@ extern "C"
         }
 
         /* We check keyboard, but not mouse if mouse isn't in window */
-        if (!bounds.Contains (point)) {
+        if (!bounds.Contains(point)) {
             /* Mouse moved outside our view? */
-            if (SDL_GetAppState () & SDL_APPMOUSEFOCUS) {
-                SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
-                be_app->SetCursor (B_HAND_CURSOR);
+            if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) {
+                SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
+                be_app->SetCursor(B_HAND_CURSOR);
             }
             return;
         }
         /* Has the mouse moved back into our view? */
-        if (!(SDL_GetAppState () & SDL_APPMOUSEFOCUS)) {
+        if (!(SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
             /* Reset the B_HAND_CURSOR to our own */
-            SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
-            SDL_SetCursor (NULL);
+            SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
+            SDL_SetCursor(NULL);
         }
 
         /* Check for mouse motion */
         if (point != last_point) {
             int x, y;
 
-            SDL_Win->GetXYOffset (x, y);
+            SDL_Win->GetXYOffset(x, y);
             x = (int) point.x - x;
             y = (int) point.y - y;
-            SDL_PrivateMouseMotion (0, 0, x, y);
+            SDL_PrivateMouseMotion(0, 0, x, y);
         }
         last_point = point;
 
         /* Add any mouse button events */
-        for (i = 0; i < SDL_TABLESIZE (button_masks); ++i) {
+        for (i = 0; i < SDL_TABLESIZE(button_masks); ++i) {
             if ((buttons ^ last_buttons) & button_masks[i]) {
                 if (buttons & button_masks[i]) {
-                    SDL_PrivateMouseButton (SDL_PRESSED, 1 + i, 0, 0);
+                    SDL_PrivateMouseButton(SDL_PRESSED, 1 + i, 0, 0);
                 } else {
-                    SDL_PrivateMouseButton (SDL_RELEASED, 1 + i, 0, 0);
+                    SDL_PrivateMouseButton(SDL_RELEASED, 1 + i, 0, 0);
                 }
             }
         }
@@ -145,17 +144,17 @@ extern "C"
 #endif
     }
 
-    void QT_InitOSKeymap (_THIS)
+    void QT_InitOSKeymap(_THIS)
     {
 #if 0
         unsigned int i;
 
         /* Initialize all the key states as "up" */
         key_flip = 0;
-        SDL_memset (keyinfo[key_flip].key_states, 0, 16);
+        SDL_memset(keyinfo[key_flip].key_states, 0, 16);
 
         /* Initialize the key translation table */
-        for (i = 0; i < SDL_TABLESIZE (keymap); ++i)
+        for (i = 0; i < SDL_TABLESIZE(keymap); ++i)
             keymap[i] = SDLK_UNKNOWN;
 
         //  keymap[0x01]              = SDLK_ESCAPE;

@@ -83,7 +83,7 @@ typedef struct
 
 /*--- Functions prototypes ---*/
 
-void SDL_XBIOS_BlowupInit (_THIS, blow_cookie_t * cookie_blow);
+void SDL_XBIOS_BlowupInit(_THIS, blow_cookie_t * cookie_blow);
 
 #endif /* _SDL_xbios_blowup_h */
 /* vi: set ts=4 sw=4 expandtab: */

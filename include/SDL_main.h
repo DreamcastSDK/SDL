@@ -50,7 +50,7 @@ extern "C"
 #define main	SDL_main
 
 /* The prototype for the application's main() function */
-extern C_LINKAGE int SDL_main (int argc, char *argv[]);
+extern C_LINKAGE int SDL_main(int argc, char *argv[]);
 
 
 /* From the SDL library code -- needed for registering the app on Win32 */
@@ -64,12 +64,12 @@ extern "C" {
 #endif
 
 /* This should be called from your WinMain() function, if any */
-extern DECLSPEC void SDLCALL SDL_SetModuleHandle (void *hInst);
+extern DECLSPEC void SDLCALL SDL_SetModuleHandle(void *hInst);
 /* This can also be called, but is no longer necessary */
-extern DECLSPEC int SDLCALL SDL_RegisterApp (char *name, Uint32 style,
-                                             void *hInst);
+extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style,
+                                            void *hInst);
 /* This can also be called, but is no longer necessary (SDL_Quit calls it) */
-extern DECLSPEC void SDLCALL SDL_UnregisterApp (void);
+extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 #ifdef __cplusplus
 /* *INDENT-OFF* */
 }
@@ -92,7 +92,7 @@ extern "C" {
 struct QDGlobals;
 
 /* This should be called from your main() function, if any */
-extern DECLSPEC void SDLCALL SDL_InitQuickDraw (struct QDGlobals *the_qd);
+extern DECLSPEC void SDLCALL SDL_InitQuickDraw(struct QDGlobals *the_qd);
 
 #ifdef __cplusplus
 /* *INDENT-OFF* */

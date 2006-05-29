@@ -29,23 +29,23 @@ extern "C"
 #include "SDL_syswm_c.h"
 #include "SDL_error.h"
 
-    void BE_SetWMCaption (_THIS, const char *title, const char *icon)
+    void BE_SetWMCaption(_THIS, const char *title, const char *icon)
     {
-        SDL_Win->SetTitle (title);
+        SDL_Win->SetTitle(title);
     }
 
-    int BE_IconifyWindow (_THIS)
+    int BE_IconifyWindow(_THIS)
     {
-        SDL_Win->Minimize (true);
+        SDL_Win->Minimize(true);
     }
 
-    int BE_GetWMInfo (_THIS, SDL_SysWMinfo * info)
+    int BE_GetWMInfo(_THIS, SDL_SysWMinfo * info)
     {
         if (info->version.major <= SDL_MAJOR_VERSION) {
             return 1;
         } else {
-            SDL_SetError ("Application not compiled with SDL %d.%d\n",
-                          SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+            SDL_SetError("Application not compiled with SDL %d.%d\n",
+                         SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
             return -1;
         }
     }

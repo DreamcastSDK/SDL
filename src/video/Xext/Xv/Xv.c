@@ -63,9 +63,9 @@ static char *xv_extension_name = XvName;
 #define XvCheckExtension(dpy, i, val) \
   XextCheckExtension(dpy, i, xv_extension_name, val)
 
-static char *xv_error_string ();
-static int xv_close_display ();
-static Bool xv_wire_to_event ();
+static char *xv_error_string();
+static int xv_close_display();
+static Bool xv_wire_to_event();
 
 static XExtensionHooks xv_extension_hooks = {
     NULL,                       /* create_gc */
@@ -89,33 +89,32 @@ static char *xv_error_list[] = {
 };
 
 static
-XEXT_GENERATE_CLOSE_DISPLAY (xv_close_display, xv_info)
-     static XEXT_GENERATE_FIND_DISPLAY (xv_find_display, xv_info,
-                                        xv_extension_name,
-                                        &xv_extension_hooks,
-                                        XvNumEvents, NULL)
-     static XEXT_GENERATE_ERROR_STRING (xv_error_string, xv_extension_name,
-                                        XvNumErrors, xv_error_list)
-     int SDL_NAME (XvQueryExtension) (Display * dpy,
-                                      unsigned int *p_version,
-                                      unsigned int *p_revision,
-                                      unsigned int *p_requestBase,
-                                      unsigned int *p_eventBase,
-                                      unsigned int *p_errorBase)
+XEXT_GENERATE_CLOSE_DISPLAY(xv_close_display, xv_info)
+     static XEXT_GENERATE_FIND_DISPLAY(xv_find_display, xv_info,
+                                       xv_extension_name,
+                                       &xv_extension_hooks, XvNumEvents, NULL)
+     static XEXT_GENERATE_ERROR_STRING(xv_error_string, xv_extension_name,
+                                       XvNumErrors, xv_error_list)
+     int SDL_NAME(XvQueryExtension) (Display * dpy,
+                                     unsigned int *p_version,
+                                     unsigned int *p_revision,
+                                     unsigned int *p_requestBase,
+                                     unsigned int *p_eventBase,
+                                     unsigned int *p_errorBase)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryExtensionReq *req;
     xvQueryExtensionReply rep;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryExtension, req);
+    XvGetReq(QueryExtension, req);
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return XvBadExtension;
     }
 
@@ -125,25 +124,25 @@ XEXT_GENERATE_CLOSE_DISPLAY (xv_close_display, xv_info)
     *p_eventBase = info->codes->first_event;
     *p_errorBase = info->codes->first_error;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvQueryAdaptors) (Display * dpy,
-                            Window window,
-                            unsigned int *p_nAdaptors,
-                            SDL_NAME (XvAdaptorInfo) ** p_pAdaptors)
+SDL_NAME(XvQueryAdaptors) (Display * dpy,
+                           Window window,
+                           unsigned int *p_nAdaptors,
+                           SDL_NAME(XvAdaptorInfo) ** p_pAdaptors)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryAdaptorsReq *req;
     xvQueryAdaptorsReply rep;
     int size, ii, jj;
     char *name;
-    SDL_NAME (XvAdaptorInfo) * pas, *pa;
-    SDL_NAME (XvFormat) * pfs, *pf;
+    SDL_NAME(XvAdaptorInfo) * pas, *pa;
+    SDL_NAME(XvFormat) * pfs, *pf;
     char *buffer;
     union
     {
@@ -153,28 +152,28 @@ SDL_NAME (XvQueryAdaptors) (Display * dpy,
         xvFormat *pf;
     } u;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryAdaptors, req);
+    XvGetReq(QueryAdaptors, req);
     req->window = window;
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadReply);
     }
 
     size = rep.length << 2;
-    if ((buffer = (char *) Xmalloc ((unsigned) size)) == NULL) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if ((buffer = (char *) Xmalloc((unsigned) size)) == NULL) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadAlloc);
     }
-    _XRead (dpy, buffer, size);
+    _XRead(dpy, buffer, size);
 
     u.buffer = buffer;
 
@@ -183,11 +182,11 @@ SDL_NAME (XvQueryAdaptors) (Display * dpy,
     if (rep.num_adaptors == 0) {
         pas = NULL;
     } else {
-        size = rep.num_adaptors * sizeof (SDL_NAME (XvAdaptorInfo));
-        if ((pas = (SDL_NAME (XvAdaptorInfo) *) Xmalloc (size)) == NULL) {
-            Xfree (buffer);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        size = rep.num_adaptors * sizeof(SDL_NAME(XvAdaptorInfo));
+        if ((pas = (SDL_NAME(XvAdaptorInfo) *) Xmalloc(size)) == NULL) {
+            Xfree(buffer);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return (XvBadAlloc);
         }
     }
@@ -198,7 +197,7 @@ SDL_NAME (XvQueryAdaptors) (Display * dpy,
     for (ii = 0; ii < rep.num_adaptors; ii++) {
         pa->num_adaptors = 0;
         pa->name = (char *) NULL;
-        pa->formats = (SDL_NAME (XvFormat) *) NULL;
+        pa->formats = (SDL_NAME(XvFormat) *) NULL;
         pa++;
     }
 
@@ -215,26 +214,26 @@ SDL_NAME (XvQueryAdaptors) (Display * dpy,
         size = u.pa->name_size;
         u.buffer += (sz_xvAdaptorInfo + 3) & ~3;
 
-        if ((name = (char *) Xmalloc (size + 1)) == NULL) {
-            SDL_NAME (XvFreeAdaptorInfo) (pas);
-            Xfree (buffer);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if ((name = (char *) Xmalloc(size + 1)) == NULL) {
+            SDL_NAME(XvFreeAdaptorInfo) (pas);
+            Xfree(buffer);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return (XvBadAlloc);
         }
-        SDL_strlcpy (name, u.string, size);
+        SDL_strlcpy(name, u.string, size);
         pa->name = name;
 
         u.buffer += (size + 3) & ~3;
 
         /* GET FORMATS */
 
-        size = pa->num_formats * sizeof (SDL_NAME (XvFormat));
-        if ((pfs = (SDL_NAME (XvFormat) *) Xmalloc (size)) == NULL) {
-            SDL_NAME (XvFreeAdaptorInfo) (pas);
-            Xfree (buffer);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        size = pa->num_formats * sizeof(SDL_NAME(XvFormat));
+        if ((pfs = (SDL_NAME(XvFormat) *) Xmalloc(size)) == NULL) {
+            SDL_NAME(XvFreeAdaptorInfo) (pas);
+            Xfree(buffer);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return (XvBadAlloc);
         }
 
@@ -256,18 +255,18 @@ SDL_NAME (XvQueryAdaptors) (Display * dpy,
     *p_nAdaptors = rep.num_adaptors;
     *p_pAdaptors = pas;
 
-    Xfree (buffer);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    Xfree(buffer);
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (Success);
 }
 
 
-void SDL_NAME (XvFreeAdaptorInfo) (SDL_NAME (XvAdaptorInfo) * pAdaptors)
+void SDL_NAME(XvFreeAdaptorInfo) (SDL_NAME(XvAdaptorInfo) * pAdaptors)
 {
 
-    SDL_NAME (XvAdaptorInfo) * pa;
+    SDL_NAME(XvAdaptorInfo) * pa;
     int ii;
 
     if (!pAdaptors)
@@ -277,28 +276,28 @@ void SDL_NAME (XvFreeAdaptorInfo) (SDL_NAME (XvAdaptorInfo) * pAdaptors)
 
     for (ii = 0; ii < pAdaptors->num_adaptors; ii++, pa++) {
         if (pa->name) {
-            Xfree (pa->name);
+            Xfree(pa->name);
         }
         if (pa->formats) {
-            Xfree (pa->formats);
+            Xfree(pa->formats);
         }
     }
 
-    Xfree (pAdaptors);
+    Xfree(pAdaptors);
 }
 
 int
-SDL_NAME (XvQueryEncodings) (Display * dpy,
-                             XvPortID port,
-                             unsigned int *p_nEncodings,
-                             SDL_NAME (XvEncodingInfo) ** p_pEncodings)
+SDL_NAME(XvQueryEncodings) (Display * dpy,
+                            XvPortID port,
+                            unsigned int *p_nEncodings,
+                            SDL_NAME(XvEncodingInfo) ** p_pEncodings)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryEncodingsReq *req;
     xvQueryEncodingsReply rep;
     int size, jj;
     char *name;
-    SDL_NAME (XvEncodingInfo) * pes, *pe;
+    SDL_NAME(XvEncodingInfo) * pes, *pe;
     char *buffer;
     union
     {
@@ -307,38 +306,38 @@ SDL_NAME (XvQueryEncodings) (Display * dpy,
         xvEncodingInfo *pe;
     } u;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryEncodings, req);
+    XvGetReq(QueryEncodings, req);
     req->port = port;
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadReply);
     }
 
     size = rep.length << 2;
-    if ((buffer = (char *) Xmalloc ((unsigned) size)) == NULL) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if ((buffer = (char *) Xmalloc((unsigned) size)) == NULL) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadAlloc);
     }
-    _XRead (dpy, buffer, size);
+    _XRead(dpy, buffer, size);
 
     u.buffer = buffer;
 
     /* GET ENCODINGS */
 
-    size = rep.num_encodings * sizeof (SDL_NAME (XvEncodingInfo));
-    if ((pes = (SDL_NAME (XvEncodingInfo) *) Xmalloc (size)) == NULL) {
-        Xfree (buffer);
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    size = rep.num_encodings * sizeof(SDL_NAME(XvEncodingInfo));
+    if ((pes = (SDL_NAME(XvEncodingInfo) *) Xmalloc(size)) == NULL) {
+        Xfree(buffer);
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadAlloc);
     }
 
@@ -363,13 +362,13 @@ SDL_NAME (XvQueryEncodings) (Display * dpy,
         size = u.pe->name_size;
         u.buffer += (sz_xvEncodingInfo + 3) & ~3;
 
-        if ((name = (char *) Xmalloc (size + 1)) == NULL) {
-            Xfree (buffer);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if ((name = (char *) Xmalloc(size + 1)) == NULL) {
+            Xfree(buffer);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return (XvBadAlloc);
         }
-        SDL_strlcpy (name, u.string, size);
+        SDL_strlcpy(name, u.string, size);
         pe->name = name;
         pe++;
 
@@ -379,17 +378,17 @@ SDL_NAME (XvQueryEncodings) (Display * dpy,
     *p_nEncodings = rep.num_encodings;
     *p_pEncodings = pes;
 
-    Xfree (buffer);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    Xfree(buffer);
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (Success);
 }
 
-void SDL_NAME (XvFreeEncodingInfo) (SDL_NAME (XvEncodingInfo) * pEncodings)
+void SDL_NAME(XvFreeEncodingInfo) (SDL_NAME(XvEncodingInfo) * pEncodings)
 {
 
-    SDL_NAME (XvEncodingInfo) * pe;
+    SDL_NAME(XvEncodingInfo) * pe;
     int ii;
 
     if (!pEncodings)
@@ -399,31 +398,31 @@ void SDL_NAME (XvFreeEncodingInfo) (SDL_NAME (XvEncodingInfo) * pEncodings)
 
     for (ii = 0; ii < pEncodings->num_encodings; ii++, pe++) {
         if (pe->name)
-            Xfree (pe->name);
+            Xfree(pe->name);
     }
 
-    Xfree (pEncodings);
+    Xfree(pEncodings);
 }
 
 int
-SDL_NAME (XvPutVideo) (Display * dpy,
-                       XvPortID port,
-                       Drawable d,
-                       GC gc,
-                       int vx, int vy,
-                       unsigned int vw, unsigned int vh,
-                       int dx, int dy, unsigned int dw, unsigned int dh)
+SDL_NAME(XvPutVideo) (Display * dpy,
+                      XvPortID port,
+                      Drawable d,
+                      GC gc,
+                      int vx, int vy,
+                      unsigned int vw, unsigned int vh,
+                      int dx, int dy, unsigned int dw, unsigned int dh)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvPutVideoReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (PutVideo, req);
+    XvGetReq(PutVideo, req);
 
     req->port = port;
     req->drawable = d;
@@ -437,31 +436,31 @@ SDL_NAME (XvPutVideo) (Display * dpy,
     req->drw_w = dw;
     req->drw_h = dh;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvPutStill) (Display * dpy,
-                       XvPortID port,
-                       Drawable d,
-                       GC gc,
-                       int vx, int vy,
-                       unsigned int vw, unsigned int vh,
-                       int dx, int dy, unsigned int dw, unsigned int dh)
+SDL_NAME(XvPutStill) (Display * dpy,
+                      XvPortID port,
+                      Drawable d,
+                      GC gc,
+                      int vx, int vy,
+                      unsigned int vw, unsigned int vh,
+                      int dx, int dy, unsigned int dw, unsigned int dh)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvPutStillReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (PutStill, req);
+    XvGetReq(PutStill, req);
     req->port = port;
     req->drawable = d;
     req->gc = gc->gid;
@@ -474,31 +473,31 @@ SDL_NAME (XvPutStill) (Display * dpy,
     req->drw_w = dw;
     req->drw_h = dh;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvGetVideo) (Display * dpy,
-                       XvPortID port,
-                       Drawable d,
-                       GC gc,
-                       int vx, int vy,
-                       unsigned int vw, unsigned int vh,
-                       int dx, int dy, unsigned int dw, unsigned int dh)
+SDL_NAME(XvGetVideo) (Display * dpy,
+                      XvPortID port,
+                      Drawable d,
+                      GC gc,
+                      int vx, int vy,
+                      unsigned int vw, unsigned int vh,
+                      int dx, int dy, unsigned int dw, unsigned int dh)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvGetVideoReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (GetVideo, req);
+    XvGetReq(GetVideo, req);
     req->port = port;
     req->drawable = d;
     req->gc = gc->gid;
@@ -511,31 +510,31 @@ SDL_NAME (XvGetVideo) (Display * dpy,
     req->drw_w = dw;
     req->drw_h = dh;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvGetStill) (Display * dpy,
-                       XvPortID port,
-                       Drawable d,
-                       GC gc,
-                       int vx, int vy,
-                       unsigned int vw, unsigned int vh,
-                       int dx, int dy, unsigned int dw, unsigned int dh)
+SDL_NAME(XvGetStill) (Display * dpy,
+                      XvPortID port,
+                      Drawable d,
+                      GC gc,
+                      int vx, int vy,
+                      unsigned int vw, unsigned int vh,
+                      int dx, int dy, unsigned int dw, unsigned int dh)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvGetStillReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (GetStill, req);
+    XvGetReq(GetStill, req);
     req->port = port;
     req->drawable = d;
     req->gc = gc->gid;
@@ -548,189 +547,189 @@ SDL_NAME (XvGetStill) (Display * dpy,
     req->drw_w = dw;
     req->drw_h = dh;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
-int SDL_NAME (XvStopVideo) (Display * dpy, XvPortID port, Drawable draw)
+int SDL_NAME(XvStopVideo) (Display * dpy, XvPortID port, Drawable draw)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvStopVideoReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (StopVideo, req);
+    XvGetReq(StopVideo, req);
     req->port = port;
     req->drawable = draw;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
-int SDL_NAME (XvGrabPort) (Display * dpy, XvPortID port, Time time)
+int SDL_NAME(XvGrabPort) (Display * dpy, XvPortID port, Time time)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     int result;
     xvGrabPortReply rep;
     xvGrabPortReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (GrabPort, req);
+    XvGetReq(GrabPort, req);
     req->port = port;
     req->time = time;
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xTrue) == 0)
+    if (_XReply(dpy, (xReply *) & rep, 0, xTrue) == 0)
         rep.result = GrabSuccess;
 
     result = rep.result;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return result;
 }
 
-int SDL_NAME (XvUngrabPort) (Display * dpy, XvPortID port, Time time)
+int SDL_NAME(XvUngrabPort) (Display * dpy, XvPortID port, Time time)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvUngrabPortReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (UngrabPort, req);
+    XvGetReq(UngrabPort, req);
     req->port = port;
     req->time = time;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvSelectVideoNotify) (Display * dpy, Drawable drawable, Bool onoff)
+SDL_NAME(XvSelectVideoNotify) (Display * dpy, Drawable drawable, Bool onoff)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvSelectVideoNotifyReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (SelectVideoNotify, req);
+    XvGetReq(SelectVideoNotify, req);
     req->drawable = drawable;
     req->onoff = onoff;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
-int SDL_NAME (XvSelectPortNotify) (Display * dpy, XvPortID port, Bool onoff)
+int SDL_NAME(XvSelectPortNotify) (Display * dpy, XvPortID port, Bool onoff)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvSelectPortNotifyReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (SelectPortNotify, req);
+    XvGetReq(SelectPortNotify, req);
     req->port = port;
     req->onoff = onoff;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 int
-SDL_NAME (XvSetPortAttribute) (Display * dpy,
-                               XvPortID port, Atom attribute, int value)
+SDL_NAME(XvSetPortAttribute) (Display * dpy,
+                              XvPortID port, Atom attribute, int value)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvSetPortAttributeReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (SetPortAttribute, req);
+    XvGetReq(SetPortAttribute, req);
     req->port = port;
     req->attribute = attribute;
     req->value = value;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (Success);
 }
 
 int
-SDL_NAME (XvGetPortAttribute) (Display * dpy,
-                               XvPortID port, Atom attribute, int *p_value)
+SDL_NAME(XvGetPortAttribute) (Display * dpy,
+                              XvPortID port, Atom attribute, int *p_value)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvGetPortAttributeReq *req;
     xvGetPortAttributeReply rep;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (GetPortAttribute, req);
+    XvGetReq(GetPortAttribute, req);
     req->port = port;
     req->attribute = attribute;
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadReply);
     }
 
     *p_value = rep.value;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (Success);
 }
 
 int
-SDL_NAME (XvQueryBestSize) (Display * dpy,
-                            XvPortID port,
-                            Bool motion,
-                            unsigned int vid_w,
-                            unsigned int vid_h,
-                            unsigned int drw_w,
-                            unsigned int drw_h,
-                            unsigned int *p_actual_width,
-                            unsigned int *p_actual_height)
+SDL_NAME(XvQueryBestSize) (Display * dpy,
+                           XvPortID port,
+                           Bool motion,
+                           unsigned int vid_w,
+                           unsigned int vid_h,
+                           unsigned int drw_w,
+                           unsigned int drw_h,
+                           unsigned int *p_actual_width,
+                           unsigned int *p_actual_height)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryBestSizeReq *req;
     xvQueryBestSizeReply rep;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryBestSize, req);
+    XvGetReq(QueryBestSize, req);
     req->port = port;
     req->motion = motion;
     req->vid_w = vid_w;
@@ -740,117 +739,116 @@ SDL_NAME (XvQueryBestSize) (Display * dpy,
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return (XvBadReply);
     }
 
     *p_actual_width = rep.actual_width;
     *p_actual_height = rep.actual_height;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (Success);
 }
 
 
-SDL_NAME (XvAttribute) *
-SDL_NAME (XvQueryPortAttributes) (Display * dpy, XvPortID port, int *num)
+SDL_NAME(XvAttribute) *
+SDL_NAME(XvQueryPortAttributes) (Display * dpy, XvPortID port, int *num)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryPortAttributesReq *req;
     xvQueryPortAttributesReply rep;
-    SDL_NAME (XvAttribute) * ret = NULL;
+    SDL_NAME(XvAttribute) * ret = NULL;
 
     *num = 0;
 
-    XvCheckExtension (dpy, info, NULL);
+    XvCheckExtension(dpy, info, NULL);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryPortAttributes, req);
+    XvGetReq(QueryPortAttributes, req);
     req->port = port;
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return ret;
     }
 
     if (rep.num_attributes) {
         int size =
-            (rep.num_attributes * sizeof (SDL_NAME (XvAttribute))) +
+            (rep.num_attributes * sizeof(SDL_NAME(XvAttribute))) +
             rep.text_size;
 
-        if ((ret = Xmalloc (size))) {
+        if ((ret = Xmalloc(size))) {
             char *marker = (char *) (&ret[rep.num_attributes]);
             xvAttributeInfo Info;
             int i;
 
             for (i = 0; i < rep.num_attributes; i++) {
-                _XRead (dpy, (char *) (&Info), sz_xvAttributeInfo);
+                _XRead(dpy, (char *) (&Info), sz_xvAttributeInfo);
                 ret[i].flags = (int) Info.flags;
                 ret[i].min_value = Info.min;
                 ret[i].max_value = Info.max;
                 ret[i].name = marker;
-                _XRead (dpy, marker, Info.size);
+                _XRead(dpy, marker, Info.size);
                 marker += Info.size;
                 (*num)++;
             }
         } else
-            _XEatData (dpy, rep.length << 2);
+            _XEatData(dpy, rep.length << 2);
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return ret;
 }
 
-SDL_NAME (XvImageFormatValues) * SDL_NAME (XvListImageFormats) (Display * dpy,
-                                                                XvPortID port,
-                                                                int *num)
+SDL_NAME(XvImageFormatValues) * SDL_NAME(XvListImageFormats) (Display * dpy,
+                                                              XvPortID port,
+                                                              int *num)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvListImageFormatsReq *req;
     xvListImageFormatsReply rep;
-    SDL_NAME (XvImageFormatValues) * ret = NULL;
+    SDL_NAME(XvImageFormatValues) * ret = NULL;
 
     *num = 0;
 
-    XvCheckExtension (dpy, info, NULL);
+    XvCheckExtension(dpy, info, NULL);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (ListImageFormats, req);
+    XvGetReq(ListImageFormats, req);
     req->port = port;
 
     /* READ THE REPLY */
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse) == 0) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse) == 0) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return NULL;
     }
 
     if (rep.num_formats) {
-        int size =
-            (rep.num_formats * sizeof (SDL_NAME (XvImageFormatValues)));
+        int size = (rep.num_formats * sizeof(SDL_NAME(XvImageFormatValues)));
 
-        if ((ret = Xmalloc (size))) {
+        if ((ret = Xmalloc(size))) {
             xvImageFormatInfo Info;
             int i;
 
             for (i = 0; i < rep.num_formats; i++) {
-                _XRead (dpy, (char *) (&Info), sz_xvImageFormatInfo);
+                _XRead(dpy, (char *) (&Info), sz_xvImageFormatInfo);
                 ret[i].id = Info.id;
                 ret[i].type = Info.type;
                 ret[i].byte_order = Info.byte_order;
-                memcpy (&(ret[i].guid[0]), &(Info.guid[0]), 16);
+                memcpy(&(ret[i].guid[0]), &(Info.guid[0]), 16);
                 ret[i].bits_per_pixel = Info.bpp;
                 ret[i].format = Info.format;
                 ret[i].num_planes = Info.num_planes;
@@ -867,37 +865,37 @@ SDL_NAME (XvImageFormatValues) * SDL_NAME (XvListImageFormats) (Display * dpy,
                 ret[i].vert_y_period = Info.vert_y_period;
                 ret[i].vert_u_period = Info.vert_u_period;
                 ret[i].vert_v_period = Info.vert_v_period;
-                memcpy (&(ret[i].component_order[0]),
-                        &(Info.comp_order[0]), 32);
+                memcpy(&(ret[i].component_order[0]),
+                       &(Info.comp_order[0]), 32);
                 ret[i].scanline_order = Info.scanline_order;
                 (*num)++;
             }
         } else
-            _XEatData (dpy, rep.length << 2);
+            _XEatData(dpy, rep.length << 2);
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return ret;
 }
 
-SDL_NAME (XvImage) * SDL_NAME (XvCreateImage) (Display * dpy,
-                                               XvPortID port,
-                                               int id,
-                                               char *data,
-                                               int width, int height)
+SDL_NAME(XvImage) * SDL_NAME(XvCreateImage) (Display * dpy,
+                                             XvPortID port,
+                                             int id,
+                                             char *data,
+                                             int width, int height)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvQueryImageAttributesReq *req;
     xvQueryImageAttributesReply rep;
-    SDL_NAME (XvImage) * ret = NULL;
+    SDL_NAME(XvImage) * ret = NULL;
 
-    XvCheckExtension (dpy, info, NULL);
+    XvCheckExtension(dpy, info, NULL);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    XvGetReq (QueryImageAttributes, req);
+    XvGetReq(QueryImageAttributes, req);
     req->id = id;
     req->port = port;
     req->width = width;
@@ -905,15 +903,15 @@ SDL_NAME (XvImage) * SDL_NAME (XvCreateImage) (Display * dpy,
 
     /* READ THE REPLY */
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return NULL;
     }
 
     if ((ret =
-         (SDL_NAME (XvImage) *) Xmalloc (sizeof (SDL_NAME (XvImage)) +
-                                         (rep.num_planes << 3)))) {
+         (SDL_NAME(XvImage) *) Xmalloc(sizeof(SDL_NAME(XvImage)) +
+                                       (rep.num_planes << 3)))) {
         ret->id = id;
         ret->width = rep.width;
         ret->height = rep.height;
@@ -923,27 +921,27 @@ SDL_NAME (XvImage) * SDL_NAME (XvCreateImage) (Display * dpy,
         ret->offsets = ret->pitches + rep.num_planes;
         ret->data = data;
         ret->obdata = NULL;
-        _XRead (dpy, (char *) (ret->pitches), rep.num_planes << 2);
-        _XRead (dpy, (char *) (ret->offsets), rep.num_planes << 2);
+        _XRead(dpy, (char *) (ret->pitches), rep.num_planes << 2);
+        _XRead(dpy, (char *) (ret->offsets), rep.num_planes << 2);
     } else
-        _XEatData (dpy, rep.length << 2);
+        _XEatData(dpy, rep.length << 2);
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return ret;
 }
 
-SDL_NAME (XvImage) * SDL_NAME (XvShmCreateImage) (Display * dpy,
-                                                  XvPortID port,
-                                                  int id,
-                                                  char *data,
-                                                  int width,
-                                                  int height,
-                                                  XShmSegmentInfo * shminfo)
+SDL_NAME(XvImage) * SDL_NAME(XvShmCreateImage) (Display * dpy,
+                                                XvPortID port,
+                                                int id,
+                                                char *data,
+                                                int width,
+                                                int height,
+                                                XShmSegmentInfo * shminfo)
 {
-    SDL_NAME (XvImage) * ret;
+    SDL_NAME(XvImage) * ret;
 
-    ret = SDL_NAME (XvCreateImage) (dpy, port, id, data, width, height);
+    ret = SDL_NAME(XvCreateImage) (dpy, port, id, data, width, height);
 
     if (ret)
         ret->obdata = (XPointer) shminfo;
@@ -951,30 +949,30 @@ SDL_NAME (XvImage) * SDL_NAME (XvShmCreateImage) (Display * dpy,
     return ret;
 }
 
-int SDL_NAME (XvPutImage) (Display * dpy,
-                           XvPortID port,
-                           Drawable d,
-                           GC gc,
-                           SDL_NAME (XvImage) * image,
-                           int src_x,
-                           int src_y,
-                           unsigned int src_w,
-                           unsigned int src_h,
-                           int dest_x,
-                           int dest_y,
-                           unsigned int dest_w, unsigned int dest_h)
+int SDL_NAME(XvPutImage) (Display * dpy,
+                          XvPortID port,
+                          Drawable d,
+                          GC gc,
+                          SDL_NAME(XvImage) * image,
+                          int src_x,
+                          int src_y,
+                          unsigned int src_w,
+                          unsigned int src_h,
+                          int dest_x,
+                          int dest_y,
+                          unsigned int dest_w, unsigned int dest_h)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     xvPutImageReq *req;
     int len;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (PutImage, req);
+    XvGetReq(PutImage, req);
 
     req->port = port;
     req->drawable = d;
@@ -992,45 +990,45 @@ int SDL_NAME (XvPutImage) (Display * dpy,
     req->height = image->height;
 
     len = (image->data_size + 3) >> 2;
-    SetReqLen (req, len, len);
+    SetReqLen(req, len, len);
 
     /* Yes it's kindof lame that we are sending the whole thing,
        but for video all of it may be needed even if displaying
        only a subsection, and I don't want to go through the 
        trouble of creating subregions to send */
-    Data (dpy, (char *) image->data, image->data_size);
+    Data(dpy, (char *) image->data, image->data_size);
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
-int SDL_NAME (XvShmPutImage) (Display * dpy,
-                              XvPortID port,
-                              Drawable d,
-                              GC gc,
-                              SDL_NAME (XvImage) * image,
-                              int src_x,
-                              int src_y,
-                              unsigned int src_w,
-                              unsigned int src_h,
-                              int dest_x,
-                              int dest_y,
-                              unsigned int dest_w,
-                              unsigned int dest_h, Bool send_event)
+int SDL_NAME(XvShmPutImage) (Display * dpy,
+                             XvPortID port,
+                             Drawable d,
+                             GC gc,
+                             SDL_NAME(XvImage) * image,
+                             int src_x,
+                             int src_y,
+                             unsigned int src_w,
+                             unsigned int src_h,
+                             int dest_x,
+                             int dest_y,
+                             unsigned int dest_w,
+                             unsigned int dest_h, Bool send_event)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
+    XExtDisplayInfo *info = xv_find_display(dpy);
     XShmSegmentInfo *shminfo = (XShmSegmentInfo *) image->obdata;
     xvShmPutImageReq *req;
 
-    XvCheckExtension (dpy, info, XvBadExtension);
+    XvCheckExtension(dpy, info, XvBadExtension);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
-    FlushGC (dpy, gc);
+    FlushGC(dpy, gc);
 
-    XvGetReq (ShmPutImage, req);
+    XvGetReq(ShmPutImage, req);
 
     req->port = port;
     req->drawable = d;
@@ -1050,27 +1048,27 @@ int SDL_NAME (XvShmPutImage) (Display * dpy,
     req->height = image->height;
     req->send_event = send_event;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return Success;
 }
 
 
 static Bool
-xv_wire_to_event (Display * dpy, XEvent * host, xEvent * wire)
+xv_wire_to_event(Display * dpy, XEvent * host, xEvent * wire)
 {
-    XExtDisplayInfo *info = xv_find_display (dpy);
-    SDL_NAME (XvEvent) * re = (SDL_NAME (XvEvent) *) host;
+    XExtDisplayInfo *info = xv_find_display(dpy);
+    SDL_NAME(XvEvent) * re = (SDL_NAME(XvEvent) *) host;
     xvEvent *event = (xvEvent *) wire;
 
-    XvCheckExtension (dpy, info, False);
+    XvCheckExtension(dpy, info, False);
 
     switch ((event->u.u.type & 0x7F) - info->codes->first_event) {
     case XvVideoNotify:
         re->xvvideo.type = event->u.u.type & 0x7f;
         re->xvvideo.serial =
-            _XSetLastRequestRead (dpy, (xGenericReply *) event);
+            _XSetLastRequestRead(dpy, (xGenericReply *) event);
         re->xvvideo.send_event = ((event->u.u.type & 0x80) != 0);
         re->xvvideo.display = dpy;
         re->xvvideo.time = event->u.videoNotify.time;
@@ -1081,7 +1079,7 @@ xv_wire_to_event (Display * dpy, XEvent * host, xEvent * wire)
     case XvPortNotify:
         re->xvport.type = event->u.u.type & 0x7f;
         re->xvport.serial =
-            _XSetLastRequestRead (dpy, (xGenericReply *) event);
+            _XSetLastRequestRead(dpy, (xGenericReply *) event);
         re->xvport.send_event = ((event->u.u.type & 0x80) != 0);
         re->xvport.display = dpy;
         re->xvport.time = event->u.portNotify.time;

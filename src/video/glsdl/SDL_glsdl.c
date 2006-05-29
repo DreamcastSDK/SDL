@@ -45,26 +45,26 @@
 /* Initialization/Query functions */
 
 /* Hardware surface functions */
-static int glSDL_SetColors (_THIS, int firstcolor, int ncolors,
-                            SDL_Color * colors);
-static int glSDL_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int glSDL_LockHWSurface (_THIS, SDL_Surface * surface);
-static int glSDL_FlipHWSurface (_THIS, SDL_Surface * surface);
-static void glSDL_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void glSDL_FreeHWSurface (_THIS, SDL_Surface * surface);
-static int glSDL_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect,
-                             Uint32 color);
-static int glSDL_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst);
-static int glSDL_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key);
-static int glSDL_SetHWAlpha (_THIS, SDL_Surface * surface, Uint8 alpha);
-static int glSDL_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **glSDL_ListModes (_THIS, SDL_PixelFormat * format,
-                                   Uint32 flags);
-static void glSDL_VideoQuit (_THIS);
-static void glSDL_UpdateRects (_THIS, int numrects, SDL_Rect * rects);
-static SDL_Surface *glSDL_SetVideoMode (_THIS, SDL_Surface * current,
-                                        int width, int height, int bpp,
-                                        Uint32 flags);
+static int glSDL_SetColors(_THIS, int firstcolor, int ncolors,
+                           SDL_Color * colors);
+static int glSDL_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int glSDL_LockHWSurface(_THIS, SDL_Surface * surface);
+static int glSDL_FlipHWSurface(_THIS, SDL_Surface * surface);
+static void glSDL_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void glSDL_FreeHWSurface(_THIS, SDL_Surface * surface);
+static int glSDL_FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * rect,
+                            Uint32 color);
+static int glSDL_CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dst);
+static int glSDL_SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key);
+static int glSDL_SetHWAlpha(_THIS, SDL_Surface * surface, Uint8 alpha);
+static int glSDL_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **glSDL_ListModes(_THIS, SDL_PixelFormat * format,
+                                  Uint32 flags);
+static void glSDL_VideoQuit(_THIS);
+static void glSDL_UpdateRects(_THIS, int numrects, SDL_Rect * rects);
+static SDL_Surface *glSDL_SetVideoMode(_THIS, SDL_Surface * current,
+                                       int width, int height, int bpp,
+                                       Uint32 flags);
 
 #define	IS_GLSDL_SURFACE(s)	((s) && glSDL_GetTexInfo(s))
 
@@ -79,8 +79,8 @@ static SDL_Surface *glSDL_SetVideoMode (_THIS, SDL_Surface * current,
  * do some internal blitting...
  */
 static void
-glSDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
-                SDL_Surface * dst, SDL_Rect * dstrect)
+glSDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
+               SDL_Surface * dst, SDL_Rect * dstrect)
 {
     SDL_BlitInfo info;
 
@@ -91,7 +91,7 @@ glSDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
     /* Check to make sure the blit mapping is valid */
     if ((src->map->dst != dst) ||
         (src->map->dst->format_version != src->map->format_version))
-        if (SDL_MapSurface (src, dst) < 0)
+        if (SDL_MapSurface(src, dst) < 0)
             return;
 
     /* Set up the blit information */
@@ -128,7 +128,7 @@ glSDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
     info.table = src->map->table;
     info.dst = dst->format;
 
-    src->map->sw_data->blit (&info);
+    src->map->sw_data->blit(&info);
 }
 
 
@@ -138,8 +138,8 @@ glSDL_SoftBlit (SDL_Surface * src, SDL_Rect * srcrect,
  * Does not convert into palletized formats.
  */
 static SDL_Surface *
-glSDL_ConvertSurface (SDL_Surface * surface,
-                      SDL_PixelFormat * format, Uint32 flags)
+glSDL_ConvertSurface(SDL_Surface * surface,
+                     SDL_PixelFormat * format, Uint32 flags)
 {
     SDL_Surface *convert;
     Uint32 colorkey = 0;
@@ -148,11 +148,11 @@ glSDL_ConvertSurface (SDL_Surface * surface,
     SDL_Rect bounds;
 
     /* Create a new surface with the desired format */
-    convert = SDL_CreateRGBSurface (flags,
-                                    surface->w, surface->h,
-                                    format->BitsPerPixel, format->Rmask,
-                                    format->Gmask, format->Bmask,
-                                    format->Amask);
+    convert = SDL_CreateRGBSurface(flags,
+                                   surface->w, surface->h,
+                                   format->BitsPerPixel, format->Rmask,
+                                   format->Gmask, format->Bmask,
+                                   format->Amask);
     if (convert == NULL) {
         return (NULL);
     }
@@ -165,7 +165,7 @@ glSDL_ConvertSurface (SDL_Surface * surface,
             surface_flags &= ~SDL_SRCCOLORKEY;
         } else {
             colorkey = surface->format->colorkey;
-            SDL_SetColorKey (surface, 0, 0);
+            SDL_SetColorKey(surface, 0, 0);
         }
     }
     if ((surface_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
@@ -174,7 +174,7 @@ glSDL_ConvertSurface (SDL_Surface * surface,
             surface->flags &= ~SDL_SRCALPHA;
         } else {
             alpha = surface->format->alpha;
-            SDL_SetAlpha (surface, 0, 0);
+            SDL_SetAlpha(surface, 0, 0);
         }
     }
 
@@ -183,32 +183,32 @@ glSDL_ConvertSurface (SDL_Surface * surface,
     bounds.y = 0;
     bounds.w = surface->w;
     bounds.h = surface->h;
-    glSDL_SoftBlit (surface, &bounds, convert, &bounds);
+    glSDL_SoftBlit(surface, &bounds, convert, &bounds);
 
     /* Clean up the original surface, and update converted surface */
     if (convert != NULL) {
-        SDL_SetClipRect (convert, &surface->clip_rect);
+        SDL_SetClipRect(convert, &surface->clip_rect);
     }
     if ((surface_flags & SDL_SRCCOLORKEY) == SDL_SRCCOLORKEY) {
         Uint32 cflags = surface_flags & (SDL_SRCCOLORKEY | SDL_RLEACCELOK);
         if (convert != NULL) {
             Uint8 keyR, keyG, keyB;
 
-            SDL_GetRGB (colorkey, surface->format, &keyR, &keyG, &keyB);
-            SDL_SetColorKey (convert, cflags | (flags & SDL_RLEACCELOK),
-                             SDL_MapRGB (convert->format, keyR, keyG, keyB));
+            SDL_GetRGB(colorkey, surface->format, &keyR, &keyG, &keyB);
+            SDL_SetColorKey(convert, cflags | (flags & SDL_RLEACCELOK),
+                            SDL_MapRGB(convert->format, keyR, keyG, keyB));
         }
-        SDL_SetColorKey (surface, cflags, colorkey);
+        SDL_SetColorKey(surface, cflags, colorkey);
     }
     if ((surface_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
         Uint32 aflags = surface_flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
         if (convert != NULL) {
-            SDL_SetAlpha (convert, aflags | (flags & SDL_RLEACCELOK), alpha);
+            SDL_SetAlpha(convert, aflags | (flags & SDL_RLEACCELOK), alpha);
         }
         if (format->Amask) {
             surface->flags |= SDL_SRCALPHA;
         } else {
-            SDL_SetAlpha (surface, aflags, alpha);
+            SDL_SetAlpha(surface, aflags, alpha);
         }
     }
 
@@ -230,7 +230,7 @@ static struct
 } glstate;
 
 static void
-glSDL_reset (void)
+glSDL_reset(void)
 {
     glstate.do_blend = -1;
     glstate.do_blend = -1;
@@ -240,50 +240,50 @@ glSDL_reset (void)
 }
 
 static __inline__ void
-glSDL_do_blend (_THIS, int on)
+glSDL_do_blend(_THIS, int on)
 {
     if (glstate.do_blend == on)
         return;
 
     if (on)
-        this->glEnable (GL_BLEND);
+        this->glEnable(GL_BLEND);
     else
-        this->glDisable (GL_BLEND);
+        this->glDisable(GL_BLEND);
     glstate.do_blend = on;
 }
 
 static __inline__ void
-glSDL_do_texture (_THIS, int on)
+glSDL_do_texture(_THIS, int on)
 {
     if (glstate.do_texture == on)
         return;
 
     if (on)
-        this->glEnable (GL_TEXTURE_2D);
+        this->glEnable(GL_TEXTURE_2D);
     else
-        this->glDisable (GL_TEXTURE_2D);
+        this->glDisable(GL_TEXTURE_2D);
     glstate.do_texture = on;
 }
 
 static __inline__ void
-glSDL_blendfunc (_THIS, GLenum sfactor, GLenum dfactor)
+glSDL_blendfunc(_THIS, GLenum sfactor, GLenum dfactor)
 {
     if ((sfactor == glstate.sfactor) && (dfactor == glstate.dfactor))
         return;
 
-    this->glBlendFunc (sfactor, dfactor);
+    this->glBlendFunc(sfactor, dfactor);
 
     glstate.sfactor = sfactor;
     glstate.dfactor = dfactor;
 }
 
 static __inline__ void
-glSDL_texture (_THIS, GLuint tx)
+glSDL_texture(_THIS, GLuint tx)
 {
     if (tx == glstate.texture)
         return;
 
-    this->glBindTexture (GL_TEXTURE_2D, tx);
+    this->glBindTexture(GL_TEXTURE_2D, tx);
     glstate.texture = tx;
 }
 
@@ -326,16 +326,16 @@ typedef struct private_hwdata
 } private_hwdata;
 
 /* some function prototypes */
-static void glSDL_Invalidate (SDL_Surface * surface, SDL_Rect * area);
-static void glSDL_SetLogicSize (_THIS, SDL_Surface * surface, int w, int h);
-static private_hwdata *glSDL_UploadSurface (_THIS, SDL_Surface * surface);
-static private_hwdata *glSDL_GetTexInfo (SDL_Surface * surface);
-static void glSDL_init_formats (_THIS);
-static private_hwdata *glSDL_AddTexInfo (_THIS, SDL_Surface * surface);
-static void glSDL_RemoveTexInfo (_THIS, SDL_Surface * surface);
-static void glSDL_UnloadTexture (_THIS, private_hwdata * txi);
-static int glSDL_BlitGL (_THIS, SDL_Surface * src,
-                         SDL_Rect * srcrect, SDL_Rect * dstrect);
+static void glSDL_Invalidate(SDL_Surface * surface, SDL_Rect * area);
+static void glSDL_SetLogicSize(_THIS, SDL_Surface * surface, int w, int h);
+static private_hwdata *glSDL_UploadSurface(_THIS, SDL_Surface * surface);
+static private_hwdata *glSDL_GetTexInfo(SDL_Surface * surface);
+static void glSDL_init_formats(_THIS);
+static private_hwdata *glSDL_AddTexInfo(_THIS, SDL_Surface * surface);
+static void glSDL_RemoveTexInfo(_THIS, SDL_Surface * surface);
+static void glSDL_UnloadTexture(_THIS, private_hwdata * txi);
+static int glSDL_BlitGL(_THIS, SDL_Surface * src,
+                        SDL_Rect * srcrect, SDL_Rect * dstrect);
 
 /* some variables */
 static GLint maxtexsize = -1;
@@ -350,15 +350,15 @@ SDL_Surface *first = NULL;
 
 #ifdef DEBUG_GLSDL
 static __inline__ int
-GLERET (const char *txt)
+GLERET(const char *txt)
 {
-    fprintf (stderr, "glSDL ERROR: '%s'\n", txt);
+    fprintf(stderr, "glSDL ERROR: '%s'\n", txt);
     return -1;
 }
 static __inline__ void
-GLERR (const char *txt)
+GLERR(const char *txt)
 {
-    fprintf (stderr, "glSDL ERROR: '%s'\n", txt);
+    fprintf(stderr, "glSDL ERROR: '%s'\n", txt);
 }
 #else
 #define	GLERET(x)	(-1)
@@ -395,37 +395,37 @@ static VideoBootStrap *opengl_bootstrap =
 #endif
 
 static int
-glSDL_Available (void)
+glSDL_Available(void)
 {
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "available\n");
+    fprintf(stderr, "available\n");
 #endif
     if (opengl_bootstrap == NULL)
         return 0;
-    return (opengl_bootstrap->available ());
+    return (opengl_bootstrap->available());
 }
 
 static void
-glSDL_DeleteDevice (SDL_VideoDevice * device)
+glSDL_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 /* Create a glSDL device */
 static SDL_VideoDevice *
-glSDL_CreateDevice (int devindex)
+glSDL_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "entering createdevice\n");
+    fprintf(stderr, "entering createdevice\n");
 #endif
 
     /* Create the device with the underlying driver */
-    device = opengl_bootstrap->create (devindex);
+    device = opengl_bootstrap->create(devindex);
 
     /* Save the video device contents for future use */
-    SDL_memcpy (&underlying_device, device, sizeof (SDL_VideoDevice));
+    SDL_memcpy(&underlying_device, device, sizeof(SDL_VideoDevice));
 
     /* Hook glSDL on the video device */
     device->VideoInit = glSDL_VideoInit;
@@ -462,7 +462,7 @@ glSDL_CreateDevice (int devindex)
     device->free = glSDL_DeleteDevice;
 
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "leaving createdevice\n");
+    fprintf(stderr, "leaving createdevice\n");
 #endif
 
     return device;
@@ -475,14 +475,14 @@ VideoBootStrap glSDL_bootstrap = {
 };
 
 static int
-glSDL_VideoInit (_THIS, SDL_PixelFormat * vformat)
+glSDL_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     int r;
-    printf ("glSDL videoinit\n");
+    printf("glSDL videoinit\n");
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "videoinit\n");
+    fprintf(stderr, "videoinit\n");
 #endif
-    r = underlying_device.VideoInit (this, vformat);
+    r = underlying_device.VideoInit(this, vformat);
     this->info.hw_available = 1;
     this->info.blit_hw = 1;
     this->info.blit_hw_CC = 1;
@@ -496,31 +496,31 @@ glSDL_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 SDL_Rect **
-glSDL_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+glSDL_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     return ((SDL_Rect **) - 1);
 }
 
 static void
-glSDL_VideoQuit (_THIS)
+glSDL_VideoQuit(_THIS)
 {
     SDL_Surface *scr;
 
     /* free all hwdata structures */
     while (first != NULL)
-        glSDL_RemoveTexInfo (this, first);
+        glSDL_RemoveTexInfo(this, first);
 
-    SDL_free (mirrorbuf);
+    SDL_free(mirrorbuf);
     mirrorbuf = NULL;
 
-    SDL_FreeFormat (RGBfmt);
-    SDL_FreeFormat (RGBAfmt);
+    SDL_FreeFormat(RGBfmt);
+    SDL_FreeFormat(RGBAfmt);
     RGBfmt = RGBAfmt = NULL;
 
-    SDL_FreeFormat (this->displayformatalphapixel);
+    SDL_FreeFormat(this->displayformatalphapixel);
     this->displayformatalphapixel = NULL;
 
-    SDL_FreeSurface (OpenGL_Surface);
+    SDL_FreeSurface(OpenGL_Surface);
     OpenGL_Surface = NULL;
 
     /* restore the flags to gracefully exit from fullscreen */
@@ -530,30 +530,30 @@ glSDL_VideoQuit (_THIS)
     scr = this->screen;
 
     /* we cleaned up our stuff, now restore the underlying video driver */
-    SDL_memcpy (this, &underlying_device, sizeof (SDL_VideoDevice));
+    SDL_memcpy(this, &underlying_device, sizeof(SDL_VideoDevice));
 
     this->screen = scr;
 
     /* call the underlying video driver's VideoQuit function */
-    this->VideoQuit (this);
+    this->VideoQuit(this);
 }
 
 static SDL_Surface *
-glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
-                    int bpp, Uint32 flags)
+glSDL_SetVideoMode(_THIS, SDL_Surface * current, int width, int height,
+                   int bpp, Uint32 flags)
 {
     SDL_Surface *hooked_screen;
     int i;
     int flag_doublebuf = 0;
 
     if (opengl_bootstrap == NULL) {
-        GLERR ("No bootstrap for glSDL compiled in !\n");
+        GLERR("No bootstrap for glSDL compiled in !\n");
         return NULL;
     }
 
     /* we don't have OpenGL */
     if ((flags & SDL_INTERNALOPENGL) == SDL_INTERNALOPENGL) {
-        GLERR ("OpenGL video modes are not supported by glSDL !\n");
+        GLERR("OpenGL video modes are not supported by glSDL !\n");
         return (NULL);
     }
 
@@ -566,19 +566,19 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     /* remember whether the user requested DOUBLEBUF */
 
     if (flags & SDL_DOUBLEBUF) {
-        SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         flag_doublebuf = 1;
     } else {
-        SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, 0);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
         flag_doublebuf = 0;
     }
 
     hooked_screen =
-        underlying_device.SetVideoMode (this, current, width, height, 0,
-                                        flags);
+        underlying_device.SetVideoMode(this, current, width, height, 0,
+                                       flags);
 
     if (!hooked_screen) {
-        GLERR ("Unable to open an OpenGL window !\n");
+        GLERR("Unable to open an OpenGL window !\n");
         return (NULL);
     }
 
@@ -586,7 +586,7 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     old_screen_flags = hooked_screen->flags;
 
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "got %d bpp\n", bpp);
+    fprintf(stderr, "got %d bpp\n", bpp);
 #endif
 
     /* setup the public surface format
@@ -595,57 +595,49 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     switch (bpp) {
     case 32:
         this->is_32bit = 1;
-        this->screen = SDL_CreateRGBSurface (flags, width, height, bpp,
+        this->screen = SDL_CreateRGBSurface(flags, width, height, bpp,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                             0x00FF0000,
-                                             0x0000FF00,
-                                             0x000000FF, 0x00000000
+                                            0x00FF0000,
+                                            0x0000FF00, 0x000000FF, 0x00000000
 #else
-                                             0x0000FF00,
-                                             0x00FF0000,
-                                             0xFF000000, 0x00000000
+                                            0x0000FF00,
+                                            0x00FF0000, 0xFF000000, 0x00000000
 #endif
             );
         break;
     case 24:
         this->is_32bit = 0;
-        this->screen = SDL_CreateRGBSurface (flags, width, height, bpp,
+        this->screen = SDL_CreateRGBSurface(flags, width, height, bpp,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                             0x00FF0000,
-                                             0x0000FF00,
-                                             0x000000FF, 0x00000000
+                                            0x00FF0000,
+                                            0x0000FF00, 0x000000FF, 0x00000000
 #else
-                                             0x0000FF00,
-                                             0x00FF0000,
-                                             0xFF000000, 0x00000000
+                                            0x0000FF00,
+                                            0x00FF0000, 0xFF000000, 0x00000000
 #endif
             );
         break;
     case 16:
         this->is_32bit = 0;
-        this->screen = SDL_CreateRGBSurface (flags, width, height, bpp,
+        this->screen = SDL_CreateRGBSurface(flags, width, height, bpp,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                             0x0000F800,
-                                             0x000007E0,
-                                             0x0000001F, 0x00000000
+                                            0x0000F800,
+                                            0x000007E0, 0x0000001F, 0x00000000
 #else
-                                             0x0000001F,
-                                             0x000007E0,
-                                             0x0000F800, 0x00000000
+                                            0x0000001F,
+                                            0x000007E0, 0x0000F800, 0x00000000
 #endif
             );
         break;
     case 15:
         this->is_32bit = 0;
-        this->screen = SDL_CreateRGBSurface (flags, width, height, bpp,
+        this->screen = SDL_CreateRGBSurface(flags, width, height, bpp,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                             0x00007C00,
-                                             0x000003E0,
-                                             0x0000001F, 0x00000000
+                                            0x00007C00,
+                                            0x000003E0, 0x0000001F, 0x00000000
 #else
-                                             0x0000001F,
-                                             0x000003E0,
-                                             0x00007C00, 0x00000000
+                                            0x0000001F,
+                                            0x000003E0, 0x00007C00, 0x00000000
 #endif
             );
         break;
@@ -653,7 +645,7 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     default:
         this->is_32bit = 0;
         this->screen =
-            SDL_CreateRGBSurface (flags, width, height, bpp, 0, 0, 0, 0);
+            SDL_CreateRGBSurface(flags, width, height, bpp, 0, 0, 0, 0);
         /* give it a default palette if 8 bpp
          * note : SDL already takes care of the palette for 4 bits & 1 bit surfaces 
          */
@@ -673,26 +665,26 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
         this->screen->flags |= SDL_DOUBLEBUF;
 
     /* Tell SDL the alpha pixel format we'd like to have */
-    this->displayformatalphapixel = SDL_AllocFormat (32,
+    this->displayformatalphapixel = SDL_AllocFormat(32,
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-                                                     0xFF000000,
-                                                     0x00FF0000,
-                                                     0x0000FF00, 0x000000FF
+                                                    0xFF000000,
+                                                    0x00FF0000,
+                                                    0x0000FF00, 0x000000FF
 #else
-                                                     0x000000FF,
-                                                     0x0000FF00,
-                                                     0x00FF0000, 0xFF000000
+                                                    0x000000FF,
+                                                    0x0000FF00,
+                                                    0x00FF0000, 0xFF000000
 #endif
         );
 
     /* Now create the raw OpenGL surface */
-    OpenGL_Surface = SDL_CreateRGBSurface (flags, width, height, 24,
+    OpenGL_Surface = SDL_CreateRGBSurface(flags, width, height, 24,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                                           0x000000FF,
-                                           0x0000FF00, 0x00FF0000, 0x00000000
+                                          0x000000FF,
+                                          0x0000FF00, 0x00FF0000, 0x00000000
 #else
-                                           0xFF000000,
-                                           0x00FF0000, 0x0000FF00, 0x00000000
+                                          0xFF000000,
+                                          0x00FF0000, 0x0000FF00, 0x00000000
 #endif
         );
 
@@ -712,7 +704,7 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
 #include "../SDL_glfuncs.h"
 #undef SDL_PROC
 
-    if (this->GL_MakeCurrent (this) < 0)
+    if (this->GL_MakeCurrent(this) < 0)
         return (NULL);
 #define SDL_PROC(ret,func,params) \
 	do { \
@@ -729,46 +721,46 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
 #ifdef	FAKE_MAXTEXSIZE
     maxtexsize = FAKE_MAXTEXSIZE;
 #else
-    this->glGetIntegerv (GL_MAX_TEXTURE_SIZE, &maxtexsize);
+    this->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxtexsize);
 #endif
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL: Max texture size: %d\n", maxtexsize);
+    fprintf(stderr, "glSDL: Max texture size: %d\n", maxtexsize);
 #endif
 
-    glSDL_init_formats (this);
+    glSDL_init_formats(this);
 
     if (flag_doublebuf)
-        this->glDrawBuffer (GL_BACK);
+        this->glDrawBuffer(GL_BACK);
     else
-        this->glDrawBuffer (GL_FRONT);
+        this->glDrawBuffer(GL_FRONT);
 
-    this->glDisable (GL_DITHER);
+    this->glDisable(GL_DITHER);
 
-    if (glSDL_AddTexInfo (this, this->screen) < 0) {
-        GLERR ("HookDevice() failed to add info to screen surface!");
+    if (glSDL_AddTexInfo(this, this->screen) < 0) {
+        GLERR("HookDevice() failed to add info to screen surface!");
         return NULL;
     }
 
-    glSDL_SetLogicSize (this, this->screen, this->screen->w, this->screen->h);
+    glSDL_SetLogicSize(this, this->screen, this->screen->w, this->screen->h);
 
-    glSDL_do_texture (this, 0);
-    glSDL_do_blend (this, 0);
+    glSDL_do_texture(this, 0);
+    glSDL_do_blend(this, 0);
 
     for (i = 0; i < 1 + flag_doublebuf; ++i) {
-        this->glBegin (GL_TRIANGLE_FAN);
-        this->glColor3ub (0, 0, 0);
-        this->glVertex2i (0, 0);
-        this->glVertex2i (this->screen->w, 0);
-        this->glVertex2i (this->screen->w, this->screen->h);
-        this->glVertex2i (0, this->screen->h);
-        this->glEnd ();
+        this->glBegin(GL_TRIANGLE_FAN);
+        this->glColor3ub(0, 0, 0);
+        this->glVertex2i(0, 0);
+        this->glVertex2i(this->screen->w, 0);
+        this->glVertex2i(this->screen->w, this->screen->h);
+        this->glVertex2i(0, this->screen->h);
+        this->glEnd();
         if (!i)
-            this->GL_SwapBuffers (this);
+            this->GL_SwapBuffers(this);
     }
 
-    mirrorbuf = SDL_malloc (this->screen->h * this->screen->pitch);
+    mirrorbuf = SDL_malloc(this->screen->h * this->screen->pitch);
     if (!mirrorbuf) {
-        GLERR ("HookDevice() failed to allocate temp buffer for mirroring!");
+        GLERR("HookDevice() failed to allocate temp buffer for mirroring!");
         return NULL;
     }
 
@@ -776,7 +768,7 @@ glSDL_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
 }
 
 static int
-glSDL_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+glSDL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     /* We don't need to fill this one */
     return 0;
@@ -785,10 +777,10 @@ glSDL_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 
 #ifdef DEBUG_GLSDL
 static void
-glSDL_print_glerror (_THIS, int point)
+glSDL_print_glerror(_THIS, int point)
 {
     const char *err = "<unknown>";
-    switch (this->glGetError ()) {
+    switch (this->glGetError()) {
     case GL_NO_ERROR:
         return;
     case GL_INVALID_ENUM:
@@ -811,13 +803,13 @@ glSDL_print_glerror (_THIS, int point)
     default:
         break;
     }
-    fprintf (stderr, "OpenGL error \"%s\" at point %d.\n", err, point);
+    fprintf(stderr, "OpenGL error \"%s\" at point %d.\n", err, point);
 }
 #endif
 
 /* Get texinfo for a surface. */
 static __inline__ private_hwdata *
-glSDL_GetTexInfo (SDL_Surface * surface)
+glSDL_GetTexInfo(SDL_Surface * surface)
 {
     if (!surface)
         return NULL;
@@ -827,51 +819,51 @@ glSDL_GetTexInfo (SDL_Surface * surface)
 
 /* Allocate a "blank" texinfo for a suface. */
 static private_hwdata *
-glSDL_AllocTexInfo (SDL_Surface * surface)
+glSDL_AllocTexInfo(SDL_Surface * surface)
 {
     private_hwdata *txi;
     if (!surface)
         return NULL;
 
-    txi = glSDL_GetTexInfo (surface);
+    txi = glSDL_GetTexInfo(surface);
     if (txi)
         return txi;             /* There already is one! --> */
 
     /* ...and hook a new texinfo struct up to it. */
-    txi = (private_hwdata *) SDL_calloc (1, sizeof (private_hwdata));
+    txi = (private_hwdata *) SDL_calloc(1, sizeof(private_hwdata));
     if (!txi) {
-        GLERR ("AllocTexInfo(): Failed allocating TexInfo struct!");
+        GLERR("AllocTexInfo(): Failed allocating TexInfo struct!");
         return NULL;
     }
     txi->temporary = 1;
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL: Allocated TexInfo %p.\n", txi);
+    fprintf(stderr, "glSDL: Allocated TexInfo %p.\n", txi);
 #endif
     return txi;
 }
 
 
 static void
-glSDL_FreeTexInfo (_THIS, private_hwdata * txi)
+glSDL_FreeTexInfo(_THIS, private_hwdata * txi)
 {
     if (!txi)
         return;
 
-    glSDL_UnloadTexture (this, txi);
-    SDL_free (txi->texture);
-    SDL_free (txi);
+    glSDL_UnloadTexture(this, txi);
+    SDL_free(txi->texture);
+    SDL_free(txi);
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL: Freed TexInfo %p.\n", txi);
+    fprintf(stderr, "glSDL: Freed TexInfo %p.\n", txi);
 #endif
 }
 
 
 /* Detach and free the texinfo of a surface. */
 static void
-glSDL_RemoveTexInfo (_THIS, SDL_Surface * surface)
+glSDL_RemoveTexInfo(_THIS, SDL_Surface * surface)
 {
     SDL_Surface *next, *prev;
-    if (!glSDL_GetTexInfo (surface))
+    if (!glSDL_GetTexInfo(surface))
         return;
 
     /* maintain our doubly linked list */
@@ -886,7 +878,7 @@ glSDL_RemoveTexInfo (_THIS, SDL_Surface * surface)
         next->hwdata->prev = prev;
     }
 
-    glSDL_FreeTexInfo (this, surface->hwdata);
+    glSDL_FreeTexInfo(this, surface->hwdata);
     surface->hwdata = NULL;
 }
 
@@ -897,7 +889,7 @@ glSDL_RemoveTexInfo (_THIS, SDL_Surface * surface)
  * texture.
  */
 static int
-glSDL_CalcChop (private_hwdata * txi)
+glSDL_CalcChop(private_hwdata * txi)
 {
     int rows, vw, vh;
     int vertical = 0;
@@ -908,7 +900,7 @@ glSDL_CalcChop (private_hwdata * txi)
     vh = txi->virt.h;
 
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "w=%d, h=%d ", vw, vh);
+    fprintf(stderr, "w=%d, h=%d ", vw, vh);
 #endif
     if (vh > vw) {
         int t = vw;
@@ -916,7 +908,7 @@ glSDL_CalcChop (private_hwdata * txi)
         vh = t;
         vertical = 1;
 #ifdef DEBUG_GLSDL_CHOP
-        fprintf (stderr, "(vertical) \t");
+        fprintf(stderr, "(vertical) \t");
 #endif
     }
 
@@ -927,7 +919,7 @@ glSDL_CalcChop (private_hwdata * txi)
      */
 #ifdef DEBUG_GLSDL
     if (maxtexsize < 0)
-        return GLERET ("glSDL_CalcChop() called before OpenGL init!");
+        return GLERET("glSDL_CalcChop() called before OpenGL init!");
 #endif
     if (vh > maxtexsize) {
         /*
@@ -945,14 +937,14 @@ glSDL_CalcChop (private_hwdata * txi)
         /* Calculate number of textures needed */
         txi->textures = (vw + texsize - 1) / texsize;
         txi->textures *= (vh + texsize - 1) / texsize;
-        txi->texture = SDL_malloc (txi->textures * sizeof (int));
-        SDL_memset (txi->texture, -1, txi->textures * sizeof (int));
+        txi->texture = SDL_malloc(txi->textures * sizeof(int));
+        SDL_memset(txi->texture, -1, txi->textures * sizeof(int));
 #ifdef DEBUG_GLSDL
-        fprintf (stderr, "two-way tiling; textures=%d\n", txi->textures);
+        fprintf(stderr, "two-way tiling; textures=%d\n", txi->textures);
 #endif
         if (!txi->texture) {
-            fprintf (stderr, "glSDL: INTERNAL ERROR: Failed to allocate"
-                     " texture name table!\n");
+            fprintf(stderr, "glSDL: INTERNAL ERROR: Failed to allocate"
+                    " texture name table!\n");
             return -3;
         }
         return 0;
@@ -983,8 +975,8 @@ glSDL_CalcChop (private_hwdata * txi)
         rows = (vw + minsize - 1) / minsize;
     }
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "==> minsize=%d ", minsize);
-    fprintf (stderr, "(rows=%d) \t", rows);
+    fprintf(stderr, "==> minsize=%d ", minsize);
+    fprintf(stderr, "(rows=%d) \t", rows);
 #endif
 
     /* Recalculate with nearest higher power-of-2 width. */
@@ -992,24 +984,24 @@ glSDL_CalcChop (private_hwdata * txi)
     txi->texsize = texsize;
     rows = (vw + texsize - 1) / texsize;
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "==> texsize=%d (rows=%d) \t", texsize, rows);
+    fprintf(stderr, "==> texsize=%d (rows=%d) \t", texsize, rows);
 #endif
 
     /* Calculate number of tiles per texture */
     txi->tilespertex = txi->texsize / vh;
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "tilespertex=%d \t", txi->tilespertex);
+    fprintf(stderr, "tilespertex=%d \t", txi->tilespertex);
 #endif
 
     /* Calculate number of textures needed */
     txi->textures = (rows + txi->tilespertex - 1) / txi->tilespertex;
-    txi->texture = (GLuint *) SDL_malloc (txi->textures * sizeof (GLuint));
-    SDL_memset (txi->texture, GLSDL_NOTEX, txi->textures * sizeof (GLuint));
+    txi->texture = (GLuint *) SDL_malloc(txi->textures * sizeof(GLuint));
+    SDL_memset(txi->texture, GLSDL_NOTEX, txi->textures * sizeof(GLuint));
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "textures=%d, ", txi->textures);
+    fprintf(stderr, "textures=%d, ", txi->textures);
 #endif
     if (!txi->texture)
-        return GLERET ("Failed to allocate texture name table!");
+        return GLERET("Failed to allocate texture name table!");
 
     /* Set up tile size. (Only one axis supported here!) */
     if (1 == rows) {
@@ -1032,7 +1024,7 @@ glSDL_CalcChop (private_hwdata * txi)
     }
 
 #ifdef DEBUG_GLSDL_CHOP
-    fprintf (stderr, "tilew=%d, tileh=%d\n", txi->tilew, txi->tileh);
+    fprintf(stderr, "tilew=%d, tileh=%d\n", txi->tilew, txi->tileh);
 #endif
     return 0;
 }
@@ -1040,27 +1032,27 @@ glSDL_CalcChop (private_hwdata * txi)
 
 /* Create a temporary TexInfo struct for an SDL_Surface */
 static private_hwdata *
-glSDL_CreateTempTexInfo (_THIS, SDL_Surface * surface)
+glSDL_CreateTempTexInfo(_THIS, SDL_Surface * surface)
 {
     private_hwdata *txi;
     if (!surface) {
-        GLERR ("CreateTempTexInfo(); no surface!");
+        GLERR("CreateTempTexInfo(); no surface!");
         return NULL;
     }
-    if (IS_GLSDL_SURFACE (surface))
-        return glSDL_GetTexInfo (surface);      /* Do nothing */
+    if (IS_GLSDL_SURFACE(surface))
+        return glSDL_GetTexInfo(surface);       /* Do nothing */
 
-    txi = glSDL_AllocTexInfo (surface);
+    txi = glSDL_AllocTexInfo(surface);
     if (!txi) {
-        GLERR ("CreateTempTexInfo(); Could not alloc TexInfo!");
+        GLERR("CreateTempTexInfo(); Could not alloc TexInfo!");
         return NULL;
     }
     txi->virt.w = txi->lw = surface->w;
     txi->virt.h = txi->lh = surface->h;
 
-    if (glSDL_CalcChop (txi) < 0) {
-        glSDL_FreeTexInfo (this, txi);
-        GLERR ("CreateTempTexInfo(); CalcChop() failed!");
+    if (glSDL_CalcChop(txi) < 0) {
+        glSDL_FreeTexInfo(this, txi);
+        GLERR("CreateTempTexInfo(); CalcChop() failed!");
         return NULL;
     }
 
@@ -1069,9 +1061,9 @@ glSDL_CreateTempTexInfo (_THIS, SDL_Surface * surface)
 
 /* Add a glSDL_TexInfo struct to an SDL_Surface */
 static private_hwdata *
-glSDL_AddTexInfo (_THIS, SDL_Surface * surface)
+glSDL_AddTexInfo(_THIS, SDL_Surface * surface)
 {
-    private_hwdata *txi = glSDL_CreateTempTexInfo (this, surface);
+    private_hwdata *txi = glSDL_CreateTempTexInfo(this, surface);
     if (!txi)
         return NULL;
 
@@ -1087,7 +1079,7 @@ glSDL_AddTexInfo (_THIS, SDL_Surface * surface)
         txi->next->hwdata->prev = surface;
     }
 
-    SDL_SetClipRect (surface, &txi->virt);
+    SDL_SetClipRect(surface, &txi->virt);
     return txi;
 }
 
@@ -1118,7 +1110,7 @@ glSDL_AddTexInfo (_THIS, SDL_Surface * surface)
 
 /* Create a surface of the prefered OpenGL RGBA texture format */
 static SDL_Surface *
-glSDL_CreateRGBASurface (int w, int h)
+glSDL_CreateRGBASurface(int w, int h)
 {
     SDL_Surface *s;
     Uint32 rmask, gmask, bmask, amask;
@@ -1134,8 +1126,8 @@ glSDL_CreateRGBASurface (int w, int h)
     bmask = 0x0000FF00;
     amask = 0x000000FF;
 #endif
-    s = SDL_CreateRGBSurface (SDL_SWSURFACE, w, h,
-                              bits, rmask, gmask, bmask, amask);
+    s = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h,
+                             bits, rmask, gmask, bmask, amask);
     if (s)
         s->flags |= SDL_HWACCEL;
 
@@ -1144,27 +1136,25 @@ glSDL_CreateRGBASurface (int w, int h)
 
 
 static void
-glSDL_init_formats (_THIS)
+glSDL_init_formats(_THIS)
 {
-    RGBfmt = SDL_AllocFormat (24,
+    RGBfmt = SDL_AllocFormat(24,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                              0x000000FF, 0x0000FF00, 0x00FF0000, 0);
+                             0x000000FF, 0x0000FF00, 0x00FF0000, 0);
 #else
-                              0x00FF0000, 0x0000FF00, 0x000000FF, 0);
+                             0x00FF0000, 0x0000FF00, 0x000000FF, 0);
 #endif
-    RGBAfmt = SDL_AllocFormat (32,
+    RGBAfmt = SDL_AllocFormat(32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-                               0x000000FF,
-                               0x0000FF00, 0x00FF0000, 0xFF000000);
+                              0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000);
 #else
-                               0xFF000000,
-                               0x00FF0000, 0x0000FF00, 0x000000FF);
+                              0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
 #endif
 }
 
 
 static int
-glSDL_FormatIsOk (SDL_Surface * surface)
+glSDL_FormatIsOk(SDL_Surface * surface)
 {
     SDL_PixelFormat *pf;
     if (!surface)
@@ -1206,13 +1196,13 @@ glSDL_FormatIsOk (SDL_Surface * surface)
 }
 
 static void
-glSDL_key2alpha (SDL_Surface * surface)
+glSDL_key2alpha(SDL_Surface * surface)
 {
     int x, y;
     Uint32 ckey = surface->format->colorkey;
 
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL_key2alpha()\n");
+    fprintf(stderr, "glSDL_key2alpha()\n");
 #endif
     for (y = 0; y < surface->h; ++y) {
         Uint32 *px =
@@ -1230,78 +1220,78 @@ glSDL_key2alpha (SDL_Surface * surface)
   ----------------------------------------------------------*/
 
 static int
-glSDL_FlipHWSurface (_THIS, SDL_Surface * surface)
+glSDL_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
 #ifdef GLSDL_GRAPHICAL_DEBUG
-    this->glDisable (GL_TEXTURE_2D);
-    this->glBegin (GL_LINE_LOOP);
-    this->glColor4ub (0, 0, 255, 128);
-    this->glVertex2i (0, 0);
-    this->glVertex2i (surface->w, 0);
-    this->glVertex2i (surface->w, surface->h);
-    this->glVertex2i (0, surface->h);
-    this->glEnd ();
-    this->glEnable (GL_TEXTURE_2D);
+    this->glDisable(GL_TEXTURE_2D);
+    this->glBegin(GL_LINE_LOOP);
+    this->glColor4ub(0, 0, 255, 128);
+    this->glVertex2i(0, 0);
+    this->glVertex2i(surface->w, 0);
+    this->glVertex2i(surface->w, surface->h);
+    this->glVertex2i(0, surface->h);
+    this->glEnd();
+    this->glEnable(GL_TEXTURE_2D);
 #endif
     if (this->screen->flags & SDL_DOUBLEBUF)
-        this->GL_SwapBuffers (this);
+        this->GL_SwapBuffers(this);
     else
-        this->glFinish ();
+        this->glFinish();
     return 0;
 }
 
 
 static void
-glSDL_UpdateRects (_THIS, int numrects, SDL_Rect * rects)
+glSDL_UpdateRects(_THIS, int numrects, SDL_Rect * rects)
 {
 #ifdef GLSDL_GRAPHICAL_DEBUG
     int i;
-    this->glDisable (GL_TEXTURE_2D);
+    this->glDisable(GL_TEXTURE_2D);
     for (i = 0; i < numrects; i++) {
-        this->glColor4ub (255, 0, 0, 128);
-        this->glBegin (GL_LINE_LOOP);
-        this->glVertex2i (rects[i].x, rects[i].y);
-        this->glVertex2i (rects[i].x + rects[i].w, rects[i].y);
-        this->glVertex2i (rects[i].x + rects[i].w, rects[i].y + rects[i].h);
-        this->glVertex2i (rects[i].x, rects[i].y + rects[i].h);
-        this->glEnd ();
+        this->glColor4ub(255, 0, 0, 128);
+        this->glBegin(GL_LINE_LOOP);
+        this->glVertex2i(rects[i].x, rects[i].y);
+        this->glVertex2i(rects[i].x + rects[i].w, rects[i].y);
+        this->glVertex2i(rects[i].x + rects[i].w, rects[i].y + rects[i].h);
+        this->glVertex2i(rects[i].x, rects[i].y + rects[i].h);
+        this->glEnd();
     }
-    this->glEnable (GL_TEXTURE_2D);
+    this->glEnable(GL_TEXTURE_2D);
 #endif
     if (this->screen->flags & SDL_DOUBLEBUF)
-        this->GL_SwapBuffers (this);
+        this->GL_SwapBuffers(this);
     else
-        this->glFinish ();
+        this->glFinish();
 }
 
 
 static int
-glSDL_AllocHWSurface (_THIS, SDL_Surface * surface)
+glSDL_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     surface->flags |= (SDL_HWSURFACE | SDL_HWACCEL);
 
-    surface->pixels = SDL_malloc (surface->h * surface->pitch);
+    surface->pixels = SDL_malloc(surface->h * surface->pitch);
     if (surface->pixels == NULL) {
-        SDL_FreeSurface (surface);
-        SDL_OutOfMemory ();
+        SDL_FreeSurface(surface);
+        SDL_OutOfMemory();
         return (-1);
     }
-    SDL_memset (surface->pixels, 0, surface->h * surface->pitch);
+    SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
     return 0;
 }
 
 
 static void
-glSDL_FreeHWSurface (_THIS, SDL_Surface * surface)
+glSDL_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     if (!surface)
         return;
-    glSDL_RemoveTexInfo (this, surface);
+    glSDL_RemoveTexInfo(this, surface);
 }
 
 
 static int
-glSDL_LockHWSurface (_THIS, SDL_Surface * surface)
+glSDL_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     int y;
 
@@ -1309,43 +1299,43 @@ glSDL_LockHWSurface (_THIS, SDL_Surface * surface)
         return -1;
 
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL: Lock Surface.\n");
+    fprintf(stderr, "glSDL: Lock Surface.\n");
 #endif
 
     if (SDL_VideoSurface == surface) {
-        glSDL_Invalidate (surface, NULL);
-        this->glPixelStorei (GL_UNPACK_ROW_LENGTH,
-                             surface->pitch / surface->format->BytesPerPixel);
-        this->glReadPixels (0, 0, OpenGL_Surface->w, OpenGL_Surface->h,
-                            GL_RGB, GL_UNSIGNED_BYTE, OpenGL_Surface->pixels);
+        glSDL_Invalidate(surface, NULL);
+        this->glPixelStorei(GL_UNPACK_ROW_LENGTH,
+                            surface->pitch / surface->format->BytesPerPixel);
+        this->glReadPixels(0, 0, OpenGL_Surface->w, OpenGL_Surface->h,
+                           GL_RGB, GL_UNSIGNED_BYTE, OpenGL_Surface->pixels);
         for (y = 0; y < OpenGL_Surface->h / 2; ++y) {
             void *upper = (Uint8 *) OpenGL_Surface->pixels +
                 OpenGL_Surface->pitch * y;
             void *lower = (Uint8 *) OpenGL_Surface->pixels +
                 OpenGL_Surface->pitch * (OpenGL_Surface->h - y - 1);
-            SDL_memcpy (mirrorbuf, upper, OpenGL_Surface->pitch);
-            SDL_memcpy (upper, lower, OpenGL_Surface->pitch);
-            SDL_memcpy (lower, mirrorbuf, OpenGL_Surface->pitch);
+            SDL_memcpy(mirrorbuf, upper, OpenGL_Surface->pitch);
+            SDL_memcpy(upper, lower, OpenGL_Surface->pitch);
+            SDL_memcpy(lower, mirrorbuf, OpenGL_Surface->pitch);
         }
         /* the mapping has to be invalidated on 8bpp video surfaces in case of a hw palette change. 
          * Now if someone could tell me why this is not handled by SDL... */
         if (SDL_VideoSurface->format->BitsPerPixel == 8)
-            SDL_InvalidateMap (OpenGL_Surface->map);
+            SDL_InvalidateMap(OpenGL_Surface->map);
 
         /* convert this raw surface to the application-requested format 
          * FIXME this is sometimes overkill, we could use glPixelStore smartly
          * But this would be slow anyway :) */
 
-        glSDL_SoftBlit (OpenGL_Surface, NULL, SDL_VideoSurface, NULL);
+        glSDL_SoftBlit(OpenGL_Surface, NULL, SDL_VideoSurface, NULL);
     } else
-        glSDL_Invalidate (surface, NULL);
+        glSDL_Invalidate(surface, NULL);
 
     return 0;
 }
 
 
 static void
-glSDL_UnlockHWSurface (_THIS, SDL_Surface * surface)
+glSDL_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     private_hwdata *txi;
 
@@ -1355,17 +1345,17 @@ glSDL_UnlockHWSurface (_THIS, SDL_Surface * surface)
     /* upload this surface ONLY if this is a glSDL surface
      * because sometimes (during displayformating for ex.) surfaces are unlocked that aren't glSDL
      */
-    if (!IS_GLSDL_SURFACE (surface))
+    if (!IS_GLSDL_SURFACE(surface))
         return;
 
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "glSDL: Unlock Surface.\n");
+    fprintf(stderr, "glSDL: Unlock Surface.\n");
 #endif
 
-    txi = glSDL_UploadSurface (this, surface);
+    txi = glSDL_UploadSurface(this, surface);
 
     if (!txi) {
-        GLERR ("glSDL_UnlockHWSurface() failed to upload surface!");
+        GLERR("glSDL_UnlockHWSurface() failed to upload surface!");
         return;
     }
     if (txi->temporary) {
@@ -1374,12 +1364,12 @@ glSDL_UnlockHWSurface (_THIS, SDL_Surface * surface)
         return;
     }
     if (surface == SDL_VideoSurface)
-        glSDL_BlitGL (this, SDL_VideoSurface, NULL, NULL);
+        glSDL_BlitGL(this, SDL_VideoSurface, NULL, NULL);
 }
 
 
 static int
-glSDL_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
+glSDL_SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key)
 {
     /*
      * If an application does this *after* SDL_DisplayFormat,
@@ -1390,14 +1380,14 @@ glSDL_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
      * deal in most cases, as glSDL only converts once anyway,
      * *unless* you keep modifying the surface.
      */
-    if (IS_GLSDL_SURFACE (surface))
-        glSDL_RemoveTexInfo (this, surface);
+    if (IS_GLSDL_SURFACE(surface))
+        glSDL_RemoveTexInfo(this, surface);
     return 0;
 }
 
 
 static int
-glSDL_SetHWAlpha (_THIS, SDL_Surface * surface, Uint8 alpha)
+glSDL_SetHWAlpha(_THIS, SDL_Surface * surface, Uint8 alpha)
 {
     /*
      * If an application does this *after* SDL_DisplayFormat,
@@ -1408,19 +1398,19 @@ glSDL_SetHWAlpha (_THIS, SDL_Surface * surface, Uint8 alpha)
      * deal in most cases, as glSDL only converts once anyway,
      * *unless* you keep modifying the surface.
      */
-    if (IS_GLSDL_SURFACE (surface))
-        glSDL_RemoveTexInfo (this, surface);
+    if (IS_GLSDL_SURFACE(surface))
+        glSDL_RemoveTexInfo(this, surface);
     return 0;
 }
 
 static SDL_bool
-glSDL_SetClipRect (_THIS, SDL_Surface * surface, SDL_Rect * rect)
+glSDL_SetClipRect(_THIS, SDL_Surface * surface, SDL_Rect * rect)
 {
     SDL_bool res;
     if (!surface)
         return SDL_FALSE;
 
-    res = SDL_SetClipRect (surface, rect);
+    res = SDL_SetClipRect(surface, rect);
     if (!res)
         return SDL_FALSE;
 
@@ -1435,68 +1425,67 @@ glSDL_SetClipRect (_THIS, SDL_Surface * surface, SDL_Rect * rect)
         r.y = rect->y;
         r.w = rect->w;
         r.h = rect->h;
-        SDL_SetClipRect (surface, rect);
+        SDL_SetClipRect(surface, rect);
 
-        txi = glSDL_GetTexInfo (surface);
+        txi = glSDL_GetTexInfo(surface);
         if (!txi)
-            return GLERET ("SetClipRect(): Could not get TexInfo!");
+            return GLERET("SetClipRect(): Could not get TexInfo!");
 
-        this->glViewport (rect->x,
-                          surface->h - (rect->y + rect->h), rect->w, rect->h);
+        this->glViewport(rect->x,
+                         surface->h - (rect->y + rect->h), rect->w, rect->h);
         /*
          * Note that this projection is upside down in
          * relation to the OpenGL coordinate system.
          */
-        this->glMatrixMode (GL_PROJECTION);
-        this->glLoadIdentity ();
+        this->glMatrixMode(GL_PROJECTION);
+        this->glLoadIdentity();
         xscale = (float) txi->lw / (float) surface->w;
         yscale = (float) txi->lh / (float) surface->h;
-        this->glOrtho (xscale * (float) rect->x,
-                       xscale * (float) (rect->w + rect->x),
-                       yscale * (float) (rect->h + rect->y),
-                       yscale * (float) rect->y, -1.0, 1.0);
+        this->glOrtho(xscale * (float) rect->x,
+                      xscale * (float) (rect->w + rect->x),
+                      yscale * (float) (rect->h + rect->y),
+                      yscale * (float) rect->y, -1.0, 1.0);
         return SDL_TRUE;
     }
     return res;
 }
 
 static int
-glSDL_BlitFromGL (_THIS, SDL_Rect * srcrect,
-                  SDL_Surface * dst, SDL_Rect * dstrect)
+glSDL_BlitFromGL(_THIS, SDL_Rect * srcrect,
+                 SDL_Surface * dst, SDL_Rect * dstrect)
 {
     SDL_Rect sr, dr;
 
     /* In case the destination has an OpenGL texture... */
-    glSDL_Invalidate (dst, dstrect);
+    glSDL_Invalidate(dst, dstrect);
 
     /* Abuse the fake screen buffer a little. */
-    this->glPixelStorei (GL_UNPACK_ROW_LENGTH, SDL_VideoSurface->pitch /
-                         SDL_VideoSurface->format->BytesPerPixel);
+    this->glPixelStorei(GL_UNPACK_ROW_LENGTH, SDL_VideoSurface->pitch /
+                        SDL_VideoSurface->format->BytesPerPixel);
     if (srcrect)
-        this->glReadPixels (srcrect->x,
-                            OpenGL_Surface->h - (srcrect->y + srcrect->h - 1),
-                            srcrect->w, srcrect->h, GL_RGB, GL_UNSIGNED_BYTE,
-                            OpenGL_Surface->pixels);
+        this->glReadPixels(srcrect->x,
+                           OpenGL_Surface->h - (srcrect->y + srcrect->h - 1),
+                           srcrect->w, srcrect->h, GL_RGB, GL_UNSIGNED_BYTE,
+                           OpenGL_Surface->pixels);
     else
-        this->glReadPixels (0, 0, OpenGL_Surface->w, OpenGL_Surface->h,
-                            GL_RGB, GL_UNSIGNED_BYTE, OpenGL_Surface->pixels);
+        this->glReadPixels(0, 0, OpenGL_Surface->w, OpenGL_Surface->h,
+                           GL_RGB, GL_UNSIGNED_BYTE, OpenGL_Surface->pixels);
     sr = *srcrect;
     dr = *dstrect;
-    glSDL_SoftBlit (OpenGL_Surface, &sr, dst, &dr);
+    glSDL_SoftBlit(OpenGL_Surface, &sr, dst, &dr);
     return 0;
 }
 
 static __inline__ void
-glSDL_BlitGL_single (_THIS, private_hwdata * txi,
-                     float sx1, float sy1, SDL_Rect * dst,
-                     unsigned char alpha)
+glSDL_BlitGL_single(_THIS, private_hwdata * txi,
+                    float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
 {
     float sx2, sy2, texscale;
     if (!txi->textures)
         return;
     if (-1 == txi->texture[0])
         return;
-    glSDL_texture (this, txi->texture[0]);
+    glSDL_texture(this, txi->texture[0]);
 
     texscale = 1.0 / (float) txi->texsize;
     sx2 = (sx1 + (float) dst->w) * texscale;
@@ -1505,34 +1494,34 @@ glSDL_BlitGL_single (_THIS, private_hwdata * txi,
     sy1 *= texscale;
 
 #ifdef GLSDL_GRAPHICAL_DEBUG
-    this->glDisable (GL_TEXTURE_2D);
-    this->glBegin (GL_LINE_LOOP);
-    this->glColor4ub (0, 255, 0, 128);
-    this->glVertex2i (dst->x, dst->y);
-    this->glVertex2i (dst->x + dst->w, dst->y);
-    this->glVertex2i (dst->x + dst->w, dst->y + dst->h);
-    this->glVertex2i (dst->x, dst->y + dst->h);
-    this->glEnd ();
-    this->glEnable (GL_TEXTURE_2D);
+    this->glDisable(GL_TEXTURE_2D);
+    this->glBegin(GL_LINE_LOOP);
+    this->glColor4ub(0, 255, 0, 128);
+    this->glVertex2i(dst->x, dst->y);
+    this->glVertex2i(dst->x + dst->w, dst->y);
+    this->glVertex2i(dst->x + dst->w, dst->y + dst->h);
+    this->glVertex2i(dst->x, dst->y + dst->h);
+    this->glEnd();
+    this->glEnable(GL_TEXTURE_2D);
 #endif
 
-    this->glBegin (GL_TRIANGLE_FAN);
-    this->glColor4ub (255, 255, 255, alpha);
-    this->glTexCoord2f (sx1, sy1);
-    this->glVertex2i (dst->x, dst->y);
-    this->glTexCoord2f (sx2, sy1);
-    this->glVertex2i (dst->x + dst->w, dst->y);
-    this->glTexCoord2f (sx2, sy2);
-    this->glVertex2i (dst->x + dst->w, dst->y + dst->h);
-    this->glTexCoord2f (sx1, sy2);
-    this->glVertex2i (dst->x, dst->y + dst->h);
-    this->glEnd ();
+    this->glBegin(GL_TRIANGLE_FAN);
+    this->glColor4ub(255, 255, 255, alpha);
+    this->glTexCoord2f(sx1, sy1);
+    this->glVertex2i(dst->x, dst->y);
+    this->glTexCoord2f(sx2, sy1);
+    this->glVertex2i(dst->x + dst->w, dst->y);
+    this->glTexCoord2f(sx2, sy2);
+    this->glVertex2i(dst->x + dst->w, dst->y + dst->h);
+    this->glTexCoord2f(sx1, sy2);
+    this->glVertex2i(dst->x, dst->y + dst->h);
+    this->glEnd();
 }
 
 
 static void
-glSDL_BlitGL_htile (_THIS, private_hwdata * txi,
-                    float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
+glSDL_BlitGL_htile(_THIS, private_hwdata * txi,
+                   float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
 {
     int tex;
     float tile, sx2, sy2, yo;
@@ -1542,7 +1531,7 @@ glSDL_BlitGL_htile (_THIS, private_hwdata * txi,
     sy2 = (sy1 + (float) dst->h) * texscale;
     sx1 *= texscale;
     sy1 *= texscale;
-    tile = floor (sx1);
+    tile = floor(sx1);
     tex = (int) tile / txi->tilespertex;
     yo = ((int) tile % txi->tilespertex) * tileh;
 
@@ -1550,7 +1539,7 @@ glSDL_BlitGL_htile (_THIS, private_hwdata * txi,
         return;
     if (-1 == txi->texture[tex])
         return;
-    glSDL_texture (this, txi->texture[tex]);
+    glSDL_texture(this, txi->texture[tex]);
 
     while (tile < sx2) {
         int tdx1 = dst->x;
@@ -1575,32 +1564,32 @@ glSDL_BlitGL_htile (_THIS, private_hwdata * txi,
                 return;
             if (-1 == txi->texture[tex])
                 return;
-            glSDL_texture (this, txi->texture[tex]);
+            glSDL_texture(this, txi->texture[tex]);
             yo = 0.0;
         }
 #ifdef GLSDL_GRAPHICAL_DEBUG
-        this->glDisable (GL_TEXTURE_2D);
-        this->glBegin (GL_LINE_LOOP);
-        this->glColor4ub (0, 255, 0, 128);
-        this->glVertex2i (tdx1, dst->y);
-        this->glVertex2i (tdx2, dst->y);
-        this->glVertex2i (tdx2, dst->y + dst->h);
-        this->glVertex2i (tdx1, dst->y + dst->h);
-        this->glEnd ();
-        this->glEnable (GL_TEXTURE_2D);
+        this->glDisable(GL_TEXTURE_2D);
+        this->glBegin(GL_LINE_LOOP);
+        this->glColor4ub(0, 255, 0, 128);
+        this->glVertex2i(tdx1, dst->y);
+        this->glVertex2i(tdx2, dst->y);
+        this->glVertex2i(tdx2, dst->y + dst->h);
+        this->glVertex2i(tdx1, dst->y + dst->h);
+        this->glEnd();
+        this->glEnable(GL_TEXTURE_2D);
 #endif
 
-        this->glBegin (GL_TRIANGLE_FAN);
-        this->glColor4ub (255, 255, 255, alpha);
-        this->glTexCoord2f (tsx1, yo + sy1);
-        this->glVertex2i (tdx1, dst->y);
-        this->glTexCoord2f (tsx2, yo + sy1);
-        this->glVertex2i (tdx2, dst->y);
-        this->glTexCoord2f (tsx2, yo + sy2);
-        this->glVertex2i (tdx2, dst->y + dst->h);
-        this->glTexCoord2f (tsx1, yo + sy2);
-        this->glVertex2i (tdx1, dst->y + dst->h);
-        this->glEnd ();
+        this->glBegin(GL_TRIANGLE_FAN);
+        this->glColor4ub(255, 255, 255, alpha);
+        this->glTexCoord2f(tsx1, yo + sy1);
+        this->glVertex2i(tdx1, dst->y);
+        this->glTexCoord2f(tsx2, yo + sy1);
+        this->glVertex2i(tdx2, dst->y);
+        this->glTexCoord2f(tsx2, yo + sy2);
+        this->glVertex2i(tdx2, dst->y + dst->h);
+        this->glTexCoord2f(tsx1, yo + sy2);
+        this->glVertex2i(tdx1, dst->y + dst->h);
+        this->glEnd();
         tile += 1.0;
         yo += tileh;
     }
@@ -1608,8 +1597,8 @@ glSDL_BlitGL_htile (_THIS, private_hwdata * txi,
 
 
 static void
-glSDL_BlitGL_vtile (_THIS, private_hwdata * txi,
-                    float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
+glSDL_BlitGL_vtile(_THIS, private_hwdata * txi,
+                   float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
 {
     int tex;
     float tile, sx2, sy2, xo;
@@ -1619,7 +1608,7 @@ glSDL_BlitGL_vtile (_THIS, private_hwdata * txi,
     sy2 = (sy1 + (float) dst->h) * texscale;
     sx1 *= texscale;
     sy1 *= texscale;
-    tile = floor (sy1);
+    tile = floor(sy1);
     tex = (int) tile / txi->tilespertex;
     xo = ((int) tile % txi->tilespertex) * tilew;
 
@@ -1627,7 +1616,7 @@ glSDL_BlitGL_vtile (_THIS, private_hwdata * txi,
         return;
     if (-1 == txi->texture[tex])
         return;
-    glSDL_texture (this, txi->texture[tex]);
+    glSDL_texture(this, txi->texture[tex]);
 
     while (tile < sy2) {
         int tdy1 = dst->y;
@@ -1652,32 +1641,32 @@ glSDL_BlitGL_vtile (_THIS, private_hwdata * txi,
                 return;
             if (-1 == txi->texture[tex])
                 return;
-            glSDL_texture (this, txi->texture[tex]);
+            glSDL_texture(this, txi->texture[tex]);
             xo = 0.0;
         }
 #ifdef GLSDL_GRAPHICAL_DEBUG
-        this->glDisable (GL_TEXTURE_2D);
-        this->glBegin (GL_LINE_LOOP);
-        this->glColor4ub (0, 255, 0, 128);
-        this->glVertex2i (dst->x, tdy1);
-        this->glVertex2i (dst->x + dst->w, tdy1);
-        this->glVertex2i (dst->x + dst->w, tdy2);
-        this->glVertex2i (dst->x, tdy2);
-        this->glEnd ();
-        this->glEnable (GL_TEXTURE_2D);
+        this->glDisable(GL_TEXTURE_2D);
+        this->glBegin(GL_LINE_LOOP);
+        this->glColor4ub(0, 255, 0, 128);
+        this->glVertex2i(dst->x, tdy1);
+        this->glVertex2i(dst->x + dst->w, tdy1);
+        this->glVertex2i(dst->x + dst->w, tdy2);
+        this->glVertex2i(dst->x, tdy2);
+        this->glEnd();
+        this->glEnable(GL_TEXTURE_2D);
 #endif
 
-        this->glBegin (GL_TRIANGLE_FAN);
-        this->glColor4ub (255, 255, 255, alpha);
-        this->glTexCoord2f (xo + sx1, tsy1);
-        this->glVertex2i (dst->x, tdy1);
-        this->glTexCoord2f (xo + sx2, tsy1);
-        this->glVertex2i (dst->x + dst->w, tdy1);
-        this->glTexCoord2f (xo + sx2, tsy2);
-        this->glVertex2i (dst->x + dst->w, tdy2);
-        this->glTexCoord2f (xo + sx1, tsy2);
-        this->glVertex2i (dst->x, tdy2);
-        this->glEnd ();
+        this->glBegin(GL_TRIANGLE_FAN);
+        this->glColor4ub(255, 255, 255, alpha);
+        this->glTexCoord2f(xo + sx1, tsy1);
+        this->glVertex2i(dst->x, tdy1);
+        this->glTexCoord2f(xo + sx2, tsy1);
+        this->glVertex2i(dst->x + dst->w, tdy1);
+        this->glTexCoord2f(xo + sx2, tsy2);
+        this->glVertex2i(dst->x + dst->w, tdy2);
+        this->glTexCoord2f(xo + sx1, tsy2);
+        this->glVertex2i(dst->x, tdy2);
+        this->glEnd();
 
         tile += 1.0;
         xo += tilew;
@@ -1686,9 +1675,8 @@ glSDL_BlitGL_vtile (_THIS, private_hwdata * txi,
 
 
 static void
-glSDL_BlitGL_hvtile (_THIS, SDL_Surface * src, private_hwdata * txi,
-                     float sx1, float sy1, SDL_Rect * dst,
-                     unsigned char alpha)
+glSDL_BlitGL_hvtile(_THIS, SDL_Surface * src, private_hwdata * txi,
+                    float sx1, float sy1, SDL_Rect * dst, unsigned char alpha)
 {
     int x, y, last_tex, tex;
     float sx2, sy2;
@@ -1699,14 +1687,14 @@ glSDL_BlitGL_hvtile (_THIS, SDL_Surface * src, private_hwdata * txi,
     sx1 *= texscale;
     sy1 *= texscale;
 
-    last_tex = tex = floor (sy1) * tilesperrow + floor (sx1);
+    last_tex = tex = floor(sy1) * tilesperrow + floor(sx1);
     if (tex >= txi->textures)
         return;
     if (-1 == txi->texture[tex])
         return;
-    glSDL_texture (this, txi->texture[tex]);
+    glSDL_texture(this, txi->texture[tex]);
 
-    for (y = floor (sy1); y < sy2; ++y) {
+    for (y = floor(sy1); y < sy2; ++y) {
         int tdy1 = dst->y;
         int tdy2 = dst->y + dst->h;
         float tsy1 = sy1 - y;
@@ -1721,7 +1709,7 @@ glSDL_BlitGL_hvtile (_THIS, SDL_Surface * src, private_hwdata * txi,
             tdy2 -= (tsy2 - 1.0) * txi->texsize;
             tsy2 = 1.0;
         }
-        for (x = floor (sx1); x < sx2; ++x) {
+        for (x = floor(sx1); x < sx2; ++x) {
             int tdx1 = dst->x;
             int tdx2 = dst->x + dst->w;
             float tsx1 = sx1 - x;
@@ -1744,32 +1732,32 @@ glSDL_BlitGL_hvtile (_THIS, SDL_Surface * src, private_hwdata * txi,
                     return;
                 if (-1 == txi->texture[tex])
                     return;
-                glSDL_texture (this, txi->texture[tex]);
+                glSDL_texture(this, txi->texture[tex]);
                 last_tex = tex;
             }
 #ifdef GLSDL_GRAPHICAL_DEBUG
-            this->glDisable (GL_TEXTURE_2D);
-            this->glBegin (GL_LINE_LOOP);
-            this->glColor4ub (0, 255, 0, 128);
-            this->glVertex2i (tdx1, tdy1);
-            this->glVertex2i (tdx2, tdy1);
-            this->glVertex2i (tdx2, tdy2);
-            this->glVertex2i (tdx1, tdy2);
-            this->glEnd ();
-            this->glEnable (GL_TEXTURE_2D);
+            this->glDisable(GL_TEXTURE_2D);
+            this->glBegin(GL_LINE_LOOP);
+            this->glColor4ub(0, 255, 0, 128);
+            this->glVertex2i(tdx1, tdy1);
+            this->glVertex2i(tdx2, tdy1);
+            this->glVertex2i(tdx2, tdy2);
+            this->glVertex2i(tdx1, tdy2);
+            this->glEnd();
+            this->glEnable(GL_TEXTURE_2D);
 #endif
 
-            this->glBegin (GL_TRIANGLE_FAN);
-            this->glColor4ub (255, 255, 255, alpha);
-            this->glTexCoord2f (tsx1, tsy1);
-            this->glVertex2i (tdx1, tdy1);
-            this->glTexCoord2f (tsx2, tsy1);
-            this->glVertex2i (tdx2, tdy1);
-            this->glTexCoord2f (tsx2, tsy2);
-            this->glVertex2i (tdx2, tdy2);
-            this->glTexCoord2f (tsx1, tsy2);
-            this->glVertex2i (tdx1, tdy2);
-            this->glEnd ();
+            this->glBegin(GL_TRIANGLE_FAN);
+            this->glColor4ub(255, 255, 255, alpha);
+            this->glTexCoord2f(tsx1, tsy1);
+            this->glVertex2i(tdx1, tdy1);
+            this->glTexCoord2f(tsx2, tsy1);
+            this->glVertex2i(tdx2, tdy1);
+            this->glTexCoord2f(tsx2, tsy2);
+            this->glVertex2i(tdx2, tdy2);
+            this->glTexCoord2f(tsx1, tsy2);
+            this->glVertex2i(tdx1, tdy2);
+            this->glEnd();
         }
     }
 }
@@ -1790,7 +1778,7 @@ glSDL_BlitGL_hvtile (_THIS, SDL_Surface * src, private_hwdata * txi,
  * Returns 1 if the result is visible, otherwise 0.
  */
 static __inline__ int
-blitclip (SDL_Rect * rect, int w, int h, int *x, int *y, SDL_Rect * clip)
+blitclip(SDL_Rect * rect, int w, int h, int *x, int *y, SDL_Rect * clip)
 {
     int sx1, sy1, sx2, sy2;
     int dx1, dy1, dx2, dy2;
@@ -1853,8 +1841,7 @@ blitclip (SDL_Rect * rect, int w, int h, int *x, int *y, SDL_Rect * clip)
 }
 
 static int
-glSDL_BlitGL (_THIS, SDL_Surface * src,
-              SDL_Rect * srcrect, SDL_Rect * dstrect)
+glSDL_BlitGL(_THIS, SDL_Surface * src, SDL_Rect * srcrect, SDL_Rect * dstrect)
 {
     private_hwdata *txi;
     float x1, y1;
@@ -1864,7 +1851,7 @@ glSDL_BlitGL (_THIS, SDL_Surface * src,
     SDL_Rect r;
 
     if (!src)
-        return GLERET ("BlitGL(): No src surface!");
+        return GLERET("BlitGL(): No src surface!");
 
     /* Get source and destination coordinates */
     if (srcrect)
@@ -1881,7 +1868,7 @@ glSDL_BlitGL (_THIS, SDL_Surface * src,
         x = y = 0;
 
     /* Clip! */
-    if (!blitclip (&r, src->w, src->h, &x, &y, &this->screen->clip_rect)) {
+    if (!blitclip(&r, src->w, src->h, &x, &y, &this->screen->clip_rect)) {
         if (dstrect)
             dstrect->w = dstrect->h = 0;
         return 0;
@@ -1892,19 +1879,19 @@ glSDL_BlitGL (_THIS, SDL_Surface * src,
         *dstrect = r;
 
     /* Make sure we have a source with a valid texture */
-    txi = glSDL_UploadSurface (this, src);
+    txi = glSDL_UploadSurface(this, src);
     if (!txi)
-        return GLERET ("BlitGL(): Could not get a TexInfo!");
+        return GLERET("BlitGL(): Could not get a TexInfo!");
 
     /* Set up blending */
     if (src->flags & (SDL_SRCALPHA | SDL_SRCCOLORKEY)) {
-        glSDL_blendfunc (this, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glSDL_do_blend (this, 1);
+        glSDL_blendfunc(this, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glSDL_do_blend(this, 1);
     } else
-        glSDL_do_blend (this, 0);
+        glSDL_do_blend(this, 0);
 
     /* Enable texturing */
-    glSDL_do_texture (this, 1);
+    glSDL_do_texture(this, 1);
 
     /* Calculate texcoords */
     if (!srcrect)
@@ -1937,36 +1924,36 @@ glSDL_BlitGL (_THIS, SDL_Surface * src,
     /* Render! */
     switch (txi->tilemode) {
     case GLSDL_TM_SINGLE:
-        glSDL_BlitGL_single (this, txi, x1, y1, &d, alpha);
+        glSDL_BlitGL_single(this, txi, x1, y1, &d, alpha);
         break;
     case GLSDL_TM_HORIZONTAL:
-        glSDL_BlitGL_htile (this, txi, x1, y1, &d, alpha);
+        glSDL_BlitGL_htile(this, txi, x1, y1, &d, alpha);
         break;
     case GLSDL_TM_VERTICAL:
-        glSDL_BlitGL_vtile (this, txi, x1, y1, &d, alpha);
+        glSDL_BlitGL_vtile(this, txi, x1, y1, &d, alpha);
         break;
     case GLSDL_TM_HUGE:
-        glSDL_BlitGL_hvtile (this, src, txi, x1, y1, &d, alpha);
+        glSDL_BlitGL_hvtile(this, src, txi, x1, y1, &d, alpha);
         break;
     }
 
     if (txi->temporary)
-        glSDL_FreeTexInfo (this, txi);
+        glSDL_FreeTexInfo(this, txi);
 
     return 0;
 }
 
 
 static int
-glSDL_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
-                   SDL_Surface * dst, SDL_Rect * dstrect)
+glSDL_HWAccelBlit(SDL_Surface * src, SDL_Rect * srcrect,
+                  SDL_Surface * dst, SDL_Rect * dstrect)
 {
     SDL_Surface *vs;
 
     if (!src)
-        return GLERET ("HWAccelBlit(): No src surface!");
+        return GLERET("HWAccelBlit(): No src surface!");
     if (!dst)
-        return GLERET ("HWAccelBlit(): No dst surface!");
+        return GLERET("HWAccelBlit(): No dst surface!");
 
     /*
      * Figure out what to do:
@@ -1981,17 +1968,17 @@ glSDL_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
             /*
                FIXME: Try glCopyPixels() instead...
              */
-            glSDL_BlitFromGL (current_video, srcrect, vs, dstrect);
-            return glSDL_BlitGL (current_video, vs, srcrect, dstrect);
+            glSDL_BlitFromGL(current_video, srcrect, vs, dstrect);
+            return glSDL_BlitGL(current_video, vs, srcrect, dstrect);
         } else {
-            return glSDL_BlitFromGL (current_video, srcrect, dst, dstrect);
+            return glSDL_BlitFromGL(current_video, srcrect, dst, dstrect);
         }
     } else {
         if (dst == vs) {
-            return glSDL_BlitGL (current_video, src, srcrect, dstrect);
+            return glSDL_BlitGL(current_video, src, srcrect, dstrect);
         } else {
-            glSDL_Invalidate (dst, dstrect);
-            glSDL_SoftBlit (src, srcrect, dst, dstrect);
+            glSDL_Invalidate(dst, dstrect);
+            glSDL_SoftBlit(src, srcrect, dst, dstrect);
             return 0;
         }
     }
@@ -1999,7 +1986,7 @@ glSDL_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
 
 
 static int
-glSDL_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
+glSDL_FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
 {
     SDL_Surface *vs = SDL_VideoSurface;
     int dx1, dy1, dx2, dy2;
@@ -2015,7 +2002,7 @@ glSDL_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
 
     if (dst->format->palette) {
         /* this a paletted color */
-        SDL_GetRGB (color, dst->format, &br, &bg, &bb);
+        SDL_GetRGB(color, dst->format, &br, &bg, &bb);
     } else {
         /* this a RGB color */
         r = color & dst->format->Rmask;
@@ -2036,34 +2023,34 @@ glSDL_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
 
     if (vs != dst) {
         /* draw a rect offscreen */
-        glSDL_Invalidate (dst, dstrect);
+        glSDL_Invalidate(dst, dstrect);
         /* software-fill the surface by faking it as a SW_SURFACE */
         dst->flags &= ~SDL_HWSURFACE;
-        SDL_FillRect (dst, dstrect, color);
+        SDL_FillRect(dst, dstrect, color);
         dst->flags |= SDL_HWSURFACE;
     } else {
         /* draw a rect onscreen */
-        glSDL_do_texture (this, 0);
-        glSDL_do_blend (this, 0);
+        glSDL_do_texture(this, 0);
+        glSDL_do_blend(this, 0);
 
         dx1 = dstrect->x;
         dy1 = dstrect->y;
         dx2 = dx1 + dstrect->w;
         dy2 = dy1 + dstrect->h;
 
-        this->glBegin (GL_TRIANGLE_FAN);
-        this->glColor3ub (br, bg, bb);
-        this->glVertex2i (dx1, dy1);
-        this->glVertex2i (dx2, dy1);
-        this->glVertex2i (dx2, dy2);
-        this->glVertex2i (dx1, dy2);
-        this->glEnd ();
+        this->glBegin(GL_TRIANGLE_FAN);
+        this->glColor3ub(br, bg, bb);
+        this->glVertex2i(dx1, dy1);
+        this->glVertex2i(dx2, dy1);
+        this->glVertex2i(dx2, dy2);
+        this->glVertex2i(dx1, dy2);
+        this->glEnd();
     }
     return 0;
 }
 
 static int
-glSDL_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
+glSDL_CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dst)
 {
     src->flags |= SDL_HWACCEL;
     src->map->hw_blit = glSDL_HWAccelBlit;
@@ -2072,23 +2059,23 @@ glSDL_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
 
 
 static SDL_Surface *
-glSDL_DisplayFormat (SDL_Surface * surface)
+glSDL_DisplayFormat(SDL_Surface * surface)
 {
     SDL_Surface *tmp;
     int use_rgba = (surface->flags & SDL_SRCCOLORKEY) ||
         ((surface->flags & SDL_SRCALPHA) && surface->format->Amask);
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "#### glSDL_DisplayFormat()\n");
+    fprintf(stderr, "#### glSDL_DisplayFormat()\n");
 #endif
     if (use_rgba)
-        tmp = glSDL_ConvertSurface (surface, RGBAfmt, SDL_SWSURFACE);
+        tmp = glSDL_ConvertSurface(surface, RGBAfmt, SDL_SWSURFACE);
     else
-        tmp = glSDL_ConvertSurface (surface, RGBfmt, SDL_SWSURFACE);
+        tmp = glSDL_ConvertSurface(surface, RGBfmt, SDL_SWSURFACE);
     if (!tmp) {
-        GLERR ("glSDL_DisplayFormat() could not convert surface!");
+        GLERR("glSDL_DisplayFormat() could not convert surface!");
         return NULL;
     }
-    SDL_SetAlpha (tmp, 0, 0);
+    SDL_SetAlpha(tmp, 0, 0);
 
     if (surface->flags & SDL_SRCCOLORKEY) {
         /*
@@ -2096,9 +2083,9 @@ glSDL_DisplayFormat (SDL_Surface * surface)
          * or we'll run into trouble when converting,
          * in particular from indexed color formats.
          */
-        SDL_SetColorKey (tmp, SDL_SRCCOLORKEY, surface->format->colorkey);
-        glSDL_key2alpha (tmp);
-        SDL_SetColorKey (tmp, 0, 0);
+        SDL_SetColorKey(tmp, SDL_SRCCOLORKEY, surface->format->colorkey);
+        glSDL_key2alpha(tmp);
+        SDL_SetColorKey(tmp, 0, 0);
     }
 
     return tmp;
@@ -2106,34 +2093,34 @@ glSDL_DisplayFormat (SDL_Surface * surface)
 
 
 static SDL_Surface *
-glSDL_DisplayFormatAlpha (SDL_Surface * surface)
+glSDL_DisplayFormatAlpha(SDL_Surface * surface)
 {
     SDL_Surface *s, *tmp;
-    tmp = glSDL_ConvertSurface (surface, RGBAfmt, SDL_SWSURFACE);
+    tmp = glSDL_ConvertSurface(surface, RGBAfmt, SDL_SWSURFACE);
 #ifdef DEBUG_GLSDL
-    fprintf (stderr, "#### glSDL_DisplayFormatAlpha()\n");
+    fprintf(stderr, "#### glSDL_DisplayFormatAlpha()\n");
 #endif
     if (!tmp)
         return NULL;
 
-    SDL_SetAlpha (tmp, 0, 0);
-    SDL_SetColorKey (tmp, 0, 0);
-    s = glSDL_CreateRGBASurface (surface->w, surface->h);
+    SDL_SetAlpha(tmp, 0, 0);
+    SDL_SetColorKey(tmp, 0, 0);
+    s = glSDL_CreateRGBASurface(surface->w, surface->h);
     if (!s) {
-        SDL_FreeSurface (tmp);
+        SDL_FreeSurface(tmp);
         return NULL;
     }
-    glSDL_SoftBlit (tmp, NULL, s, NULL);
-    SDL_FreeSurface (tmp);
+    glSDL_SoftBlit(tmp, NULL, s, NULL);
+    SDL_FreeSurface(tmp);
 
     if (surface->flags & SDL_SRCCOLORKEY) {
-        SDL_SetColorKey (s, SDL_SRCCOLORKEY, surface->format->colorkey);
-        glSDL_key2alpha (s);
-        SDL_SetColorKey (s, 0, 0);
+        SDL_SetColorKey(s, SDL_SRCCOLORKEY, surface->format->colorkey);
+        glSDL_key2alpha(s);
+        SDL_SetColorKey(s, 0, 0);
     }
 
     if (surface->flags & SDL_SRCALPHA)
-        SDL_SetAlpha (s, SDL_SRCALPHA, surface->format->alpha);
+        SDL_SetAlpha(s, SDL_SRCALPHA, surface->format->alpha);
     return s;
 }
 
@@ -2143,12 +2130,12 @@ glSDL_DisplayFormatAlpha (SDL_Surface * surface)
   ----------------------------------------------------------*/
 
 static void
-glSDL_Invalidate (SDL_Surface * surface, SDL_Rect * area)
+glSDL_Invalidate(SDL_Surface * surface, SDL_Rect * area)
 {
     private_hwdata *txi;
     if (!surface)
         return;
-    txi = glSDL_GetTexInfo (surface);
+    txi = glSDL_GetTexInfo(surface);
     if (!txi)
         return;
     if (!area) {
@@ -2163,14 +2150,14 @@ glSDL_Invalidate (SDL_Surface * surface, SDL_Rect * area)
 
 
 static void
-glSDL_SetLogicSize (_THIS, SDL_Surface * surface, int w, int h)
+glSDL_SetLogicSize(_THIS, SDL_Surface * surface, int w, int h)
 {
     SDL_Rect r;
     private_hwdata *txi;
-    if (!IS_GLSDL_SURFACE (surface))
+    if (!IS_GLSDL_SURFACE(surface))
         return;
 
-    txi = glSDL_GetTexInfo (surface);
+    txi = glSDL_GetTexInfo(surface);
 
     txi->lw = w;
     txi->lh = h;
@@ -2181,36 +2168,36 @@ glSDL_SetLogicSize (_THIS, SDL_Surface * surface, int w, int h)
     r.x = r.y = 0;
     r.w = w;
     r.h = h;
-    glSDL_SetClipRect (this, surface, &r);
+    glSDL_SetClipRect(this, surface, &r);
 
-    this->glMatrixMode (GL_MODELVIEW);
-    this->glLoadIdentity ();
-    this->glTranslated (0.0f, 0.0f, 0.0f);
+    this->glMatrixMode(GL_MODELVIEW);
+    this->glLoadIdentity();
+    this->glTranslated(0.0f, 0.0f, 0.0f);
 
-    this->glDisable (GL_DEPTH_TEST);
-    this->glDisable (GL_CULL_FACE);
+    this->glDisable(GL_DEPTH_TEST);
+    this->glDisable(GL_CULL_FACE);
 
-    glSDL_reset ();
+    glSDL_reset();
 }
 
 static int
-glSDL_InitTexture (_THIS, SDL_Surface * datasurf, private_hwdata * txi,
-                   int tex)
+glSDL_InitTexture(_THIS, SDL_Surface * datasurf, private_hwdata * txi,
+                  int tex)
 {
-    this->glGenTextures (1, (GLuint *) & txi->texture[tex]);
-    this->glBindTexture (GL_TEXTURE_2D, txi->texture[tex]);
+    this->glGenTextures(1, (GLuint *) & txi->texture[tex]);
+    this->glBindTexture(GL_TEXTURE_2D, txi->texture[tex]);
     glstate.texture = txi->texture[tex];
-    this->glPixelStorei (GL_UNPACK_ROW_LENGTH, datasurf->pitch /
-                         datasurf->format->BytesPerPixel);
-    this->glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    this->glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    this->glTexImage2D (GL_TEXTURE_2D, 0,
-                        datasurf->format->Amask ? GL_RGBA8 : GL_RGB8,
-                        txi->texsize, txi->texsize, 0,
-                        datasurf->format->Amask ? GL_RGBA : GL_RGB,
-                        GL_UNSIGNED_BYTE, NULL);
+    this->glPixelStorei(GL_UNPACK_ROW_LENGTH, datasurf->pitch /
+                        datasurf->format->BytesPerPixel);
+    this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    this->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    this->glTexImage2D(GL_TEXTURE_2D, 0,
+                       datasurf->format->Amask ? GL_RGBA8 : GL_RGB8,
+                       txi->texsize, txi->texsize, 0,
+                       datasurf->format->Amask ? GL_RGBA : GL_RGB,
+                       GL_UNSIGNED_BYTE, NULL);
 #ifdef DEBUG_GLSDL
-    glSDL_print_glerror (this, 1);
+    glSDL_print_glerror(this, 1);
 #endif
     return 0;
 }
@@ -2218,7 +2205,7 @@ glSDL_InitTexture (_THIS, SDL_Surface * datasurf, private_hwdata * txi,
 
 /* Image tiled horizontally (wide surface), or not at all */
 static int
-glSDL_UploadHoriz (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
+glSDL_UploadHoriz(_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 {
     int bpp = datasurf->format->BytesPerPixel;
     int res;
@@ -2233,18 +2220,18 @@ glSDL_UploadHoriz (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
             break;
         if (toy + txi->tileh > txi->texsize) {
             toy = 0;
-            res = glSDL_InitTexture (this, datasurf, txi, tex);
+            res = glSDL_InitTexture(this, datasurf, txi, tex);
             if (res < 0)
                 return res;
             ++tex;
         }
-        this->glTexSubImage2D (GL_TEXTURE_2D, 0, 0, toy,
-                               thistw, txi->tileh,
-                               datasurf->format->Amask ? GL_RGBA : GL_RGB,
-                               GL_UNSIGNED_BYTE,
-                               (char *) datasurf->pixels + bpp * fromx);
+        this->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, toy,
+                              thistw, txi->tileh,
+                              datasurf->format->Amask ? GL_RGBA : GL_RGB,
+                              GL_UNSIGNED_BYTE,
+                              (char *) datasurf->pixels + bpp * fromx);
 #ifdef DEBUG_GLSDL
-        glSDL_print_glerror (this, 2);
+        glSDL_print_glerror(this, 2);
 #endif
         fromx += txi->tilew;
         toy += txi->tileh;
@@ -2255,7 +2242,7 @@ glSDL_UploadHoriz (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 
 /* Image tiled vertically (tall surface) */
 static int
-glSDL_UploadVert (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
+glSDL_UploadVert(_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 {
     int res;
     int tex = 0;
@@ -2269,19 +2256,19 @@ glSDL_UploadVert (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
             break;
         if (tox + txi->tilew > txi->texsize) {
             tox = 0;
-            res = glSDL_InitTexture (this, datasurf, txi, tex);
+            res = glSDL_InitTexture(this, datasurf, txi, tex);
             if (res < 0)
                 return res;
             ++tex;
         }
-        this->glTexSubImage2D (GL_TEXTURE_2D, 0, tox, 0,
-                               txi->tilew, thisth,
-                               datasurf->format->Amask ? GL_RGBA : GL_RGB,
-                               GL_UNSIGNED_BYTE,
-                               (char *) datasurf->pixels +
-                               datasurf->pitch * fromy);
+        this->glTexSubImage2D(GL_TEXTURE_2D, 0, tox, 0,
+                              txi->tilew, thisth,
+                              datasurf->format->Amask ? GL_RGBA : GL_RGB,
+                              GL_UNSIGNED_BYTE,
+                              (char *) datasurf->pixels +
+                              datasurf->pitch * fromy);
 #ifdef DEBUG_GLSDL
-        glSDL_print_glerror (this, 3);
+        glSDL_print_glerror(this, 3);
 #endif
         fromy += txi->tileh;
         tox += txi->tilew;
@@ -2292,7 +2279,7 @@ glSDL_UploadVert (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 
 /* Image tiled two-way (huge surface) */
 static int
-glSDL_UploadHuge (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
+glSDL_UploadHuge(_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 {
     int bpp = datasurf->format->BytesPerPixel;
     int res;
@@ -2308,21 +2295,21 @@ glSDL_UploadHuge (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
             int thistw = datasurf->w - x;
             if (thistw > txi->tilew)
                 thistw = txi->tilew;
-            res = glSDL_InitTexture (this, datasurf, txi, tex++);
+            res = glSDL_InitTexture(this, datasurf, txi, tex++);
             if (res < 0)
                 return res;
-            this->glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0,
-                                   thistw, thisth,
-                                   datasurf->format->
-                                   Amask ? GL_RGBA : GL_RGB,
-                                   GL_UNSIGNED_BYTE,
-                                   (char *) datasurf->pixels +
-                                   datasurf->pitch * y + bpp * x);
+            this->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                                  thistw, thisth,
+                                  datasurf->format->
+                                  Amask ? GL_RGBA : GL_RGB,
+                                  GL_UNSIGNED_BYTE,
+                                  (char *) datasurf->pixels +
+                                  datasurf->pitch * y + bpp * x);
 #ifdef DEBUG_GLSDL
-            fprintf (stderr,
-                     "glTexSubImage(x = %d, y = %d, w = %d, h = %d)\n", x,
-                     y, thistw, thisth);
-            glSDL_print_glerror (this, 4);
+            fprintf(stderr,
+                    "glTexSubImage(x = %d, y = %d, w = %d, h = %d)\n", x,
+                    y, thistw, thisth);
+            glSDL_print_glerror(this, 4);
 #endif
             x += txi->tilew;
         }
@@ -2334,18 +2321,18 @@ glSDL_UploadHuge (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 
 /* Upload all textures for a surface. */
 static int
-glSDL_UploadTextures (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
+glSDL_UploadTextures(_THIS, SDL_Surface * datasurf, private_hwdata * txi)
 {
     switch (txi->tilemode) {
     case GLSDL_TM_SINGLE:
     case GLSDL_TM_HORIZONTAL:
-        glSDL_UploadHoriz (this, datasurf, txi);
+        glSDL_UploadHoriz(this, datasurf, txi);
         break;
     case GLSDL_TM_VERTICAL:
-        glSDL_UploadVert (this, datasurf, txi);
+        glSDL_UploadVert(this, datasurf, txi);
         break;
     case GLSDL_TM_HUGE:
-        glSDL_UploadHuge (this, datasurf, txi);
+        glSDL_UploadHuge(this, datasurf, txi);
         break;
     }
     return 0;
@@ -2364,20 +2351,20 @@ glSDL_UploadTextures (_THIS, SDL_Surface * datasurf, private_hwdata * txi)
  *	the pixel data of 'texture'.
  */
 static private_hwdata *
-glSDL_UploadSurface (_THIS, SDL_Surface * surface)
+glSDL_UploadSurface(_THIS, SDL_Surface * surface)
 {
     int i;
     int converted = 0;
-    private_hwdata *txi = glSDL_GetTexInfo (surface);
+    private_hwdata *txi = glSDL_GetTexInfo(surface);
 
-    if (IS_GLSDL_SURFACE (surface)) {
+    if (IS_GLSDL_SURFACE(surface)) {
         /*
          * Ok, this is a glSDL surface, and it *might* be
          * in texture memory already. If so, it may need
          * an update.
          */
         if (txi->invalid_area.w) {
-            glSDL_UnloadTexture (this, txi);
+            glSDL_UnloadTexture(this, txi);
         } else {
             int missing = 0;
             if (txi->textures) {
@@ -2397,9 +2384,9 @@ glSDL_UploadSurface (_THIS, SDL_Surface * surface)
          * TexInfo for it, valid for only one blit.
          */
         if ((surface->flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-            txi = glSDL_AddTexInfo (this, surface);
+            txi = glSDL_AddTexInfo(this, surface);
             if (!txi) {
-                GLERR ("UploadSurface(): Could not add TexInfo!");
+                GLERR("UploadSurface(): Could not add TexInfo!");
                 return NULL;
             }
             surface->flags |= SDL_HWSURFACE;
@@ -2411,9 +2398,9 @@ glSDL_UploadSurface (_THIS, SDL_Surface * surface)
              * candidate for a blit using glDrawPixels instead 
              * of a texture blit
              */
-            txi = glSDL_CreateTempTexInfo (this, surface);
+            txi = glSDL_CreateTempTexInfo(this, surface);
             if (!txi) {
-                GLERR ("UploadSurface(): Could not create temp TexInfo!");
+                GLERR("UploadSurface(): Could not create temp TexInfo!");
                 return NULL;
             }
         }
@@ -2422,8 +2409,8 @@ glSDL_UploadSurface (_THIS, SDL_Surface * surface)
     if (txi->texsize > maxtexsize) {
         /* This surface wasn't tiled properly... */
         if (txi->temporary)
-            glSDL_FreeTexInfo (this, txi);
-        GLERR ("UploadSurface(): Too large texture!");
+            glSDL_FreeTexInfo(this, txi);
+        GLERR("UploadSurface(): Too large texture!");
         return NULL;
     }
 
@@ -2438,42 +2425,41 @@ glSDL_UploadSurface (_THIS, SDL_Surface * surface)
      *      should already be in the best known OpenGL format -
      *      preferably one that makes DMA w/o conversion possible.
      */
-    if (!glSDL_FormatIsOk (surface)) {
+    if (!glSDL_FormatIsOk(surface)) {
 #ifdef DEBUG_GLSDL
-        fprintf (stderr,
-                 "glSDL: WARNING: On-the-fly conversion performed!\n");
+        fprintf(stderr, "glSDL: WARNING: On-the-fly conversion performed!\n");
 #endif
         converted = 1;
         /* NOTE: We forget about the original surface here. */
         if (surface->format->Amask)
-            surface = glSDL_DisplayFormatAlpha (surface);
+            surface = glSDL_DisplayFormatAlpha(surface);
         else
-            surface = glSDL_DisplayFormat (surface);
+            surface = glSDL_DisplayFormat(surface);
         if (!surface) {
-            GLERR ("UploadSurface(): Could not convert surface!");
+            GLERR("UploadSurface(): Could not convert surface!");
             if (txi->temporary)
-                glSDL_FreeTexInfo (this, txi);
+                glSDL_FreeTexInfo(this, txi);
             return NULL;
         }
     }
 
-    glSDL_UploadTextures (this, surface, txi);
+    glSDL_UploadTextures(this, surface, txi);
 
     if (converted)
-        SDL_FreeSurface (surface);
+        SDL_FreeSurface(surface);
 
     return txi;
 }
 
 
 static void
-glSDL_UnloadTexture (_THIS, private_hwdata * txi)
+glSDL_UnloadTexture(_THIS, private_hwdata * txi)
 {
     int i;
     for (i = 0; i < txi->textures; ++i)
         if (txi->texture[i] != GLSDL_NOTEX)
-            this->glDeleteTextures (1, &txi->texture[i]);
-    SDL_memset (&txi->invalid_area, 0, sizeof (txi->invalid_area));
+            this->glDeleteTextures(1, &txi->texture[i]);
+    SDL_memset(&txi->invalid_area, 0, sizeof(txi->invalid_area));
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

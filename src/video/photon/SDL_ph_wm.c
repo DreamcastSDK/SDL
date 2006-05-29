@@ -36,86 +36,86 @@
 #include "SDL_ph_wm_c.h"
 
 void
-ph_SetIcon (_THIS, SDL_Surface * icon, Uint8 * mask)
+ph_SetIcon(_THIS, SDL_Surface * icon, Uint8 * mask)
 {
     return;
 }
 
 /* Set window caption */
 void
-ph_SetCaption (_THIS, const char *title, const char *icon)
+ph_SetCaption(_THIS, const char *title, const char *icon)
 {
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
     /* sanity check for set caption call before window init */
     if (window != NULL) {
-        PtSetResource (window, Pt_ARG_WINDOW_TITLE, title, 0);
+        PtSetResource(window, Pt_ARG_WINDOW_TITLE, title, 0);
     }
 
-    SDL_Unlock_EventThread ();
+    SDL_Unlock_EventThread();
 }
 
 /* Iconify current window */
 int
-ph_IconifyWindow (_THIS)
+ph_IconifyWindow(_THIS)
 {
     PhWindowEvent_t windowevent;
 
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
-    SDL_memset (&windowevent, 0, sizeof (windowevent));
+    SDL_memset(&windowevent, 0, sizeof(windowevent));
     windowevent.event_f = Ph_WM_HIDE;
     windowevent.event_state = Ph_WM_EVSTATE_HIDE;
-    windowevent.rid = PtWidgetRid (window);
-    PtForwardWindowEvent (&windowevent);
+    windowevent.rid = PtWidgetRid(window);
+    PtForwardWindowEvent(&windowevent);
 
-    SDL_Unlock_EventThread ();
+    SDL_Unlock_EventThread();
 
     return 0;
 }
 
 SDL_GrabMode
-ph_GrabInputNoLock (_THIS, SDL_GrabMode mode)
+ph_GrabInputNoLock(_THIS, SDL_GrabMode mode)
 {
     short abs_x, abs_y;
 
     if (mode == SDL_GRAB_OFF) {
-        PtSetResource (window, Pt_ARG_WINDOW_STATE, Pt_FALSE,
-                       Ph_WM_STATE_ISALTKEY);
+        PtSetResource(window, Pt_ARG_WINDOW_STATE, Pt_FALSE,
+                      Ph_WM_STATE_ISALTKEY);
     } else {
-        PtSetResource (window, Pt_ARG_WINDOW_STATE, Pt_TRUE,
-                       Ph_WM_STATE_ISALTKEY);
+        PtSetResource(window, Pt_ARG_WINDOW_STATE, Pt_TRUE,
+                      Ph_WM_STATE_ISALTKEY);
 
-        PtGetAbsPosition (window, &abs_x, &abs_y);
-        PhMoveCursorAbs (PhInputGroup (NULL),
-                         abs_x + SDL_VideoSurface->w / 2,
-                         abs_y + SDL_VideoSurface->h / 2);
+        PtGetAbsPosition(window, &abs_x, &abs_y);
+        PhMoveCursorAbs(PhInputGroup(NULL),
+                        abs_x + SDL_VideoSurface->w / 2,
+                        abs_y + SDL_VideoSurface->h / 2);
     }
 
-    SDL_Unlock_EventThread ();
+    SDL_Unlock_EventThread();
 
     return (mode);
 }
 
 SDL_GrabMode
-ph_GrabInput (_THIS, SDL_GrabMode mode)
+ph_GrabInput(_THIS, SDL_GrabMode mode)
 {
-    SDL_Lock_EventThread ();
-    mode = ph_GrabInputNoLock (this, mode);
-    SDL_Unlock_EventThread ();
+    SDL_Lock_EventThread();
+    mode = ph_GrabInputNoLock(this, mode);
+    SDL_Unlock_EventThread();
 
     return (mode);
 }
 
 
 int
-ph_GetWMInfo (_THIS, SDL_SysWMinfo * info)
+ph_GetWMInfo(_THIS, SDL_SysWMinfo * info)
 {
     if (info->version.major <= SDL_MAJOR_VERSION) {
         return 1;
     } else {
-        SDL_SetError ("Application not compiled with SDL %d.%d\n",
-                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        SDL_SetError("Application not compiled with SDL %d.%d\n",
+                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return -1;
     }
 }

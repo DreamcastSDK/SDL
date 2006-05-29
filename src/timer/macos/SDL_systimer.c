@@ -49,38 +49,38 @@ static double start_tick;
 static int is_fast_inited = 0;
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
     if (!is_fast_inited)        // important to check or FastTime may hang machine!
-        SDL_SYS_TimerInit ();
+        SDL_SYS_TimerInit();
 
-    start_tick = FastMicroseconds ();
+    start_tick = FastMicroseconds();
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
 
     if (!is_fast_inited)
-        SDL_SYS_TimerInit ();
+        SDL_SYS_TimerInit();
 
-    return FastMilliseconds ();
+    return FastMilliseconds();
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
     Uint32 stop, now;
 
-    stop = SDL_GetTicks () + ms;
+    stop = SDL_GetTicks() + ms;
     do {
 #if TARGET_API_MAC_CARBON
-        MPYield ();
+        MPYield();
 #else
-        SystemTask ();
+        SystemTask();
 #endif
 
-        now = SDL_GetTicks ();
+        now = SDL_GetTicks();
 
     }
     while (stop > now);
@@ -131,16 +131,16 @@ static ExtendedTimerRec gExtendedTimerRec;
 
 
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
-    FastInitialize ();
+    FastInitialize();
     is_fast_inited = 1;
 
     return (0);
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     /* We don't need a cleanup? */
     return;
@@ -148,47 +148,47 @@ SDL_SYS_TimerQuit (void)
 
 /* Our Stub routine to set up and then call the real routine. */
 pascal void
-TimerCallbackProc (TMTaskPtr tmTaskPtr)
+TimerCallbackProc(TMTaskPtr tmTaskPtr)
 {
     Uint32 ms;
 
-    WakeUpProcess (&((ExtendedTimerPtr) tmTaskPtr)->taskPSN);
+    WakeUpProcess(&((ExtendedTimerPtr) tmTaskPtr)->taskPSN);
 
-    ms = SDL_alarm_callback (SDL_alarm_interval);
+    ms = SDL_alarm_callback(SDL_alarm_interval);
     if (ms) {
-        SDL_alarm_interval = ROUND_RESOLUTION (ms);
-        PrimeTime ((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
+        SDL_alarm_interval = ROUND_RESOLUTION(ms);
+        PrimeTime((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
     } else {
         SDL_alarm_interval = 0;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
     /*
      * Configure the global structure that stores the timing information.
      */
     gExtendedTimerRec.tmTask.qLink = NULL;
     gExtendedTimerRec.tmTask.qType = 0;
-    gExtendedTimerRec.tmTask.tmAddr = NewTimerProc (TimerCallbackProc);
+    gExtendedTimerRec.tmTask.tmAddr = NewTimerProc(TimerCallbackProc);
     gExtendedTimerRec.tmTask.tmCount = 0;
     gExtendedTimerRec.tmTask.tmWakeUp = 0;
     gExtendedTimerRec.tmTask.tmReserved = 0;
-    GetCurrentProcess (&gExtendedTimerRec.taskPSN);
+    GetCurrentProcess(&gExtendedTimerRec.taskPSN);
 
     /* Install the task record */
-    InsXTime ((QElemPtr) & gExtendedTimerRec.tmTask);
+    InsXTime((QElemPtr) & gExtendedTimerRec.tmTask);
 
     /* Go! */
-    PrimeTime ((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
+    PrimeTime((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
     return (0);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
-    RmvTime ((QElemPtr) & gExtendedTimerRec.tmTask);
+    RmvTime((QElemPtr) & gExtendedTimerRec.tmTask);
 }
 
 #endif /* SDL_TIMER_MACOS */

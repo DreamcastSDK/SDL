@@ -33,27 +33,27 @@
 /* Helper functions */
 
 SDL_bool
-SDL_PixelFormatEnumToMasks (Uint32 format, int *bpp, Uint32 * Rmask,
-                            Uint32 * Gmask, Uint32 * Bmask, Uint32 * Amask)
+SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp, Uint32 * Rmask,
+                           Uint32 * Gmask, Uint32 * Bmask, Uint32 * Amask)
 {
     Uint32 masks[4];
 
     /* Initialize the values here */
-    if (SDL_BITSPERPIXEL (format) == 24) {
-        *bpp = SDL_BYTESPERPIXEL (format) * 8;
+    if (SDL_BITSPERPIXEL(format) == 24) {
+        *bpp = SDL_BYTESPERPIXEL(format) * 8;
     } else {
-        *bpp = SDL_BITSPERPIXEL (format);
+        *bpp = SDL_BITSPERPIXEL(format);
     }
     *Rmask = *Gmask = *Bmask = *Amask = 0;
 
-    if (SDL_PIXELTYPE (format) != SDL_PixelType_Packed8 &&
-        SDL_PIXELTYPE (format) != SDL_PixelType_Packed16 &&
-        SDL_PIXELTYPE (format) != SDL_PixelType_Packed32) {
+    if (SDL_PIXELTYPE(format) != SDL_PixelType_Packed8 &&
+        SDL_PIXELTYPE(format) != SDL_PixelType_Packed16 &&
+        SDL_PIXELTYPE(format) != SDL_PixelType_Packed32) {
         /* Not a format that uses masks */
         return SDL_TRUE;
     }
 
-    switch (SDL_PIXELLAYOUT (format)) {
+    switch (SDL_PIXELLAYOUT(format)) {
     case SDL_PackedLayout_332:
         masks[0] = 0x00000000;
         masks[1] = 0x000000E0;
@@ -95,7 +95,7 @@ SDL_PixelFormatEnumToMasks (Uint32 format, int *bpp, Uint32 * Rmask,
         return SDL_FALSE;
     }
 
-    switch (SDL_PIXELORDER (format)) {
+    switch (SDL_PIXELORDER(format)) {
     case SDL_PackedOrder_XRGB:
         *Rmask = masks[1];
         *Gmask = masks[2];
@@ -148,8 +148,8 @@ SDL_PixelFormatEnumToMasks (Uint32 format, int *bpp, Uint32 * Rmask,
 }
 
 Uint32
-SDL_MasksToPixelFormatEnum (int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
-                            Uint32 Amask)
+SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
+                           Uint32 Amask)
 {
     switch (bpp) {
     case 8:
@@ -219,19 +219,19 @@ SDL_MasksToPixelFormatEnum (int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
  * Allocate a pixel format structure and fill it according to the given info.
  */
 SDL_PixelFormat *
-SDL_AllocFormat (int bpp,
-                 Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+SDL_AllocFormat(int bpp,
+                Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     SDL_PixelFormat *format;
     Uint32 mask;
 
     /* Allocate an empty pixel format structure */
-    format = SDL_malloc (sizeof (*format));
+    format = SDL_malloc(sizeof(*format));
     if (format == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (format, 0, sizeof (*format));
+    SDL_memset(format, 0, sizeof(*format));
     format->alpha = SDL_ALPHA_OPAQUE;
 
     /* Set up the format */
@@ -306,23 +306,23 @@ SDL_AllocFormat (int bpp,
     if (bpp <= 8) {             /* Palettized mode */
         int ncolors = 1 << bpp;
 #ifdef DEBUG_PALETTE
-        fprintf (stderr, "bpp=%d ncolors=%d\n", bpp, ncolors);
+        fprintf(stderr, "bpp=%d ncolors=%d\n", bpp, ncolors);
 #endif
-        format->palette = (SDL_Palette *) SDL_malloc (sizeof (SDL_Palette));
+        format->palette = (SDL_Palette *) SDL_malloc(sizeof(SDL_Palette));
         if (format->palette == NULL) {
-            SDL_FreeFormat (format);
-            SDL_OutOfMemory ();
+            SDL_FreeFormat(format);
+            SDL_OutOfMemory();
             return (NULL);
         }
         (format->palette)->ncolors = ncolors;
-        (format->palette)->colors = (SDL_Color *) SDL_malloc ((format->
-                                                               palette)->
-                                                              ncolors *
-                                                              sizeof
-                                                              (SDL_Color));
+        (format->palette)->colors = (SDL_Color *) SDL_malloc((format->
+                                                              palette)->
+                                                             ncolors *
+                                                             sizeof
+                                                             (SDL_Color));
         if ((format->palette)->colors == NULL) {
-            SDL_FreeFormat (format);
-            SDL_OutOfMemory ();
+            SDL_FreeFormat(format);
+            SDL_OutOfMemory();
             return (NULL);
         }
         if (Rmask || Bmask || Gmask) {
@@ -339,7 +339,7 @@ SDL_AllocFormat (int bpp,
                     Rm |= 1 << i;
             }
 #ifdef DEBUG_PALETTE
-            fprintf (stderr, "Rw=%d Rm=0x%02X\n", Rw, Rm);
+            fprintf(stderr, "Rw=%d Rm=0x%02X\n", Rw, Rm);
 #endif
             if (Gmask) {
                 Gw = 8 - format->Gloss;
@@ -347,7 +347,7 @@ SDL_AllocFormat (int bpp,
                     Gm |= 1 << i;
             }
 #ifdef DEBUG_PALETTE
-            fprintf (stderr, "Gw=%d Gm=0x%02X\n", Gw, Gm);
+            fprintf(stderr, "Gw=%d Gm=0x%02X\n", Gw, Gm);
 #endif
             if (Bmask) {
                 Bw = 8 - format->Bloss;
@@ -355,7 +355,7 @@ SDL_AllocFormat (int bpp,
                     Bm |= 1 << i;
             }
 #ifdef DEBUG_PALETTE
-            fprintf (stderr, "Bw=%d Bm=0x%02X\n", Bw, Bm);
+            fprintf(stderr, "Bw=%d Bm=0x%02X\n", Bw, Bm);
 #endif
 #ifdef ENABLE_PALETTE_ALPHA
             if (Amask) {
@@ -364,7 +364,7 @@ SDL_AllocFormat (int bpp,
                     Am |= 1 << i;
             }
 # ifdef DEBUG_PALETTE
-            fprintf (stderr, "Aw=%d Am=0x%02X\n", Aw, Am);
+            fprintf(stderr, "Aw=%d Am=0x%02X\n", Aw, Am);
 # endif
 #endif
             for (i = 0; i < ncolors; ++i) {
@@ -399,22 +399,22 @@ SDL_AllocFormat (int bpp,
             format->palette->colors[1].b = 0x00;
         } else {
             /* Create an empty palette */
-            SDL_memset ((format->palette)->colors, 0,
-                        (format->palette)->ncolors * sizeof (SDL_Color));
+            SDL_memset((format->palette)->colors, 0,
+                       (format->palette)->ncolors * sizeof(SDL_Color));
         }
     }
     return (format);
 }
 
 SDL_PixelFormat *
-SDL_ReallocFormat (SDL_Surface * surface, int bpp,
-                   Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+SDL_ReallocFormat(SDL_Surface * surface, int bpp,
+                  Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
     if (surface->format) {
-        SDL_FreeFormat (surface->format);
-        SDL_FormatChanged (surface);
+        SDL_FreeFormat(surface->format);
+        SDL_FormatChanged(surface);
     }
-    surface->format = SDL_AllocFormat (bpp, Rmask, Gmask, Bmask, Amask);
+    surface->format = SDL_AllocFormat(bpp, Rmask, Gmask, Bmask, Amask);
     return surface->format;
 }
 
@@ -422,7 +422,7 @@ SDL_ReallocFormat (SDL_Surface * surface, int bpp,
  * Change any previous mappings from/to the new surface format
  */
 void
-SDL_FormatChanged (SDL_Surface * surface)
+SDL_FormatChanged(SDL_Surface * surface)
 {
     static int format_version = 0;
     ++format_version;
@@ -430,23 +430,23 @@ SDL_FormatChanged (SDL_Surface * surface)
         format_version = 1;
     }
     surface->format_version = format_version;
-    SDL_InvalidateMap (surface->map);
+    SDL_InvalidateMap(surface->map);
 }
 
 /*
  * Free a previously allocated format structure
  */
 void
-SDL_FreeFormat (SDL_PixelFormat * format)
+SDL_FreeFormat(SDL_PixelFormat * format)
 {
     if (format) {
         if (format->palette) {
             if (format->palette->colors) {
-                SDL_free (format->palette->colors);
+                SDL_free(format->palette->colors);
             }
-            SDL_free (format->palette);
+            SDL_free(format->palette);
         }
-        SDL_free (format);
+        SDL_free(format);
     }
 }
 
@@ -454,7 +454,7 @@ SDL_FreeFormat (SDL_PixelFormat * format)
  * Calculate an 8-bit (3 red, 3 green, 2 blue) dithered palette of colors
  */
 void
-SDL_DitherColors (SDL_Color * colors, int bpp)
+SDL_DitherColors(SDL_Color * colors, int bpp)
 {
     int i;
     if (bpp != 8)
@@ -481,7 +481,7 @@ SDL_DitherColors (SDL_Color * colors, int bpp)
  * Calculate the pad-aligned scanline width of a surface
  */
 Uint16
-SDL_CalculatePitch (SDL_Surface * surface)
+SDL_CalculatePitch(SDL_Surface * surface)
 {
     Uint16 pitch;
 
@@ -505,7 +505,7 @@ SDL_CalculatePitch (SDL_Surface * surface)
  * Match an RGB value to a particular palette index
  */
 Uint8
-SDL_FindColor (SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b)
+SDL_FindColor(SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b)
 {
     /* Do colorspace distance matching */
     unsigned int smallest;
@@ -533,20 +533,20 @@ SDL_FindColor (SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b)
 
 /* Find the opaque pixel value corresponding to an RGB triple */
 Uint32
-SDL_MapRGB (SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b)
+SDL_MapRGB(SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b)
 {
     if (format->palette == NULL) {
         return (r >> format->Rloss) << format->Rshift
             | (g >> format->Gloss) << format->Gshift
             | (b >> format->Bloss) << format->Bshift | format->Amask;
     } else {
-        return SDL_FindColor (format->palette, r, g, b);
+        return SDL_FindColor(format->palette, r, g, b);
     }
 }
 
 /* Find the pixel value corresponding to an RGBA quadruple */
 Uint32
-SDL_MapRGBA (SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+SDL_MapRGBA(SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
     if (format->palette == NULL) {
         return (r >> format->Rloss) << format->Rshift
@@ -554,13 +554,13 @@ SDL_MapRGBA (SDL_PixelFormat * format, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
             | (b >> format->Bloss) << format->Bshift
             | ((a >> format->Aloss) << format->Ashift & format->Amask);
     } else {
-        return SDL_FindColor (format->palette, r, g, b);
+        return SDL_FindColor(format->palette, r, g, b);
     }
 }
 
 void
-SDL_GetRGBA (Uint32 pixel, SDL_PixelFormat * fmt,
-             Uint8 * r, Uint8 * g, Uint8 * b, Uint8 * a)
+SDL_GetRGBA(Uint32 pixel, SDL_PixelFormat * fmt,
+            Uint8 * r, Uint8 * g, Uint8 * b, Uint8 * a)
 {
     if (fmt->palette == NULL) {
         /*
@@ -594,8 +594,8 @@ SDL_GetRGBA (Uint32 pixel, SDL_PixelFormat * fmt,
 }
 
 void
-SDL_GetRGB (Uint32 pixel, SDL_PixelFormat * fmt, Uint8 * r, Uint8 * g,
-            Uint8 * b)
+SDL_GetRGB(Uint32 pixel, SDL_PixelFormat * fmt, Uint8 * r, Uint8 * g,
+           Uint8 * b)
 {
     if (fmt->palette == NULL) {
         /* the note for SDL_GetRGBA above applies here too */
@@ -615,8 +615,8 @@ SDL_GetRGB (Uint32 pixel, SDL_PixelFormat * fmt, Uint8 * r, Uint8 * g,
 
 /* Apply gamma to a set of colors - this is easy. :) */
 void
-SDL_ApplyGamma (Uint16 * gamma, SDL_Color * colors, SDL_Color * output,
-                int ncolors)
+SDL_ApplyGamma(Uint16 * gamma, SDL_Color * colors, SDL_Color * output,
+               int ncolors)
 {
     int i;
 
@@ -629,7 +629,7 @@ SDL_ApplyGamma (Uint16 * gamma, SDL_Color * colors, SDL_Color * output,
 
 /* Map from Palette to Palette */
 static Uint8 *
-Map1to1 (SDL_Palette * src, SDL_Palette * dst, int *identical)
+Map1to1(SDL_Palette * src, SDL_Palette * dst, int *identical)
 {
     Uint8 *map;
     int i;
@@ -637,30 +637,30 @@ Map1to1 (SDL_Palette * src, SDL_Palette * dst, int *identical)
     if (identical) {
         if (src->ncolors <= dst->ncolors) {
             /* If an identical palette, no need to map */
-            if (SDL_memcmp (src->colors, dst->colors, src->ncolors *
-                            sizeof (SDL_Color)) == 0) {
+            if (SDL_memcmp(src->colors, dst->colors, src->ncolors *
+                           sizeof(SDL_Color)) == 0) {
                 *identical = 1;
                 return (NULL);
             }
         }
         *identical = 0;
     }
-    map = (Uint8 *) SDL_malloc (src->ncolors);
+    map = (Uint8 *) SDL_malloc(src->ncolors);
     if (map == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
     for (i = 0; i < src->ncolors; ++i) {
-        map[i] = SDL_FindColor (dst,
-                                src->colors[i].r, src->colors[i].g,
-                                src->colors[i].b);
+        map[i] = SDL_FindColor(dst,
+                               src->colors[i].r, src->colors[i].g,
+                               src->colors[i].b);
     }
     return (map);
 }
 
 /* Map from Palette to BitField */
 static Uint8 *
-Map1toN (SDL_PixelFormat * src, SDL_PixelFormat * dst)
+Map1toN(SDL_PixelFormat * src, SDL_PixelFormat * dst)
 {
     Uint8 *map;
     int i;
@@ -669,25 +669,25 @@ Map1toN (SDL_PixelFormat * src, SDL_PixelFormat * dst)
     SDL_Palette *pal = src->palette;
 
     bpp = ((dst->BytesPerPixel == 3) ? 4 : dst->BytesPerPixel);
-    map = (Uint8 *) SDL_malloc (pal->ncolors * bpp);
+    map = (Uint8 *) SDL_malloc(pal->ncolors * bpp);
     if (map == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
 
     alpha = dst->Amask ? src->alpha : 0;
     /* We memory copy to the pixel map so the endianness is preserved */
     for (i = 0; i < pal->ncolors; ++i) {
-        ASSEMBLE_RGBA (&map[i * bpp], dst->BytesPerPixel, dst,
-                       pal->colors[i].r, pal->colors[i].g,
-                       pal->colors[i].b, alpha);
+        ASSEMBLE_RGBA(&map[i * bpp], dst->BytesPerPixel, dst,
+                      pal->colors[i].r, pal->colors[i].g,
+                      pal->colors[i].b, alpha);
     }
     return (map);
 }
 
 /* Map from BitField to Dithered-Palette to Palette */
 static Uint8 *
-MapNto1 (SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
+MapNto1(SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
 {
     /* Generate a 256 color dither palette */
     SDL_Palette dithered;
@@ -696,43 +696,43 @@ MapNto1 (SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
 
     /* SDL_DitherColors does not initialize the 'unused' component of colors,
        but Map1to1 compares it against pal, so we should initialize it. */
-    SDL_memset (colors, 0, sizeof (colors));
+    SDL_memset(colors, 0, sizeof(colors));
 
     dithered.ncolors = 256;
-    SDL_DitherColors (colors, 8);
+    SDL_DitherColors(colors, 8);
     dithered.colors = colors;
-    return (Map1to1 (&dithered, pal, identical));
+    return (Map1to1(&dithered, pal, identical));
 }
 
 SDL_BlitMap *
-SDL_AllocBlitMap (void)
+SDL_AllocBlitMap(void)
 {
     SDL_BlitMap *map;
 
     /* Allocate the empty map */
-    map = (SDL_BlitMap *) SDL_malloc (sizeof (*map));
+    map = (SDL_BlitMap *) SDL_malloc(sizeof(*map));
     if (map == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (map, 0, sizeof (*map));
+    SDL_memset(map, 0, sizeof(*map));
 
     /* Allocate the software blit data */
     map->sw_data =
-        (struct private_swaccel *) SDL_malloc (sizeof (*map->sw_data));
+        (struct private_swaccel *) SDL_malloc(sizeof(*map->sw_data));
     if (map->sw_data == NULL) {
-        SDL_FreeBlitMap (map);
-        SDL_OutOfMemory ();
+        SDL_FreeBlitMap(map);
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (map->sw_data, 0, sizeof (*map->sw_data));
+    SDL_memset(map->sw_data, 0, sizeof(*map->sw_data));
 
     /* It's ready to go */
     return (map);
 }
 
 void
-SDL_InvalidateMap (SDL_BlitMap * map)
+SDL_InvalidateMap(SDL_BlitMap * map)
 {
     if (!map) {
         return;
@@ -740,12 +740,12 @@ SDL_InvalidateMap (SDL_BlitMap * map)
     map->dst = NULL;
     map->format_version = (unsigned int) -1;
     if (map->table) {
-        SDL_free (map->table);
+        SDL_free(map->table);
         map->table = NULL;
     }
 }
 int
-SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
+SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst)
 {
     SDL_PixelFormat *srcfmt;
     SDL_PixelFormat *dstfmt;
@@ -754,9 +754,9 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
     /* Clear out any previous mapping */
     map = src->map;
     if ((src->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
-        SDL_UnRLESurface (src, 1);
+        SDL_UnRLESurface(src, 1);
     }
-    SDL_InvalidateMap (map);
+    SDL_InvalidateMap(map);
 
     /* Figure out what kind of mapping we're doing */
     map->identity = 0;
@@ -772,8 +772,8 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
                 ((dst->flags & SDL_HWSURFACE) == SDL_HWSURFACE)) {
                 map->identity = 1;
             } else {
-                map->table = Map1to1 (srcfmt->palette,
-                                      dstfmt->palette, &map->identity);
+                map->table = Map1to1(srcfmt->palette,
+                                     dstfmt->palette, &map->identity);
             }
             if (!map->identity) {
                 if (map->table == NULL) {
@@ -786,7 +786,7 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
 
         default:
             /* Palette --> BitField */
-            map->table = Map1toN (srcfmt, dstfmt);
+            map->table = Map1toN(srcfmt, dstfmt);
             if (map->table == NULL) {
                 return (-1);
             }
@@ -797,7 +797,7 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
         switch (dstfmt->BytesPerPixel) {
         case 1:
             /* BitField --> Palette */
-            map->table = MapNto1 (srcfmt, dstfmt, &map->identity);
+            map->table = MapNto1(srcfmt, dstfmt, &map->identity);
             if (!map->identity) {
                 if (map->table == NULL) {
                     return (-1);
@@ -807,7 +807,7 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
             break;
         default:
             /* BitField --> BitField */
-            if (FORMAT_EQUAL (srcfmt, dstfmt))
+            if (FORMAT_EQUAL(srcfmt, dstfmt))
                 map->identity = 1;
             break;
         }
@@ -818,18 +818,18 @@ SDL_MapSurface (SDL_Surface * src, SDL_Surface * dst)
     map->format_version = dst->format_version;
 
     /* Choose your blitters wisely */
-    return (SDL_CalculateBlit (src));
+    return (SDL_CalculateBlit(src));
 }
 
 void
-SDL_FreeBlitMap (SDL_BlitMap * map)
+SDL_FreeBlitMap(SDL_BlitMap * map)
 {
     if (map) {
-        SDL_InvalidateMap (map);
+        SDL_InvalidateMap(map);
         if (map->sw_data != NULL) {
-            SDL_free (map->sw_data);
+            SDL_free(map->sw_data);
         }
-        SDL_free (map);
+        SDL_free(map);
     }
 }
 

@@ -36,17 +36,17 @@
 #include "../x11/SDL_x11dyn.h"
 
 /* Heheh we're using X11 event code */
-extern int X11_Pending (Display * display);
-extern void X11_InitKeymap (void);
-extern SDLKey X11_TranslateKeycode (Display * display, KeyCode kc);
+extern int X11_Pending(Display * display);
+extern void X11_InitKeymap(void);
+extern SDLKey X11_TranslateKeycode(Display * display, KeyCode kc);
 
 static int
-DGA_DispatchEvent (_THIS)
+DGA_DispatchEvent(_THIS)
 {
     int posted;
-    SDL_NAME (XDGAEvent) xevent;
+    SDL_NAME(XDGAEvent) xevent;
 
-    XNextEvent (DGA_Display, (XEvent *) & xevent);
+    XNextEvent(DGA_Display, (XEvent *) & xevent);
 
     posted = 0;
     xevent.type -= DGA_event_base;
@@ -56,9 +56,9 @@ DGA_DispatchEvent (_THIS)
     case MotionNotify:
         {
             if (SDL_VideoSurface) {
-                posted = SDL_PrivateMouseMotion (0, 1,
-                                                 xevent.xmotion.dx,
-                                                 xevent.xmotion.dy);
+                posted = SDL_PrivateMouseMotion(0, 1,
+                                                xevent.xmotion.dx,
+                                                xevent.xmotion.dy);
             }
         }
         break;
@@ -66,16 +66,16 @@ DGA_DispatchEvent (_THIS)
         /* Mouse button press? */
     case ButtonPress:
         {
-            posted = SDL_PrivateMouseButton (SDL_PRESSED,
-                                             xevent.xbutton.button, 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_PRESSED,
+                                            xevent.xbutton.button, 0, 0);
         }
         break;
 
         /* Mouse button release? */
     case ButtonRelease:
         {
-            posted = SDL_PrivateMouseButton (SDL_RELEASED,
-                                             xevent.xbutton.button, 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_RELEASED,
+                                            xevent.xbutton.button, 0, 0);
         }
         break;
 
@@ -86,14 +86,14 @@ DGA_DispatchEvent (_THIS)
             KeyCode keycode;
             XKeyEvent xkey;
 
-            SDL_NAME (XDGAKeyEventToXKeyEvent) (&xevent.xkey, &xkey);
+            SDL_NAME(XDGAKeyEventToXKeyEvent) (&xevent.xkey, &xkey);
             keycode = xkey.keycode;
 #ifdef DEBUG_XEVENTS
-            printf ("KeyPress (X11 keycode = 0x%X)\n", xkey.keycode);
+            printf("KeyPress (X11 keycode = 0x%X)\n", xkey.keycode);
 #endif
             /* Get the translated SDL virtual keysym */
             keysym.scancode = keycode;
-            keysym.sym = X11_TranslateKeycode (DGA_Display, keycode);
+            keysym.sym = X11_TranslateKeycode(DGA_Display, keycode);
             keysym.mod = KMOD_NONE;
             keysym.unicode = 0;
 
@@ -103,7 +103,7 @@ DGA_DispatchEvent (_THIS)
                 char keybuf[32];
 
                 if (XLookupString
-                    (&xkey, keybuf, sizeof (keybuf), NULL, &state)) {
+                    (&xkey, keybuf, sizeof(keybuf), NULL, &state)) {
                     /*
                      * FIXME: XLookupString() may yield more than one
                      * character, so we need a mechanism to allow for
@@ -113,7 +113,7 @@ DGA_DispatchEvent (_THIS)
                     keysym.unicode = (Uint8) keybuf[0];
                 }
             }
-            posted = SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+            posted = SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
         }
         break;
 
@@ -124,17 +124,17 @@ DGA_DispatchEvent (_THIS)
             KeyCode keycode;
             XKeyEvent xkey;
 
-            SDL_NAME (XDGAKeyEventToXKeyEvent) (&xevent.xkey, &xkey);
+            SDL_NAME(XDGAKeyEventToXKeyEvent) (&xevent.xkey, &xkey);
             keycode = xkey.keycode;
 #ifdef DEBUG_XEVENTS
-            printf ("KeyRelease (X11 keycode = 0x%X)\n", xkey.keycode);
+            printf("KeyRelease (X11 keycode = 0x%X)\n", xkey.keycode);
 #endif
             /* Get the translated SDL virtual keysym */
             keysym.scancode = keycode;
-            keysym.sym = X11_TranslateKeycode (DGA_Display, keycode);
+            keysym.sym = X11_TranslateKeycode(DGA_Display, keycode);
             keysym.mod = KMOD_NONE;
             keysym.unicode = 0;
-            posted = SDL_PrivateKeyboard (SDL_RELEASED, &keysym);
+            posted = SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
         }
         break;
 
@@ -145,20 +145,20 @@ DGA_DispatchEvent (_THIS)
 }
 
 void
-DGA_PumpEvents (_THIS)
+DGA_PumpEvents(_THIS)
 {
     /* Keep processing pending events */
-    LOCK_DISPLAY ();
-    while (X11_Pending (DGA_Display)) {
-        DGA_DispatchEvent (this);
+    LOCK_DISPLAY();
+    while (X11_Pending(DGA_Display)) {
+        DGA_DispatchEvent(this);
     }
-    UNLOCK_DISPLAY ();
+    UNLOCK_DISPLAY();
 }
 
 void
-DGA_InitOSKeymap (_THIS)
+DGA_InitOSKeymap(_THIS)
 {
-    X11_InitKeymap ();
+    X11_InitKeymap();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

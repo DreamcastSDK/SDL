@@ -28,9 +28,9 @@ extern "C"
 
 #include "SDL_syswm_c.h"
 
-    void QT_SetWMCaption (_THIS, const char *title, const char *icon)
+    void QT_SetWMCaption(_THIS, const char *title, const char *icon)
     {
-        SDL_Win->setCaption (title);
+        SDL_Win->setCaption(title);
     }
 
 };                              /* Extern C */

@@ -23,21 +23,21 @@ extern "C"
 {
 #endif
 
-    void STACKCALL ConvertMMX (HermesConverterInterface *);
+    void STACKCALL ConvertMMX(HermesConverterInterface *);
 
-    void STACKCALL ClearMMX_32 (HermesClearInterface *);
-    void STACKCALL ClearMMX_24 (HermesClearInterface *);
-    void STACKCALL ClearMMX_16 (HermesClearInterface *);
-    void STACKCALL ClearMMX_8 (HermesClearInterface *);
+    void STACKCALL ClearMMX_32(HermesClearInterface *);
+    void STACKCALL ClearMMX_24(HermesClearInterface *);
+    void STACKCALL ClearMMX_16(HermesClearInterface *);
+    void STACKCALL ClearMMX_8(HermesClearInterface *);
 
-    void ConvertMMXpII32_24RGB888 ();
-    void ConvertMMXpII32_16RGB565 ();
-    void ConvertMMXpII32_16BGR565 ();
-    void ConvertMMXpII32_16RGB555 ();
-    void ConvertMMXpII32_16BGR565 ();
-    void ConvertMMXpII32_16BGR555 ();
+    void ConvertMMXpII32_24RGB888();
+    void ConvertMMXpII32_16RGB565();
+    void ConvertMMXpII32_16BGR565();
+    void ConvertMMXpII32_16RGB555();
+    void ConvertMMXpII32_16BGR565();
+    void ConvertMMXpII32_16BGR555();
 
-    void ConvertMMXp32_16RGB555 ();
+    void ConvertMMXp32_16RGB555();
 
 #ifdef __cplusplus
 }
@@ -53,12 +53,12 @@ extern "C"
 {
 #endif
 
-    extern void _ConvertMMX (HermesConverterInterface *);
-    extern void _ConvertMMXpII32_24RGB888 ();
-    extern void _ConvertMMXpII32_16RGB565 ();
-    extern void _ConvertMMXpII32_16BGR565 ();
-    extern void _ConvertMMXpII32_16RGB555 ();
-    extern void _ConvertMMXpII32_16BGR555 ();
+    extern void _ConvertMMX(HermesConverterInterface *);
+    extern void _ConvertMMXpII32_24RGB888();
+    extern void _ConvertMMXpII32_16RGB565();
+    extern void _ConvertMMXpII32_16BGR565();
+    extern void _ConvertMMXpII32_16RGB555();
+    extern void _ConvertMMXpII32_16BGR555();
 
 #define ConvertMMX _ConvertMMX
 #define ConvertMMXpII32_24RGB888 _ConvertMMXpII32_24RGB888

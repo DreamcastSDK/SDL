@@ -43,16 +43,16 @@ static char *SDL_cdlist[MAX_DRIVES];
 //static dev_t SDL_cdmode[MAX_DRIVES];
 
 /* The system-dependent CD control functions */
-static const char *SDL_SYS_CDName (int drive);
-static int SDL_SYS_CDOpen (int drive);
-static int SDL_SYS_CDGetTOC (SDL_CD * cdrom);
-static CDstatus SDL_SYS_CDStatus (SDL_CD * cdrom, int *position);
-static int SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length);
-static int SDL_SYS_CDPause (SDL_CD * cdrom);
-static int SDL_SYS_CDResume (SDL_CD * cdrom);
-static int SDL_SYS_CDStop (SDL_CD * cdrom);
-static int SDL_SYS_CDEject (SDL_CD * cdrom);
-static void SDL_SYS_CDClose (SDL_CD * cdrom);
+static const char *SDL_SYS_CDName(int drive);
+static int SDL_SYS_CDOpen(int drive);
+static int SDL_SYS_CDGetTOC(SDL_CD * cdrom);
+static CDstatus SDL_SYS_CDStatus(SDL_CD * cdrom, int *position);
+static int SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length);
+static int SDL_SYS_CDPause(SDL_CD * cdrom);
+static int SDL_SYS_CDResume(SDL_CD * cdrom);
+static int SDL_SYS_CDStop(SDL_CD * cdrom);
+static int SDL_SYS_CDEject(SDL_CD * cdrom);
+static void SDL_SYS_CDClose(SDL_CD * cdrom);
 
 /* MCI Timing Functions */
 #define	MCI_MMTIMEPERSECOND		3000
@@ -61,7 +61,7 @@ static void SDL_SYS_CDClose (SDL_CD * cdrom);
 
 /* Ready for MCI CDAudio Devices */
 int
-SDL_SYS_CDInit (void)
+SDL_SYS_CDInit(void)
 {
     int i;                      /* generig counter */
     MCI_SYSINFO_PARMS msp;      /* Structure to MCI SysInfo parameters */
@@ -81,7 +81,7 @@ SDL_SYS_CDInit (void)
 
 /* Get the number of CD ROMs in the System */
 /* Clean SysInfo structure */
-    SDL_memset (&msp, 0x00, sizeof (MCI_SYSINFO_PARMS));
+    SDL_memset(&msp, 0x00, sizeof(MCI_SYSINFO_PARMS));
 /* Prepare structure to Ask Numer of Audio CDs */
     msp.usDeviceType = MCI_DEVTYPE_CD_AUDIO;    /* CD Audio Type */
     msp.pszReturn = (PSZ) & SysInfoRet; /* Return Structure */
@@ -91,7 +91,7 @@ SDL_SYS_CDInit (void)
          (0, MCI_SYSINFO, MCI_SYSINFO_QUANTITY | MCI_WAIT, (PVOID) & msp,
           0)) != MCIERR_SUCCESS)
         return (CD_ERROR);
-    SDL_numcds = atoi (SysInfoRet);
+    SDL_numcds = atoi(SysInfoRet);
     if (SDL_numcds > MAX_DRIVES)
         SDL_numcds = MAX_DRIVES;        /* Limit maximum CD number */
 
@@ -101,10 +101,10 @@ SDL_SYS_CDInit (void)
     msp.usDeviceType = MCI_DEVTYPE_CD_AUDIO;    /* CD Audio Type */
     for (i = 0; i < SDL_numcds; i++) {
         msp.ulNumber = i + 1;
-        mciSendCommand (0, MCI_SYSINFO, MCI_SYSINFO_NAME | MCI_WAIT, &msp, 0);
-        SDL_cdlist[i] = SDL_strdup (SysInfoRet);
+        mciSendCommand(0, MCI_SYSINFO, MCI_SYSINFO_NAME | MCI_WAIT, &msp, 0);
+        SDL_cdlist[i] = SDL_strdup(SysInfoRet);
         if (SDL_cdlist[i] == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
     }
@@ -113,14 +113,14 @@ SDL_SYS_CDInit (void)
 
 /* Return CDAudio System Dependent Device Name - Ready for MCI*/
 static const char *
-SDL_SYS_CDName (int drive)
+SDL_SYS_CDName(int drive)
 {
     return (SDL_cdlist[drive]);
 }
 
 /* Open CDAudio Device - Ready for MCI */
 static int
-SDL_SYS_CDOpen (int drive)
+SDL_SYS_CDOpen(int drive)
 {
     MCI_OPEN_PARMS mop;
     MCI_SET_PARMS msp;
@@ -130,7 +130,7 @@ SDL_SYS_CDOpen (int drive)
     mop.hwndCallback = (HWND) NULL;     // None
     mop.usDeviceID = (USHORT) NULL;     // Will be returned.
     mop.pszDeviceType = (PSZ) SDL_cdlist[drive];        // CDAudio Device
-    if (LOUSHORT (mciSendCommand (0, MCI_OPEN, MCI_WAIT, &mop, 0)) !=
+    if (LOUSHORT(mciSendCommand(0, MCI_OPEN, MCI_WAIT, &mop, 0)) !=
         MCIERR_SUCCESS)
         return (CD_ERROR);
 /* Set time format */
@@ -149,13 +149,13 @@ SDL_SYS_CDOpen (int drive)
         return (mop.usDeviceID);
 /* Error setting time format? - Close opened device */
     mgp.hwndCallback = (HWND) NULL;     // None
-    mciSendCommand (mop.usDeviceID, MCI_CLOSE, MCI_WAIT, &mgp, 0);
+    mciSendCommand(mop.usDeviceID, MCI_CLOSE, MCI_WAIT, &mgp, 0);
     return (CD_ERROR);
 }
 
 /* Get CD Table Of Contents - Ready for MCI */
 static int
-SDL_SYS_CDGetTOC (SDL_CD * cdrom)
+SDL_SYS_CDGetTOC(SDL_CD * cdrom)
 {
     MCI_TOC_PARMS mtp;
     MCI_STATUS_PARMS msp;
@@ -181,19 +181,18 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
         cdrom->numtracks = SDL_MAX_TRACKS;
     }
 /* Alocate space for TOC data */
-    mtr =
-        (MCI_TOC_REC *) SDL_malloc (cdrom->numtracks * sizeof (MCI_TOC_REC));
+    mtr = (MCI_TOC_REC *) SDL_malloc(cdrom->numtracks * sizeof(MCI_TOC_REC));
     if (mtr == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
 /* Get TOC from CD */
     mtp.pBuf = mtr;
-    mtp.ulBufSize = cdrom->numtracks * sizeof (MCI_TOC_REC);
-    if (LOUSHORT (mciSendCommand (cdrom->id, MCI_GETTOC, MCI_WAIT, &mtp, 0))
+    mtp.ulBufSize = cdrom->numtracks * sizeof(MCI_TOC_REC);
+    if (LOUSHORT(mciSendCommand(cdrom->id, MCI_GETTOC, MCI_WAIT, &mtp, 0))
         != MCIERR_SUCCESS) {
-        SDL_OutOfMemory ();
-        SDL_free (mtr);
+        SDL_OutOfMemory();
+        SDL_free(mtr);
         return (CD_ERROR);
     }
 /* Fill SDL Tracks Structure */
@@ -209,7 +208,7 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
             (mciSendCommand
              (cdrom->id, MCI_STATUS, MCI_WAIT | MCI_TRACK | MCI_STATUS_ITEM,
               &msp, 0)) != MCIERR_SUCCESS) {
-            SDL_free (mtr);
+            SDL_free(mtr);
             return (CD_ERROR);
         }
         if (msp.ulReturn == MCI_CD_TRACK_AUDIO)
@@ -218,18 +217,18 @@ SDL_SYS_CDGetTOC (SDL_CD * cdrom)
             cdrom->track[i].type = SDL_DATA_TRACK;
         /* Set Track Length - values from MCI are in MMTIMEs - 3000 MMTIME = 1 second */
         cdrom->track[i].length =
-            FRAMESFROMMM ((mtr + i)->ulEndAddr - (mtr + i)->ulStartAddr);
+            FRAMESFROMMM((mtr + i)->ulEndAddr - (mtr + i)->ulStartAddr);
         /* Set Track Offset */
-        cdrom->track[i].offset = FRAMESFROMMM ((mtr + i)->ulStartAddr);
+        cdrom->track[i].offset = FRAMESFROMMM((mtr + i)->ulStartAddr);
     }
-    SDL_free (mtr);
+    SDL_free(mtr);
     return (0);
 }
 
 
 /* Get CD-ROM status - Ready for MCI */
 static CDstatus
-SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
+SDL_SYS_CDStatus(SDL_CD * cdrom, int *position)
 {
     CDstatus status;
     MCI_STATUS_PARMS msp;
@@ -282,9 +281,9 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
                 return (CD_ERROR);
             /* Convert from MSF (format selected in the Open process) to Frames (format that will be returned) */
             *position =
-                MSF_TO_FRAMES (MSF_MINUTE (msp.ulReturn),
-                               MSF_SECOND (msp.ulReturn),
-                               MSF_FRAME (msp.ulReturn));
+                MSF_TO_FRAMES(MSF_MINUTE(msp.ulReturn),
+                              MSF_SECOND(msp.ulReturn),
+                              MSF_FRAME(msp.ulReturn));
         } else
             *position = 0;
     }
@@ -293,7 +292,7 @@ SDL_SYS_CDStatus (SDL_CD * cdrom, int *position)
 
 /* Start play - Ready for MCI */
 static int
-SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
+SDL_SYS_CDPlay(SDL_CD * cdrom, int start, int length)
 {
     MCI_GENERIC_PARMS mgp;
     MCI_STATUS_PARMS msp;
@@ -301,19 +300,19 @@ SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
     ULONG min, sec, frm;
 
 /* Start MSF */
-    FRAMES_TO_MSF (start, &min, &sec, &frm);
-    MSF_MINUTE (mpp.ulFrom) = min;
-    MSF_SECOND (mpp.ulFrom) = sec;
-    MSF_FRAME (mpp.ulFrom) = frm;
+    FRAMES_TO_MSF(start, &min, &sec, &frm);
+    MSF_MINUTE(mpp.ulFrom) = min;
+    MSF_SECOND(mpp.ulFrom) = sec;
+    MSF_FRAME(mpp.ulFrom) = frm;
 /* End MSF */
-    FRAMES_TO_MSF (start + length, &min, &sec, &frm);
-    MSF_MINUTE (mpp.ulTo) = min;
-    MSF_SECOND (mpp.ulTo) = sec;
-    MSF_FRAME (mpp.ulTo) = frm;
+    FRAMES_TO_MSF(start + length, &min, &sec, &frm);
+    MSF_MINUTE(mpp.ulTo) = min;
+    MSF_SECOND(mpp.ulTo) = sec;
+    MSF_FRAME(mpp.ulTo) = frm;
 #ifdef DEBUG_CDROM
-    fprintf (stderr, "Trying to play from %d:%d:%d to %d:%d:%d\n",
-             playtime.cdmsf_min0, playtime.cdmsf_sec0, playtime.cdmsf_frame0,
-             playtime.cdmsf_min1, playtime.cdmsf_sec1, playtime.cdmsf_frame1);
+    fprintf(stderr, "Trying to play from %d:%d:%d to %d:%d:%d\n",
+            playtime.cdmsf_min0, playtime.cdmsf_sec0, playtime.cdmsf_frame0,
+            playtime.cdmsf_min1, playtime.cdmsf_sec1, playtime.cdmsf_frame1);
 #endif
 /* Verifies if it is paused first... and if it is, unpause before stopping it. */
     msp.hwndCallback = (HWND) NULL;     /* None */
@@ -326,13 +325,13 @@ SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
           0)) == MCIERR_SUCCESS) {
         if (msp.ulReturn == MCI_MODE_PAUSE) {
             mgp.hwndCallback = (HWND) NULL;     // None
-            mciSendCommand (cdrom->id, MCI_RESUME, 0, &mgp, 0);
+            mciSendCommand(cdrom->id, MCI_RESUME, 0, &mgp, 0);
         }
     }
 /* Now play it. */
     mpp.hwndCallback = (HWND) NULL;     // We do not want the info. temp
     if (LOUSHORT
-        (mciSendCommand (cdrom->id, MCI_PLAY, MCI_FROM | MCI_TO, &mpp, 0)) ==
+        (mciSendCommand(cdrom->id, MCI_PLAY, MCI_FROM | MCI_TO, &mpp, 0)) ==
         MCIERR_SUCCESS)
         return 0;
     return (CD_ERROR);
@@ -340,12 +339,12 @@ SDL_SYS_CDPlay (SDL_CD * cdrom, int start, int length)
 
 /* Pause play - Ready for MCI */
 static int
-SDL_SYS_CDPause (SDL_CD * cdrom)
+SDL_SYS_CDPause(SDL_CD * cdrom)
 {
     MCI_GENERIC_PARMS mgp;
 
     mgp.hwndCallback = (HWND) NULL;     // None
-    if (LOUSHORT (mciSendCommand (cdrom->id, MCI_PAUSE, MCI_WAIT, &mgp, 0)) ==
+    if (LOUSHORT(mciSendCommand(cdrom->id, MCI_PAUSE, MCI_WAIT, &mgp, 0)) ==
         MCIERR_SUCCESS)
         return 0;
     return (CD_ERROR);
@@ -353,12 +352,12 @@ SDL_SYS_CDPause (SDL_CD * cdrom)
 
 /* Resume play - Ready for MCI */
 static int
-SDL_SYS_CDResume (SDL_CD * cdrom)
+SDL_SYS_CDResume(SDL_CD * cdrom)
 {
     MCI_GENERIC_PARMS mgp;
 
     mgp.hwndCallback = (HWND) NULL;     // None
-    if (LOUSHORT (mciSendCommand (cdrom->id, MCI_RESUME, MCI_WAIT, &mgp, 0))
+    if (LOUSHORT(mciSendCommand(cdrom->id, MCI_RESUME, MCI_WAIT, &mgp, 0))
         == MCIERR_SUCCESS)
         return 0;
     return (CD_ERROR);
@@ -366,7 +365,7 @@ SDL_SYS_CDResume (SDL_CD * cdrom)
 
 /* Stop play - Ready for MCI */
 static int
-SDL_SYS_CDStop (SDL_CD * cdrom)
+SDL_SYS_CDStop(SDL_CD * cdrom)
 {
     MCI_GENERIC_PARMS mgp;
     MCI_STATUS_PARMS msp;
@@ -382,12 +381,12 @@ SDL_SYS_CDStop (SDL_CD * cdrom)
           0)) == MCIERR_SUCCESS) {
         if (msp.ulReturn == MCI_MODE_PAUSE) {
             mgp.hwndCallback = (HWND) NULL;     // None
-            mciSendCommand (cdrom->id, MCI_RESUME, 0, &mgp, 0);
+            mciSendCommand(cdrom->id, MCI_RESUME, 0, &mgp, 0);
         }
     }
 /* Now stops the media */
     mgp.hwndCallback = (HWND) NULL;     // None
-    if (LOUSHORT (mciSendCommand (cdrom->id, MCI_STOP, MCI_WAIT, &mgp, 0)) ==
+    if (LOUSHORT(mciSendCommand(cdrom->id, MCI_STOP, MCI_WAIT, &mgp, 0)) ==
         MCIERR_SUCCESS)
         return 0;
     return (CD_ERROR);
@@ -395,7 +394,7 @@ SDL_SYS_CDStop (SDL_CD * cdrom)
 
 /* Eject the CD-ROM - Ready for MCI */
 static int
-SDL_SYS_CDEject (SDL_CD * cdrom)
+SDL_SYS_CDEject(SDL_CD * cdrom)
 {
     MCI_SET_PARMS msp;
 
@@ -417,23 +416,23 @@ SDL_SYS_CDEject (SDL_CD * cdrom)
 
 /* Close the CD-ROM handle - Ready for MCI */
 static void
-SDL_SYS_CDClose (SDL_CD * cdrom)
+SDL_SYS_CDClose(SDL_CD * cdrom)
 {
     MCI_GENERIC_PARMS mgp;
 
     mgp.hwndCallback = (HWND) NULL;     // None
-    mciSendCommand (cdrom->id, MCI_CLOSE, MCI_WAIT, &mgp, 0);
+    mciSendCommand(cdrom->id, MCI_CLOSE, MCI_WAIT, &mgp, 0);
 }
 
 /* Finalize CDROM Subsystem - Ready for MCI */
 void
-SDL_SYS_CDQuit (void)
+SDL_SYS_CDQuit(void)
 {
     int i;
 
     if (SDL_numcds > 0) {
         for (i = 0; i < SDL_numcds; ++i) {
-            SDL_free (SDL_cdlist[i]);
+            SDL_free(SDL_cdlist[i]);
         }
         SDL_numcds = 0;
     }

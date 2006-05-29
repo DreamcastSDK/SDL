@@ -32,16 +32,16 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 /* If you change this, change the Bases[] array below as well */
 #define MAX_HEADS 16
 
-char *SDL_NAME (xdga_extension_name) = XF86DGANAME;
+char *SDL_NAME(xdga_extension_name) = XF86DGANAME;
 
 static XExtensionInfo _xdga_info_data;
 static XExtensionInfo *xdga_info = &_xdga_info_data;
 
 
-Bool SDL_NAME (XDGAMapFramebuffer) (int, char *, unsigned char *, CARD32,
-                                    CARD32, CARD32);
-void SDL_NAME (XDGAUnmapFramebuffer) (int);
-unsigned char *SDL_NAME (XDGAGetMappedMemory) (int);
+Bool SDL_NAME(XDGAMapFramebuffer) (int, char *, unsigned char *, CARD32,
+                                   CARD32, CARD32);
+void SDL_NAME(XDGAUnmapFramebuffer) (int);
+unsigned char *SDL_NAME(XDGAGetMappedMemory) (int);
 
 #define XDGACheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, SDL_NAME(xdga_extension_name), val)
@@ -52,11 +52,11 @@ unsigned char *SDL_NAME (XDGAGetMappedMemory) (int);
  *                                                                           *
  *****************************************************************************/
 
-static int xdga_close_display (Display * dpy, XExtCodes * codes);
-static Bool xdga_wire_to_event (Display * dpy, XEvent * event,
-                                xEvent * wire_ev);
-static Status xdga_event_to_wire (Display * dpy, XEvent * event,
-                                  xEvent * wire_ev);
+static int xdga_close_display(Display * dpy, XExtCodes * codes);
+static Bool xdga_wire_to_event(Display * dpy, XEvent * event,
+                               xEvent * wire_ev);
+static Status xdga_event_to_wire(Display * dpy, XEvent * event,
+                                 xEvent * wire_ev);
 
 static XExtensionHooks xdga_extension_hooks = {
     NULL,                       /* create_gc */
@@ -73,31 +73,31 @@ static XExtensionHooks xdga_extension_hooks = {
 };
 
 static
-XEXT_GENERATE_CLOSE_DISPLAY (xdga_close_display, xdga_info)
-XEXT_GENERATE_FIND_DISPLAY (SDL_NAME (xdga_find_display), xdga_info,
-                            "XFree86-DGA", &xdga_extension_hooks, 0, NULL)
+XEXT_GENERATE_CLOSE_DISPLAY(xdga_close_display, xdga_info)
+XEXT_GENERATE_FIND_DISPLAY(SDL_NAME(xdga_find_display), xdga_info,
+                           "XFree86-DGA", &xdga_extension_hooks, 0, NULL)
      static Status
-         xdga_event_to_wire (Display * dpy, XEvent * event, xEvent * wire_ev)
+         xdga_event_to_wire(Display * dpy, XEvent * event, xEvent * wire_ev)
 {
     return True;
 }
 
 static Bool
-xdga_wire_to_event (Display * dpy, XEvent * event, xEvent * wire_ev)
+xdga_wire_to_event(Display * dpy, XEvent * event, xEvent * wire_ev)
 {
     dgaEvent *wire = (dgaEvent *) wire_ev;
-    SDL_NAME (XDGAButtonEvent) * bevent;
-    SDL_NAME (XDGAKeyEvent) * kevent;
-    SDL_NAME (XDGAMotionEvent) * mevent;
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    SDL_NAME(XDGAButtonEvent) * bevent;
+    SDL_NAME(XDGAKeyEvent) * kevent;
+    SDL_NAME(XDGAMotionEvent) * mevent;
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
 
-    XDGACheckExtension (dpy, info, False);
+    XDGACheckExtension(dpy, info, False);
 
     switch ((wire->u.u.type & 0x7f) - info->codes->first_event) {
     case MotionNotify:
-        mevent = (SDL_NAME (XDGAMotionEvent) *) event;
+        mevent = (SDL_NAME(XDGAMotionEvent) *) event;
         mevent->type = wire->u.u.type & 0x7F;
-        mevent->serial = _XSetLastRequestRead (dpy, (xGenericReply *) wire);
+        mevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *) wire);
         mevent->display = dpy;
         mevent->screen = wire->u.event.screen;
         mevent->time = wire->u.event.time;
@@ -107,9 +107,9 @@ xdga_wire_to_event (Display * dpy, XEvent * event, xEvent * wire_ev)
         return True;
     case ButtonPress:
     case ButtonRelease:
-        bevent = (SDL_NAME (XDGAButtonEvent) *) event;
+        bevent = (SDL_NAME(XDGAButtonEvent) *) event;
         bevent->type = wire->u.u.type & 0x7F;
-        bevent->serial = _XSetLastRequestRead (dpy, (xGenericReply *) wire);
+        bevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *) wire);
         bevent->display = dpy;
         bevent->screen = wire->u.event.screen;
         bevent->time = wire->u.event.time;
@@ -118,9 +118,9 @@ xdga_wire_to_event (Display * dpy, XEvent * event, xEvent * wire_ev)
         return True;
     case KeyPress:
     case KeyRelease:
-        kevent = (SDL_NAME (XDGAKeyEvent) *) event;
+        kevent = (SDL_NAME(XDGAKeyEvent) *) event;
         kevent->type = wire->u.u.type & 0x7F;
-        kevent->serial = _XSetLastRequestRead (dpy, (xGenericReply *) wire);
+        kevent->serial = _XSetLastRequestRead(dpy, (xGenericReply *) wire);
         kevent->display = dpy;
         kevent->screen = wire->u.event.screen;
         kevent->time = wire->u.event.time;
@@ -133,12 +133,12 @@ xdga_wire_to_event (Display * dpy, XEvent * event, xEvent * wire_ev)
 }
 
 
-Bool SDL_NAME (XDGAQueryExtension) (Display * dpy,
-                                    int *event_basep, int *error_basep)
+Bool SDL_NAME(XDGAQueryExtension) (Display * dpy,
+                                   int *event_basep, int *error_basep)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
 
-    if (XextHasExtension (info)) {
+    if (XextHasExtension(info)) {
         *event_basep = info->codes->first_event;
         *error_basep = info->codes->first_error;
         return True;
@@ -148,136 +148,136 @@ Bool SDL_NAME (XDGAQueryExtension) (Display * dpy,
 }
 
 
-Bool SDL_NAME (XDGAQueryVersion) (Display * dpy,
-                                  int *majorVersion, int *minorVersion)
+Bool SDL_NAME(XDGAQueryVersion) (Display * dpy,
+                                 int *majorVersion, int *minorVersion)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAQueryVersionReply rep;
     xXDGAQueryVersionReq *req;
 
-    XDGACheckExtension (dpy, info, False);
+    XDGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XDGAQueryVersion, req);
+    LockDisplay(dpy);
+    GetReq(XDGAQueryVersion, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAQueryVersion;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     *majorVersion = rep.majorVersion;
     *minorVersion = rep.minorVersion;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     if (*majorVersion >= 2) {
         int i, j;
 
         for (i = 0, j = info->codes->first_event;
              i < XF86DGANumberEvents; i++, j++) {
-            XESetWireToEvent (dpy, j, xdga_wire_to_event);
-            XESetEventToWire (dpy, j, xdga_event_to_wire);
+            XESetWireToEvent(dpy, j, xdga_wire_to_event);
+            XESetEventToWire(dpy, j, xdga_event_to_wire);
         }
-        SDL_NAME (XDGASetClientVersion) (dpy);
+        SDL_NAME(XDGASetClientVersion) (dpy);
     }
     return True;
 }
 
-Bool SDL_NAME (XDGASetClientVersion) (Display * dpy)
+Bool SDL_NAME(XDGASetClientVersion) (Display * dpy)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGASetClientVersionReq *req;
 
-    XDGACheckExtension (dpy, info, False);
+    XDGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XDGASetClientVersion, req);
+    LockDisplay(dpy);
+    GetReq(XDGASetClientVersion, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGASetClientVersion;
     req->major = XDGA_MAJOR_VERSION;
     req->minor = XDGA_MINOR_VERSION;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XDGAOpenFramebuffer) (Display * dpy, int screen)
+Bool SDL_NAME(XDGAOpenFramebuffer) (Display * dpy, int screen)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAOpenFramebufferReply rep;
     xXDGAOpenFramebufferReq *req;
     char *deviceName = NULL;
     Bool ret;
 
-    XDGACheckExtension (dpy, info, False);
+    XDGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XDGAOpenFramebuffer, req);
+    LockDisplay(dpy);
+    GetReq(XDGAOpenFramebuffer, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAOpenFramebuffer;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
     if (rep.length) {
-        deviceName = Xmalloc (rep.length << 2);
-        _XRead (dpy, deviceName, rep.length << 2);
+        deviceName = Xmalloc(rep.length << 2);
+        _XRead(dpy, deviceName, rep.length << 2);
     }
 
-    ret = SDL_NAME (XDGAMapFramebuffer) (screen, deviceName,
-                                         (unsigned char *) (long) rep.mem1,
-                                         rep.size, rep.offset, rep.extra);
+    ret = SDL_NAME(XDGAMapFramebuffer) (screen, deviceName,
+                                        (unsigned char *) (long) rep.mem1,
+                                        rep.size, rep.offset, rep.extra);
 
     if (deviceName)
-        Xfree (deviceName);
+        Xfree(deviceName);
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return ret;
 }
 
-void SDL_NAME (XDGACloseFramebuffer) (Display * dpy, int screen)
+void SDL_NAME(XDGACloseFramebuffer) (Display * dpy, int screen)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGACloseFramebufferReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    SDL_NAME (XDGAUnmapFramebuffer) (screen);
+    SDL_NAME(XDGAUnmapFramebuffer) (screen);
 
-    LockDisplay (dpy);
-    GetReq (XDGACloseFramebuffer, req);
+    LockDisplay(dpy);
+    GetReq(XDGACloseFramebuffer, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGACloseFramebuffer;
     req->screen = screen;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
 
-SDL_NAME (XDGAMode) * SDL_NAME (XDGAQueryModes) (Display * dpy,
-                                                 int screen, int *num)
+SDL_NAME(XDGAMode) * SDL_NAME(XDGAQueryModes) (Display * dpy,
+                                               int screen, int *num)
 {
-    XExtDisplayInfo *dinfo = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *dinfo = SDL_NAME(xdga_find_display) (dpy);
     xXDGAQueryModesReply rep;
     xXDGAQueryModesReq *req;
-    SDL_NAME (XDGAMode) * modes = NULL;
+    SDL_NAME(XDGAMode) * modes = NULL;
 
     *num = 0;
 
-    XDGACheckExtension (dpy, dinfo, NULL);
+    XDGACheckExtension(dpy, dinfo, NULL);
 
-    LockDisplay (dpy);
-    GetReq (XDGAQueryModes, req);
+    LockDisplay(dpy);
+    GetReq(XDGAQueryModes, req);
     req->reqType = dinfo->codes->major_opcode;
     req->dgaReqType = X_XDGAQueryModes;
     req->screen = screen;
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
         if (rep.length) {
             xXDGAModeInfo info;
             int i, size;
@@ -285,14 +285,14 @@ SDL_NAME (XDGAMode) * SDL_NAME (XDGAQueryModes) (Display * dpy,
 
             size = rep.length << 2;
             size -= rep.number * sz_xXDGAModeInfo;      /* find text size */
-            modes = (SDL_NAME (XDGAMode) *)
-                Xmalloc ((rep.number * sizeof (SDL_NAME (XDGAMode))) + size);
+            modes = (SDL_NAME(XDGAMode) *)
+                Xmalloc((rep.number * sizeof(SDL_NAME(XDGAMode))) + size);
             offset = (char *) (&modes[rep.number]);     /* start of text */
 
 
             if (modes) {
                 for (i = 0; i < rep.number; i++) {
-                    _XRead (dpy, (char *) (&info), sz_xXDGAModeInfo);
+                    _XRead(dpy, (char *) (&info), sz_xXDGAModeInfo);
 
                     modes[i].num = info.num;
                     modes[i].verticalRefresh =
@@ -320,43 +320,43 @@ SDL_NAME (XDGAMode) * SDL_NAME (XDGAQueryModes) (Display * dpy,
                     modes[i].reserved1 = info.reserved1;
                     modes[i].reserved2 = info.reserved2;
 
-                    _XRead (dpy, offset, info.name_size);
+                    _XRead(dpy, offset, info.name_size);
                     modes[i].name = offset;
                     offset += info.name_size;
                 }
                 *num = rep.number;
             } else
-                _XEatData (dpy, rep.length << 2);
+                _XEatData(dpy, rep.length << 2);
         }
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return modes;
 }
 
 
-SDL_NAME (XDGADevice) *
-SDL_NAME (XDGASetMode) (Display * dpy, int screen, int mode)
+SDL_NAME(XDGADevice) *
+SDL_NAME(XDGASetMode) (Display * dpy, int screen, int mode)
 {
-    XExtDisplayInfo *dinfo = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *dinfo = SDL_NAME(xdga_find_display) (dpy);
     xXDGASetModeReply rep;
     xXDGASetModeReq *req;
-    SDL_NAME (XDGADevice) * dev = NULL;
+    SDL_NAME(XDGADevice) * dev = NULL;
     Pixmap pid;
 
-    XDGACheckExtension (dpy, dinfo, NULL);
+    XDGACheckExtension(dpy, dinfo, NULL);
 
-    LockDisplay (dpy);
-    GetReq (XDGASetMode, req);
+    LockDisplay(dpy);
+    GetReq(XDGASetMode, req);
     req->reqType = dinfo->codes->major_opcode;
     req->dgaReqType = X_XDGASetMode;
     req->screen = screen;
     req->mode = mode;
-    req->pid = pid = XAllocID (dpy);
+    req->pid = pid = XAllocID(dpy);
 
-    if (_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
+    if (_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
         if (rep.length) {
             xXDGAModeInfo info;
             int size;
@@ -364,11 +364,11 @@ SDL_NAME (XDGASetMode) (Display * dpy, int screen, int mode)
             size = rep.length << 2;
             size -= sz_xXDGAModeInfo;   /* get text size */
 
-            dev = (SDL_NAME (XDGADevice) *)
-                Xmalloc (sizeof (SDL_NAME (XDGADevice)) + size);
+            dev = (SDL_NAME(XDGADevice) *)
+                Xmalloc(sizeof(SDL_NAME(XDGADevice)) + size);
 
             if (dev) {
-                _XRead (dpy, (char *) (&info), sz_xXDGAModeInfo);
+                _XRead(dpy, (char *) (&info), sz_xXDGAModeInfo);
 
                 dev->mode.num = info.num;
                 dev->mode.verticalRefresh =
@@ -397,10 +397,10 @@ SDL_NAME (XDGASetMode) (Display * dpy, int screen, int mode)
                 dev->mode.reserved2 = info.reserved2;
 
                 dev->mode.name = (char *) (&dev[1]);
-                _XRead (dpy, dev->mode.name, info.name_size);
+                _XRead(dpy, dev->mode.name, info.name_size);
 
                 dev->pixmap = (rep.flags & XDGAPixmap) ? pid : 0;
-                dev->data = SDL_NAME (XDGAGetMappedMemory) (screen);
+                dev->data = SDL_NAME(XDGAGetMappedMemory) (screen);
 
                 if (dev->data)
                     dev->data += rep.offset;
@@ -409,82 +409,82 @@ SDL_NAME (XDGASetMode) (Display * dpy, int screen, int mode)
         }
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return dev;
 }
 
 
-void SDL_NAME (XDGASetViewport) (Display * dpy,
-                                 int screen, int x, int y, int flags)
+void SDL_NAME(XDGASetViewport) (Display * dpy,
+                                int screen, int x, int y, int flags)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGASetViewportReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGASetViewport, req);
+    LockDisplay(dpy);
+    GetReq(XDGASetViewport, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGASetViewport;
     req->screen = screen;
     req->x = x;
     req->y = y;
     req->flags = flags;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
-void SDL_NAME (XDGAInstallColormap) (Display * dpy, int screen, Colormap cmap)
+void SDL_NAME(XDGAInstallColormap) (Display * dpy, int screen, Colormap cmap)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAInstallColormapReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGAInstallColormap, req);
+    LockDisplay(dpy);
+    GetReq(XDGAInstallColormap, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAInstallColormap;
     req->screen = screen;
     req->cmap = cmap;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
-void SDL_NAME (XDGASelectInput) (Display * dpy, int screen, long mask)
+void SDL_NAME(XDGASelectInput) (Display * dpy, int screen, long mask)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGASelectInputReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGASelectInput, req);
+    LockDisplay(dpy);
+    GetReq(XDGASelectInput, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGASelectInput;
     req->screen = screen;
     req->mask = mask;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
-void SDL_NAME (XDGAFillRectangle) (Display * dpy,
-                                   int screen,
-                                   int x,
-                                   int y,
-                                   unsigned int width,
-                                   unsigned int height, unsigned long color)
+void SDL_NAME(XDGAFillRectangle) (Display * dpy,
+                                  int screen,
+                                  int x,
+                                  int y,
+                                  unsigned int width,
+                                  unsigned int height, unsigned long color)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAFillRectangleReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGAFillRectangle, req);
+    LockDisplay(dpy);
+    GetReq(XDGAFillRectangle, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAFillRectangle;
     req->screen = screen;
@@ -493,24 +493,24 @@ void SDL_NAME (XDGAFillRectangle) (Display * dpy,
     req->width = width;
     req->height = height;
     req->color = color;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
-void SDL_NAME (XDGACopyArea) (Display * dpy,
-                              int screen,
-                              int srcx,
-                              int srcy,
-                              unsigned int width,
-                              unsigned int height, int dstx, int dsty)
+void SDL_NAME(XDGACopyArea) (Display * dpy,
+                             int screen,
+                             int srcx,
+                             int srcy,
+                             unsigned int width,
+                             unsigned int height, int dstx, int dsty)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGACopyAreaReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGACopyArea, req);
+    LockDisplay(dpy);
+    GetReq(XDGACopyArea, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGACopyArea;
     req->screen = screen;
@@ -520,26 +520,25 @@ void SDL_NAME (XDGACopyArea) (Display * dpy,
     req->height = height;
     req->dstx = dstx;
     req->dsty = dsty;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
-void SDL_NAME (XDGACopyTransparentArea) (Display * dpy,
-                                         int screen,
-                                         int srcx,
-                                         int srcy,
-                                         unsigned int width,
-                                         unsigned int height,
-                                         int dstx,
-                                         int dsty, unsigned long key)
+void SDL_NAME(XDGACopyTransparentArea) (Display * dpy,
+                                        int screen,
+                                        int srcx,
+                                        int srcy,
+                                        unsigned int width,
+                                        unsigned int height,
+                                        int dstx, int dsty, unsigned long key)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGACopyTransparentAreaReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGACopyTransparentArea, req);
+    LockDisplay(dpy);
+    GetReq(XDGACopyTransparentArea, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGACopyTransparentArea;
     req->screen = screen;
@@ -550,109 +549,108 @@ void SDL_NAME (XDGACopyTransparentArea) (Display * dpy,
     req->dstx = dstx;
     req->dsty = dsty;
     req->key = key;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
-int SDL_NAME (XDGAGetViewportStatus) (Display * dpy, int screen)
+int SDL_NAME(XDGAGetViewportStatus) (Display * dpy, int screen)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAGetViewportStatusReply rep;
     xXDGAGetViewportStatusReq *req;
     int status = 0;
 
-    XDGACheckExtension (dpy, info, 0);
+    XDGACheckExtension(dpy, info, 0);
 
-    LockDisplay (dpy);
-    GetReq (XDGAGetViewportStatus, req);
+    LockDisplay(dpy);
+    GetReq(XDGAGetViewportStatus, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAGetViewportStatus;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse))
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse))
         status = rep.status;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return status;
 }
 
-void SDL_NAME (XDGASync) (Display * dpy, int screen)
+void SDL_NAME(XDGASync) (Display * dpy, int screen)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGASyncReply rep;
     xXDGASyncReq *req;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGASync, req);
+    LockDisplay(dpy);
+    GetReq(XDGASync, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGASync;
     req->screen = screen;
-    _XReply (dpy, (xReply *) & rep, 0, xFalse);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    _XReply(dpy, (xReply *) & rep, 0, xFalse);
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
-void SDL_NAME (XDGAChangePixmapMode) (Display * dpy,
-                                      int screen, int *x, int *y, int mode)
+void SDL_NAME(XDGAChangePixmapMode) (Display * dpy,
+                                     int screen, int *x, int *y, int mode)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGAChangePixmapModeReq *req;
     xXDGAChangePixmapModeReply rep;
 
-    XextSimpleCheckExtension (dpy, info, SDL_NAME (xdga_extension_name));
+    XextSimpleCheckExtension(dpy, info, SDL_NAME(xdga_extension_name));
 
-    LockDisplay (dpy);
-    GetReq (XDGAChangePixmapMode, req);
+    LockDisplay(dpy);
+    GetReq(XDGAChangePixmapMode, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGAChangePixmapMode;
     req->screen = screen;
     req->x = *x;
     req->y = *y;
     req->flags = mode;
-    _XReply (dpy, (xReply *) & rep, 0, xFalse);
+    _XReply(dpy, (xReply *) & rep, 0, xFalse);
     *x = rep.x;
     *y = rep.y;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
-Colormap SDL_NAME (XDGACreateColormap) (Display * dpy,
-                                        int screen,
-                                        SDL_NAME (XDGADevice) * dev,
-                                        int alloc)
+Colormap SDL_NAME(XDGACreateColormap) (Display * dpy,
+                                       int screen,
+                                       SDL_NAME(XDGADevice) * dev, int alloc)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXDGACreateColormapReq *req;
     Colormap cid;
 
-    XDGACheckExtension (dpy, info, -1);
+    XDGACheckExtension(dpy, info, -1);
 
-    LockDisplay (dpy);
-    GetReq (XDGACreateColormap, req);
+    LockDisplay(dpy);
+    GetReq(XDGACreateColormap, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XDGACreateColormap;
     req->screen = screen;
     req->mode = dev->mode.num;
     req->alloc = alloc;
-    cid = req->id = XAllocID (dpy);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    cid = req->id = XAllocID(dpy);
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return cid;
 }
 
 
-void SDL_NAME (XDGAKeyEventToXKeyEvent) (SDL_NAME (XDGAKeyEvent) * dk,
-                                         XKeyEvent * xk)
+void SDL_NAME(XDGAKeyEventToXKeyEvent) (SDL_NAME(XDGAKeyEvent) * dk,
+                                        XKeyEvent * xk)
 {
     xk->type = dk->type;
     xk->serial = dk->serial;
     xk->send_event = False;
     xk->display = dk->display;
-    xk->window = RootWindow (dk->display, dk->screen);
+    xk->window = RootWindow(dk->display, dk->screen);
     xk->root = xk->window;
     xk->subwindow = None;
     xk->time = dk->time;
@@ -715,14 +713,14 @@ typedef struct _DGAMapRec
 } DGAMapRec, *DGAMapPtr;
 
 static Bool
-DGAMapPhysical (int, char *, unsigned char *, CARD32, CARD32, CARD32,
-                DGAMapPtr);
-static void DGAUnmapPhysical (DGAMapPtr);
+DGAMapPhysical(int, char *, unsigned char *, CARD32, CARD32, CARD32,
+               DGAMapPtr);
+static void DGAUnmapPhysical(DGAMapPtr);
 
 static DGAMapPtr _Maps = NULL;
 
 
-unsigned char *SDL_NAME (XDGAGetMappedMemory) (int screen)
+unsigned char *SDL_NAME(XDGAGetMappedMemory) (int screen)
 {
     DGAMapPtr pMap = _Maps;
     unsigned char *pntr = NULL;
@@ -738,11 +736,11 @@ unsigned char *SDL_NAME (XDGAGetMappedMemory) (int screen)
     return pntr;
 }
 
-Bool SDL_NAME (XDGAMapFramebuffer) (int screen, char *name,     /* optional device name */
-                                    unsigned char *base,        /* physical memory */
-                                    CARD32 size,        /* size */
-                                    CARD32 offset,      /* optional offset */
-                                    CARD32 extra        /* optional extra data */
+Bool SDL_NAME(XDGAMapFramebuffer) (int screen, char *name,      /* optional device name */
+                                   unsigned char *base, /* physical memory */
+                                   CARD32 size, /* size */
+                                   CARD32 offset,       /* optional offset */
+                                   CARD32 extra /* optional extra data */
     )
 {
     DGAMapPtr pMap = _Maps;
@@ -761,20 +759,20 @@ Bool SDL_NAME (XDGAMapFramebuffer) (int screen, char *name,     /* optional devi
 
     }
 
-    pMap = (DGAMapPtr) Xmalloc (sizeof (DGAMapRec));
+    pMap = (DGAMapPtr) Xmalloc(sizeof(DGAMapRec));
 
-    result = DGAMapPhysical (screen, name, base, size, offset, extra, pMap);
+    result = DGAMapPhysical(screen, name, base, size, offset, extra, pMap);
 
     if (result) {
         pMap->next = _Maps;
         _Maps = pMap;
     } else
-        Xfree (pMap);
+        Xfree(pMap);
 
     return result;
 }
 
-void SDL_NAME (XDGAUnmapFramebuffer) (int screen)
+void SDL_NAME(XDGAUnmapFramebuffer) (int screen)
 {
     DGAMapPtr pMap = _Maps;
     DGAMapPtr pPrev = NULL;
@@ -790,24 +788,24 @@ void SDL_NAME (XDGAUnmapFramebuffer) (int screen)
     if (!pMap)
         return;
 
-    DGAUnmapPhysical (pMap);
+    DGAUnmapPhysical(pMap);
 
     if (!pPrev)
         _Maps = pMap->next;
     else
         pPrev->next = pMap->next;
 
-    Xfree (pMap);
+    Xfree(pMap);
 }
 
 
 static Bool
-DGAMapPhysical (int screen, char *name, /* optional device name */
-                unsigned char *base,    /* physical memory */
-                CARD32 size,    /* size */
-                CARD32 offset,  /* optional offset */
-                CARD32 extra,   /* optional extra data */
-                DGAMapPtr pMap)
+DGAMapPhysical(int screen, char *name,  /* optional device name */
+               unsigned char *base,     /* physical memory */
+               CARD32 size,     /* size */
+               CARD32 offset,   /* optional offset */
+               CARD32 extra,    /* optional extra data */
+               DGAMapPtr pMap)
 {
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
     struct kd_memloc mloc;
@@ -824,15 +822,14 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
     pMap->size = size;
 
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
-    if ((pMap->fd = open ("/dev/mmap", O_RDWR)) < 0)
+    if ((pMap->fd = open("/dev/mmap", O_RDWR)) < 0)
         return False;
     mloc.vaddr = (char *) 0;
     mloc.physaddr = (char *) base;
     mloc.length = size;
     mloc.ioflg = 1;
 
-    if ((pMap->virtual =
-         (void *) ioctl (pMap->fd, MAP, &mloc)) == (void *) -1)
+    if ((pMap->virtual = (void *) ioctl(pMap->fd, MAP, &mloc)) == (void *) -1)
         return False;
 #elif defined (__EMX__)
     /*
@@ -841,8 +838,8 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
      * of memory handles. Some umap/close mechanism should be provided
      */
 
-    rc = DosOpen ("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
-                  OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2) NULL);
+    rc = DosOpen("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
+                 OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2) NULL);
     if (rc != 0)
         return False;
     {
@@ -861,9 +858,9 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
 
         pmap.a.phys = base;
         pmap.size = size;
-        rc = DosDevIOCtl (hfd, XFREE86_PMAP, PMAP_MAP,
-                          (PULONG) & pmap, sizeof (pmap), &plen,
-                          (PULONG) & dmap, sizeof (dmap), &dlen);
+        rc = DosDevIOCtl(hfd, XFREE86_PMAP, PMAP_MAP,
+                         (PULONG) & pmap, sizeof(pmap), &plen,
+                         (PULONG) & dmap, sizeof(dmap), &dlen);
         if (rc == 0) {
             pMap->virtual = dmap.a.user;
         }
@@ -872,27 +869,27 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
         return False;
 #elif defined (Lynx)
     pMap->virtual =
-        smem_create ("XF86DGA", (char *) base, size, SM_READ | SM_WRITE);
+        smem_create("XF86DGA", (char *) base, size, SM_READ | SM_WRITE);
 #else
 #ifndef MAP_FILE
 #define MAP_FILE 0
 #endif
     if (!name)
         name = DEV_MEM;
-    if ((pMap->fd = open (name, O_RDWR)) < 0)
+    if ((pMap->fd = open(name, O_RDWR)) < 0)
 #if defined(ENABLE_FBCON)
     {                           /* /dev/fb0 fallback added by Sam Lantinga <hercules@lokigames.com> */
         /* Try to fall back to /dev/fb on Linux - FIXME: verify the device */
         struct fb_fix_screeninfo finfo;
 
-        if ((pMap->fd = open ("/dev/fb0", O_RDWR)) < 0) {
+        if ((pMap->fd = open("/dev/fb0", O_RDWR)) < 0) {
             return False;
         }
         /* The useable framebuffer console memory may not be the whole
            framebuffer that X has access to. :-(
          */
-        if (ioctl (pMap->fd, FBIOGET_FSCREENINFO, &finfo) < 0) {
-            close (pMap->fd);
+        if (ioctl(pMap->fd, FBIOGET_FSCREENINFO, &finfo) < 0) {
+            close(pMap->fd);
             return False;
         }
         /* Warning: On PPC, the size and virtual need to be offset by:
@@ -905,15 +902,15 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
 #else
         return False;
 #endif
-    pMap->virtual = mmap (NULL, size, PROT_READ | PROT_WRITE,
-                          MAP_FILE | MAP_SHARED, pMap->fd, (off_t) base);
+    pMap->virtual = mmap(NULL, size, PROT_READ | PROT_WRITE,
+                         MAP_FILE | MAP_SHARED, pMap->fd, (off_t) base);
     if (pMap->virtual == (void *) -1)
         return False;
 #endif
 
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
 	&& !defined(__EMX__)
-    mprotect (pMap->virtual, size, PROT_READ | PROT_WRITE);
+    mprotect(pMap->virtual, size, PROT_READ | PROT_WRITE);
 #endif
 
     return True;
@@ -922,15 +919,15 @@ DGAMapPhysical (int screen, char *name, /* optional device name */
 
 
 static void
-DGAUnmapPhysical (DGAMapPtr pMap)
+DGAUnmapPhysical(DGAMapPtr pMap)
 {
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
 	&& !defined(__EMX__)
-    mprotect (pMap->virtual, pMap->size, PROT_READ);
+    mprotect(pMap->virtual, pMap->size, PROT_READ);
 #elif defined(Lynx)
     /* XXX this doesn't allow enable after disable */
-    smem_create (NULL, pMap->virtual, pMap->size, SM_DETACH);
-    smem_remove ("XF86DGA");
+    smem_create(NULL, pMap->virtual, pMap->size, SM_DETACH);
+    smem_remove("XF86DGA");
 #endif
 
 

@@ -60,18 +60,18 @@ static struct GfxBase *GfxBase;
 static clock_t start;
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
     /* Set first ticks value */
-    start = clock ();
+    start = clock();
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
     clock_t ticks;
 
-    ticks = clock () - start;
+    ticks = clock() - start;
 
 #ifdef __SASC
 // CLOCKS_PER_SEC == 1000 !
@@ -85,21 +85,21 @@ SDL_GetTicks (void)
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
 // Do a busy wait if time is less than 50ms
 
     if (ms < 50) {
-        clock_t to_wait = clock ();
+        clock_t to_wait = clock();
 
 #ifndef __SASC
         ms *= (CLOCKS_PER_SEC / 1000);
 #endif
         to_wait += ms;
 
-        while (clock () < to_wait);
+        while (clock() < to_wait);
     } else {
-        Delay (ms / 20);
+        Delay(ms / 20);
     }
 }
 
@@ -107,29 +107,29 @@ SDL_Delay (Uint32 ms)
 
 ULONG MY_CLOCKS_PER_SEC;
 
-void PPC_TimerInit (void);
+void PPC_TimerInit(void);
 APTR MyTimer;
 
 ULONG start[2];
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
     /* Set first ticks value */
     if (!MyTimer)
-        PPC_TimerInit ();
+        PPC_TimerInit();
 
-    PPCGetTimerObject (MyTimer, PPCTIMERTAG_CURRENTTICKS, start);
+    PPCGetTimerObject(MyTimer, PPCTIMERTAG_CURRENTTICKS, start);
     start[1] >>= 10;
     start[1] |= ((result[0] & 0x3ff) << 22);
     start[0] >>= 10;
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
     ULONG result[2];
-    PPCGetTimerObject (MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
+    PPCGetTimerObject(MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
 
 //      PPCAsr64p(result,10);
 // Non va, la emulo:
@@ -143,26 +143,26 @@ SDL_GetTicks (void)
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
 // Do a busy wait if time is less than 50ms
 
     if (ms < 50) {
         ULONG to_wait[2], actual[2];
-        PPCGetTimerObject (MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
+        PPCGetTimerObject(MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
         actual[1] = 0;
         to_wait[1] += ms * 1000 / MY_CLOCKS_PER_SEC;
 
         while (actual[1] < to_wait[1]) {
-            PPCGetTimerObject (MyTimer, PPCTIMERTAG_CURRENTTICKS, actual);
+            PPCGetTimerObject(MyTimer, PPCTIMERTAG_CURRENTTICKS, actual);
         }
     } else {
-        Delay (ms / 50);
+        Delay(ms / 50);
     }
 }
 
 void
-PPC_TimerInit (void)
+PPC_TimerInit(void)
 {
     struct TagItem tags[] = {
         PPCTIMERTAG_CPU, TRUE,
@@ -170,30 +170,29 @@ PPC_TimerInit (void)
     };
 
 
-    if (MyTimer = PPCCreateTimerObject (tags)) {
+    if (MyTimer = PPCCreateTimerObject(tags)) {
         ULONG result[2];
 
-        PPCGetTimerObject (MyTimer, PPCTIMERTAG_TICKSPERSEC, result);
-        D (bug
-           ("Timer inizializzato, TPS: %lu - %lu\n", result[0], result[1]));
+        PPCGetTimerObject(MyTimer, PPCTIMERTAG_TICKSPERSEC, result);
+        D(bug("Timer inizializzato, TPS: %lu - %lu\n", result[0], result[1]));
 //              PPCAsr64p(result,10);
         result[1] >>= 10;
         result[1] |= ((result[0] & 0x3ff) << 22);
         result[0] >>= 10;
 
-        D (bug ("Shiftato TPS: %lu - %lu\n", result[0], result[1]));
+        D(bug("Shiftato TPS: %lu - %lu\n", result[0], result[1]));
         MY_CLOCKS_PER_SEC = result[1];
 
-        PPCGetTimerObject (MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
+        PPCGetTimerObject(MyTimer, PPCTIMERTAG_CURRENTTICKS, result);
 
-        D (bug ("Current ticks: %lu - %lu\n", result[0], result[1]));
+        D(bug("Current ticks: %lu - %lu\n", result[0], result[1]));
         result[1] >>= 10;
         result[1] |= ((result[0] & 0x3ff) << 22);
         result[0] >>= 10;
 //              PPCAsr64p(result,10);
-        D (bug ("Shiftato: %lu - %lu\n", result[0], result[1]));
+        D(bug("Shiftato: %lu - %lu\n", result[0], result[1]));
     } else {
-        D (bug ("Errore nell'inizializzazione del timer!\n"));
+        D(bug("Errore nell'inizializzazione del timer!\n"));
     }
 }
 
@@ -206,61 +205,61 @@ static int timer_alive = 0;
 static SDL_Thread *timer_thread = NULL;
 
 static int
-RunTimer (void *unused)
+RunTimer(void *unused)
 {
-    D (bug ("SYSTimer: Entering RunTimer loop..."));
+    D(bug("SYSTimer: Entering RunTimer loop..."));
 
     if (GfxBase == NULL)
-        GfxBase = (struct GfxBase *) OpenLibrary ("graphics.library", 37);
+        GfxBase = (struct GfxBase *) OpenLibrary("graphics.library", 37);
 
     while (timer_alive) {
         if (SDL_timer_running) {
-            SDL_ThreadedTimerCheck ();
+            SDL_ThreadedTimerCheck();
         }
         if (GfxBase)
-            WaitTOF ();         // Check the timer every fifth of seconds. Was SDL_Delay(1)->BusyWait!
+            WaitTOF();          // Check the timer every fifth of seconds. Was SDL_Delay(1)->BusyWait!
         else
-            Delay (1);
+            Delay(1);
     }
-    D (bug ("SYSTimer: EXITING RunTimer loop..."));
+    D(bug("SYSTimer: EXITING RunTimer loop..."));
     return (0);
 }
 
 /* This is only called if the event thread is not running */
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
-    D (bug ("Creating thread for the timer (NOITIMER)...\n"));
+    D(bug("Creating thread for the timer (NOITIMER)...\n"));
 
     timer_alive = 1;
-    timer_thread = SDL_CreateThread (RunTimer, NULL);
+    timer_thread = SDL_CreateThread(RunTimer, NULL);
     if (timer_thread == NULL) {
-        D (bug ("Creazione del thread fallita...\n"));
+        D(bug("Creazione del thread fallita...\n"));
 
         return (-1);
     }
-    return (SDL_SetTimerThreaded (1));
+    return (SDL_SetTimerThreaded(1));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     timer_alive = 0;
     if (timer_thread) {
-        SDL_WaitThread (timer_thread, NULL);
+        SDL_WaitThread(timer_thread, NULL);
         timer_thread = NULL;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    SDL_SetError ("Internal logic error: AmigaOS uses threaded timer");
+    SDL_SetError("Internal logic error: AmigaOS uses threaded timer");
     return (-1);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     return;
 }

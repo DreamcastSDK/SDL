@@ -48,7 +48,7 @@ struct private_yuvhwdata
 
 
 static LPDIRECTDRAWSURFACE3
-CreateYUVSurface (_THIS, int width, int height, Uint32 format)
+CreateYUVSurface(_THIS, int width, int height, Uint32 format)
 {
     HRESULT result;
     LPDIRECTDRAWSURFACE dd_surface1;
@@ -56,8 +56,8 @@ CreateYUVSurface (_THIS, int width, int height, Uint32 format)
     DDSURFACEDESC ddsd;
 
     /* Set up the surface description */
-    SDL_memset (&ddsd, 0, sizeof (ddsd));
-    ddsd.dwSize = sizeof (ddsd);
+    SDL_memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = sizeof(ddsd);
     ddsd.dwFlags = (DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT);
     ddsd.dwWidth = width;
     ddsd.dwHeight = height;
@@ -66,41 +66,41 @@ CreateYUVSurface (_THIS, int width, int height, Uint32 format)
 #else
     ddsd.ddsCaps.dwCaps = (DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY);
 #endif
-    ddsd.ddpfPixelFormat.dwSize = sizeof (ddsd.ddpfPixelFormat);
+    ddsd.ddpfPixelFormat.dwSize = sizeof(ddsd.ddpfPixelFormat);
     ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
     ddsd.ddpfPixelFormat.dwFourCC = format;
 
     /* Create the DirectDraw video surface */
-    result = IDirectDraw2_CreateSurface (ddraw2, &ddsd, &dd_surface1, NULL);
+    result = IDirectDraw2_CreateSurface(ddraw2, &ddsd, &dd_surface1, NULL);
     if (result != DD_OK) {
-        SetDDerror ("DirectDraw2::CreateSurface", result);
+        SetDDerror("DirectDraw2::CreateSurface", result);
         return (NULL);
     }
-    result = IDirectDrawSurface_QueryInterface (dd_surface1,
-                                                &IID_IDirectDrawSurface3,
-                                                (LPVOID *) & dd_surface3);
-    IDirectDrawSurface_Release (dd_surface1);
+    result = IDirectDrawSurface_QueryInterface(dd_surface1,
+                                               &IID_IDirectDrawSurface3,
+                                               (LPVOID *) & dd_surface3);
+    IDirectDrawSurface_Release(dd_surface1);
     if (result != DD_OK) {
-        SetDDerror ("DirectDrawSurface::QueryInterface", result);
+        SetDDerror("DirectDrawSurface::QueryInterface", result);
         return (NULL);
     }
 
     /* Make sure the surface format was set properly */
-    SDL_memset (&ddsd, 0, sizeof (ddsd));
-    ddsd.dwSize = sizeof (ddsd);
-    result = IDirectDrawSurface3_Lock (dd_surface3, NULL,
-                                       &ddsd, DDLOCK_NOSYSLOCK, NULL);
+    SDL_memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = sizeof(ddsd);
+    result = IDirectDrawSurface3_Lock(dd_surface3, NULL,
+                                      &ddsd, DDLOCK_NOSYSLOCK, NULL);
     if (result != DD_OK) {
-        SetDDerror ("DirectDrawSurface3::Lock", result);
-        IDirectDrawSurface_Release (dd_surface3);
+        SetDDerror("DirectDrawSurface3::Lock", result);
+        IDirectDrawSurface_Release(dd_surface3);
         return (NULL);
     }
-    IDirectDrawSurface3_Unlock (dd_surface3, NULL);
+    IDirectDrawSurface3_Unlock(dd_surface3, NULL);
 
     if (!(ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) ||
         (ddsd.ddpfPixelFormat.dwFourCC != format)) {
-        SDL_SetError ("DDraw didn't use requested FourCC format");
-        IDirectDrawSurface_Release (dd_surface3);
+        SDL_SetError("DDraw didn't use requested FourCC format");
+        IDirectDrawSurface_Release(dd_surface3);
         return (NULL);
     }
 
@@ -110,7 +110,7 @@ CreateYUVSurface (_THIS, int width, int height, Uint32 format)
 
 #ifdef DEBUG_YUV
 static char *
-PrintFOURCC (Uint32 code)
+PrintFOURCC(Uint32 code)
 {
     static char buf[5];
 
@@ -123,8 +123,8 @@ PrintFOURCC (Uint32 code)
 #endif
 
 SDL_Overlay *
-DX5_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
-                      SDL_Surface * display)
+DX5_CreateYUVOverlay(_THIS, int width, int height, Uint32 format,
+                     SDL_Surface * display)
 {
     SDL_Overlay *overlay;
     struct private_yuvhwdata *hwdata;
@@ -133,31 +133,30 @@ DX5_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     DWORD numcodes;
     DWORD *codes;
 
-    printf ("FOURCC format requested: 0x%x\n", PrintFOURCC (format));
-    IDirectDraw2_GetFourCCCodes (ddraw2, &numcodes, NULL);
+    printf("FOURCC format requested: 0x%x\n", PrintFOURCC(format));
+    IDirectDraw2_GetFourCCCodes(ddraw2, &numcodes, NULL);
     if (numcodes) {
         DWORD i;
-        codes = SDL_malloc (numcodes * sizeof (*codes));
+        codes = SDL_malloc(numcodes * sizeof(*codes));
         if (codes) {
-            IDirectDraw2_GetFourCCCodes (ddraw2, &numcodes, codes);
+            IDirectDraw2_GetFourCCCodes(ddraw2, &numcodes, codes);
             for (i = 0; i < numcodes; ++i) {
-                fprintf (stderr, "Code %d: 0x%x\n", i,
-                         PrintFOURCC (codes[i]));
+                fprintf(stderr, "Code %d: 0x%x\n", i, PrintFOURCC(codes[i]));
             }
-            SDL_free (codes);
+            SDL_free(codes);
         }
     } else {
-        fprintf (stderr, "No FOURCC codes supported\n");
+        fprintf(stderr, "No FOURCC codes supported\n");
     }
 #endif
 
     /* Create the overlay structure */
-    overlay = (SDL_Overlay *) SDL_malloc (sizeof *overlay);
+    overlay = (SDL_Overlay *) SDL_malloc(sizeof *overlay);
     if (overlay == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (overlay, 0, (sizeof *overlay));
+    SDL_memset(overlay, 0, (sizeof *overlay));
 
     /* Fill in the basic members */
     overlay->format = format;
@@ -168,16 +167,16 @@ DX5_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
     overlay->hwfuncs = &dx5_yuvfuncs;
 
     /* Create the pixel data and lookup tables */
-    hwdata = (struct private_yuvhwdata *) SDL_malloc (sizeof *hwdata);
+    hwdata = (struct private_yuvhwdata *) SDL_malloc(sizeof *hwdata);
     overlay->hwdata = hwdata;
     if (hwdata == NULL) {
-        SDL_OutOfMemory ();
-        SDL_FreeYUVOverlay (overlay);
+        SDL_OutOfMemory();
+        SDL_FreeYUVOverlay(overlay);
         return (NULL);
     }
-    hwdata->surface = CreateYUVSurface (this, width, height, format);
+    hwdata->surface = CreateYUVSurface(this, width, height, format);
     if (hwdata->surface == NULL) {
-        SDL_FreeYUVOverlay (overlay);
+        SDL_FreeYUVOverlay(overlay);
         return (NULL);
     }
     overlay->hw_overlay = 1;
@@ -200,25 +199,25 @@ DX5_CreateYUVOverlay (_THIS, int width, int height, Uint32 format,
 }
 
 int
-DX5_LockYUVOverlay (_THIS, SDL_Overlay * overlay)
+DX5_LockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     HRESULT result;
     LPDIRECTDRAWSURFACE3 surface;
     DDSURFACEDESC ddsd;
 
     surface = overlay->hwdata->surface;
-    SDL_memset (&ddsd, 0, sizeof (ddsd));
-    ddsd.dwSize = sizeof (ddsd);
-    result = IDirectDrawSurface3_Lock (surface, NULL,
-                                       &ddsd, DDLOCK_NOSYSLOCK, NULL);
+    SDL_memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = sizeof(ddsd);
+    result = IDirectDrawSurface3_Lock(surface, NULL,
+                                      &ddsd, DDLOCK_NOSYSLOCK, NULL);
     if (result == DDERR_SURFACELOST) {
-        result = IDirectDrawSurface3_Restore (surface);
-        result = IDirectDrawSurface3_Lock (surface, NULL, &ddsd,
-                                           (DDLOCK_NOSYSLOCK | DDLOCK_WAIT),
-                                           NULL);
+        result = IDirectDrawSurface3_Restore(surface);
+        result = IDirectDrawSurface3_Lock(surface, NULL, &ddsd,
+                                          (DDLOCK_NOSYSLOCK | DDLOCK_WAIT),
+                                          NULL);
     }
     if (result != DD_OK) {
-        SetDDerror ("DirectDrawSurface3::Lock", result);
+        SetDDerror("DirectDrawSurface3::Lock", result);
         return (-1);
     }
 
@@ -248,17 +247,17 @@ DX5_LockYUVOverlay (_THIS, SDL_Overlay * overlay)
 }
 
 void
-DX5_UnlockYUVOverlay (_THIS, SDL_Overlay * overlay)
+DX5_UnlockYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     LPDIRECTDRAWSURFACE3 surface;
 
     surface = overlay->hwdata->surface;
-    IDirectDrawSurface3_Unlock (surface, NULL);
+    IDirectDrawSurface3_Unlock(surface, NULL);
 }
 
 int
-DX5_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
-                       SDL_Rect * dst)
+DX5_DisplayYUVOverlay(_THIS, SDL_Overlay * overlay, SDL_Rect * src,
+                      SDL_Rect * dst)
 {
     HRESULT result;
     LPDIRECTDRAWSURFACE3 surface;
@@ -274,19 +273,19 @@ DX5_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
     dstrect.bottom = dstrect.top + dst->h;
     dstrect.right = dstrect.left + dst->w;
 #ifdef USE_DIRECTX_OVERLAY
-    result = IDirectDrawSurface3_UpdateOverlay (surface, &srcrect,
-                                                SDL_primary, &dstrect,
-                                                DDOVER_SHOW, NULL);
+    result = IDirectDrawSurface3_UpdateOverlay(surface, &srcrect,
+                                               SDL_primary, &dstrect,
+                                               DDOVER_SHOW, NULL);
     if (result != DD_OK) {
-        SetDDerror ("DirectDrawSurface3::UpdateOverlay", result);
+        SetDDerror("DirectDrawSurface3::UpdateOverlay", result);
         return (-1);
     }
 #else
     result =
-        IDirectDrawSurface3_Blt (SDL_primary, &dstrect, surface, &srcrect,
-                                 DDBLT_WAIT, NULL);
+        IDirectDrawSurface3_Blt(SDL_primary, &dstrect, surface, &srcrect,
+                                DDBLT_WAIT, NULL);
     if (result != DD_OK) {
-        SetDDerror ("DirectDrawSurface3::Blt", result);
+        SetDDerror("DirectDrawSurface3::Blt", result);
         return (-1);
     }
 #endif
@@ -294,16 +293,16 @@ DX5_DisplayYUVOverlay (_THIS, SDL_Overlay * overlay, SDL_Rect * src,
 }
 
 void
-DX5_FreeYUVOverlay (_THIS, SDL_Overlay * overlay)
+DX5_FreeYUVOverlay(_THIS, SDL_Overlay * overlay)
 {
     struct private_yuvhwdata *hwdata;
 
     hwdata = overlay->hwdata;
     if (hwdata) {
         if (hwdata->surface) {
-            IDirectDrawSurface_Release (hwdata->surface);
+            IDirectDrawSurface_Release(hwdata->surface);
         }
-        SDL_free (hwdata);
+        SDL_free(hwdata);
     }
 }
 

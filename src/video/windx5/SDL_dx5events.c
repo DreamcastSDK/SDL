@@ -57,8 +57,8 @@ static int mouse_buttons_swapped = 0;
 
 /* The translation table from a DirectInput scancode to an SDL keysym */
 static SDLKey DIK_keymap[256];
-static SDL_keysym *TranslateKey (UINT scancode, SDL_keysym * keysym,
-                                 int pressed);
+static SDL_keysym *TranslateKey(UINT scancode, SDL_keysym * keysym,
+                                int pressed);
 
 /* DJM: If the user setup the window for us, we want to save his window proc,
    and give him a chance to handle some messages. */
@@ -70,11 +70,11 @@ static SDL_keysym *TranslateKey (UINT scancode, SDL_keysym * keysym,
 static WNDPROCTYPE userWindowProc = NULL;
 
 static HWND
-GetTopLevelParent (HWND hWnd)
+GetTopLevelParent(HWND hWnd)
 {
     HWND hParentWnd;
     while (1) {
-        hParentWnd = GetParent (hWnd);
+        hParentWnd = GetParent(hWnd);
         if (hParentWnd == NULL)
             break;
         hWnd = hParentWnd;
@@ -84,7 +84,7 @@ GetTopLevelParent (HWND hWnd)
 
 /* Convert a DirectInput return code to a text message */
 static void
-SetDIerror (char *function, int code)
+SetDIerror(char *function, int code)
 {
     static char *error;
     static char errbuf[1024];
@@ -113,15 +113,15 @@ SetDIerror (char *function, int code)
         error = "Device not initialized";
         break;
     default:
-        SDL_snprintf (errbuf, SDL_arraysize (errbuf),
-                      "%s: Unknown DirectInput error: 0x%x", function, code);
+        SDL_snprintf(errbuf, SDL_arraysize(errbuf),
+                     "%s: Unknown DirectInput error: 0x%x", function, code);
         break;
     }
     if (!errbuf[0]) {
-        SDL_snprintf (errbuf, SDL_arraysize (errbuf), "%s: %s", function,
-                      error);
+        SDL_snprintf(errbuf, SDL_arraysize(errbuf), "%s: %s", function,
+                     error);
     }
-    SDL_SetError ("%s", errbuf);
+    SDL_SetError("%s", errbuf);
     return;
 }
 
@@ -130,9 +130,8 @@ SetDIerror (char *function, int code)
           windows input messages will continue to be generated for that
           input device, in addition to DirectInput messages.
  */
-static void handle_keyboard (const int numevents,
-                             DIDEVICEOBJECTDATA * events);
-static void handle_mouse (const int numevents, DIDEVICEOBJECTDATA * events);
+static void handle_keyboard(const int numevents, DIDEVICEOBJECTDATA * events);
+static void handle_mouse(const int numevents, DIDEVICEOBJECTDATA * events);
 struct
 {
     char *name;
@@ -155,7 +154,7 @@ struct
 };
 
 static int
-DX5_DInputInit (_THIS)
+DX5_DInputInit(_THIS)
 {
     int i;
     LPDIRECTINPUTDEVICE device;
@@ -164,9 +163,9 @@ DX5_DInputInit (_THIS)
     HWND topwnd;
 
     /* Create the DirectInput object */
-    result = DInputCreate (SDL_Instance, DIRECTINPUT_VERSION, &dinput, NULL);
+    result = DInputCreate(SDL_Instance, DIRECTINPUT_VERSION, &dinput, NULL);
     if (result != DI_OK) {
-        SetDIerror ("DirectInputCreate", result);
+        SetDIerror("DirectInputCreate", result);
         return (-1);
     }
 
@@ -174,74 +173,72 @@ DX5_DInputInit (_THIS)
     SDL_DIndev = 0;
     for (i = 0; inputs[i].name; ++i) {
         /* Create the DirectInput device */
-        result = IDirectInput_CreateDevice (dinput, inputs[i].guid,
-                                            &device, NULL);
+        result = IDirectInput_CreateDevice(dinput, inputs[i].guid,
+                                           &device, NULL);
         if (result != DI_OK) {
-            SetDIerror ("DirectInput::CreateDevice", result);
+            SetDIerror("DirectInput::CreateDevice", result);
             return (-1);
         }
-        result = IDirectInputDevice_QueryInterface (device,
-                                                    &IID_IDirectInputDevice2,
-                                                    (LPVOID *) &
-                                                    SDL_DIdev[i]);
-        IDirectInputDevice_Release (device);
+        result = IDirectInputDevice_QueryInterface(device,
+                                                   &IID_IDirectInputDevice2,
+                                                   (LPVOID *) & SDL_DIdev[i]);
+        IDirectInputDevice_Release(device);
         if (result != DI_OK) {
-            SetDIerror ("DirectInputDevice::QueryInterface", result);
+            SetDIerror("DirectInputDevice::QueryInterface", result);
             return (-1);
         }
-        topwnd = GetTopLevelParent (SDL_Window);
-        result = IDirectInputDevice2_SetCooperativeLevel (SDL_DIdev[i],
-                                                          topwnd,
-                                                          inputs[i].
-                                                          win_level);
+        topwnd = GetTopLevelParent(SDL_Window);
+        result = IDirectInputDevice2_SetCooperativeLevel(SDL_DIdev[i],
+                                                         topwnd,
+                                                         inputs[i].win_level);
         if (result != DI_OK) {
-            SetDIerror ("DirectInputDevice::SetCooperativeLevel", result);
+            SetDIerror("DirectInputDevice::SetCooperativeLevel", result);
             return (-1);
         }
-        result = IDirectInputDevice2_SetDataFormat (SDL_DIdev[i],
-                                                    inputs[i].format);
+        result = IDirectInputDevice2_SetDataFormat(SDL_DIdev[i],
+                                                   inputs[i].format);
         if (result != DI_OK) {
-            SetDIerror ("DirectInputDevice::SetDataFormat", result);
+            SetDIerror("DirectInputDevice::SetDataFormat", result);
             return (-1);
         }
 
         /* Set buffered input -- we aren't polling */
-        SDL_memset (&dipdw, 0, sizeof (dipdw));
-        dipdw.diph.dwSize = sizeof (dipdw);
-        dipdw.diph.dwHeaderSize = sizeof (dipdw.diph);
+        SDL_memset(&dipdw, 0, sizeof(dipdw));
+        dipdw.diph.dwSize = sizeof(dipdw);
+        dipdw.diph.dwHeaderSize = sizeof(dipdw.diph);
         dipdw.diph.dwObj = 0;
         dipdw.diph.dwHow = DIPH_DEVICE;
         dipdw.dwData = INPUT_QSIZE;
-        result = IDirectInputDevice2_SetProperty (SDL_DIdev[i],
-                                                  DIPROP_BUFFERSIZE,
-                                                  &dipdw.diph);
+        result = IDirectInputDevice2_SetProperty(SDL_DIdev[i],
+                                                 DIPROP_BUFFERSIZE,
+                                                 &dipdw.diph);
         if (result != DI_OK) {
-            SetDIerror ("DirectInputDevice::SetProperty", result);
+            SetDIerror("DirectInputDevice::SetProperty", result);
             return (-1);
         }
 
         /* Create an event to be signaled when input is ready */
-        SDL_DIevt[i] = CreateEvent (NULL, FALSE, FALSE, NULL);
+        SDL_DIevt[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
         if (SDL_DIevt[i] == NULL) {
-            SDL_SetError ("Couldn't create DirectInput event");
+            SDL_SetError("Couldn't create DirectInput event");
             return (-1);
         }
-        result = IDirectInputDevice2_SetEventNotification (SDL_DIdev[i],
-                                                           SDL_DIevt[i]);
+        result = IDirectInputDevice2_SetEventNotification(SDL_DIdev[i],
+                                                          SDL_DIevt[i]);
         if (result != DI_OK) {
-            SetDIerror ("DirectInputDevice::SetEventNotification", result);
+            SetDIerror("DirectInputDevice::SetEventNotification", result);
             return (-1);
         }
         SDL_DIfun[i] = inputs[i].fun;
 
         /* Acquire the device for input */
-        IDirectInputDevice2_Acquire (SDL_DIdev[i]);
+        IDirectInputDevice2_Acquire(SDL_DIdev[i]);
 
         /* Increment the number of devices we have */
         ++SDL_DIndev;
     }
     mouse_pressed = 0;
-    mouse_buttons_swapped = GetSystemMetrics (SM_SWAPBUTTON);
+    mouse_buttons_swapped = GetSystemMetrics(SM_SWAPBUTTON);
 
     /* DirectInput is ready! */
     return (0);
@@ -249,7 +246,7 @@ DX5_DInputInit (_THIS)
 
 /* Clean up DirectInput */
 static void
-DX5_DInputQuit (_THIS)
+DX5_DInputQuit(_THIS)
 {
     int i;
 
@@ -257,18 +254,18 @@ DX5_DInputQuit (_THIS)
         /* Close and release all DirectInput devices */
         for (i = 0; i < MAX_INPUTS; ++i) {
             if (SDL_DIdev[i] != NULL) {
-                IDirectInputDevice2_Unacquire (SDL_DIdev[i]);
-                IDirectInputDevice2_SetEventNotification (SDL_DIdev[i], NULL);
+                IDirectInputDevice2_Unacquire(SDL_DIdev[i]);
+                IDirectInputDevice2_SetEventNotification(SDL_DIdev[i], NULL);
                 if (SDL_DIevt[i] != NULL) {
-                    CloseHandle (SDL_DIevt[i]);
+                    CloseHandle(SDL_DIevt[i]);
                     SDL_DIevt[i] = NULL;
                 }
-                IDirectInputDevice2_Release (SDL_DIdev[i]);
+                IDirectInputDevice2_Release(SDL_DIdev[i]);
                 SDL_DIdev[i] = NULL;
             }
         }
         /* Release DirectInput */
-        IDirectInput_Release (dinput);
+        IDirectInput_Release(dinput);
         dinput = NULL;
     }
 }
@@ -278,7 +275,7 @@ static int posted = 0;
 
 /* Input event handler functions */
 static void
-handle_keyboard (const int numevents, DIDEVICEOBJECTDATA * keybuf)
+handle_keyboard(const int numevents, DIDEVICEOBJECTDATA * keybuf)
 {
     int i;
     SDL_keysym keysym;
@@ -286,18 +283,18 @@ handle_keyboard (const int numevents, DIDEVICEOBJECTDATA * keybuf)
     /* Translate keyboard messages */
     for (i = 0; i < numevents; ++i) {
         if (keybuf[i].dwData & 0x80) {
-            posted = SDL_PrivateKeyboard (SDL_PRESSED,
-                                          TranslateKey (keybuf[i].dwOfs,
-                                                        &keysym, 1));
+            posted = SDL_PrivateKeyboard(SDL_PRESSED,
+                                         TranslateKey(keybuf[i].dwOfs,
+                                                      &keysym, 1));
         } else {
-            posted = SDL_PrivateKeyboard (SDL_RELEASED,
-                                          TranslateKey (keybuf[i].dwOfs,
-                                                        &keysym, 0));
+            posted = SDL_PrivateKeyboard(SDL_RELEASED,
+                                         TranslateKey(keybuf[i].dwOfs,
+                                                      &keysym, 0));
         }
     }
 }
 static void
-handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
+handle_mouse(const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
 {
     int i;
     Sint16 xrel, yrel;
@@ -323,25 +320,25 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
         Uint8 new_state;
 
         /* Set ourselves up with the current cursor position */
-        GetCursorPos (&mouse_pos);
-        ScreenToClient (SDL_Window, &mouse_pos);
-        posted = SDL_PrivateMouseMotion (0, 0,
-                                         (Sint16) mouse_pos.x,
-                                         (Sint16) mouse_pos.y);
+        GetCursorPos(&mouse_pos);
+        ScreenToClient(SDL_Window, &mouse_pos);
+        posted = SDL_PrivateMouseMotion(0, 0,
+                                        (Sint16) mouse_pos.x,
+                                        (Sint16) mouse_pos.y);
 
         /* Check for mouse button changes */
-        old_state = SDL_GetMouseState (NULL, NULL);
+        old_state = SDL_GetMouseState(NULL, NULL);
         new_state = 0;
         {                       /* Get the new DirectInput button state for the mouse */
             DIMOUSESTATE distate;
             HRESULT result;
 
-            result = IDirectInputDevice2_GetDeviceState (SDL_DIdev[1],
-                                                         sizeof (distate),
-                                                         &distate);
+            result = IDirectInputDevice2_GetDeviceState(SDL_DIdev[1],
+                                                        sizeof(distate),
+                                                        &distate);
             if (result != DI_OK) {
                 /* Try again next time */
-                SetDIerror ("IDirectInputDevice2::GetDeviceState", result);
+                SetDIerror("IDirectInputDevice2::GetDeviceState", result);
                 return;
             }
             for (i = 3; i >= 0; --i) {
@@ -365,13 +362,13 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
                 if (new_state & 0x01) {
                     /* Grab mouse so we get mouse-up */
                     if (++mouse_pressed > 0) {
-                        SetCapture (SDL_Window);
+                        SetCapture(SDL_Window);
                     }
                     state = SDL_PRESSED;
                 } else {
                     /* Release mouse after all mouse-ups */
                     if (--mouse_pressed <= 0) {
-                        ReleaseCapture ();
+                        ReleaseCapture();
                         mouse_pressed = 0;
                     }
                     state = SDL_RELEASED;
@@ -382,7 +379,7 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
                     else if (button == 3)
                         button = 1;
                 }
-                posted = SDL_PrivateMouseButton (state, button, 0, 0);
+                posted = SDL_PrivateMouseButton(state, button, 0, 0);
             }
             old_state >>= 1;
             new_state >>= 1;
@@ -399,7 +396,7 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
         case DIMOFS_X:
             if (timestamp != ptrbuf[i].dwTimeStamp) {
                 if (xrel || yrel) {
-                    posted = SDL_PrivateMouseMotion (0, 1, xrel, yrel);
+                    posted = SDL_PrivateMouseMotion(0, 1, xrel, yrel);
                     xrel = 0;
                     yrel = 0;
                 }
@@ -410,7 +407,7 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
         case DIMOFS_Y:
             if (timestamp != ptrbuf[i].dwTimeStamp) {
                 if (xrel || yrel) {
-                    posted = SDL_PrivateMouseMotion (0, 1, xrel, yrel);
+                    posted = SDL_PrivateMouseMotion(0, 1, xrel, yrel);
                     xrel = 0;
                     yrel = 0;
                 }
@@ -420,7 +417,7 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
             break;
         case DIMOFS_Z:
             if (xrel || yrel) {
-                posted = SDL_PrivateMouseMotion (0, 1, xrel, yrel);
+                posted = SDL_PrivateMouseMotion(0, 1, xrel, yrel);
                 xrel = 0;
                 yrel = 0;
             }
@@ -429,15 +426,15 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
                 button = SDL_BUTTON_WHEELUP;
             else
                 button = SDL_BUTTON_WHEELDOWN;
-            posted = SDL_PrivateMouseButton (SDL_PRESSED, button, 0, 0);
-            posted |= SDL_PrivateMouseButton (SDL_RELEASED, button, 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_PRESSED, button, 0, 0);
+            posted |= SDL_PrivateMouseButton(SDL_RELEASED, button, 0, 0);
             break;
         case DIMOFS_BUTTON0:
         case DIMOFS_BUTTON1:
         case DIMOFS_BUTTON2:
         case DIMOFS_BUTTON3:
             if (xrel || yrel) {
-                posted = SDL_PrivateMouseMotion (0, 1, xrel, yrel);
+                posted = SDL_PrivateMouseMotion(0, 1, xrel, yrel);
                 xrel = 0;
                 yrel = 0;
             }
@@ -454,13 +451,13 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
             if (ptrbuf[i].dwData & 0x80) {
                 /* Grab mouse so we get mouse-up */
                 if (++mouse_pressed > 0) {
-                    SetCapture (SDL_Window);
+                    SetCapture(SDL_Window);
                 }
                 state = SDL_PRESSED;
             } else {
                 /* Release mouse after all mouse-ups */
                 if (--mouse_pressed <= 0) {
-                    ReleaseCapture ();
+                    ReleaseCapture();
                     mouse_pressed = 0;
                 }
                 state = SDL_RELEASED;
@@ -471,18 +468,18 @@ handle_mouse (const int numevents, DIDEVICEOBJECTDATA * ptrbuf)
                 else if (button == 3)
                     button = 1;
             }
-            posted = SDL_PrivateMouseButton (state, button, 0, 0);
+            posted = SDL_PrivateMouseButton(state, button, 0, 0);
             break;
         }
     }
     if (xrel || yrel) {
-        posted = SDL_PrivateMouseMotion (0, 1, xrel, yrel);
+        posted = SDL_PrivateMouseMotion(0, 1, xrel, yrel);
     }
 }
 
 /* The main Win32 event handler */
 LRESULT
-DX5_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+DX5_HandleMessage(_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
 #ifdef WM_ACTIVATEAPP
@@ -490,14 +487,14 @@ DX5_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             int i, active;
 
-            active = (wParam && (GetForegroundWindow () == hwnd));
+            active = (wParam && (GetForegroundWindow() == hwnd));
             if (active) {
                 for (i = 0; SDL_DIdev[i]; ++i) {
-                    IDirectInputDevice2_Acquire (SDL_DIdev[i]);
+                    IDirectInputDevice2_Acquire(SDL_DIdev[i]);
                 }
             } else {
                 for (i = 0; SDL_DIdev[i]; ++i) {
-                    IDirectInputDevice2_Unacquire (SDL_DIdev[i]);
+                    IDirectInputDevice2_Unacquire(SDL_DIdev[i]);
                 }
                 mouse_lost = 1;
             }
@@ -512,8 +509,8 @@ DX5_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             WORD SizeX, SizeY;
 
             /* Ack!  The display changed size and/or depth! */
-            SizeX = LOWORD (lParam);
-            SizeY = HIWORD (lParam);
+            SizeX = LOWORD(lParam);
+            SizeY = HIWORD(lParam);
             BitsPerPixel = wParam;
             /* We cause this message when we go fullscreen */
         }
@@ -558,25 +555,25 @@ DX5_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
                 SDL_SysWMmsg wmmsg;
 
-                SDL_VERSION (&wmmsg.version);
+                SDL_VERSION(&wmmsg.version);
                 wmmsg.hwnd = hwnd;
                 wmmsg.msg = msg;
                 wmmsg.wParam = wParam;
                 wmmsg.lParam = lParam;
-                posted = SDL_PrivateSysWMEvent (&wmmsg);
+                posted = SDL_PrivateSysWMEvent(&wmmsg);
 
                 /* DJM: If the user isn't watching for private
                    messages in her SDL event loop, then pass it
                    along to any win32 specific window proc.
                  */
             } else if (userWindowProc) {
-                return CallWindowProc (userWindowProc, hwnd, msg, wParam,
-                                       lParam);
+                return CallWindowProc(userWindowProc, hwnd, msg, wParam,
+                                      lParam);
             }
         }
         break;
     }
-    return (DefWindowProc (hwnd, msg, wParam, lParam));
+    return (DefWindowProc(hwnd, msg, wParam, lParam));
 }
 
 /* This function checks the windows message queue and DirectInput and returns
@@ -584,7 +581,7 @@ DX5_HandleMessage (_THIS, HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
    posted a quit message.
 */
 static int
-DX5_CheckInput (_THIS, int timeout, BOOL processInput)
+DX5_CheckInput(_THIS, int timeout, BOOL processInput)
 {
     MSG msg;
     int i;
@@ -593,9 +590,9 @@ DX5_CheckInput (_THIS, int timeout, BOOL processInput)
 
     /* Check the normal windows queue (highest preference) */
     posted = 0;
-    while (!posted && PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE)) {
-        if (GetMessage (&msg, NULL, 0, 0) > 0) {
-            DispatchMessage (&msg);
+    while (!posted && PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+        if (GetMessage(&msg, NULL, 0, 0) > 0) {
+            DispatchMessage(&msg);
         } else {
             return (-1);
         }
@@ -605,22 +602,22 @@ DX5_CheckInput (_THIS, int timeout, BOOL processInput)
     }
 
     /* Pump the DirectInput flow */
-    if (SDL_GetAppState () & SDL_APPINPUTFOCUS) {
+    if (SDL_GetAppState() & SDL_APPINPUTFOCUS) {
         for (i = 0; i < SDL_DIndev; ++i) {
-            result = IDirectInputDevice2_Poll (SDL_DIdev[i]);
+            result = IDirectInputDevice2_Poll(SDL_DIdev[i]);
             if ((result == DIERR_INPUTLOST) || (result == DIERR_NOTACQUIRED)) {
-                if (SDL_strcmp (inputs[i].name, "mouse") == 0) {
+                if (SDL_strcmp(inputs[i].name, "mouse") == 0) {
                     mouse_lost = 1;
                 }
-                IDirectInputDevice2_Acquire (SDL_DIdev[i]);
-                IDirectInputDevice2_Poll (SDL_DIdev[i]);
+                IDirectInputDevice2_Acquire(SDL_DIdev[i]);
+                IDirectInputDevice2_Poll(SDL_DIdev[i]);
             }
         }
     }
 
     /* Wait for messages and input events */
-    event = MsgWaitForMultipleObjects (SDL_DIndev, SDL_DIevt, FALSE,
-                                       timeout, QS_ALLEVENTS);
+    event = MsgWaitForMultipleObjects(SDL_DIndev, SDL_DIevt, FALSE,
+                                      timeout, QS_ALLEVENTS);
     if ((event >= WAIT_OBJECT_0) && (event < (WAIT_OBJECT_0 + SDL_DIndev))) {
         DWORD numevents;
         static DIDEVICEOBJECTDATA evtbuf[INPUT_QSIZE];
@@ -628,19 +625,19 @@ DX5_CheckInput (_THIS, int timeout, BOOL processInput)
         event -= WAIT_OBJECT_0;
         numevents = INPUT_QSIZE;
         result =
-            IDirectInputDevice2_GetDeviceData (SDL_DIdev[event],
-                                               sizeof (DIDEVICEOBJECTDATA),
-                                               evtbuf, &numevents, 0);
+            IDirectInputDevice2_GetDeviceData(SDL_DIdev[event],
+                                              sizeof(DIDEVICEOBJECTDATA),
+                                              evtbuf, &numevents, 0);
         if ((result == DIERR_INPUTLOST) || (result == DIERR_NOTACQUIRED)) {
-            if (SDL_strcmp (inputs[event].name, "mouse") == 0) {
+            if (SDL_strcmp(inputs[event].name, "mouse") == 0) {
                 mouse_lost = 1;
             }
-            IDirectInputDevice2_Acquire (SDL_DIdev[event]);
+            IDirectInputDevice2_Acquire(SDL_DIdev[event]);
             result =
-                IDirectInputDevice2_GetDeviceData (SDL_DIdev[event],
-                                                   sizeof
-                                                   (DIDEVICEOBJECTDATA),
-                                                   evtbuf, &numevents, 0);
+                IDirectInputDevice2_GetDeviceData(SDL_DIdev[event],
+                                                  sizeof
+                                                  (DIDEVICEOBJECTDATA),
+                                                  evtbuf, &numevents, 0);
         }
         /* Handle the events */
         if (result == DI_OK && processInput) {
@@ -652,9 +649,9 @@ DX5_CheckInput (_THIS, int timeout, BOOL processInput)
     }
     if (event != WAIT_TIMEOUT) {
         /* Maybe there was a windows message? */
-        if (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE)) {
-            if (GetMessage (&msg, NULL, 0, 0) > 0) {
-                DispatchMessage (&msg);
+        if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+            if (GetMessage(&msg, NULL, 0, 0) > 0) {
+                DispatchMessage(&msg);
             } else {
                 return (-1);
             }
@@ -666,7 +663,7 @@ DX5_CheckInput (_THIS, int timeout, BOOL processInput)
 
 /* Change cooperative level based on whether or not we are fullscreen */
 void
-DX5_DInputReset (_THIS, int fullscreen)
+DX5_DInputReset(_THIS, int fullscreen)
 {
     DWORD level;
     int i;
@@ -680,34 +677,34 @@ DX5_DInputReset (_THIS, int fullscreen)
             } else {
                 level = inputs[i].win_level;
             }
-            IDirectInputDevice2_Unacquire (SDL_DIdev[i]);
-            topwnd = GetTopLevelParent (SDL_Window);
+            IDirectInputDevice2_Unacquire(SDL_DIdev[i]);
+            topwnd = GetTopLevelParent(SDL_Window);
             result =
-                IDirectInputDevice2_SetCooperativeLevel (SDL_DIdev[i],
-                                                         topwnd, level);
-            IDirectInputDevice2_Acquire (SDL_DIdev[i]);
+                IDirectInputDevice2_SetCooperativeLevel(SDL_DIdev[i],
+                                                        topwnd, level);
+            IDirectInputDevice2_Acquire(SDL_DIdev[i]);
             if (result != DI_OK) {
-                SetDIerror ("DirectInputDevice::SetCooperativeLevel", result);
+                SetDIerror("DirectInputDevice::SetCooperativeLevel", result);
             }
         }
     }
     mouse_lost = 1;
 
     /* Flush pending input */
-    DX5_CheckInput (this, 0, FALSE);
+    DX5_CheckInput(this, 0, FALSE);
 }
 
 void
-DX5_PumpEvents (_THIS)
+DX5_PumpEvents(_THIS)
 {
     /* Wait for messages and DirectInput */
-    while (DX5_CheckInput (this, 0, TRUE) > 0) {
+    while (DX5_CheckInput(this, 0, TRUE) > 0) {
         /* Loop and check again */ ;
     }
 }
 
 void
-DX5_InitOSKeymap (_THIS)
+DX5_InitOSKeymap(_THIS)
 {
 #ifndef DIK_PAUSE
 #define DIK_PAUSE	0xC5
@@ -718,7 +715,7 @@ DX5_InitOSKeymap (_THIS)
     int i;
 
     /* Map the DIK scancodes to SDL keysyms */
-    for (i = 0; i < SDL_arraysize (DIK_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(DIK_keymap); ++i)
         DIK_keymap[i] = 0;
 
     /* Defined DIK_* constants */
@@ -836,7 +833,7 @@ DX5_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (UINT scancode, SDL_keysym * keysym, int pressed)
+TranslateKey(UINT scancode, SDL_keysym * keysym, int pressed)
 {
     /* Set the keysym information */
     keysym->scancode = (unsigned char) scancode;
@@ -850,15 +847,15 @@ TranslateKey (UINT scancode, SDL_keysym * keysym, int pressed)
         Uint16 wchars[2];
 #endif
 
-        vkey = MapVirtualKey (scancode, 1);
+        vkey = MapVirtualKey(scancode, 1);
 #ifdef NO_GETKEYBOARDSTATE
         /* Uh oh, better hope the vkey is close enough.. */
         keysym->unicode = vkey;
 #else
-        GetKeyboardState (keystate);
+        GetKeyboardState(keystate);
         if (SDL_ToUnicode
             (vkey, scancode, keystate, wchars,
-             sizeof (wchars) / sizeof (wchars[0]), 0) == 1) {
+             sizeof(wchars) / sizeof(wchars[0]), 0) == 1) {
             keysym->unicode = wchars[0];
         }
 #endif /* NO_GETKEYBOARDSTATE */
@@ -867,9 +864,9 @@ TranslateKey (UINT scancode, SDL_keysym * keysym, int pressed)
 }
 
 int
-DX5_CreateWindow (_THIS)
+DX5_CreateWindow(_THIS)
 {
-    char *windowid = SDL_getenv ("SDL_WINDOWID");
+    char *windowid = SDL_getenv("SDL_WINDOWID");
     int i;
 
     /* Clear out DirectInput variables in case we fail */
@@ -879,13 +876,13 @@ DX5_CreateWindow (_THIS)
         SDL_DIfun[i] = NULL;
     }
 
-    SDL_RegisterApp (NULL, 0, 0);
+    SDL_RegisterApp(NULL, 0, 0);
 
     SDL_windowid = (windowid != NULL);
     if (SDL_windowid) {
-        SDL_Window = (HWND) SDL_strtoull (windowid, NULL, 0);
+        SDL_Window = (HWND) SDL_strtoull(windowid, NULL, 0);
         if (SDL_Window == NULL) {
-            SDL_SetError ("Couldn't get user specified window");
+            SDL_SetError("Couldn't get user specified window");
             return (-1);
         }
 
@@ -893,23 +890,23 @@ DX5_CreateWindow (_THIS)
            window to be handled by SDL.
          */
         userWindowProc =
-            (WNDPROCTYPE) GetWindowLongPtr (SDL_Window, GWLP_WNDPROC);
-        SetWindowLongPtr (SDL_Window, GWLP_WNDPROC, (LONG_PTR) WinMessage);
+            (WNDPROCTYPE) GetWindowLongPtr(SDL_Window, GWLP_WNDPROC);
+        SetWindowLongPtr(SDL_Window, GWLP_WNDPROC, (LONG_PTR) WinMessage);
     } else {
-        SDL_Window = CreateWindow (SDL_Appname, SDL_Appname,
-                                   (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
-                                    | WS_MINIMIZEBOX), CW_USEDEFAULT,
-                                   CW_USEDEFAULT, 0, 0, NULL, NULL,
-                                   SDL_Instance, NULL);
+        SDL_Window = CreateWindow(SDL_Appname, SDL_Appname,
+                                  (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU
+                                   | WS_MINIMIZEBOX), CW_USEDEFAULT,
+                                  CW_USEDEFAULT, 0, 0, NULL, NULL,
+                                  SDL_Instance, NULL);
         if (SDL_Window == NULL) {
-            SDL_SetError ("Couldn't create window");
+            SDL_SetError("Couldn't create window");
             return (-1);
         }
-        ShowWindow (SDL_Window, SW_HIDE);
+        ShowWindow(SDL_Window, SW_HIDE);
     }
 
     /* Initialize DirectInput */
-    if (DX5_DInputInit (this) < 0) {
+    if (DX5_DInputInit(this) < 0) {
         return (-1);
     }
 
@@ -917,32 +914,31 @@ DX5_CreateWindow (_THIS)
        Flush the message loop or this can cause big problems later
        Especially if the user decides to use dialog boxes or assert()!
      */
-    WIN_FlushMessageQueue ();
+    WIN_FlushMessageQueue();
 
     /* Ready to roll */
     return (0);
 }
 
 void
-DX5_DestroyWindow (_THIS)
+DX5_DestroyWindow(_THIS)
 {
     /* Close down DirectInput */
-    DX5_DInputQuit (this);
+    DX5_DInputQuit(this);
 
     /* Destroy our window */
     if (SDL_windowid) {
-        SetWindowLongPtr (SDL_Window, GWLP_WNDPROC,
-                          (LONG_PTR) userWindowProc);
+        SetWindowLongPtr(SDL_Window, GWLP_WNDPROC, (LONG_PTR) userWindowProc);
     } else {
-        DestroyWindow (SDL_Window);
+        DestroyWindow(SDL_Window);
     }
-    SDL_UnregisterApp ();
+    SDL_UnregisterApp();
 
     /* JC 14 Mar 2006
        Flush the message loop or this can cause big problems later
        Especially if the user decides to use dialog boxes or assert()!
      */
-    WIN_FlushMessageQueue ();
+    WIN_FlushMessageQueue();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

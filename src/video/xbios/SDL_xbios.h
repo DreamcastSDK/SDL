@@ -128,8 +128,8 @@ enum
 
 /*--- Functions prototypes ---*/
 
-void SDL_XBIOS_AddMode (_THIS, Uint16 modecode, Uint16 width, Uint16 height,
-                        Uint16 depth, SDL_bool flags);
+void SDL_XBIOS_AddMode(_THIS, Uint16 modecode, Uint16 width, Uint16 height,
+                       Uint16 depth, SDL_bool flags);
 
 #endif /* _SDL_xbios_h */
 /* vi: set ts=4 sw=4 expandtab: */

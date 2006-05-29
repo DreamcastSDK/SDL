@@ -35,9 +35,9 @@
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
 
-extern int SDL_AtariDevMouse_Open (void);
-extern void SDL_AtariDevMouse_Close (void);
-extern void SDL_AtariDevMouse_PostMouseEvents (_THIS, SDL_bool buttonEvents);
+extern int SDL_AtariDevMouse_Open(void);
+extern void SDL_AtariDevMouse_Close(void);
+extern void SDL_AtariDevMouse_PostMouseEvents(_THIS, SDL_bool buttonEvents);
 
 #endif /* _SDL_ATARI_DEVMOUSE_H_ */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -72,7 +72,7 @@ typedef int (*PFNGXSuspend) ();
 typedef int (*PFNGXResume) ();
 typedef int (*PFNGXSetViewport) (DWORD dwTop, DWORD dwHeight,
                                  DWORD dwReserved1, DWORD dwReserved2);
-typedef BOOL (*PFNGXIsDisplayDRAMBuffer) ();
+typedef BOOL(*PFNGXIsDisplayDRAMBuffer) ();
 
 struct GapiFunc
 {

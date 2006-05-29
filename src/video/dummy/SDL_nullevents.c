@@ -32,13 +32,13 @@
 #include "SDL_nullevents_c.h"
 
 void
-DUMMY_PumpEvents (_THIS)
+DUMMY_PumpEvents(_THIS)
 {
     /* do nothing. */
 }
 
 void
-DUMMY_InitOSKeymap (_THIS)
+DUMMY_InitOSKeymap(_THIS)
 {
     /* do nothing. */
 }

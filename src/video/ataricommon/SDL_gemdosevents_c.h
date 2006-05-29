@@ -35,9 +35,9 @@
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
 
-extern void AtariGemdos_InitOSKeymap (_THIS);
-extern void AtariGemdos_PumpEvents (_THIS);
-extern void AtariGemdos_ShutdownEvents (void);
+extern void AtariGemdos_InitOSKeymap(_THIS);
+extern void AtariGemdos_PumpEvents(_THIS);
+extern void AtariGemdos_ShutdownEvents(void);
 
 #endif /* _SDL_ATARI_GEMDOSEVENTS_H_ */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -29,27 +29,27 @@
 
 /* Wait for vertical retrace - taken from the XFree86 Matrox driver */
 static void
-WaitVBL (_THIS)
+WaitVBL(_THIS)
 {
     int count;
 
     /* find start of retrace */
-    mga_waitidle ();
-    while ((mga_in8 (0x1FDA) & 0x08));
-    while (!(mga_in8 (0x1FDA) & 0x08));
+    mga_waitidle();
+    while ((mga_in8(0x1FDA) & 0x08));
+    while (!(mga_in8(0x1FDA) & 0x08));
     /* wait until we're past the start */
-    count = mga_in32 (0x1E20) + 2;
-    while (mga_in32 (0x1E20) < count);
+    count = mga_in32(0x1E20) + 2;
+    while (mga_in32(0x1E20) < count);
 }
 static void
-WaitIdle (_THIS)
+WaitIdle(_THIS)
 {
-    mga_waitidle ();
+    mga_waitidle();
 }
 
 /* Sets video mem colorkey and accelerated blit function */
 static int
-SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
+SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key)
 {
     return (0);
 }
@@ -57,14 +57,14 @@ SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
 /* Sets per surface hardware alpha value */
 #if 0
 static int
-SetHWAlpha (_THIS, SDL_Surface * surface, Uint8 value)
+SetHWAlpha(_THIS, SDL_Surface * surface, Uint8 value)
 {
     return (0);
 }
 #endif
 
 static int
-FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
+FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
 {
     int dstX, dstY;
     Uint32 fxbndry;
@@ -76,7 +76,7 @@ FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
         return -2;              /* no hardware access */
     }
     if (dst == this->screen) {
-        SDL_mutexP (hw_lock);
+        SDL_mutexP(hw_lock);
     }
 
     switch (dst->format->BytesPerPixel) {
@@ -88,7 +88,7 @@ FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
     }
 
     /* Set up the X/Y base coordinates */
-    FB_dst_to_xy (this, dst, &dstX, &dstY);
+    FB_dst_to_xy(this, dst, &dstX, &dstY);
 
     /* Adjust for the current rectangle */
     dstX += rect->x;
@@ -105,23 +105,23 @@ FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
         MGADWG_ARZERO | MGADWG_SGNZERO | MGADWG_SHIFTZERO;
 
     /* Execute the operations! */
-    mga_wait (5);
-    mga_out32 (MGAREG_DWGCTL, fillop | MGADWG_REPLACE);
-    mga_out32 (MGAREG_FCOL, color);
-    mga_out32 (MGAREG_FXBNDRY, fxbndry);
-    mga_out32 (MGAREG_YDSTLEN + MGAREG_EXEC, ydstlen);
+    mga_wait(5);
+    mga_out32(MGAREG_DWGCTL, fillop | MGADWG_REPLACE);
+    mga_out32(MGAREG_FCOL, color);
+    mga_out32(MGAREG_FXBNDRY, fxbndry);
+    mga_out32(MGAREG_YDSTLEN + MGAREG_EXEC, ydstlen);
 
-    FB_AddBusySurface (dst);
+    FB_AddBusySurface(dst);
 
     if (dst == this->screen) {
-        SDL_mutexV (hw_lock);
+        SDL_mutexV(hw_lock);
     }
     return (0);
 }
 
 static int
-HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
-             SDL_Surface * dst, SDL_Rect * dstrect)
+HWAccelBlit(SDL_Surface * src, SDL_Rect * srcrect,
+            SDL_Surface * dst, SDL_Rect * dstrect)
 {
     SDL_VideoDevice *this = current_video;
     int pitch, w, h;
@@ -134,7 +134,7 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
 
     /* FIXME: For now, only blit to display surface */
     if (dst->pitch != SDL_VideoSurface->pitch) {
-        return (src->map->sw_blit (src, srcrect, dst, dstrect));
+        return (src->map->sw_blit(src, srcrect, dst, dstrect));
     }
 
     /* Don't blit to the display surface when switched away */
@@ -142,14 +142,14 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
         return -2;              /* no hardware access */
     }
     if (dst == this->screen) {
-        SDL_mutexP (hw_lock);
+        SDL_mutexP(hw_lock);
     }
 
     /* Calculate source and destination base coordinates (in pixels) */
     w = dstrect->w;
     h = dstrect->h;
-    FB_dst_to_xy (this, src, &srcX, &srcY);
-    FB_dst_to_xy (this, dst, &dstX, &dstY);
+    FB_dst_to_xy(this, src, &srcX, &srcY);
+    FB_dst_to_xy(this, dst, &dstX, &dstY);
 
     /* Adjust for the current blit rectangles */
     srcX += srcrect->x;
@@ -197,33 +197,33 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
             colorkey |= (colorkey << 16);
             break;
         }
-        mga_wait (2);
-        mga_out32 (MGAREG_FCOL, colorkey);
-        mga_out32 (MGAREG_BCOL, 0xFFFFFFFF);
+        mga_wait(2);
+        mga_out32(MGAREG_FCOL, colorkey);
+        mga_out32(MGAREG_BCOL, 0xFFFFFFFF);
     } else {
         blitop = MGADWG_BFCOL | MGADWG_BITBLT |
             MGADWG_SHIFTZERO | MGADWG_RSTR | (0x0C << 16);
     }
-    mga_wait (7);
-    mga_out32 (MGAREG_SGN, sign);
-    mga_out32 (MGAREG_AR3, start);
-    mga_out32 (MGAREG_AR0, stop);
-    mga_out32 (MGAREG_AR5, skip);
-    mga_out32 (MGAREG_FXBNDRY, (dstX | ((dstX + w - 1) << 16)));
-    mga_out32 (MGAREG_YDSTLEN, (dstY << 16) | h);
-    mga_out32 (MGAREG_DWGCTL + MGAREG_EXEC, blitop);
+    mga_wait(7);
+    mga_out32(MGAREG_SGN, sign);
+    mga_out32(MGAREG_AR3, start);
+    mga_out32(MGAREG_AR0, stop);
+    mga_out32(MGAREG_AR5, skip);
+    mga_out32(MGAREG_FXBNDRY, (dstX | ((dstX + w - 1) << 16)));
+    mga_out32(MGAREG_YDSTLEN, (dstY << 16) | h);
+    mga_out32(MGAREG_DWGCTL + MGAREG_EXEC, blitop);
 
-    FB_AddBusySurface (src);
-    FB_AddBusySurface (dst);
+    FB_AddBusySurface(src);
+    FB_AddBusySurface(dst);
 
     if (dst == this->screen) {
-        SDL_mutexV (hw_lock);
+        SDL_mutexV(hw_lock);
     }
     return (0);
 }
 
 static int
-CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
+CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dst)
 {
     int accelerated;
 
@@ -251,7 +251,7 @@ CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
 }
 
 void
-FB_MatroxAccel (_THIS, __u32 card)
+FB_MatroxAccel(_THIS, __u32 card)
 {
     /* We have hardware accelerated surface functions */
     this->CheckHWBlit = CheckHWBlit;

@@ -150,40 +150,40 @@
 #include "../maccommon/SDL_macevents_c.h"
 
 /* Initialization/Query functions */
-static int DSp_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **DSp_ListModes (_THIS, SDL_PixelFormat * format,
-                                 Uint32 flags);
-static SDL_Surface *DSp_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                      int height, int bpp, Uint32 flags);
-static int DSp_SetColors (_THIS, int firstcolor, int ncolors,
-                          SDL_Color * colors);
-static int DSp_CreatePalette (_THIS);
-static int DSp_DestroyPalette (_THIS);
-static void DSp_VideoQuit (_THIS);
+static int DSp_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **DSp_ListModes(_THIS, SDL_PixelFormat * format,
+                                Uint32 flags);
+static SDL_Surface *DSp_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                     int height, int bpp, Uint32 flags);
+static int DSp_SetColors(_THIS, int firstcolor, int ncolors,
+                         SDL_Color * colors);
+static int DSp_CreatePalette(_THIS);
+static int DSp_DestroyPalette(_THIS);
+static void DSp_VideoQuit(_THIS);
 
-static int DSp_GetMainDevice (_THIS, GDHandle * device);
-static void DSp_IsHWAvailable (_THIS, SDL_PixelFormat * vformat);
-static void DSp_DSpUpdate (_THIS, int numrects, SDL_Rect * sdl_rects);
-static void DSp_DirectUpdate (_THIS, int numrects, SDL_Rect * sdl_rects);
+static int DSp_GetMainDevice(_THIS, GDHandle * device);
+static void DSp_IsHWAvailable(_THIS, SDL_PixelFormat * vformat);
+static void DSp_DSpUpdate(_THIS, int numrects, SDL_Rect * sdl_rects);
+static void DSp_DirectUpdate(_THIS, int numrects, SDL_Rect * sdl_rects);
 
 /* Hardware surface functions */
-static int DSp_SetHWAlpha (_THIS, SDL_Surface * surface, UInt8 alpha);
-static int DSp_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key);
-static int DSp_NewHWSurface (_THIS, CGrafPtr * port, int depth, int width,
-                             int height);
-static int DSp_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int DSp_LockHWSurface (_THIS, SDL_Surface * surface);
-static void DSp_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void DSp_FreeHWSurface (_THIS, SDL_Surface * surface);
-static int DSp_FlipHWSurface (_THIS, SDL_Surface * surface);
-static int DSp_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dest);
-static int DSp_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
-                            SDL_Surface * dst, SDL_Rect * dstrect);
-static int DSp_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect,
-                           Uint32 color);
+static int DSp_SetHWAlpha(_THIS, SDL_Surface * surface, UInt8 alpha);
+static int DSp_SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key);
+static int DSp_NewHWSurface(_THIS, CGrafPtr * port, int depth, int width,
+                            int height);
+static int DSp_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int DSp_LockHWSurface(_THIS, SDL_Surface * surface);
+static void DSp_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void DSp_FreeHWSurface(_THIS, SDL_Surface * surface);
+static int DSp_FlipHWSurface(_THIS, SDL_Surface * surface);
+static int DSp_CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dest);
+static int DSp_HWAccelBlit(SDL_Surface * src, SDL_Rect * srcrect,
+                           SDL_Surface * dst, SDL_Rect * dstrect);
+static int DSp_FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * rect,
+                          Uint32 color);
 
 #if SDL_VIDEO_OPENGL
-static void DSp_GL_SwapBuffers (_THIS);
+static void DSp_GL_SwapBuffers(_THIS);
 #endif
 
 #if ! TARGET_API_MAC_CARBON
@@ -222,7 +222,7 @@ typedef private_hwdata private_swdata;  /* have same fields */
 /* Macintosh toolbox driver bootstrap functions */
 
 static int
-DSp_Available (void)
+DSp_Available(void)
 {
     /* Check for DrawSprocket */
 #if ! TARGET_API_MAC_OSX
@@ -234,7 +234,7 @@ DSp_Available (void)
 }
 
 static void
-DSp_DeleteDevice (SDL_VideoDevice * device)
+DSp_DeleteDevice(SDL_VideoDevice * device)
 {
     /* -dw- taking no chances with null pointers */
     if (device) {
@@ -242,54 +242,53 @@ DSp_DeleteDevice (SDL_VideoDevice * device)
         if (device->hidden) {
 
             if (device->hidden->dspinfo)
-                SDL_free (device->hidden->dspinfo);
+                SDL_free(device->hidden->dspinfo);
 
-            SDL_free (device->hidden);
+            SDL_free(device->hidden);
         }
-        SDL_free (device);
+        SDL_free(device);
     }
 }
 
 static SDL_VideoDevice *
-DSp_CreateDevice (int devindex)
+DSp_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, sizeof (*device));
+        SDL_memset(device, 0, sizeof(*device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
         if (device->hidden)
-            SDL_memset (device->hidden, 0, sizeof (*(device->hidden)));
+            SDL_memset(device->hidden, 0, sizeof(*(device->hidden)));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
 
         if (device) {
 
             if (device->hidden)
-                SDL_free (device->hidden);
+                SDL_free(device->hidden);
 
-            SDL_free (device);
+            SDL_free(device);
         }
 
         return (NULL);
     }
 
     /* Allocate DrawSprocket information */
-    device->hidden->dspinfo = (struct DSpInfo *) SDL_malloc ((sizeof *device->
-                                                              hidden->
-                                                              dspinfo));
+    device->hidden->dspinfo = (struct DSpInfo *) SDL_malloc((sizeof *device->
+                                                             hidden->
+                                                             dspinfo));
     if (device->hidden->dspinfo == NULL) {
-        SDL_OutOfMemory ();
-        SDL_free (device->hidden);
-        SDL_free (device);
+        SDL_OutOfMemory();
+        SDL_free(device->hidden);
+        SDL_free(device);
         return (0);
     }
-    SDL_memset (device->hidden->dspinfo, 0,
-                (sizeof *device->hidden->dspinfo));
+    SDL_memset(device->hidden->dspinfo, 0, (sizeof *device->hidden->dspinfo));
 
     /* Set the function pointers */
     device->VideoInit = DSp_VideoInit;
@@ -340,8 +339,8 @@ VideoBootStrap DSp_bootstrap = {
 
 /* Use DSp/Display Manager to build mode list for given screen */
 static SDL_Rect **
-DSp_BuildModeList (const GDHandle gDevice, int *displayWidth,
-                   int *displayHeight)
+DSp_BuildModeList(const GDHandle gDevice, int *displayWidth,
+                  int *displayHeight)
 {
     DSpContextAttributes attributes;
     DSpContextReference context;
@@ -356,22 +355,22 @@ DSp_BuildModeList (const GDHandle gDevice, int *displayWidth,
 
 #else
     /* Ask Display Manager for integer id of screen device */
-    if (DMGetDisplayIDByGDevice (gDevice, &displayID, SDL_TRUE) != noErr) {
+    if (DMGetDisplayIDByGDevice(gDevice, &displayID, SDL_TRUE) != noErr) {
         return NULL;
     }
 #endif
     /* Get the first possible DSp context on this device */
-    if (DSpGetFirstContext (displayID, &context) != noErr) {
+    if (DSpGetFirstContext(displayID, &context) != noErr) {
         return NULL;
     }
 
-    if (DSpContext_GetAttributes (context, &attributes) != noErr)
+    if (DSpContext_GetAttributes(context, &attributes) != noErr)
         return NULL;
 
     *displayWidth = attributes.displayWidth;
     *displayHeight = attributes.displayHeight;
 
-    for (i = 0; i < SDL_arraysize (temp_list); i++) {
+    for (i = 0; i < SDL_arraysize(temp_list); i++) {
         width = attributes.displayWidth;
         height = attributes.displayHeight;
 
@@ -387,14 +386,14 @@ DSp_BuildModeList (const GDHandle gDevice, int *displayWidth,
         while (width == attributes.displayWidth
                && height == attributes.displayHeight) {
 
-            OSStatus err = DSpGetNextContext (context, &context);
+            OSStatus err = DSpGetNextContext(context, &context);
             if (err != noErr)
                 if (err == kDSpContextNotFoundErr)
                     goto done;
                 else
                     return NULL;
 
-            if (DSpContext_GetAttributes (context, &attributes) != noErr)
+            if (DSpContext_GetAttributes(context, &attributes) != noErr)
                 return NULL;
 
             temp_list[i].x |= attributes.displayBestDepth;
@@ -403,22 +402,22 @@ DSp_BuildModeList (const GDHandle gDevice, int *displayWidth,
   done:
     i++;                        /* i was not incremented before kicking out of the loop */
 
-    mode_list = (SDL_Rect **) SDL_malloc (sizeof (SDL_Rect *) * (i + 1));
+    mode_list = (SDL_Rect **) SDL_malloc(sizeof(SDL_Rect *) * (i + 1));
     if (mode_list) {
 
         /* -dw- new stuff: build in reverse order so largest sizes list first */
         for (j = i - 1; j >= 0; j--) {
-            mode_list[j] = (SDL_Rect *) SDL_malloc (sizeof (SDL_Rect));
+            mode_list[j] = (SDL_Rect *) SDL_malloc(sizeof(SDL_Rect));
             if (mode_list[j])
-                SDL_memcpy (mode_list[j], &(temp_list[j]), sizeof (SDL_Rect));
+                SDL_memcpy(mode_list[j], &(temp_list[j]), sizeof(SDL_Rect));
             else {
-                SDL_OutOfMemory ();
+                SDL_OutOfMemory();
                 return NULL;
             }
         }
         mode_list[i] = NULL;    /* append null to the end */
     } else {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -426,7 +425,7 @@ DSp_BuildModeList (const GDHandle gDevice, int *displayWidth,
 }
 
 static void
-DSp_IsHWAvailable (_THIS, SDL_PixelFormat * vformat)
+DSp_IsHWAvailable(_THIS, SDL_PixelFormat * vformat)
 {
     /* 
        VRAM GWorlds are only available on OS 9 or later.
@@ -439,29 +438,29 @@ DSp_IsHWAvailable (_THIS, SDL_PixelFormat * vformat)
     dsp_vram_available = SDL_FALSE;
     dsp_agp_available = SDL_FALSE;
 
-    Gestalt ('sysv', &versionSystem);
+    Gestalt('sysv', &versionSystem);
     if (0x00000860 < (versionSystem & 0x0000FFFF)) {
 
         GWorldPtr offscreen;
         OSStatus err;
         Rect bounds;
 
-        SetRect (&bounds, 0, 0, 320, 240);
+        SetRect(&bounds, 0, 0, 320, 240);
 
 #if useDistantHdwrMem && useLocalHdwrMem
         err =
-            NewGWorld (&offscreen, vformat->BitsPerPixel, &bounds, NULL,
-                       SDL_Display, useDistantHdwrMem | noNewDevice);
+            NewGWorld(&offscreen, vformat->BitsPerPixel, &bounds, NULL,
+                      SDL_Display, useDistantHdwrMem | noNewDevice);
         if (err == noErr) {
             dsp_vram_available = SDL_TRUE;
-            DisposeGWorld (offscreen);
+            DisposeGWorld(offscreen);
         }
 
         err =
-            NewGWorld (&offscreen, vformat->BitsPerPixel, &bounds, NULL,
-                       SDL_Display, useLocalHdwrMem | noNewDevice);
+            NewGWorld(&offscreen, vformat->BitsPerPixel, &bounds, NULL,
+                      SDL_Display, useLocalHdwrMem | noNewDevice);
         if (err == noErr) {
-            DisposeGWorld (offscreen);
+            DisposeGWorld(offscreen);
             dsp_agp_available = SDL_TRUE;
         }
 #endif
@@ -469,12 +468,12 @@ DSp_IsHWAvailable (_THIS, SDL_PixelFormat * vformat)
 }
 
 static int
-DSp_GetMainDevice (_THIS, GDHandle * device)
+DSp_GetMainDevice(_THIS, GDHandle * device)
 {
 
 #if TARGET_API_MAC_OSX
     /* DSpUserSelectContext not available on OS X */
-    *device = GetMainDevice ();
+    *device = GetMainDevice();
     return 0;
 #else
 
@@ -484,8 +483,8 @@ DSp_GetMainDevice (_THIS, GDHandle * device)
     GDHandle main_device;
     GDHandle device_list;
 
-    device_list = GetDeviceList ();
-    main_device = GetMainDevice ();
+    device_list = GetDeviceList();
+    main_device = GetMainDevice();
 
     /* Quick check to avoid slower method when only one display exists */
     if ((**device_list).gdNextGD == NULL) {
@@ -493,7 +492,7 @@ DSp_GetMainDevice (_THIS, GDHandle * device)
         return 0;
     }
 
-    SDL_memset (&attrib, 0, sizeof (DSpContextAttributes));
+    SDL_memset(&attrib, 0, sizeof(DSpContextAttributes));
 
     /* These attributes are hopefully supported on all devices... */
     attrib.displayWidth = 640;
@@ -505,26 +504,24 @@ DSp_GetMainDevice (_THIS, GDHandle * device)
     attrib.colorNeeds = kDSpColorNeeds_Require;
     attrib.pageCount = 1;
 
-    if (noErr !=
-        DMGetDisplayIDByGDevice (main_device, &display_id, SDL_FALSE)) {
+    if (noErr != DMGetDisplayIDByGDevice(main_device, &display_id, SDL_FALSE)) {
         SDL_SetError
             ("Display Manager couldn't associate GDevice with a Display ID");
         return (-1);
     }
 
     /* Put up dialog on main display to select which display to use */
-    if (noErr != DSpUserSelectContext (&attrib, display_id, NULL, &context)) {
-        SDL_SetError ("DrawSprocket couldn't create a context");
+    if (noErr != DSpUserSelectContext(&attrib, display_id, NULL, &context)) {
+        SDL_SetError("DrawSprocket couldn't create a context");
         return (-1);
     }
 
-    if (noErr != DSpContext_GetDisplayID (context, &display_id)) {
-        SDL_SetError ("DrawSprocket couldn't get display ID");
+    if (noErr != DSpContext_GetDisplayID(context, &display_id)) {
+        SDL_SetError("DrawSprocket couldn't get display ID");
         return (-1);
     }
 
-    if (noErr !=
-        DMGetGDeviceByDisplayID (display_id, &main_device, SDL_FALSE)) {
+    if (noErr != DMGetGDeviceByDisplayID(display_id, &main_device, SDL_FALSE)) {
         SDL_SetError
             ("Display Manager couldn't associate Display ID with GDevice");
         return (-1);
@@ -536,12 +533,12 @@ DSp_GetMainDevice (_THIS, GDHandle * device)
 }
 
 static int
-DSp_VideoInit (_THIS, SDL_PixelFormat * vformat)
+DSp_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     NumVersion dsp_version = { 0x01, 0x00, 0x00, 0x00 };
 
 #if UNIVERSAL_INTERFACES_VERSION > 0x0320
-    dsp_version = DSpGetVersion ();
+    dsp_version = DSpGetVersion();
 #endif
 
     if ((dsp_version.majorRev == 1 && dsp_version.minorAndBugRev < 0x73) ||
@@ -552,25 +549,24 @@ DSp_VideoInit (_THIS, SDL_PixelFormat * vformat)
            "You can find a newer version at http://www.apple.com/swupdates.",
            NULL, NULL);
          */
-        SDL_SetError
-            ("DrawSprocket version is too old. Need 1.7.3 or later.");
+        SDL_SetError("DrawSprocket version is too old. Need 1.7.3 or later.");
         return (-1);
     }
 
-    if (DSpStartup () != noErr) {
-        SDL_SetError ("DrawSprocket couldn't startup");
+    if (DSpStartup() != noErr) {
+        SDL_SetError("DrawSprocket couldn't startup");
         return (-1);
     }
 
     /* Start DSpintosh events */
-    Mac_InitEvents (this);
+    Mac_InitEvents(this);
 
     /* Get a handle to the main monitor, or choose one on multiple monitor setups */
-    if (DSp_GetMainDevice (this, &SDL_Display) < 0)
+    if (DSp_GetMainDevice(this, &SDL_Display) < 0)
         return (-1);
 
     /* Determine pixel format */
-    vformat->BitsPerPixel = GetPixDepth ((**SDL_Display).gdPMap);
+    vformat->BitsPerPixel = GetPixDepth((**SDL_Display).gdPMap);
     dsp_old_depth = vformat->BitsPerPixel;
 
     switch (vformat->BitsPerPixel) {
@@ -583,22 +579,22 @@ DSp_VideoInit (_THIS, SDL_PixelFormat * vformat)
         break;
     }
 
-    if (DSp_CreatePalette (this) < 0) {
-        SDL_SetError ("Could not create palette");
+    if (DSp_CreatePalette(this) < 0) {
+        SDL_SetError("Could not create palette");
         return (-1);
     }
 
     /* Get a list of available fullscreen modes */
-    SDL_modelist = DSp_BuildModeList (SDL_Display,
-                                      &this->info.current_w,
-                                      &this->info.current_h);
+    SDL_modelist = DSp_BuildModeList(SDL_Display,
+                                     &this->info.current_w,
+                                     &this->info.current_h);
     if (SDL_modelist == NULL) {
-        SDL_SetError ("DrawSprocket could not build a mode list");
+        SDL_SetError("DrawSprocket could not build a mode list");
         return (-1);
     }
 
     /* Check for VRAM and AGP GWorlds for HW Blitting */
-    DSp_IsHWAvailable (this, vformat);
+    DSp_IsHWAvailable(this, vformat);
 
     this->info.wm_available = 0;
 
@@ -626,7 +622,7 @@ DSp_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 static SDL_Rect **
-DSp_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+DSp_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     static SDL_Rect *dsp_modes[16];
     int i = 0, j = 0;
@@ -649,14 +645,14 @@ DSp_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
 }
 
 /* Various screen update functions available */
-static void DSp_DirectUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void DSp_DirectUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 #if ! TARGET_API_MAC_OSX
 
 static volatile unsigned int retrace_count = 0; /* -dw- need volatile because it updates asychronously */
 
 Boolean
-DSp_VBLProc (DSpContextReference context, void *ref_con)
+DSp_VBLProc(DSpContextReference context, void *ref_con)
 {
     retrace_count++;
 
@@ -664,7 +660,7 @@ DSp_VBLProc (DSpContextReference context, void *ref_con)
 }
 
 static void
-DSp_SetHWError (OSStatus err, int is_agp)
+DSp_SetHWError(OSStatus err, int is_agp)
 {
     char message[1024];
     const char *fmt, *mem;
@@ -685,14 +681,14 @@ DSp_SetHWError (OSStatus err, int is_agp)
         fmt = "Hardware surface could not be allocated in %s - unknown error";
         break;
     }
-    SDL_snprintf (message, SDL_arraysize (message), fmt, mem);
-    SDL_SetError (message);
+    SDL_snprintf(message, SDL_arraysize(message), fmt, mem);
+    SDL_SetError(message);
 }
 #endif // TARGET_API_MAC_OSX
 
 /* put up a dialog to verify display change */
 static int
-DSp_ConfirmSwitch ()
+DSp_ConfirmSwitch()
 {
 
     /* resource id's for dialog */
@@ -706,77 +702,77 @@ DSp_ConfirmSwitch ()
     DialogItemIndex item = 0;
     GrafPtr savePort;
 
-    GetPort (&savePort);
+    GetPort(&savePort);
 
-    dialog = GetNewDialog (rDialog, NULL, (WindowPtr) - 1);
+    dialog = GetNewDialog(rDialog, NULL, (WindowPtr) - 1);
     if (dialog == NULL)
         return (0);
 
 #if TARGET_API_MAC_CARBON
-    SetPort (GetDialogPort (dialog));
+    SetPort(GetDialogPort(dialog));
 #else
-    SetPort ((WindowPtr) dialog);
+    SetPort((WindowPtr) dialog);
 #endif
 
-    SetDialogDefaultItem (dialog, bCancel);
-    SetDialogCancelItem (dialog, bCancel);
+    SetDialogDefaultItem(dialog, bCancel);
+    SetDialogCancelItem(dialog, bCancel);
 
-    SetEventMask (everyEvent);
-    FlushEvents (everyEvent, 0);
+    SetEventMask(everyEvent);
+    FlushEvents(everyEvent, 0);
 
     /* On MacOS 8.5 or later, we can make the dialog go away after 15 seconds */
     /* This is good since it's possible user can't even see the dialog! */
     /* Requires linking to DialogsLib */
-    err = Gestalt (gestaltSystemVersion, &response);
+    err = Gestalt(gestaltSystemVersion, &response);
     if (err == noErr && response >= 0x00000850) {
-        SetDialogTimeout (dialog, bCancel, 15);
+        SetDialogTimeout(dialog, bCancel, 15);
     }
 
     do {
 
-        ModalDialog (NULL, &item);
+        ModalDialog(NULL, &item);
 
     }
     while (item != bCancel && item != bOK && err != noErr);
 
 
-    DisposeDialog (dialog);
-    SetPort (savePort);
+    DisposeDialog(dialog);
+    SetPort(savePort);
 
-    SetEventMask (everyEvent - autoKeyMask);
-    FlushEvents (everyEvent, 0);
+    SetEventMask(everyEvent - autoKeyMask);
+    FlushEvents(everyEvent, 0);
 
     return (item - 1);
 }
 
 static void
-DSp_UnsetVideoMode (_THIS, SDL_Surface * current)
+DSp_UnsetVideoMode(_THIS, SDL_Surface * current)
 {
 
 
     if (current->flags & SDL_INTERNALOPENGL) {
-        Mac_GL_Quit (this);
+        Mac_GL_Quit(this);
     }
 
     if (dsp_context != NULL) {
 
         GWorldPtr front;
-        DSpContext_GetFrontBuffer (dsp_context, &front);
+        DSpContext_GetFrontBuffer(dsp_context, &front);
 
         if (front != dsp_back_buffer)
-            DisposeGWorld (dsp_back_buffer);
+            DisposeGWorld(dsp_back_buffer);
 
         if (current->hwdata)
-            SDL_free (current->hwdata);
+            SDL_free(current->hwdata);
 
-        DSpContext_SetState (dsp_context, kDSpContextState_Inactive);
-        DSpContext_Release (dsp_context);
+        DSpContext_SetState(dsp_context, kDSpContextState_Inactive);
+        DSpContext_Release(dsp_context);
 
         dsp_context = NULL;
     }
 
     if (SDL_Window != NULL) {
-        DisposeWindow (SDL_Window);
+        DisposeWindow(SDL_Window);
         SDL_Window = NULL;
     }
 
@@ -785,9 +781,9 @@ DSp_UnsetVideoMode (_THIS, SDL_Surface * current)
 }
 
 static SDL_Surface *
-DSp_SetVideoMode (_THIS,
-                  SDL_Surface * current, int width, int height, int bpp,
-                  Uint32 flags)
+DSp_SetVideoMode(_THIS,
+                 SDL_Surface * current, int width, int height, int bpp,
+                 Uint32 flags)
 {
 
 #if !TARGET_API_MAC_OSX
@@ -803,10 +799,10 @@ DSp_SetVideoMode (_THIS,
     int hw_surface;
     int use_dsp_back_buffer;
 
-    DSp_UnsetVideoMode (this, current);
+    DSp_UnsetVideoMode(this, current);
 
     if (bpp != dsp_old_depth)
-        DSp_DestroyPalette (this);
+        DSp_DestroyPalette(this);
 
     double_buf = (flags & SDL_DOUBLEBUF) != 0;
     hw_surface = (flags & SDL_HWSURFACE) != 0;
@@ -822,7 +818,7 @@ DSp_SetVideoMode (_THIS,
         page_count = 1;
     }
 
-    SDL_memset (&attrib, 0, sizeof (DSpContextAttributes));
+    SDL_memset(&attrib, 0, sizeof(DSpContextAttributes));
     attrib.displayWidth = width;
     attrib.displayHeight = height;
     attrib.displayBestDepth = bpp;
@@ -834,48 +830,47 @@ DSp_SetVideoMode (_THIS,
     attrib.pageCount = page_count;
 #if TARGET_API_MAC_OSX || UNIVERSAL_INTERFACES_VERSION == 0x0320
 
-    if (DSpFindBestContext (&attrib, &dsp_context) != noErr) {
-        SDL_SetError ("DrawSprocket couldn't find a context");
+    if (DSpFindBestContext(&attrib, &dsp_context) != noErr) {
+        SDL_SetError("DrawSprocket couldn't find a context");
         return NULL;
     }
 #else
-    if (noErr !=
-        DMGetDisplayIDByGDevice (SDL_Display, &display_id, SDL_FALSE)) {
+    if (noErr != DMGetDisplayIDByGDevice(SDL_Display, &display_id, SDL_FALSE)) {
         SDL_SetError
             ("Display Manager couldn't associate GDevice with display_id");
         return NULL;
     }
-    if (DSpFindBestContextOnDisplayID (&attrib, &dsp_context, display_id) !=
+    if (DSpFindBestContextOnDisplayID(&attrib, &dsp_context, display_id) !=
         noErr) {
         SDL_SetError
             ("DrawSprocket couldn't find a suitable context on given display");
         return NULL;
     }
 #endif
-    if (DSpContext_Reserve (dsp_context, &attrib) != noErr) {
+    if (DSpContext_Reserve(dsp_context, &attrib) != noErr) {
         SDL_SetError
             ("DrawSprocket couldn't get the needed resources to build the display");
         return NULL;
     }
 
     if ((err =
-         DSpContext_SetState (dsp_context, kDSpContextState_Active)) != noErr)
+         DSpContext_SetState(dsp_context, kDSpContextState_Active)) != noErr)
     {
 
         if (err == kDSpConfirmSwitchWarning) {
 
-            if (!DSp_ConfirmSwitch ()) {
+            if (!DSp_ConfirmSwitch()) {
 
-                DSpContext_Release (dsp_context);
+                DSpContext_Release(dsp_context);
                 dsp_context = NULL;
-                SDL_SetError ("User cancelled display switch");
+                SDL_SetError("User cancelled display switch");
                 return NULL;
             } else
                 /* Have to reactivate context. Why? */
-                DSpContext_SetState (dsp_context, kDSpContextState_Active);
+                DSpContext_SetState(dsp_context, kDSpContextState_Active);
 
         } else {
-            SDL_SetError ("DrawSprocket couldn't activate the context");
+            SDL_SetError("DrawSprocket couldn't activate the context");
             return NULL;
         }
     }
@@ -883,7 +878,7 @@ DSp_SetVideoMode (_THIS,
 
     if (bpp != dsp_old_depth) {
 
-        DSp_CreatePalette (this);
+        DSp_CreatePalette(this);
 
         /* update format if display depth changed */
         if (bpp == 16) {
@@ -892,9 +887,9 @@ DSp_SetVideoMode (_THIS,
             gmask = 0x000003e0;
             bmask = 0x0000001f;
         }
-        if (!SDL_ReallocFormat (current, bpp, rmask, gmask, bmask, 0)) {
+        if (!SDL_ReallocFormat(current, bpp, rmask, gmask, bmask, 0)) {
 
-            SDL_SetError ("Could not reallocate video format.");
+            SDL_SetError("Could not reallocate video format.");
             return (NULL);
         }
     }
@@ -902,12 +897,12 @@ DSp_SetVideoMode (_THIS,
     if (!double_buf) {
 
         /* single-buffer context */
-        DSpContext_GetFrontBuffer (dsp_context, &dsp_back_buffer);
+        DSpContext_GetFrontBuffer(dsp_context, &dsp_back_buffer);
 
         current->hwdata =
-            (private_hwdata *) SDL_malloc (sizeof (private_hwdata));
+            (private_hwdata *) SDL_malloc(sizeof(private_hwdata));
         if (current->hwdata == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return NULL;
         }
         current->hwdata->offscreen = dsp_back_buffer;
@@ -915,8 +910,8 @@ DSp_SetVideoMode (_THIS,
         this->UpdateRects = DSp_DirectUpdate;
     } else if (use_dsp_back_buffer) {
 
-        DSpContext_GetBackBuffer (dsp_context, kDSpBufferKind_Normal,
-                                  &dsp_back_buffer);
+        DSpContext_GetBackBuffer(dsp_context, kDSpBufferKind_Normal,
+                                 &dsp_back_buffer);
 
         current->flags |= SDL_DOUBLEBUF | SDL_SWSURFACE;        /* only front buffer is in VRAM */
         this->UpdateRects = DSp_DSpUpdate;
@@ -924,25 +919,25 @@ DSp_SetVideoMode (_THIS,
                (this, &dsp_back_buffer, bpp, width - 1, height - 1) == 0) {
 
         current->hwdata =
-            (private_hwdata *) SDL_malloc (sizeof (private_hwdata));
+            (private_hwdata *) SDL_malloc(sizeof(private_hwdata));
         if (current->hwdata == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return NULL;
         }
 
-        SDL_memset (current->hwdata, 0, sizeof (private_hwdata));
+        SDL_memset(current->hwdata, 0, sizeof(private_hwdata));
         current->hwdata->offscreen = dsp_back_buffer;
         current->flags |= SDL_DOUBLEBUF | SDL_HWSURFACE;
         this->UpdateRects = DSp_DirectUpdate;   /* hardware doesn't do update rects, must be page-flipped */
     } else {
 
-        DSpContext_Release (dsp_context);
+        DSpContext_Release(dsp_context);
         use_dsp_back_buffer = SDL_TRUE;
         goto rebuild;
     }
 
-    current->pitch = GetPortPixRowBytes (dsp_back_buffer) & 0x3FFF;
-    current->pixels = GetPixBaseAddr (GetPortPixMap (dsp_back_buffer));
+    current->pitch = GetPortPixRowBytes(dsp_back_buffer) & 0x3FFF;
+    current->pixels = GetPixBaseAddr(GetPortPixMap(dsp_back_buffer));
 
     current->w = width;
     current->h = height;
@@ -951,14 +946,14 @@ DSp_SetVideoMode (_THIS,
 
     if (use_dsp_back_buffer) {
 
-        DSpContext_GetMonitorFrequency (dsp_context, &freq);
-        DSpContext_SetMaxFrameRate (dsp_context, freq >> 16);
+        DSpContext_GetMonitorFrequency(dsp_context, &freq);
+        DSpContext_SetMaxFrameRate(dsp_context, freq >> 16);
     }
 
 
     if ((current->flags & SDL_HWSURFACE)
         || (current->flags & SDL_INTERNALOPENGL))
-        DSpContext_SetVBLProc (dsp_context, DSp_VBLProc, NULL);
+        DSpContext_SetVBLProc(dsp_context, DSp_VBLProc, NULL);
 #endif
 
     if (bpp == 8)
@@ -970,10 +965,10 @@ DSp_SetVideoMode (_THIS,
         RGBColor rgb = { 0.0, 0.0, 0.0 };
         GrafPtr save_port;
 
-        SetRect (&rect, 0, 0, width, height);
+        SetRect(&rect, 0, 0, width, height);
         SDL_Window =
-            NewCWindow (nil, &((**SDL_Display).gdRect), "\p", SDL_TRUE,
-                        plainDBox, (WindowPtr) - 1, SDL_FALSE, 0);
+            NewCWindow(nil, &((**SDL_Display).gdRect), "\p", SDL_TRUE,
+                       plainDBox, (WindowPtr) - 1, SDL_FALSE, 0);
 
         if (SDL_Window == NULL) {
 
@@ -983,20 +978,20 @@ DSp_SetVideoMode (_THIS,
         }
 
         /* Set window color to black to avoid white flash */
-        GetPort (&save_port);
+        GetPort(&save_port);
 #if TARGET_API_MAC_CARBON
-        SetPort (GetWindowPort (SDL_Window));
+        SetPort(GetWindowPort(SDL_Window));
 #else
-        SetPort (SDL_Window);
+        SetPort(SDL_Window);
 #endif
-        RGBForeColor (&rgb);
-        PaintRect (&rect);
-        SetPort (save_port);
+        RGBForeColor(&rgb);
+        PaintRect(&rect);
+        SetPort(save_port);
 
-        SetPortWindowPort (SDL_Window);
-        SelectWindow (SDL_Window);
+        SetPortWindowPort(SDL_Window);
+        SelectWindow(SDL_Window);
 
-        if (Mac_GL_Init (this) < 0) {
+        if (Mac_GL_Init(this) < 0) {
 
             SDL_SetError
                 ("DSp_SetVideoMode : could not create OpenGL context.");
@@ -1012,7 +1007,7 @@ DSp_SetVideoMode (_THIS,
 #ifdef DSP_TRY_CC_AND_AA
 
 static int
-DSp_MakeHWMask (_THIS, SDL_Surface * surface)
+DSp_MakeHWMask(_THIS, SDL_Surface * surface)
 {
     GDHandle save_device;
     CGrafPtr save_port;
@@ -1021,44 +1016,44 @@ DSp_MakeHWMask (_THIS, SDL_Surface * surface)
     RGBColor white = { 0xFFFF, 0xFFFF, 0xFFFF };
     Rect rect;
 
-    Uint32 depth = GetPixDepth (GetGDevPixMap (SDL_Display));
+    Uint32 depth = GetPixDepth(GetGDevPixMap(SDL_Display));
 
-    SetRect (&rect, 0, 0, surface->w, surface->h);
+    SetRect(&rect, 0, 0, surface->w, surface->h);
 
     if (noErr !=
-        NewGWorld (&(surface->hwdata->mask), depth, &rect, 0, SDL_Display,
-                   0) < 0) {
+        NewGWorld(&(surface->hwdata->mask), depth, &rect, 0, SDL_Display,
+                  0) < 0) {
 
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
 
-    if (noErr != NewGWorld (&temp, depth, &rect, 0, SDL_Display, 0)) {
+    if (noErr != NewGWorld(&temp, depth, &rect, 0, SDL_Display, 0)) {
 
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
 
 
-    GetGWorld (&save_port, &save_device);
-    SetGWorld (surface->hwdata->mask, SDL_Display);
+    GetGWorld(&save_port, &save_device);
+    SetGWorld(surface->hwdata->mask, SDL_Display);
 
-    RGBForeColor (&white);
-    PaintRect (&rect);
+    RGBForeColor(&white);
+    PaintRect(&rect);
 
-    RGBBackColor (&(surface->hwdata->trans));
+    RGBBackColor(&(surface->hwdata->trans));
 
-    CopyBits (GetPortBitMapForCopyBits (surface->hwdata->offscreen),
-              GetPortBitMapForCopyBits (surface->hwdata->mask),
-              &rect, &rect, transparent, NULL);
+    CopyBits(GetPortBitMapForCopyBits(surface->hwdata->offscreen),
+             GetPortBitMapForCopyBits(surface->hwdata->mask),
+             &rect, &rect, transparent, NULL);
 
-    SetGWorld (surface->hwdata->mask, SDL_Display);
-    SetGWorld (save_port, save_device);
+    SetGWorld(surface->hwdata->mask, SDL_Display);
+    SetGWorld(save_port, save_device);
     return (0);
 }
 
 static int
-DSp_SetHWAlpha (_THIS, SDL_Surface * surface, UInt8 alpha)
+DSp_SetHWAlpha(_THIS, SDL_Surface * surface, UInt8 alpha)
 {
     surface->hwdata->alpha.red = (alpha / 255.0) * 65535;
     surface->hwdata->alpha.blue = (alpha / 255.0) * 65535;
@@ -1067,27 +1062,27 @@ DSp_SetHWAlpha (_THIS, SDL_Surface * surface, UInt8 alpha)
     surface->flags |= SDL_SRCALPHA;
 
     if (surface->flags & SDL_SRCCOLORKEY) {
-        return (DSp_MakeHWMask (this, surface));
+        return (DSp_MakeHWMask(this, surface));
     }
     return (0);
 }
 
 static int
-DSp_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
+DSp_SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key)
 {
     CGrafPtr save_port;
     GDHandle save_device;
 
-    GetGWorld (&save_port, &save_device);
-    SetGWorld (surface->hwdata->offscreen, NULL);
+    GetGWorld(&save_port, &save_device);
+    SetGWorld(surface->hwdata->offscreen, NULL);
 
-    Index2Color (key, &(surface->hwdata->trans));
+    Index2Color(key, &(surface->hwdata->trans));
     surface->flags |= SDL_SRCCOLORKEY;
 
-    SetGWorld (save_port, save_device);
+    SetGWorld(save_port, save_device);
 
     if (surface->flags & SDL_SRCALPHA) {
-        return (DSp_MakeHWMask (this, surface));
+        return (DSp_MakeHWMask(this, surface));
     }
     return (0);
 }
@@ -1095,22 +1090,22 @@ DSp_SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
 #endif /* DSP_TRY_CC_AND_AA */
 
 static int
-DSp_NewHWSurface (_THIS, CGrafPtr * port, int depth, int width, int height)
+DSp_NewHWSurface(_THIS, CGrafPtr * port, int depth, int width, int height)
 {
 
     OSStatus err;
     Rect bounds;
 
-    SetRect (&bounds, 0, 0, width, height);
+    SetRect(&bounds, 0, 0, width, height);
 
 #if useDistantHdwrMem && useLocalHdwrMem
     if (dsp_vram_available) {
         /* try VRAM */
         err =
-            NewGWorld (port, depth, &bounds, 0, SDL_Display,
-                       useDistantHdwrMem | noNewDevice);
+            NewGWorld(port, depth, &bounds, 0, SDL_Display,
+                      useDistantHdwrMem | noNewDevice);
         if (err != noErr)
-            DSp_SetHWError (err, SDL_FALSE);
+            DSp_SetHWError(err, SDL_FALSE);
         else
             return (0);
     }
@@ -1118,11 +1113,11 @@ DSp_NewHWSurface (_THIS, CGrafPtr * port, int depth, int width, int height)
     if (dsp_agp_available) {
         /* try AGP */
         err =
-            NewGWorld (port, depth, &bounds, 0, SDL_Display,
-                       useLocalHdwrMem | noNewDevice);
+            NewGWorld(port, depth, &bounds, 0, SDL_Display,
+                      useLocalHdwrMem | noNewDevice);
 
         if (err != noErr)
-            DSp_SetHWError (err, SDL_TRUE);
+            DSp_SetHWError(err, SDL_TRUE);
         else
             return (0);
     }
@@ -1132,7 +1127,7 @@ DSp_NewHWSurface (_THIS, CGrafPtr * port, int depth, int width, int height)
 }
 
 static int
-DSp_AllocHWSurface (_THIS, SDL_Surface * surface)
+DSp_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     GWorldPtr temp;
 
@@ -1141,16 +1136,16 @@ DSp_AllocHWSurface (_THIS, SDL_Surface * surface)
          surface->h) < 0)
         return (-1);
 
-    surface->hwdata = (private_hwdata *) SDL_malloc (sizeof (private_hwdata));
+    surface->hwdata = (private_hwdata *) SDL_malloc(sizeof(private_hwdata));
     if (surface->hwdata == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return -1;
     }
 
-    SDL_memset (surface->hwdata, 0, sizeof (private_hwdata));
+    SDL_memset(surface->hwdata, 0, sizeof(private_hwdata));
     surface->hwdata->offscreen = temp;
-    surface->pitch = GetPixRowBytes (GetPortPixMap (temp)) & 0x3FFF;
-    surface->pixels = GetPixBaseAddr (GetPortPixMap (temp));
+    surface->pitch = GetPixRowBytes(GetPortPixMap(temp)) & 0x3FFF;
+    surface->pixels = GetPixBaseAddr(GetPortPixMap(temp));
     surface->flags |= SDL_HWSURFACE;
 #ifdef DSP_TRY_CC_AND_AA
     surface->flags |= SDL_HWACCEL;
@@ -1159,17 +1154,17 @@ DSp_AllocHWSurface (_THIS, SDL_Surface * surface)
 }
 
 static void
-DSp_FreeHWSurface (_THIS, SDL_Surface * surface)
+DSp_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface->hwdata->offscreen != NULL)
-        DisposeGWorld (surface->hwdata->offscreen);
-    SDL_free (surface->hwdata);
+        DisposeGWorld(surface->hwdata->offscreen);
+    SDL_free(surface->hwdata);
 
     surface->pixels = NULL;
 }
 
 static int
-DSp_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dest)
+DSp_CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dest)
 {
     int accelerated;
 
@@ -1197,8 +1192,8 @@ DSp_CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dest)
 }
 
 static int
-DSp_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
-                 SDL_Surface * dst, SDL_Rect * dstrect)
+DSp_HWAccelBlit(SDL_Surface * src, SDL_Rect * srcrect,
+                SDL_Surface * dst, SDL_Rect * dstrect)
 {
     CGrafPtr save_port;
     GDHandle save_device;
@@ -1210,84 +1205,84 @@ DSp_HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
     UInt32 mode;
 #endif
 
-    SetRect (&src_rect, srcrect->x, srcrect->y, srcrect->x + srcrect->w,
-             srcrect->y + srcrect->h);
-    SetRect (&dst_rect, dstrect->x, dstrect->y, dstrect->x + dstrect->w,
-             dstrect->y + dstrect->h);
+    SetRect(&src_rect, srcrect->x, srcrect->y, srcrect->x + srcrect->w,
+            srcrect->y + srcrect->h);
+    SetRect(&dst_rect, dstrect->x, dstrect->y, dstrect->x + dstrect->w,
+            dstrect->y + dstrect->h);
 
-    GetGWorld (&save_port, &save_device);
-    SetGWorld (dst->hwdata->offscreen, NULL);
+    GetGWorld(&save_port, &save_device);
+    SetGWorld(dst->hwdata->offscreen, NULL);
 
-    RGBForeColor (&black);
-    RGBBackColor (&white);
+    RGBForeColor(&black);
+    RGBBackColor(&white);
 
 #ifdef DSP_TRY_CC_AND_AA
 
     if ((src->flags & SDL_SRCCOLORKEY) && (src->flags & SDL_SRCALPHA)) {
 
-        OpColor (&(src->hwdata->alpha));
+        OpColor(&(src->hwdata->alpha));
 
-        CopyDeepMask (GetPortBitMapForCopyBits (src->hwdata->offscreen),
-                      GetPortBitMapForCopyBits (src->hwdata->mask),
-                      GetPortBitMapForCopyBits (dst->hwdata->offscreen),
-                      &src_rect, &src_rect, &dst_rect, blend, NULL);
+        CopyDeepMask(GetPortBitMapForCopyBits(src->hwdata->offscreen),
+                     GetPortBitMapForCopyBits(src->hwdata->mask),
+                     GetPortBitMapForCopyBits(dst->hwdata->offscreen),
+                     &src_rect, &src_rect, &dst_rect, blend, NULL);
     } else {
 
         if (src->flags & SDL_SRCCOLORKEY) {
-            RGBBackColor (&(src->hwdata->trans));
+            RGBBackColor(&(src->hwdata->trans));
             mode = transparent;
         } else if (src->flags & SDL_SRCALPHA) {
 
-            OpColor (&(src->hwdata->alpha));
+            OpColor(&(src->hwdata->alpha));
             mode = blend;
         } else {
 
             mode = srcCopy;
         }
 
-        CopyBits (GetPortBitMapForCopyBits (src->hwdata->offscreen),
-                  GetPortBitMapForCopyBits (dst->hwdata->offscreen),
-                  &src_rect, &dst_rect, mode, NULL);
+        CopyBits(GetPortBitMapForCopyBits(src->hwdata->offscreen),
+                 GetPortBitMapForCopyBits(dst->hwdata->offscreen),
+                 &src_rect, &dst_rect, mode, NULL);
     }
 #else
 
-    CopyBits (&(((GrafPtr) (src->hwdata->offscreen))->portBits),
-              &(((GrafPtr) (dst->hwdata->offscreen))->portBits),
-              &src_rect, &dst_rect, srcCopy, NULL);
+    CopyBits(&(((GrafPtr) (src->hwdata->offscreen))->portBits),
+             &(((GrafPtr) (dst->hwdata->offscreen))->portBits),
+             &src_rect, &dst_rect, srcCopy, NULL);
 
 #endif /* DSP_TRY_CC_AND_AA */
 
-    SetGWorld (save_port, save_device);
+    SetGWorld(save_port, save_device);
 
     return (0);
 }
 
 static int
-DSp_FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
+DSp_FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
 {
     CGrafPtr save_port;
     GDHandle save_device;
     Rect fill_rect;
     RGBColor rgb;
 
-    SetRect (&fill_rect, rect->x, rect->y, rect->x + rect->w,
-             rect->y + rect->h);
+    SetRect(&fill_rect, rect->x, rect->y, rect->x + rect->w,
+            rect->y + rect->h);
 
-    GetGWorld (&save_port, &save_device);
-    SetGWorld (dst->hwdata->offscreen, NULL);
+    GetGWorld(&save_port, &save_device);
+    SetGWorld(dst->hwdata->offscreen, NULL);
 
-    Index2Color (color, &rgb);
+    Index2Color(color, &rgb);
 
-    RGBForeColor (&rgb);
-    PaintRect (&fill_rect);
+    RGBForeColor(&rgb);
+    PaintRect(&fill_rect);
 
-    SetGWorld (save_port, save_device);
+    SetGWorld(save_port, save_device);
 
     return (0);
 }
 
 static int
-DSp_FlipHWSurface (_THIS, SDL_Surface * surface)
+DSp_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
     if ((surface->flags & SDL_HWSURFACE)) {
         CGrafPtr dsp_front_buffer, save_port;
@@ -1298,11 +1293,11 @@ DSp_FlipHWSurface (_THIS, SDL_Surface * surface)
 #endif
 
         /* pseudo page flipping for VRAM back buffer */
-        DSpContext_GetFrontBuffer (dsp_context, &dsp_front_buffer);
-        SetRect (&rect, 0, 0, surface->w - 1, surface->h - 1);
+        DSpContext_GetFrontBuffer(dsp_context, &dsp_front_buffer);
+        SetRect(&rect, 0, 0, surface->w - 1, surface->h - 1);
 
-        GetPort ((GrafPtr *) & save_port);
-        SetPort ((GrafPtr) dsp_front_buffer);
+        GetPort((GrafPtr *) & save_port);
+        SetPort((GrafPtr) dsp_front_buffer);
 
         /* wait for retrace */
         /* I have tried doing the swap in interrupt routine (VBL Proc) to do */
@@ -1315,46 +1310,46 @@ DSp_FlipHWSurface (_THIS, SDL_Surface * surface)
 #endif
 #endif
 
-        CopyBits (GetPortBitMapForCopyBits (dsp_back_buffer),
-                  GetPortBitMapForCopyBits (dsp_front_buffer),
-                  &rect, &rect, srcCopy, NULL);
+        CopyBits(GetPortBitMapForCopyBits(dsp_back_buffer),
+                 GetPortBitMapForCopyBits(dsp_front_buffer),
+                 &rect, &rect, srcCopy, NULL);
 
-        SetPort ((GrafPtr) save_port);
+        SetPort((GrafPtr) save_port);
 
     } else {
         /* not really page flipping at all: DSp just blits the dirty rectangles from DSp_UpdateRects */
         Boolean busy_flag;
-        DSpContext_SwapBuffers (dsp_context, NULL, &busy_flag); /* this  waits for VBL */
-        DSpContext_GetBackBuffer (dsp_context, kDSpBufferKind_Normal,
-                                  &dsp_back_buffer);
-        surface->pixels = GetPixBaseAddr (GetPortPixMap (dsp_back_buffer));
+        DSpContext_SwapBuffers(dsp_context, NULL, &busy_flag);  /* this  waits for VBL */
+        DSpContext_GetBackBuffer(dsp_context, kDSpBufferKind_Normal,
+                                 &dsp_back_buffer);
+        surface->pixels = GetPixBaseAddr(GetPortPixMap(dsp_back_buffer));
     }
     return (0);
 }
 
 static int
-DSp_LockHWSurface (_THIS, SDL_Surface * surface)
+DSp_LockHWSurface(_THIS, SDL_Surface * surface)
 {
-    if (LockPixels (GetGWorldPixMap (surface->hwdata->offscreen)))
+    if (LockPixels(GetGWorldPixMap(surface->hwdata->offscreen)))
         return 0;
     else
         return -1;
 }
 
 static void
-DSp_UnlockHWSurface (_THIS, SDL_Surface * surface)
+DSp_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
-    UnlockPixels (GetGWorldPixMap (surface->hwdata->offscreen));
+    UnlockPixels(GetGWorldPixMap(surface->hwdata->offscreen));
 }
 
 static void
-DSp_DirectUpdate (_THIS, int numrects, SDL_Rect * sdl_rects)
+DSp_DirectUpdate(_THIS, int numrects, SDL_Rect * sdl_rects)
 {
     return;
 }
 
 static void
-DSp_DSpUpdate (_THIS, int numrects, SDL_Rect * sdl_rects)
+DSp_DSpUpdate(_THIS, int numrects, SDL_Rect * sdl_rects)
 {
 #if ! TARGET_API_MAC_OSX        /* Unsupported DSp in here */
     int i;
@@ -1367,51 +1362,51 @@ DSp_DSpUpdate (_THIS, int numrects, SDL_Rect * sdl_rects)
         rect.bottom = sdl_rects[i].h + sdl_rects[i].y;
         rect.right = sdl_rects[i].w + sdl_rects[i].x;
 
-        DSpContext_InvalBackBufferRect (dsp_context, &rect);
+        DSpContext_InvalBackBufferRect(dsp_context, &rect);
     }
 #endif
 }
 
 static int
-DSp_CreatePalette (_THIS)
+DSp_CreatePalette(_THIS)
 {
 
 
     /* Create our palette */
-    SDL_CTab = (CTabHandle) NewHandle (sizeof (ColorSpec) * 256 + 8);
+    SDL_CTab = (CTabHandle) NewHandle(sizeof(ColorSpec) * 256 + 8);
     if (SDL_CTab == nil) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    (**SDL_CTab).ctSeed = GetCTSeed ();
+    (**SDL_CTab).ctSeed = GetCTSeed();
     (**SDL_CTab).ctFlags = 0;
     (**SDL_CTab).ctSize = 255;
-    CTabChanged (SDL_CTab);
-    SDL_CPal = NewPalette (256, SDL_CTab, pmExplicit + pmTolerant, 0);
+    CTabChanged(SDL_CTab);
+    SDL_CPal = NewPalette(256, SDL_CTab, pmExplicit + pmTolerant, 0);
 
     return 0;
 }
 
 static int
-DSp_DestroyPalette (_THIS)
+DSp_DestroyPalette(_THIS)
 {
 
     /* Free palette and restore original one */
     if (SDL_CTab != nil) {
-        DisposeHandle ((Handle) SDL_CTab);
+        DisposeHandle((Handle) SDL_CTab);
         SDL_CTab = nil;
     }
     if (SDL_CPal != nil) {
-        DisposePalette (SDL_CPal);
+        DisposePalette(SDL_CPal);
         SDL_CPal = nil;
     }
-    RestoreDeviceClut (SDL_Display);
+    RestoreDeviceClut(SDL_Display);
 
     return (0);
 }
 
 static int
-DSp_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+DSp_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     CTabHandle cTab;
 
@@ -1433,41 +1428,41 @@ DSp_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
         (**cTab).ctTable[j].rgb.blue = colors[i].b << 8 | colors[i].b;
     }
 
-    SetGDevice (SDL_Display);
-    SetEntries (0, (**cTab).ctSize, (ColorSpec *) & (**cTab).ctTable);
+    SetGDevice(SDL_Display);
+    SetEntries(0, (**cTab).ctSize, (ColorSpec *) & (**cTab).ctTable);
 
     return (1);
 }
 
 void
-DSp_VideoQuit (_THIS)
+DSp_VideoQuit(_THIS)
 {
     int i;
 
     /* Free current video mode */
-    DSp_UnsetVideoMode (this, this->screen);
+    DSp_UnsetVideoMode(this, this->screen);
 
     /* Free Palette and restore original */
-    DSp_DestroyPalette (this);
+    DSp_DestroyPalette(this);
 
     /* Free list of video modes */
     if (SDL_modelist != NULL) {
         for (i = 0; SDL_modelist[i]; i++) {
-            SDL_free (SDL_modelist[i]);
+            SDL_free(SDL_modelist[i]);
         }
-        SDL_free (SDL_modelist);
+        SDL_free(SDL_modelist);
         SDL_modelist = NULL;
     }
 
     /* Unload DrawSprocket */
-    DSpShutdown ();
+    DSpShutdown();
 }
 
 #if SDL_VIDEO_OPENGL
 
 /* swap buffers with v-sync */
 static void
-DSp_GL_SwapBuffers (_THIS)
+DSp_GL_SwapBuffers(_THIS)
 {
 
 #ifndef DSP_NO_SYNC_OPENGL
@@ -1478,7 +1473,7 @@ DSp_GL_SwapBuffers (_THIS)
     while (old_count == retrace_count);
 #endif
 
-    aglSwapBuffers (glContext);
+    aglSwapBuffers(glContext);
 }
 
 #endif

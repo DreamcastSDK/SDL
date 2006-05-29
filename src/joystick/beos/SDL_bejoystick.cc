@@ -56,7 +56,7 @@ extern "C"
  * joysticks.  Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
-    int SDL_SYS_JoystickInit (void)
+    int SDL_SYS_JoystickInit(void)
     {
         BJoystick joystick;
         int numjoysticks;
@@ -65,21 +65,20 @@ extern "C"
         char name[B_OS_NAME_LENGTH];
 
         /* Search for attached joysticks */
-          nports = joystick.CountDevices ();
+          nports = joystick.CountDevices();
           numjoysticks = 0;
-          SDL_memset (SDL_joyport, 0, (sizeof SDL_joyport));
-          SDL_memset (SDL_joyname, 0, (sizeof SDL_joyname));
+          SDL_memset(SDL_joyport, 0, (sizeof SDL_joyport));
+          SDL_memset(SDL_joyname, 0, (sizeof SDL_joyname));
         for (i = 0; (SDL_numjoysticks < MAX_JOYSTICKS) && (i < nports); ++i)
         {
-            if (joystick.GetDeviceName (i, name) == B_OK) {
-                if (joystick.Open (name) != B_ERROR) {
+            if (joystick.GetDeviceName(i, name) == B_OK) {
+                if (joystick.Open(name) != B_ERROR) {
                     BString stick_name;
-                      joystick.GetControllerName (&stick_name);
-                      SDL_joyport[numjoysticks] = strdup (name);
-                      SDL_joyname[numjoysticks] =
-                        strdup (stick_name.String ());
+                      joystick.GetControllerName(&stick_name);
+                      SDL_joyport[numjoysticks] = strdup(name);
+                      SDL_joyname[numjoysticks] = strdup(stick_name.String());
                       numjoysticks++;
-                      joystick.Close ();
+                      joystick.Close();
                 }
             }
         }
@@ -87,7 +86,7 @@ extern "C"
     }
 
 /* Function to get the device-dependent name of a joystick */
-    const char *SDL_SYS_JoystickName (int index)
+    const char *SDL_SYS_JoystickName(int index)
     {
         return SDL_joyname[index];
     }
@@ -97,43 +96,43 @@ extern "C"
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-    int SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+    int SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
     {
         BJoystick *stick;
 
         /* Create the joystick data structure */
         joystick->hwdata = (struct joystick_hwdata *)
-            SDL_malloc (sizeof (*joystick->hwdata));
+            SDL_malloc(sizeof(*joystick->hwdata));
         if (joystick->hwdata == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
-        SDL_memset (joystick->hwdata, 0, sizeof (*joystick->hwdata));
+        SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
         stick = new BJoystick;
         joystick->hwdata->stick = stick;
 
         /* Open the requested joystick for use */
-        if (stick->Open (SDL_joyport[joystick->index]) == B_ERROR) {
-            SDL_SetError ("Unable to open joystick");
-            SDL_SYS_JoystickClose (joystick);
+        if (stick->Open(SDL_joyport[joystick->index]) == B_ERROR) {
+            SDL_SetError("Unable to open joystick");
+            SDL_SYS_JoystickClose(joystick);
             return (-1);
         }
 
         /* Set the joystick to calibrated mode */
-        stick->EnableCalibration ();
+        stick->EnableCalibration();
 
         /* Get the number of buttons, hats, and axes on the joystick */
-        joystick->nbuttons = stick->CountButtons ();
-        joystick->naxes = stick->CountAxes ();
-        joystick->nhats = stick->CountHats ();
+        joystick->nbuttons = stick->CountButtons();
+        joystick->naxes = stick->CountAxes();
+        joystick->nhats = stick->CountHats();
 
         joystick->hwdata->new_axes = (int16 *)
-            SDL_malloc (joystick->naxes * sizeof (int16));
+            SDL_malloc(joystick->naxes * sizeof(int16));
         joystick->hwdata->new_hats = (uint8 *)
-            SDL_malloc (joystick->nhats * sizeof (uint8));
+            SDL_malloc(joystick->nhats * sizeof(uint8));
         if (!joystick->hwdata->new_hats || !joystick->hwdata->new_axes) {
-            SDL_OutOfMemory ();
-            SDL_SYS_JoystickClose (joystick);
+            SDL_OutOfMemory();
+            SDL_SYS_JoystickClose(joystick);
             return (-1);
         }
 
@@ -146,7 +145,7 @@ extern "C"
  * but instead should call SDL_PrivateJoystick*() to deliver events
  * and update joystick device state.
  */
-    void SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+    void SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     {
         static const Uint8 hat_map[9] = {
             SDL_HAT_CENTERED,
@@ -173,64 +172,64 @@ extern "C"
         hats = joystick->hwdata->new_hats;
 
         /* Get the new joystick state */
-        stick->Update ();
-        stick->GetAxisValues (axes);
-        stick->GetHatValues (hats);
-        buttons = stick->ButtonValues ();
+        stick->Update();
+        stick->GetAxisValues(axes);
+        stick->GetHatValues(hats);
+        buttons = stick->ButtonValues();
 
         /* Generate axis motion events */
         for (i = 0; i < joystick->naxes; ++i) {
             change = ((int32) axes[i] - joystick->axes[i]);
             if ((change > JITTER) || (change < -JITTER)) {
-                SDL_PrivateJoystickAxis (joystick, i, axes[i]);
+                SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
         }
 
         /* Generate hat change events */
         for (i = 0; i < joystick->nhats; ++i) {
             if (hats[i] != joystick->hats[i]) {
-                SDL_PrivateJoystickHat (joystick, i, hat_map[hats[i]]);
+                SDL_PrivateJoystickHat(joystick, i, hat_map[hats[i]]);
             }
         }
 
         /* Generate button events */
         for (i = 0; i < joystick->nbuttons; ++i) {
             if ((buttons & 0x01) != joystick->buttons[i]) {
-                SDL_PrivateJoystickButton (joystick, i, (buttons & 0x01));
+                SDL_PrivateJoystickButton(joystick, i, (buttons & 0x01));
             }
             buttons >>= 1;
         }
     }
 
 /* Function to close a joystick after use */
-    void SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+    void SDL_SYS_JoystickClose(SDL_Joystick * joystick)
     {
         if (joystick->hwdata) {
-            joystick->hwdata->stick->Close ();
+            joystick->hwdata->stick->Close();
             delete joystick->hwdata->stick;
             if (joystick->hwdata->new_hats) {
-                SDL_free (joystick->hwdata->new_hats);
+                SDL_free(joystick->hwdata->new_hats);
             }
             if (joystick->hwdata->new_axes) {
-                SDL_free (joystick->hwdata->new_axes);
+                SDL_free(joystick->hwdata->new_axes);
             }
-            SDL_free (joystick->hwdata);
+            SDL_free(joystick->hwdata);
             joystick->hwdata = NULL;
         }
     }
 
 /* Function to perform any system-specific joystick related cleanup */
-    void SDL_SYS_JoystickQuit (void)
+    void SDL_SYS_JoystickQuit(void)
     {
         int i;
 
         for (i = 0; SDL_joyport[i]; ++i) {
-            SDL_free (SDL_joyport[i]);
+            SDL_free(SDL_joyport[i]);
         }
         SDL_joyport[0] = NULL;
 
         for (i = 0; SDL_joyname[i]; ++i) {
-            SDL_free (SDL_joyname[i]);
+            SDL_free(SDL_joyname[i]);
         }
         SDL_joyname[0] = NULL;
     }

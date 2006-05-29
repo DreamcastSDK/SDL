@@ -56,13 +56,13 @@ long SDL_MintAudio_thread_pid;
 /* The callback function, called by each driver whenever needed */
 
 void
-SDL_MintAudio_Callback (void)
+SDL_MintAudio_Callback(void)
 {
     Uint8 *buffer;
     SDL_AudioDevice *audio = SDL_MintAudio_device;
 
     buffer = SDL_MintAudio_audiobuf[SDL_MintAudio_numbuf];
-    SDL_memset (buffer, audio->spec.silence, audio->spec.size);
+    SDL_memset(buffer, audio->spec.silence, audio->spec.size);
 
     if (audio->paused)
         return;
@@ -75,21 +75,21 @@ SDL_MintAudio_Callback (void)
         } else {
             silence = 0;
         }
-        SDL_memset (audio->convert.buf, silence, audio->convert.len);
-        audio->spec.callback (audio->spec.userdata,
-                              (Uint8 *) audio->convert.buf,
-                              audio->convert.len);
-        SDL_ConvertAudio (&audio->convert);
-        SDL_memcpy (buffer, audio->convert.buf, audio->convert.len_cvt);
+        SDL_memset(audio->convert.buf, silence, audio->convert.len);
+        audio->spec.callback(audio->spec.userdata,
+                             (Uint8 *) audio->convert.buf,
+                             audio->convert.len);
+        SDL_ConvertAudio(&audio->convert);
+        SDL_memcpy(buffer, audio->convert.buf, audio->convert.len_cvt);
     } else {
-        audio->spec.callback (audio->spec.userdata, buffer, audio->spec.size);
+        audio->spec.callback(audio->spec.userdata, buffer, audio->spec.size);
     }
 }
 
 /* Add a new frequency/clock/predivisor to the current list */
 void
-SDL_MintAudio_AddFrequency (_THIS, Uint32 frequency, Uint32 clock,
-                            Uint32 prediv, int gpio_bits)
+SDL_MintAudio_AddFrequency(_THIS, Uint32 frequency, Uint32 clock,
+                           Uint32 prediv, int gpio_bits)
 {
     int i, p;
 
@@ -107,9 +107,9 @@ SDL_MintAudio_AddFrequency (_THIS, Uint32 frequency, Uint32 clock,
     /* Put all following ones farer */
     if (MINTAUDIO_freqcount > 0) {
         for (i = MINTAUDIO_freqcount; i > p; i--) {
-            SDL_memcpy (&MINTAUDIO_frequencies[i],
-                        &MINTAUDIO_frequencies[i - 1],
-                        sizeof (mint_frequency_t));
+            SDL_memcpy(&MINTAUDIO_frequencies[i],
+                       &MINTAUDIO_frequencies[i - 1],
+                       sizeof(mint_frequency_t));
         }
     }
 
@@ -124,7 +124,7 @@ SDL_MintAudio_AddFrequency (_THIS, Uint32 frequency, Uint32 clock,
 
 /* Search for the nearest frequency */
 int
-SDL_MintAudio_SearchFrequency (_THIS, int desired_freq)
+SDL_MintAudio_SearchFrequency(_THIS, int desired_freq)
 {
     int i;
 
@@ -147,14 +147,14 @@ SDL_MintAudio_SearchFrequency (_THIS, int desired_freq)
 
 /* The thread function, used under MiNT with xbios */
 int
-SDL_MintAudio_Thread (long param)
+SDL_MintAudio_Thread(long param)
 {
     SndBufPtr pointers;
     SDL_bool buffers_filled[2] = { SDL_FALSE, SDL_FALSE };
 
     SDL_MintAudio_thread_finished = SDL_FALSE;
     while (!SDL_MintAudio_quit_thread) {
-        if (Buffptr (&pointers) != 0)
+        if (Buffptr(&pointers) != 0)
             continue;
 
         if (((unsigned long) pointers.play >=
@@ -164,10 +164,10 @@ SDL_MintAudio_Thread (long param)
             /* DMA is reading buffer #0, setup buffer #1 if not already done */
             if (!buffers_filled[1]) {
                 SDL_MintAudio_numbuf = 1;
-                SDL_MintAudio_Callback ();
-                Setbuffer (0, SDL_MintAudio_audiobuf[1],
-                           SDL_MintAudio_audiobuf[1] +
-                           SDL_MintAudio_audiosize);
+                SDL_MintAudio_Callback();
+                Setbuffer(0, SDL_MintAudio_audiobuf[1],
+                          SDL_MintAudio_audiobuf[1] +
+                          SDL_MintAudio_audiosize);
                 buffers_filled[1] = SDL_TRUE;
                 buffers_filled[0] = SDL_FALSE;
             }
@@ -175,23 +175,23 @@ SDL_MintAudio_Thread (long param)
             /* DMA is reading buffer #1, setup buffer #0 if not already done */
             if (!buffers_filled[0]) {
                 SDL_MintAudio_numbuf = 0;
-                SDL_MintAudio_Callback ();
-                Setbuffer (0, SDL_MintAudio_audiobuf[0],
-                           SDL_MintAudio_audiobuf[0] +
-                           SDL_MintAudio_audiosize);
+                SDL_MintAudio_Callback();
+                Setbuffer(0, SDL_MintAudio_audiobuf[0],
+                          SDL_MintAudio_audiobuf[0] +
+                          SDL_MintAudio_audiosize);
                 buffers_filled[0] = SDL_TRUE;
                 buffers_filled[1] = SDL_FALSE;
             }
         }
 
-        usleep (100);
+        usleep(100);
     }
     SDL_MintAudio_thread_finished = SDL_TRUE;
     return 0;
 }
 
 void
-SDL_MintAudio_WaitThread (void)
+SDL_MintAudio_WaitThread(void)
 {
     if (!SDL_MintAudio_mint_present)
         return;
@@ -201,7 +201,7 @@ SDL_MintAudio_WaitThread (void)
 
     SDL_MintAudio_quit_thread = SDL_TRUE;
     while (!SDL_MintAudio_thread_finished) {
-        Syield ();
+        Syield();
     }
 }
 

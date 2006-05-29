@@ -86,7 +86,7 @@ struct SDL_PrivateVideoData
 
 extern "C"
 {
-    extern void RedrawWindowL (_THIS);
+    extern void RedrawWindowL(_THIS);
 };
 
 

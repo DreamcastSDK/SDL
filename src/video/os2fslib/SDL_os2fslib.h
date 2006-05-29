@@ -66,7 +66,7 @@ struct SDL_PrivateVideoData
 
 /* OS/2 specific backdoor function to be able to set FrameControlFlags of */
 /* the SDL window before creating it. */
-extern DECLSPEC void SDLCALL SDL_OS2FSLIB_SetFCFToUse (ULONG ulFCF);
+extern DECLSPEC void SDLCALL SDL_OS2FSLIB_SetFCFToUse(ULONG ulFCF);
 
 #endif /* _SDL_os2fslib_h */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -36,68 +36,67 @@
 
 
 /* Initialization/Query functions */
-static int DC_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **DC_ListModes (_THIS, SDL_PixelFormat * format,
-                                Uint32 flags);
-static SDL_Surface *DC_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                     int height, int bpp, Uint32 flags);
-static int DC_SetColors (_THIS, int firstcolor, int ncolors,
-                         SDL_Color * colors);
-static void DC_VideoQuit (_THIS);
+static int DC_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **DC_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags);
+static SDL_Surface *DC_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                    int height, int bpp, Uint32 flags);
+static int DC_SetColors(_THIS, int firstcolor, int ncolors,
+                        SDL_Color * colors);
+static void DC_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int DC_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int DC_LockHWSurface (_THIS, SDL_Surface * surface);
-static void DC_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void DC_FreeHWSurface (_THIS, SDL_Surface * surface);
-static int DC_FlipHWSurface (_THIS, SDL_Surface * surface);
+static int DC_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int DC_LockHWSurface(_THIS, SDL_Surface * surface);
+static void DC_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void DC_FreeHWSurface(_THIS, SDL_Surface * surface);
+static int DC_FlipHWSurface(_THIS, SDL_Surface * surface);
 
 /* etc. */
-static void DC_UpdateRects (_THIS, int numrects, SDL_Rect * rects);
+static void DC_UpdateRects(_THIS, int numrects, SDL_Rect * rects);
 
 /* OpenGL */
 #if SDL_VIDEO_OPENGL
-static void *DC_GL_GetProcAddress (_THIS, const char *proc);
-static int DC_GL_LoadLibrary (_THIS, const char *path);
-static int DC_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value);
-static void DC_GL_SwapBuffers (_THIS);
+static void *DC_GL_GetProcAddress(_THIS, const char *proc);
+static int DC_GL_LoadLibrary(_THIS, const char *path);
+static int DC_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value);
+static void DC_GL_SwapBuffers(_THIS);
 #endif
 
 /* DC driver bootstrap functions */
 
 static int
-DC_Available (void)
+DC_Available(void)
 {
     return 1;
 }
 
 static void
-DC_DeleteDevice (SDL_VideoDevice * device)
+DC_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-DC_CreateDevice (int devindex)
+DC_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = DC_VideoInit;
@@ -143,7 +142,7 @@ VideoBootStrap DC_bootstrap = {
 
 
 int
-DC_VideoInit (_THIS, SDL_PixelFormat * vformat)
+DC_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     /* Determine the screen depth (use default 16-bit depth) */
     /* we change this during the SDL_SetVideoMode implementation... */
@@ -167,7 +166,7 @@ const static SDL_Rect *vid_modes[] = {
 };
 
 SDL_Rect **
-DC_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+DC_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     switch (format->BitsPerPixel) {
     case 15:
@@ -197,8 +196,8 @@ static int pvr_inited;
 #endif
 
 SDL_Surface *
-DC_SetVideoMode (_THIS, SDL_Surface * current,
-                 int width, int height, int bpp, Uint32 flags)
+DC_SetVideoMode(_THIS, SDL_Surface * current,
+                int width, int height, int bpp, Uint32 flags)
 {
     int disp_mode, pixel_mode, pitch;
     Uint32 Rmask, Gmask, Bmask;
@@ -210,7 +209,7 @@ DC_SetVideoMode (_THIS, SDL_Surface * current,
     else if (width == 800 && height == 600)
         disp_mode = DM_800x608;
     else {
-        SDL_SetError ("Couldn't find requested mode in list");
+        SDL_SetError("Couldn't find requested mode in list");
         return (NULL);
     }
 
@@ -244,12 +243,12 @@ DC_SetVideoMode (_THIS, SDL_Surface * current,
 #endif
             break;
     default:
-        SDL_SetError ("Couldn't find requested mode in list");
+        SDL_SetError("Couldn't find requested mode in list");
         return (NULL);
     }
 
 //  if ( bpp != current->format->BitsPerPixel ) {
-    if (!SDL_ReallocFormat (current, bpp, Rmask, Gmask, Bmask, 0)) {
+    if (!SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, 0)) {
         return (NULL);
     }
 //  }
@@ -263,11 +262,11 @@ DC_SetVideoMode (_THIS, SDL_Surface * current,
 #if SDL_VIDEO_OPENGL
     if (pvr_inited) {
         pvr_inited = 0;
-        pvr_shutdown ();
+        pvr_shutdown();
     }
 #endif
 
-    vid_set_mode (disp_mode, pixel_mode);
+    vid_set_mode(disp_mode, pixel_mode);
 
     current->pixels = vram_s;
 
@@ -277,9 +276,9 @@ DC_SetVideoMode (_THIS, SDL_Surface * current,
         current->flags = SDL_FULLSCREEN | SDL_INTERNALOPENGL;
         current->pixels = NULL;
         pvr_inited = 1;
-        pvr_init (&params);
-        glKosInit ();
-        glKosBeginFrame ();
+        pvr_init(&params);
+        glKosInit();
+        glKosBeginFrame();
     } else
 #endif
     if (flags | SDL_DOUBLEBUF) {
@@ -293,47 +292,47 @@ DC_SetVideoMode (_THIS, SDL_Surface * current,
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-DC_AllocHWSurface (_THIS, SDL_Surface * surface)
+DC_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-DC_FreeHWSurface (_THIS, SDL_Surface * surface)
+DC_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-DC_LockHWSurface (_THIS, SDL_Surface * surface)
+DC_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     return (0);
 }
 
 static void
-DC_UnlockHWSurface (_THIS, SDL_Surface * surface)
+DC_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 static int
-DC_FlipHWSurface (_THIS, SDL_Surface * surface)
+DC_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface->flags & SDL_DOUBLEBUF) {
-        vid_set_start ((int) surface->pixels & 0xffffff);
+        vid_set_start((int) surface->pixels & 0xffffff);
         surface->pixels = (void *) ((int) surface->pixels ^ 0x400000);
     }
     return (0);
 }
 
 static void
-DC_UpdateRects (_THIS, int numrects, SDL_Rect * rects)
+DC_UpdateRects(_THIS, int numrects, SDL_Rect * rects)
 {
     /* do nothing. */
 }
 
 static int
-DC_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+DC_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     /* do nothing of note. */
     return (1);
@@ -343,12 +342,12 @@ DC_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
    another SDL video routine -- notably UpdateRects.
 */
 static void
-DC_VideoQuit (_THIS)
+DC_VideoQuit(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     if (pvr_inited) {
         pvr_inited = 0;
-        pvr_shutdown ();
+        pvr_shutdown();
     }
 #endif
 }
@@ -356,7 +355,7 @@ DC_VideoQuit (_THIS)
 #if SDL_VIDEO_OPENGL
 
 void
-dmyfunc (void)
+dmyfunc(void)
 {
 }
 
@@ -367,47 +366,47 @@ const static struct
     funcptr addr;
 } glfuncs[] = {
 #define	DEF(func)	{#func,&func}
-    DEF (glBegin), DEF (glBindTexture), DEF (glBlendFunc), DEF (glColor4f),
+    DEF(glBegin), DEF(glBindTexture), DEF(glBlendFunc), DEF(glColor4f),
 //      DEF(glCopyImageID),
-        DEF (glDisable),
-        DEF (glEnable),
-        DEF (glEnd),
-        DEF (glFlush),
-        DEF (glGenTextures),
-        DEF (glGetString),
-        DEF (glLoadIdentity),
-        DEF (glMatrixMode), DEF (glOrtho), DEF (glPixelStorei),
+        DEF(glDisable),
+        DEF(glEnable),
+        DEF(glEnd),
+        DEF(glFlush),
+        DEF(glGenTextures),
+        DEF(glGetString),
+        DEF(glLoadIdentity),
+        DEF(glMatrixMode), DEF(glOrtho), DEF(glPixelStorei),
 //      DEF(glPopAttrib),
 //      DEF(glPopClientAttrib),
     {
     "glPopAttrib", &dmyfunc}, {
-    "glPopClientAttrib", &dmyfunc}, DEF (glPopMatrix),
+    "glPopClientAttrib", &dmyfunc}, DEF(glPopMatrix),
 //      DEF(glPushAttrib),
 //      DEF(glPushClientAttrib),
     {
     "glPushAttrib", &dmyfunc}, {
     "glPushClientAttrib", &dmyfunc},
-        DEF (glPushMatrix),
-        DEF (glTexCoord2f),
-        DEF (glTexEnvf),
-        DEF (glTexImage2D),
-        DEF (glTexParameteri),
-        DEF (glTexSubImage2D), DEF (glVertex2i), DEF (glViewport),
+        DEF(glPushMatrix),
+        DEF(glTexCoord2f),
+        DEF(glTexEnvf),
+        DEF(glTexImage2D),
+        DEF(glTexParameteri),
+        DEF(glTexSubImage2D), DEF(glVertex2i), DEF(glViewport),
 #undef	DEF
 };
 
 static void *
-DC_GL_GetProcAddress (_THIS, const char *proc)
+DC_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *ret;
     int i;
 
-    ret = glKosGetProcAddress (proc);
+    ret = glKosGetProcAddress(proc);
     if (ret)
         return ret;
 
-    for (i = 0; i < sizeof (glfuncs) / sizeof (glfuncs[0]); i++) {
-        if (SDL_strcmp (proc, glfuncs[i].name) == 0)
+    for (i = 0; i < sizeof(glfuncs) / sizeof(glfuncs[0]); i++) {
+        if (SDL_strcmp(proc, glfuncs[i].name) == 0)
             return glfuncs[i].addr;
     }
 
@@ -415,7 +414,7 @@ DC_GL_GetProcAddress (_THIS, const char *proc)
 }
 
 static int
-DC_GL_LoadLibrary (_THIS, const char *path)
+DC_GL_LoadLibrary(_THIS, const char *path)
 {
     this->gl_config.driver_loaded = 1;
 
@@ -423,7 +422,7 @@ DC_GL_LoadLibrary (_THIS, const char *path)
 }
 
 static int
-DC_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+DC_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
     GLenum mesa_attrib;
     int val;
@@ -469,10 +468,10 @@ DC_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
 }
 
 static void
-DC_GL_SwapBuffers (_THIS)
+DC_GL_SwapBuffers(_THIS)
 {
-    glKosFinishFrame ();
-    glKosBeginFrame ();
+    glKosFinishFrame();
+    glKosBeginFrame();
 }
 #endif
 /* vi: set ts=4 sw=4 expandtab: */

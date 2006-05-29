@@ -41,102 +41,102 @@ struct SDL_semaphore
 
 /* Create a semaphore, initialized with value */
 SDL_sem *
-SDL_CreateSemaphore (Uint32 initial_value)
+SDL_CreateSemaphore(Uint32 initial_value)
 {
-    SDL_sem *sem = (SDL_sem *) SDL_malloc (sizeof (SDL_sem));
+    SDL_sem *sem = (SDL_sem *) SDL_malloc(sizeof(SDL_sem));
     if (sem) {
-        if (sem_init (&sem->sem, 0, initial_value) < 0) {
-            SDL_SetError ("sem_init() failed");
-            SDL_free (sem);
+        if (sem_init(&sem->sem, 0, initial_value) < 0) {
+            SDL_SetError("sem_init() failed");
+            SDL_free(sem);
             sem = NULL;
         }
     } else {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
     }
     return sem;
 }
 
 void
-SDL_DestroySemaphore (SDL_sem * sem)
+SDL_DestroySemaphore(SDL_sem * sem)
 {
     if (sem) {
-        sem_destroy (&sem->sem);
-        SDL_free (sem);
+        sem_destroy(&sem->sem);
+        SDL_free(sem);
     }
 }
 
 int
-SDL_SemTryWait (SDL_sem * sem)
+SDL_SemTryWait(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
     retval = SDL_MUTEX_TIMEDOUT;
-    if (sem_trywait (&sem->sem) == 0) {
+    if (sem_trywait(&sem->sem) == 0) {
         retval = 0;
     }
     return retval;
 }
 
 int
-SDL_SemWait (SDL_sem * sem)
+SDL_SemWait(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
-    retval = sem_wait (&sem->sem);
+    retval = sem_wait(&sem->sem);
     if (retval < 0) {
-        SDL_SetError ("sem_wait() failed");
+        SDL_SetError("sem_wait() failed");
     }
     return retval;
 }
 
 int
-SDL_SemWaitTimeout (SDL_sem * sem, Uint32 timeout)
+SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
     /* Try the easy cases first */
     if (timeout == 0) {
-        return SDL_SemTryWait (sem);
+        return SDL_SemTryWait(sem);
     }
     if (timeout == SDL_MUTEX_MAXWAIT) {
-        return SDL_SemWait (sem);
+        return SDL_SemWait(sem);
     }
 
     /* Ack!  We have to busy wait... */
     /* FIXME: Use sem_timedwait()? */
-    timeout += SDL_GetTicks ();
+    timeout += SDL_GetTicks();
     do {
-        retval = SDL_SemTryWait (sem);
+        retval = SDL_SemTryWait(sem);
         if (retval == 0) {
             break;
         }
-        SDL_Delay (1);
+        SDL_Delay(1);
     }
-    while (SDL_GetTicks () < timeout);
+    while (SDL_GetTicks() < timeout);
 
     return retval;
 }
 
 Uint32
-SDL_SemValue (SDL_sem * sem)
+SDL_SemValue(SDL_sem * sem)
 {
     int ret = 0;
     if (sem) {
-        sem_getvalue (&sem->sem, &ret);
+        sem_getvalue(&sem->sem, &ret);
         if (ret < 0) {
             ret = 0;
         }
@@ -145,18 +145,18 @@ SDL_SemValue (SDL_sem * sem)
 }
 
 int
-SDL_SemPost (SDL_sem * sem)
+SDL_SemPost(SDL_sem * sem)
 {
     int retval;
 
     if (!sem) {
-        SDL_SetError ("Passed a NULL semaphore");
+        SDL_SetError("Passed a NULL semaphore");
         return -1;
     }
 
-    retval = sem_post (&sem->sem);
+    retval = sem_post(&sem->sem);
     if (retval < 0) {
-        SDL_SetError ("sem_post() failed");
+        SDL_SetError("sem_post() failed");
     }
     return retval;
 }

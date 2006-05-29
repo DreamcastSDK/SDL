@@ -70,43 +70,42 @@ static SDLKey RO_keymap[SDLK_LAST];
 
 static char RO_pressed[ROKEYBD_ARRAYSIZE];
 
-static SDL_keysym *TranslateKey (int intkey, SDL_keysym * keysym,
-                                 int pressed);
+static SDL_keysym *TranslateKey(int intkey, SDL_keysym * keysym, int pressed);
 
-void RISCOS_PollMouse (_THIS);
-void RISCOS_PollKeyboard ();
+void RISCOS_PollMouse(_THIS);
+void RISCOS_PollKeyboard();
 
-void RISCOS_PollMouseHelper (_THIS, int fullscreen);
+void RISCOS_PollMouseHelper(_THIS, int fullscreen);
 
 #if SDL_THREADS_DISABLED
-extern void DRenderer_FillBuffers ();
+extern void DRenderer_FillBuffers();
 
 /* Timer running function */
-extern void RISCOS_CheckTimer ();
+extern void RISCOS_CheckTimer();
 
 #endif
 
 void
-FULLSCREEN_PumpEvents (_THIS)
+FULLSCREEN_PumpEvents(_THIS)
 {
     /* Current implementation requires keyboard and mouse polling */
-    RISCOS_PollKeyboard ();
-    RISCOS_PollMouse (this);
+    RISCOS_PollKeyboard();
+    RISCOS_PollMouse(this);
 #if SDL_THREADS_DISABLED
 //      DRenderer_FillBuffers();
     if (SDL_timer_running)
-        RISCOS_CheckTimer ();
+        RISCOS_CheckTimer();
 #endif
 }
 
 
 void
-RISCOS_InitOSKeymap (_THIS)
+RISCOS_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Map the VK keysyms */
-    for (i = 0; i < SDL_arraysize (RO_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(RO_keymap); ++i)
         RO_keymap[i] = SDLK_UNKNOWN;
 
     RO_keymap[3] = SDLK_LSHIFT;
@@ -214,7 +213,7 @@ RISCOS_InitOSKeymap (_THIS)
     RO_keymap[123] = SDLK_KP5;
     RO_keymap[124] = SDLK_KP2;
 
-    SDL_memset (RO_pressed, 0, ROKEYBD_ARRAYSIZE);
+    SDL_memset(RO_pressed, 0, ROKEYBD_ARRAYSIZE);
 }
 
 
@@ -224,7 +223,7 @@ int mouse_relative = 0;
 /* Check to see if we need to enter or leave mouse relative mode */
 
 void
-RISCOS_CheckMouseMode (_THIS)
+RISCOS_CheckMouseMode(_THIS)
 {
     /* If the mouse is hidden and input is grabbed, we use relative mode */
     if (!(SDL_cursorstate & CURSOR_VISIBLE) &&
@@ -237,21 +236,21 @@ RISCOS_CheckMouseMode (_THIS)
 
 
 void
-RISCOS_PollMouse (_THIS)
+RISCOS_PollMouse(_THIS)
 {
-    RISCOS_PollMouseHelper (this, 1);
+    RISCOS_PollMouseHelper(this, 1);
 }
 
 extern int mouseInWindow;
 
 void
-WIMP_PollMouse (_THIS)
+WIMP_PollMouse(_THIS)
 {
     /* Only poll when mouse is over the window */
     if (!mouseInWindow)
         return;
 
-    RISCOS_PollMouseHelper (this, 0);
+    RISCOS_PollMouseHelper(this, 0);
 }
 
 /* Static variables so only changes are reported */
@@ -261,12 +260,12 @@ static int last_buttons = 0;
 /* Share routine between WIMP and FULLSCREEN for polling mouse and
    passing on events */
 void
-RISCOS_PollMouseHelper (_THIS, int fullscreen)
+RISCOS_PollMouseHelper(_THIS, int fullscreen)
 {
     _kernel_swi_regs regs;
     static int starting = 1;
 
-    if (_kernel_swi (OS_Mouse, &regs, &regs) == NULL) {
+    if (_kernel_swi(OS_Mouse, &regs, &regs) == NULL) {
         Sint16 new_x = regs.r[0];       /* Initialy get as OS units */
         Sint16 new_y = regs.r[1];
 
@@ -290,7 +289,7 @@ RISCOS_PollMouseHelper (_THIS, int fullscreen)
                 /* Get current window state */
                 window_state[0] = this->hidden->window_handle;
                 regs.r[1] = (unsigned int) window_state;
-                _kernel_swi (Wimp_GetWindowState, &regs, &regs);
+                _kernel_swi(Wimp_GetWindowState, &regs, &regs);
 
                 topLeftX = window_state[1];
                 topLeftY = window_state[4];
@@ -311,9 +310,9 @@ RISCOS_PollMouseHelper (_THIS, int fullscreen)
 
                     if (centre_x != x || centre_y != y) {
                         if (SDL_VideoSurface)
-                            SDL_PrivateMouseMotion (0, 1,
-                                                    x - centre_x,
-                                                    y - centre_y);
+                            SDL_PrivateMouseMotion(0, 1,
+                                                   x - centre_x,
+                                                   y - centre_y);
                         last_x = topLeftX + (centre_x << this->hidden->xeig);
                         last_y = topLeftY - (centre_y << this->hidden->yeig);
 
@@ -332,13 +331,13 @@ RISCOS_PollMouseHelper (_THIS, int fullscreen)
 
                             regs.r[0] = 21;     /* OSWORD pointer stuff code */
                             regs.r[1] = (int) block;
-                            _kernel_swi (OS_Word, &regs, &regs);
+                            _kernel_swi(OS_Word, &regs, &regs);
                         }
                     }
                 } else {
                     last_x = new_x;
                     last_y = new_y;
-                    SDL_PrivateMouseMotion (0, 0, x, y);
+                    SDL_PrivateMouseMotion(0, 0, x, y);
                 }
             }
 
@@ -346,24 +345,24 @@ RISCOS_PollMouseHelper (_THIS, int fullscreen)
                 int changed = last_buttons ^ regs.r[2];
                 last_buttons = regs.r[2];
                 if (changed & 4)
-                    SDL_PrivateMouseButton ((last_buttons & 4) ?
-                                            SDL_PRESSED : SDL_RELEASED,
-                                            SDL_BUTTON_LEFT, 0, 0);
+                    SDL_PrivateMouseButton((last_buttons & 4) ?
+                                           SDL_PRESSED : SDL_RELEASED,
+                                           SDL_BUTTON_LEFT, 0, 0);
                 if (changed & 2)
-                    SDL_PrivateMouseButton ((last_buttons & 2) ?
-                                            SDL_PRESSED : SDL_RELEASED,
-                                            SDL_BUTTON_MIDDLE, 0, 0);
+                    SDL_PrivateMouseButton((last_buttons & 2) ?
+                                           SDL_PRESSED : SDL_RELEASED,
+                                           SDL_BUTTON_MIDDLE, 0, 0);
                 if (changed & 1)
-                    SDL_PrivateMouseButton ((last_buttons & 1) ?
-                                            SDL_PRESSED : SDL_RELEASED,
-                                            SDL_BUTTON_RIGHT, 0, 0);
+                    SDL_PrivateMouseButton((last_buttons & 1) ?
+                                           SDL_PRESSED : SDL_RELEASED,
+                                           SDL_BUTTON_RIGHT, 0, 0);
             }
         }
     }
 }
 
 void
-RISCOS_PollKeyboard ()
+RISCOS_PollKeyboard()
 {
     int which_key = ROKEY_LEFT_SHIFT;
     int j;
@@ -372,7 +371,7 @@ RISCOS_PollKeyboard ()
 
     /* Scan the keyboard to see what is pressed */
     while (which_key <= ROKEY_LAST_KEY) {
-        which_key = (_kernel_osbyte (121, which_key, 0) & 0xFF);
+        which_key = (_kernel_osbyte(121, which_key, 0) & 0xFF);
         if (which_key != ROKEY_NONE) {
             switch (which_key) {
                 /* Skip over mouse keys */
@@ -409,7 +408,7 @@ RISCOS_PollKeyboard ()
         if (RO_pressed[j]) {
             if (RO_pressed[j] == 1) {
                 RO_pressed[j] = 0;
-                SDL_PrivateKeyboard (SDL_RELEASED, TranslateKey (j, &key, 0));
+                SDL_PrivateKeyboard(SDL_RELEASED, TranslateKey(j, &key, 0));
             } else {
                 if (j < min_key)
                     min_key = j;
@@ -423,7 +422,7 @@ RISCOS_PollKeyboard ()
     for (j = min_key; j <= max_key; j++) {
         if (RO_pressed[j]) {
             if (RO_pressed[j] == 2) {
-                SDL_PrivateKeyboard (SDL_PRESSED, TranslateKey (j, &key, 1));
+                SDL_PrivateKeyboard(SDL_PRESSED, TranslateKey(j, &key, 1));
             }
             RO_pressed[j] = 1;
         }
@@ -431,7 +430,7 @@ RISCOS_PollKeyboard ()
 }
 
 static SDL_keysym *
-TranslateKey (int intkey, SDL_keysym * keysym, int pressed)
+TranslateKey(int intkey, SDL_keysym * keysym, int pressed)
 {
     /* Set the keysym information */
     keysym->scancode = (unsigned char) intkey;
@@ -442,7 +441,7 @@ TranslateKey (int intkey, SDL_keysym * keysym, int pressed)
         int state;
         int ch;
 
-        state = (_kernel_osbyte (202, 0, 255) & 0xFF);
+        state = (_kernel_osbyte(202, 0, 255) & 0xFF);
 
         /*TODO: Take into account other keyboard layouts */
 
@@ -477,7 +476,7 @@ TranslateKey (int intkey, SDL_keysym * keysym, int pressed)
 
                 /* Letters just give upper case version */
                 if (ch >= SDLK_a && ch <= SDLK_z)
-                    ch = toupper (ch);
+                    ch = toupper(ch);
                 else {
                     switch (ch) {
                     case SDLK_HASH:

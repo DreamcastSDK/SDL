@@ -33,27 +33,27 @@ extern "C"
     {
         char *bits;
     };
-    WMcursor *QT_CreateWMCursor (_THIS,
-                                 Uint8 * data, Uint8 * mask, int w, int h,
-                                 int hot_x, int hot_y)
+    WMcursor *QT_CreateWMCursor(_THIS,
+                                Uint8 * data, Uint8 * mask, int w, int h,
+                                int hot_x, int hot_y)
     {
         static WMcursor dummy;
           dummy.bits = 0;
           return &dummy;
     }
 
-    int QT_ShowWMCursor (_THIS, WMcursor * cursor)
+    int QT_ShowWMCursor(_THIS, WMcursor * cursor)
     {
         return 1;
     }
 
-    void QT_FreeWMCursor (_THIS, WMcursor * cursor)
+    void QT_FreeWMCursor(_THIS, WMcursor * cursor)
     {
     }
 
-    void QT_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+    void QT_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
     {
-        SDL_Win->setMousePos (QPoint (x, y));
+        SDL_Win->setMousePos(QPoint(x, y));
     }
 
 };                              /* Extern C */

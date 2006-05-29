@@ -105,7 +105,7 @@ typedef struct
 #else
     INT32 *private;
 #endif
-} SDL_NAME (XF86VidModeModeLine);
+} SDL_NAME(XF86VidModeModeLine);
 
 typedef struct
 {
@@ -127,13 +127,13 @@ typedef struct
 #else
     INT32 *private;
 #endif
-} SDL_NAME (XF86VidModeModeInfo);
+} SDL_NAME(XF86VidModeModeInfo);
 
 typedef struct
 {
     float hi;
     float lo;
-} SDL_NAME (XF86VidModeSyncRange);
+} SDL_NAME(XF86VidModeSyncRange);
 
 typedef struct
 {
@@ -141,10 +141,10 @@ typedef struct
     char *model;
     float EMPTY;
     unsigned char nhsync;
-      SDL_NAME (XF86VidModeSyncRange) * hsync;
+      SDL_NAME(XF86VidModeSyncRange) * hsync;
     unsigned char nvsync;
-      SDL_NAME (XF86VidModeSyncRange) * vsync;
-} SDL_NAME (XF86VidModeMonitor);
+      SDL_NAME(XF86VidModeSyncRange) * vsync;
+} SDL_NAME(XF86VidModeMonitor);
 
 typedef struct
 {
@@ -157,14 +157,14 @@ typedef struct
     int kind;                   /* What happened */
     Bool forced;                /* extents of new region */
     Time time;                  /* event timestamp */
-} SDL_NAME (XF86VidModeNotifyEvent);
+} SDL_NAME(XF86VidModeNotifyEvent);
 
 typedef struct
 {
     float red;                  /* Red Gamma value */
     float green;                /* Green Gamma value */
     float blue;                 /* Blue Gamma value */
-} SDL_NAME (XF86VidModeGamma);
+} SDL_NAME(XF86VidModeGamma);
 
 
 #define SDL_XF86VidModeSelectNextMode(disp, scr) \
@@ -172,123 +172,123 @@ typedef struct
 #define SDL_XF86VidModeSelectPrevMode(disp, scr) \
 	SDL_NAME(XF86VidModeSwitchMode)(disp, scr, -1)
 
-_XFUNCPROTOBEGIN
-    Bool SDL_NAME (XF86VidModeQueryVersion) (Display * /* dpy */ ,
-                                             int * /* majorVersion */ ,
-                                             int *      /* minorVersion */
+_XFUNCPROTOBEGIN Bool SDL_NAME(XF86VidModeQueryVersion) (Display * /* dpy */ ,
+                                                         int *
+                                                         /* majorVersion */ ,
+                                                         int *  /* minorVersion */
     );
 
-Bool SDL_NAME (XF86VidModeQueryExtension) (Display * /* dpy */ ,
-                                           int * /* event_base */ ,
-                                           int *        /* error_base */
+Bool SDL_NAME(XF86VidModeQueryExtension) (Display * /* dpy */ ,
+                                          int * /* event_base */ ,
+                                          int * /* error_base */
     );
 
-Bool SDL_NAME (XF86VidModeSetClientVersion) (Display *  /* dpy */
+Bool SDL_NAME(XF86VidModeSetClientVersion) (Display *   /* dpy */
     );
 
-Bool SDL_NAME (XF86VidModeGetModeLine) (Display * /* dpy */ ,
+Bool SDL_NAME(XF86VidModeGetModeLine) (Display * /* dpy */ ,
+                                       int /* screen */ ,
+                                       int * /* dotclock */ ,
+                                       SDL_NAME(XF86VidModeModeLine) *  /* modeline */
+    );
+
+Bool SDL_NAME(XF86VidModeGetAllModeLines) (Display * /* dpy */ ,
+                                           int /* screen */ ,
+                                           int * /* modecount */ ,
+                                           SDL_NAME(XF86VidModeModeInfo) ***    /* modelinesPtr */
+    );
+
+Bool SDL_NAME(XF86VidModeAddModeLine) (Display * /* dpy */ ,
+                                       int /* screen */ ,
+                                       SDL_NAME(XF86VidModeModeInfo) *
+                                       /* new modeline */ ,
+                                       SDL_NAME(XF86VidModeModeInfo) *  /* after modeline */
+    );
+
+Bool SDL_NAME(XF86VidModeDeleteModeLine) (Display * /* dpy */ ,
+                                          int /* screen */ ,
+                                          SDL_NAME(XF86VidModeModeInfo) *       /* modeline */
+    );
+
+Bool SDL_NAME(XF86VidModeModModeLine) (Display * /* dpy */ ,
+                                       int /* screen */ ,
+                                       SDL_NAME(XF86VidModeModeLine) *  /* modeline */
+    );
+
+Status SDL_NAME(XF86VidModeValidateModeLine) (Display * /* dpy */ ,
+                                              int /* screen */ ,
+                                              SDL_NAME(XF86VidModeModeInfo) *   /* modeline */
+    );
+
+Bool SDL_NAME(XF86VidModeSwitchMode) (Display * /* dpy */ ,
+                                      int /* screen */ ,
+                                      int       /* zoom */
+    );
+
+Bool SDL_NAME(XF86VidModeSwitchToMode) (Display * /* dpy */ ,
                                         int /* screen */ ,
-                                        int * /* dotclock */ ,
-                                        SDL_NAME (XF86VidModeModeLine) *        /* modeline */
+                                        SDL_NAME(XF86VidModeModeInfo) * /* modeline */
     );
 
-Bool SDL_NAME (XF86VidModeGetAllModeLines) (Display * /* dpy */ ,
+Bool SDL_NAME(XF86VidModeLockModeSwitch) (Display * /* dpy */ ,
+                                          int /* screen */ ,
+                                          int   /* lock */
+    );
+
+Bool SDL_NAME(XF86VidModeGetMonitor) (Display * /* dpy */ ,
+                                      int /* screen */ ,
+                                      SDL_NAME(XF86VidModeMonitor) *    /* monitor */
+    );
+
+Bool SDL_NAME(XF86VidModeGetViewPort) (Display * /* dpy */ ,
+                                       int /* screen */ ,
+                                       int * /* x return */ ,
+                                       int *    /* y return */
+    );
+
+Bool SDL_NAME(XF86VidModeSetViewPort) (Display * /* dpy */ ,
+                                       int /* screen */ ,
+                                       int /* x */ ,
+                                       int      /* y */
+    );
+
+Bool SDL_NAME(XF86VidModeGetDotClocks) (Display * /* dpy */ ,
+                                        int /* screen */ ,
+                                        int * /* flags return */ ,
+                                        int * /* number of clocks return */ ,
+                                        int * /* max dot clock return */ ,
+                                        int **  /* clocks return */
+    );
+
+Bool SDL_NAME(XF86VidModeGetGamma) (Display * /* dpy */ ,
+                                    int /* screen */ ,
+                                    SDL_NAME(XF86VidModeGamma) *        /* Gamma */
+    );
+
+Bool SDL_NAME(XF86VidModeSetGamma) (Display * /* dpy */ ,
+                                    int /* screen */ ,
+                                    SDL_NAME(XF86VidModeGamma) *        /* Gamma */
+    );
+
+Bool SDL_NAME(XF86VidModeSetGammaRamp) (Display * /* dpy */ ,
+                                        int /* screen */ ,
+                                        int /* size */ ,
+                                        unsigned short * /* red array */ ,
+                                        unsigned short * /* green array */ ,
+                                        unsigned short *        /* blue array */
+    );
+
+Bool SDL_NAME(XF86VidModeGetGammaRamp) (Display * /* dpy */ ,
+                                        int /* screen */ ,
+                                        int /* size */ ,
+                                        unsigned short * /* red array */ ,
+                                        unsigned short * /* green array */ ,
+                                        unsigned short *        /* blue array */
+    );
+
+Bool SDL_NAME(XF86VidModeGetGammaRampSize) (Display * /* dpy */ ,
                                             int /* screen */ ,
-                                            int * /* modecount */ ,
-                                            SDL_NAME (XF86VidModeModeInfo) ***  /* modelinesPtr */
-    );
-
-Bool SDL_NAME (XF86VidModeAddModeLine) (Display * /* dpy */ ,
-                                        int /* screen */ ,
-                                        SDL_NAME (XF86VidModeModeInfo) *
-                                        /* new modeline */ ,
-                                        SDL_NAME (XF86VidModeModeInfo) *        /* after modeline */
-    );
-
-Bool SDL_NAME (XF86VidModeDeleteModeLine) (Display * /* dpy */ ,
-                                           int /* screen */ ,
-                                           SDL_NAME (XF86VidModeModeInfo) *     /* modeline */
-    );
-
-Bool SDL_NAME (XF86VidModeModModeLine) (Display * /* dpy */ ,
-                                        int /* screen */ ,
-                                        SDL_NAME (XF86VidModeModeLine) *        /* modeline */
-    );
-
-Status SDL_NAME (XF86VidModeValidateModeLine) (Display * /* dpy */ ,
-                                               int /* screen */ ,
-                                               SDL_NAME (XF86VidModeModeInfo) * /* modeline */
-    );
-
-Bool SDL_NAME (XF86VidModeSwitchMode) (Display * /* dpy */ ,
-                                       int /* screen */ ,
-                                       int      /* zoom */
-    );
-
-Bool SDL_NAME (XF86VidModeSwitchToMode) (Display * /* dpy */ ,
-                                         int /* screen */ ,
-                                         SDL_NAME (XF86VidModeModeInfo) *       /* modeline */
-    );
-
-Bool SDL_NAME (XF86VidModeLockModeSwitch) (Display * /* dpy */ ,
-                                           int /* screen */ ,
-                                           int  /* lock */
-    );
-
-Bool SDL_NAME (XF86VidModeGetMonitor) (Display * /* dpy */ ,
-                                       int /* screen */ ,
-                                       SDL_NAME (XF86VidModeMonitor) *  /* monitor */
-    );
-
-Bool SDL_NAME (XF86VidModeGetViewPort) (Display * /* dpy */ ,
-                                        int /* screen */ ,
-                                        int * /* x return */ ,
-                                        int *   /* y return */
-    );
-
-Bool SDL_NAME (XF86VidModeSetViewPort) (Display * /* dpy */ ,
-                                        int /* screen */ ,
-                                        int /* x */ ,
-                                        int     /* y */
-    );
-
-Bool SDL_NAME (XF86VidModeGetDotClocks) (Display * /* dpy */ ,
-                                         int /* screen */ ,
-                                         int * /* flags return */ ,
-                                         int * /* number of clocks return */ ,
-                                         int * /* max dot clock return */ ,
-                                         int ** /* clocks return */
-    );
-
-Bool SDL_NAME (XF86VidModeGetGamma) (Display * /* dpy */ ,
-                                     int /* screen */ ,
-                                     SDL_NAME (XF86VidModeGamma) *      /* Gamma */
-    );
-
-Bool SDL_NAME (XF86VidModeSetGamma) (Display * /* dpy */ ,
-                                     int /* screen */ ,
-                                     SDL_NAME (XF86VidModeGamma) *      /* Gamma */
-    );
-
-Bool SDL_NAME (XF86VidModeSetGammaRamp) (Display * /* dpy */ ,
-                                         int /* screen */ ,
-                                         int /* size */ ,
-                                         unsigned short * /* red array */ ,
-                                         unsigned short * /* green array */ ,
-                                         unsigned short *       /* blue array */
-    );
-
-Bool SDL_NAME (XF86VidModeGetGammaRamp) (Display * /* dpy */ ,
-                                         int /* screen */ ,
-                                         int /* size */ ,
-                                         unsigned short * /* red array */ ,
-                                         unsigned short * /* green array */ ,
-                                         unsigned short *       /* blue array */
-    );
-
-Bool SDL_NAME (XF86VidModeGetGammaRampSize) (Display * /* dpy */ ,
-                                             int /* screen */ ,
-                                             int *      /* size */
+                                            int *       /* size */
     );
 
 

@@ -135,8 +135,8 @@ struct joystick_hwdata
 static char *joynames[MAX_JOYS];
 static char *joydevnames[MAX_JOYS];
 
-static int report_alloc (struct report *, struct report_desc *, int);
-static void report_free (struct report *);
+static int report_alloc(struct report *, struct report_desc *, int);
+static void report_free(struct report *);
 
 #ifdef USBHID_UCR_DATA
 #define REP_BUF_DATA(rep) ((rep)->buf->ucr_data)
@@ -145,49 +145,49 @@ static void report_free (struct report *);
 #endif
 
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     char s[16];
     int i, fd;
 
     SDL_numjoysticks = 0;
 
-    SDL_memset (joynames, 0, sizeof (joynames));
-    SDL_memset (joydevnames, 0, sizeof (joydevnames));
+    SDL_memset(joynames, 0, sizeof(joynames));
+    SDL_memset(joydevnames, 0, sizeof(joydevnames));
 
     for (i = 0; i < MAX_UHID_JOYS; i++) {
         SDL_Joystick nj;
 
-        SDL_snprintf (s, SDL_arraysize (s), "/dev/uhid%d", i);
+        SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
 
         nj.index = SDL_numjoysticks;
-        joynames[nj.index] = strdup (s);
+        joynames[nj.index] = strdup(s);
 
-        if (SDL_SYS_JoystickOpen (&nj) == 0) {
-            SDL_SYS_JoystickClose (&nj);
+        if (SDL_SYS_JoystickOpen(&nj) == 0) {
+            SDL_SYS_JoystickClose(&nj);
             SDL_numjoysticks++;
         } else {
-            SDL_free (joynames[nj.index]);
+            SDL_free(joynames[nj.index]);
             joynames[nj.index] = NULL;
         }
     }
     for (i = 0; i < MAX_JOY_JOYS; i++) {
-        SDL_snprintf (s, SDL_arraysize (s), "/dev/joy%d", i);
-        fd = open (s, O_RDONLY);
+        SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
+        fd = open(s, O_RDONLY);
         if (fd != -1) {
-            joynames[SDL_numjoysticks++] = strdup (s);
-            close (fd);
+            joynames[SDL_numjoysticks++] = strdup(s);
+            close(fd);
         }
     }
 
     /* Read the default USB HID usage table. */
-    hid_init (NULL);
+    hid_init(NULL);
 
     return (SDL_numjoysticks);
 }
 
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     if (joydevnames[index] != NULL) {
         return (joydevnames[index]);
@@ -196,7 +196,7 @@ SDL_SYS_JoystickName (int index)
 }
 
 static int
-usage_to_joyaxe (unsigned usage)
+usage_to_joyaxe(unsigned usage)
 {
     int joyaxe;
     switch (usage) {
@@ -231,7 +231,7 @@ usage_to_joyaxe (unsigned usage)
 }
 
 static unsigned
-hatval_to_sdl (Sint32 hatval)
+hatval_to_sdl(Sint32 hatval)
 {
     static const unsigned hat_dir_map[8] = {
         SDL_HAT_UP, SDL_HAT_RIGHTUP, SDL_HAT_RIGHT, SDL_HAT_RIGHTDOWN,
@@ -247,7 +247,7 @@ hatval_to_sdl (Sint32 hatval)
 
 
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joy)
+SDL_SYS_JoystickOpen(SDL_Joystick * joy)
 {
     char *path = joynames[joy->index];
     struct joystick_hwdata *hw;
@@ -257,29 +257,29 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joy)
     int fd;
     int i;
 
-    fd = open (path, O_RDONLY);
+    fd = open(path, O_RDONLY);
     if (fd == -1) {
-        SDL_SetError ("%s: %s", path, strerror (errno));
+        SDL_SetError("%s: %s", path, strerror(errno));
         return (-1);
     }
 
     hw = (struct joystick_hwdata *)
-        SDL_malloc (sizeof (struct joystick_hwdata));
+        SDL_malloc(sizeof(struct joystick_hwdata));
     if (hw == NULL) {
-        SDL_OutOfMemory ();
-        close (fd);
+        SDL_OutOfMemory();
+        close(fd);
         return (-1);
     }
     joy->hwdata = hw;
     hw->fd = fd;
-    hw->path = strdup (path);
-    if (!SDL_strncmp (path, "/dev/joy", 8)) {
+    hw->path = strdup(path);
+    if (!SDL_strncmp(path, "/dev/joy", 8)) {
         hw->type = BSDJOY_JOY;
         joy->naxes = 2;
         joy->nbuttons = 2;
         joy->nhats = 0;
         joy->nballs = 0;
-        joydevnames[joy->index] = strdup ("Gameport joystick");
+        joydevnames[joy->index] = strdup("Gameport joystick");
         goto usbend;
     } else {
         hw->type = BSDJOY_UHID;
@@ -290,32 +290,32 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joy)
         for (ax = 0; ax < JOYAXE_count; ax++)
             hw->axis_map[ax] = -1;
     }
-    hw->repdesc = hid_get_report_desc (fd);
+    hw->repdesc = hid_get_report_desc(fd);
     if (hw->repdesc == NULL) {
-        SDL_SetError ("%s: USB_GET_REPORT_DESC: %s", hw->path,
-                      strerror (errno));
+        SDL_SetError("%s: USB_GET_REPORT_DESC: %s", hw->path,
+                     strerror(errno));
         goto usberr;
     }
 
     rep = &hw->inreport;
-    if (ioctl (fd, USB_GET_REPORT_ID, &rep->rid) < 0) {
+    if (ioctl(fd, USB_GET_REPORT_ID, &rep->rid) < 0) {
         rep->rid = -1;          /* XXX */
     }
-    if (report_alloc (rep, hw->repdesc, REPORT_INPUT) < 0) {
+    if (report_alloc(rep, hw->repdesc, REPORT_INPUT) < 0) {
         goto usberr;
     }
     if (rep->size <= 0) {
-        SDL_SetError ("%s: Input report descriptor has invalid length",
-                      hw->path);
+        SDL_SetError("%s: Input report descriptor has invalid length",
+                     hw->path);
         goto usberr;
     }
 #if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_version >= 500111)
-    hdata = hid_start_parse (hw->repdesc, 1 << hid_input, rep->rid);
+    hdata = hid_start_parse(hw->repdesc, 1 << hid_input, rep->rid);
 #else
-    hdata = hid_start_parse (hw->repdesc, 1 << hid_input);
+    hdata = hid_start_parse(hw->repdesc, 1 << hid_input);
 #endif
     if (hdata == NULL) {
-        SDL_SetError ("%s: Cannot start HID parser", hw->path);
+        SDL_SetError("%s: Cannot start HID parser", hw->path);
         goto usberr;
     }
     joy->naxes = 0;
@@ -325,31 +325,31 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joy)
     for (i = 0; i < JOYAXE_count; i++)
         hw->axis_map[i] = -1;
 
-    while (hid_get_item (hdata, &hitem) > 0) {
+    while (hid_get_item(hdata, &hitem) > 0) {
         char *sp;
         const char *s;
 
         switch (hitem.kind) {
         case hid_collection:
-            switch (HID_PAGE (hitem.usage)) {
+            switch (HID_PAGE(hitem.usage)) {
             case HUP_GENERIC_DESKTOP:
-                switch (HID_USAGE (hitem.usage)) {
+                switch (HID_USAGE(hitem.usage)) {
                 case HUG_JOYSTICK:
                 case HUG_GAME_PAD:
-                    s = hid_usage_in_page (hitem.usage);
-                    sp = SDL_malloc (SDL_strlen (s) + 5);
-                    SDL_snprintf (sp, SDL_strlen (s) + 5, "%s (%d)",
-                                  s, joy->index);
+                    s = hid_usage_in_page(hitem.usage);
+                    sp = SDL_malloc(SDL_strlen(s) + 5);
+                    SDL_snprintf(sp, SDL_strlen(s) + 5, "%s (%d)",
+                                 s, joy->index);
                     joydevnames[joy->index] = sp;
                 }
             }
             break;
         case hid_input:
-            switch (HID_PAGE (hitem.usage)) {
+            switch (HID_PAGE(hitem.usage)) {
             case HUP_GENERIC_DESKTOP:
                 {
-                    unsigned usage = HID_USAGE (hitem.usage);
-                    int joyaxe = usage_to_joyaxe (usage);
+                    unsigned usage = HID_USAGE(hitem.usage);
+                    int joyaxe = usage_to_joyaxe(usage);
                     if (joyaxe >= 0) {
                         hw->axis_map[joyaxe] = 1;
                     } else if (usage == HUG_HAT_SWITCH) {
@@ -368,25 +368,25 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joy)
             break;
         }
     }
-    hid_end_parse (hdata);
+    hid_end_parse(hdata);
     for (i = 0; i < JOYAXE_count; i++)
         if (hw->axis_map[i] > 0)
             hw->axis_map[i] = joy->naxes++;
 
   usbend:
     /* The poll blocks the event thread. */
-    fcntl (fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFL, O_NONBLOCK);
 
     return (0);
   usberr:
-    close (hw->fd);
-    SDL_free (hw->path);
-    SDL_free (hw);
+    close(hw->fd);
+    SDL_free(hw->path);
+    SDL_free(hw);
     return (-1);
 }
 
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
 {
     struct hid_item hitem;
     struct hid_data *hdata;
@@ -399,10 +399,10 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
     if (joy->hwdata->type == BSDJOY_JOY) {
-        if (read (joy->hwdata->fd, &gameport, sizeof gameport) !=
+        if (read(joy->hwdata->fd, &gameport, sizeof gameport) !=
             sizeof gameport)
             return;
-        if (abs (x - gameport.x) > 8) {
+        if (abs(x - gameport.x) > 8) {
             x = gameport.x;
             if (x < xmin) {
                 xmin = x;
@@ -417,9 +417,9 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
             v = (Sint32) x;
             v -= (xmax + xmin + 1) / 2;
             v *= 32768 / ((xmax - xmin + 1) / 2);
-            SDL_PrivateJoystickAxis (joy, 0, v);
+            SDL_PrivateJoystickAxis(joy, 0, v);
         }
-        if (abs (y - gameport.y) > 8) {
+        if (abs(y - gameport.y) > 8) {
             y = gameport.y;
             if (y < ymin) {
                 ymin = y;
@@ -434,13 +434,13 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
             v = (Sint32) y;
             v -= (ymax + ymin + 1) / 2;
             v *= 32768 / ((ymax - ymin + 1) / 2);
-            SDL_PrivateJoystickAxis (joy, 1, v);
+            SDL_PrivateJoystickAxis(joy, 1, v);
         }
         if (gameport.b1 != joy->buttons[0]) {
-            SDL_PrivateJoystickButton (joy, 0, gameport.b1);
+            SDL_PrivateJoystickButton(joy, 0, gameport.b1);
         }
         if (gameport.b2 != joy->buttons[1]) {
-            SDL_PrivateJoystickButton (joy, 1, gameport.b2);
+            SDL_PrivateJoystickButton(joy, 1, gameport.b2);
         }
         return;
     }
@@ -448,53 +448,51 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
 
     rep = &joy->hwdata->inreport;
 
-    if (read (joy->hwdata->fd, REP_BUF_DATA (rep), rep->size) != rep->size) {
+    if (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) != rep->size) {
         return;
     }
 #if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_version >= 500111)
-    hdata = hid_start_parse (joy->hwdata->repdesc, 1 << hid_input, rep->rid);
+    hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
 #else
-    hdata = hid_start_parse (joy->hwdata->repdesc, 1 << hid_input);
+    hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input);
 #endif
     if (hdata == NULL) {
-        fprintf (stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);
+        fprintf(stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);
         return;
     }
 
-    for (nbutton = 0; hid_get_item (hdata, &hitem) > 0;) {
+    for (nbutton = 0; hid_get_item(hdata, &hitem) > 0;) {
         switch (hitem.kind) {
         case hid_input:
-            switch (HID_PAGE (hitem.usage)) {
+            switch (HID_PAGE(hitem.usage)) {
             case HUP_GENERIC_DESKTOP:
                 {
-                    unsigned usage = HID_USAGE (hitem.usage);
-                    int joyaxe = usage_to_joyaxe (usage);
+                    unsigned usage = HID_USAGE(hitem.usage);
+                    int joyaxe = usage_to_joyaxe(usage);
                     if (joyaxe >= 0) {
                         naxe = joy->hwdata->axis_map[joyaxe];
                         /* scaleaxe */
-                        v = (Sint32) hid_get_data (REP_BUF_DATA (rep),
-                                                   &hitem);
+                        v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                         v -= (hitem.logical_maximum +
                               hitem.logical_minimum + 1) / 2;
                         v *= 32768 /
                             ((hitem.logical_maximum -
                               hitem.logical_minimum + 1) / 2);
                         if (v != joy->axes[naxe]) {
-                            SDL_PrivateJoystickAxis (joy, naxe, v);
+                            SDL_PrivateJoystickAxis(joy, naxe, v);
                         }
                     } else if (usage == HUG_HAT_SWITCH) {
-                        v = (Sint32) hid_get_data (REP_BUF_DATA (rep),
-                                                   &hitem);
-                        SDL_PrivateJoystickHat (joy, 0,
-                                                hatval_to_sdl (v) -
-                                                hitem.logical_minimum);
+                        v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+                        SDL_PrivateJoystickHat(joy, 0,
+                                               hatval_to_sdl(v) -
+                                               hitem.logical_minimum);
                     }
                     break;
                 }
             case HUP_BUTTON:
-                v = (Sint32) hid_get_data (REP_BUF_DATA (rep), &hitem);
+                v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                 if (joy->buttons[nbutton] != v) {
-                    SDL_PrivateJoystickButton (joy, nbutton, v);
+                    SDL_PrivateJoystickButton(joy, nbutton, v);
                 }
                 nbutton++;
                 break;
@@ -506,77 +504,77 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joy)
             break;
         }
     }
-    hid_end_parse (hdata);
+    hid_end_parse(hdata);
 
     return;
 }
 
 /* Function to close a joystick after use */
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joy)
+SDL_SYS_JoystickClose(SDL_Joystick * joy)
 {
-    if (SDL_strncmp (joy->hwdata->path, "/dev/joy", 8)) {
-        report_free (&joy->hwdata->inreport);
-        hid_dispose_report_desc (joy->hwdata->repdesc);
+    if (SDL_strncmp(joy->hwdata->path, "/dev/joy", 8)) {
+        report_free(&joy->hwdata->inreport);
+        hid_dispose_report_desc(joy->hwdata->repdesc);
     }
-    close (joy->hwdata->fd);
-    SDL_free (joy->hwdata->path);
-    SDL_free (joy->hwdata);
+    close(joy->hwdata->fd);
+    SDL_free(joy->hwdata->path);
+    SDL_free(joy->hwdata);
 
     return;
 }
 
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     int i;
 
     for (i = 0; i < MAX_JOYS; i++) {
         if (joynames[i] != NULL)
-            SDL_free (joynames[i]);
+            SDL_free(joynames[i]);
         if (joydevnames[i] != NULL)
-            SDL_free (joydevnames[i]);
+            SDL_free(joydevnames[i]);
     }
 
     return;
 }
 
 static int
-report_alloc (struct report *r, struct report_desc *rd, int repind)
+report_alloc(struct report *r, struct report_desc *rd, int repind)
 {
     int len;
 
 #ifdef __DragonFly__
-    len = hid_report_size (rd, r->rid, repinfo[repind].kind);
+    len = hid_report_size(rd, r->rid, repinfo[repind].kind);
 #elif __FREEBSD__
 # if (__FreeBSD_version >= 460000)
 #  if (__FreeBSD_version <= 500111)
-    len = hid_report_size (rd, r->rid, repinfo[repind].kind);
+    len = hid_report_size(rd, r->rid, repinfo[repind].kind);
 #  else
-    len = hid_report_size (rd, repinfo[repind].kind, r->rid);
+    len = hid_report_size(rd, repinfo[repind].kind, r->rid);
 #  endif
 # else
-    len = hid_report_size (rd, repinfo[repind].kind, &r->rid);
+    len = hid_report_size(rd, repinfo[repind].kind, &r->rid);
 # endif
 #else
 # ifdef USBHID_NEW
-    len = hid_report_size (rd, repinfo[repind].kind, r->rid);
+    len = hid_report_size(rd, repinfo[repind].kind, r->rid);
 # else
-    len = hid_report_size (rd, repinfo[repind].kind, &r->rid);
+    len = hid_report_size(rd, repinfo[repind].kind, &r->rid);
 # endif
 #endif
 
     if (len < 0) {
-        SDL_SetError ("Negative HID report size");
+        SDL_SetError("Negative HID report size");
         return (-1);
     }
     r->size = len;
 
     if (r->size > 0) {
-        r->buf = SDL_malloc (sizeof (*r->buf) - sizeof (REP_BUF_DATA (r)) +
-                             r->size);
+        r->buf = SDL_malloc(sizeof(*r->buf) - sizeof(REP_BUF_DATA(r)) +
+                            r->size);
         if (r->buf == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (-1);
         }
     } else {
@@ -588,10 +586,10 @@ report_alloc (struct report *r, struct report_desc *rd, int repind)
 }
 
 static void
-report_free (struct report *r)
+report_free(struct report *r)
 {
     if (r->buf != NULL) {
-        SDL_free (r->buf);
+        SDL_free(r->buf);
     }
     r->status = SREPORT_UNINIT;
 }

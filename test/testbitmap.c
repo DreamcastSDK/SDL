@@ -10,22 +10,22 @@
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
-quit (int rc)
+quit(int rc)
 {
-    SDL_Quit ();
-    exit (rc);
+    SDL_Quit();
+    exit(rc);
 }
 
 SDL_Surface *
-LoadXBM (SDL_Surface * screen, int w, int h, Uint8 * bits)
+LoadXBM(SDL_Surface * screen, int w, int h, Uint8 * bits)
 {
     SDL_Surface *bitmap;
     Uint8 *line;
 
     /* Allocate the bitmap */
-    bitmap = SDL_CreateRGBSurface (SDL_SWSURFACE, w, h, 1, 0, 0, 0, 0);
+    bitmap = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 1, 0, 0, 0, 0);
     if (bitmap == NULL) {
-        fprintf (stderr, "Couldn't allocate bitmap: %s\n", SDL_GetError ());
+        fprintf(stderr, "Couldn't allocate bitmap: %s\n", SDL_GetError());
         return (NULL);
     }
 
@@ -33,7 +33,7 @@ LoadXBM (SDL_Surface * screen, int w, int h, Uint8 * bits)
     line = (Uint8 *) bitmap->pixels;
     w = (w + 7) / 8;
     while (h--) {
-        memcpy (line, bits, w);
+        memcpy(line, bits, w);
         /* X11 Bitmap images have the bits reversed */
         {
             int i, j;
@@ -54,7 +54,7 @@ LoadXBM (SDL_Surface * screen, int w, int h, Uint8 * bits)
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     SDL_Surface *screen;
     SDL_Surface *bitmap;
@@ -70,8 +70,8 @@ main (int argc, char *argv[])
 
 
     /* Initialize SDL */
-    if (SDL_Init (SDL_INIT_VIDEO) < 0) {
-        fprintf (stderr, "Couldn't initialize SDL: %s\n", SDL_GetError ());
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -79,28 +79,28 @@ main (int argc, char *argv[])
     videoflags = SDL_SWSURFACE;
     while (argc > 1) {
         --argc;
-        if (strcmp (argv[argc - 1], "-bpp") == 0) {
-            video_bpp = atoi (argv[argc]);
+        if (strcmp(argv[argc - 1], "-bpp") == 0) {
+            video_bpp = atoi(argv[argc]);
             --argc;
-        } else if (strcmp (argv[argc], "-warp") == 0) {
+        } else if (strcmp(argv[argc], "-warp") == 0) {
             videoflags |= SDL_HWPALETTE;
-        } else if (strcmp (argv[argc], "-hw") == 0) {
+        } else if (strcmp(argv[argc], "-hw") == 0) {
             videoflags |= SDL_HWSURFACE;
-        } else if (strcmp (argv[argc], "-fullscreen") == 0) {
+        } else if (strcmp(argv[argc], "-fullscreen") == 0) {
             videoflags |= SDL_FULLSCREEN;
         } else {
-            fprintf (stderr,
-                     "Usage: %s [-bpp N] [-warp] [-hw] [-fullscreen]\n",
-                     argv[0]);
-            quit (1);
+            fprintf(stderr,
+                    "Usage: %s [-bpp N] [-warp] [-hw] [-fullscreen]\n",
+                    argv[0]);
+            quit(1);
         }
     }
 
     /* Set 640x480 video mode */
-    if ((screen = SDL_SetVideoMode (640, 480, video_bpp, videoflags)) == NULL) {
-        fprintf (stderr, "Couldn't set 640x480x%d video mode: %s\n",
-                 video_bpp, SDL_GetError ());
-        quit (2);
+    if ((screen = SDL_SetVideoMode(640, 480, video_bpp, videoflags)) == NULL) {
+        fprintf(stderr, "Couldn't set 640x480x%d video mode: %s\n",
+                video_bpp, SDL_GetError());
+        quit(2);
     }
 
     if (video_bpp == 8) {
@@ -110,25 +110,25 @@ main (int argc, char *argv[])
             palette[i].g = 255 - i;
             palette[i].b = 255 - i;
         }
-        SDL_SetColors (screen, palette, 0, 256);
+        SDL_SetColors(screen, palette, 0, 256);
     }
 
     /* Set the surface pixels and refresh! */
-    if (SDL_LockSurface (screen) < 0) {
-        fprintf (stderr, "Couldn't lock the display surface: %s\n",
-                 SDL_GetError ());
-        quit (2);
+    if (SDL_LockSurface(screen) < 0) {
+        fprintf(stderr, "Couldn't lock the display surface: %s\n",
+                SDL_GetError());
+        quit(2);
     }
     buffer = (Uint8 *) screen->pixels;
     if (screen->format->BytesPerPixel != 2) {
         for (i = 0; i < screen->h; ++i) {
-            memset (buffer, (i * 255) / screen->h, screen->pitch);
+            memset(buffer, (i * 255) / screen->h, screen->pitch);
             buffer += screen->pitch;
         }
     } else {
         for (i = 0; i < screen->h; ++i) {
             gradient = ((i * 255) / screen->h);
-            color = SDL_MapRGB (screen->format, gradient, gradient, gradient);
+            color = SDL_MapRGB(screen->format, gradient, gradient, gradient);
             buffer16 = (Uint16 *) buffer;
             for (k = 0; k < screen->w; k++) {
                 *(buffer16 + k) = color;
@@ -136,21 +136,21 @@ main (int argc, char *argv[])
             buffer += screen->pitch;
         }
     }
-    SDL_UnlockSurface (screen);
-    SDL_UpdateRect (screen, 0, 0, 0, 0);
+    SDL_UnlockSurface(screen);
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 
     /* Load the bitmap */
-    bitmap = LoadXBM (screen, picture_width, picture_height,
-                      (Uint8 *) picture_bits);
+    bitmap = LoadXBM(screen, picture_width, picture_height,
+                     (Uint8 *) picture_bits);
     if (bitmap == NULL) {
-        quit (1);
+        quit(1);
     }
 
     /* Wait for a keystroke */
     done = 0;
     while (!done) {
         /* Check for events */
-        while (SDL_PollEvent (&event)) {
+        while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_MOUSEBUTTONDOWN:
                 {
@@ -160,8 +160,8 @@ main (int argc, char *argv[])
                     dst.y = event.button.y - bitmap->h / 2;
                     dst.w = bitmap->w;
                     dst.h = bitmap->h;
-                    SDL_BlitSurface (bitmap, NULL, screen, &dst);
-                    SDL_UpdateRects (screen, 1, &dst);
+                    SDL_BlitSurface(bitmap, NULL, screen, &dst);
+                    SDL_UpdateRects(screen, 1, &dst);
                 }
                 break;
             case SDL_KEYDOWN:
@@ -176,7 +176,7 @@ main (int argc, char *argv[])
             }
         }
     }
-    SDL_FreeSurface (bitmap);
-    SDL_Quit ();
+    SDL_FreeSurface(bitmap);
+    SDL_Quit();
     return (0);
 }

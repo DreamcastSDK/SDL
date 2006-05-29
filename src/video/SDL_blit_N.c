@@ -39,14 +39,14 @@
 #ifdef __MACOSX__
 #include <sys/sysctl.h>
 static size_t
-GetL3CacheSize (void)
+GetL3CacheSize(void)
 {
     const char key[] = "hw.l3cachesize";
     u_int64_t result = 0;
-    size_t typeSize = sizeof (result);
+    size_t typeSize = sizeof(result);
 
 
-    int err = sysctlbyname (key, &result, &typeSize, NULL, 0);
+    int err = sysctlbyname(key, &result, &typeSize, NULL, 0);
     if (0 != err)
         return 0;
 
@@ -54,7 +54,7 @@ GetL3CacheSize (void)
 }
 #else
 static size_t
-GetL3CacheSize (void)
+GetL3CacheSize(void)
 {
     /* XXX: Just guess G4 */
     return 2097152;
@@ -105,8 +105,7 @@ GetL3CacheSize (void)
 
 /* Calculate the permute vector used for 32->32 swizzling */
 static vector unsigned char
-calc_swizzle32 (const SDL_PixelFormat * srcfmt,
-                const SDL_PixelFormat * dstfmt)
+calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
 {
     /*
      * We have to assume that the bits that aren't used by other
@@ -127,23 +126,23 @@ calc_swizzle32 (const SDL_PixelFormat * srcfmt,
     if (!dstfmt) {
         dstfmt = &default_pixel_format;
     }
-    const vector unsigned char plus =
-        VECUINT8_LITERAL (0x00, 0x00, 0x00, 0x00,
-                          0x04, 0x04, 0x04, 0x04,
-                          0x08, 0x08, 0x08, 0x08,
-                          0x0C, 0x0C, 0x0C, 0x0C);
+    const vector unsigned char plus = VECUINT8_LITERAL(0x00, 0x00, 0x00, 0x00,
+                                                       0x04, 0x04, 0x04, 0x04,
+                                                       0x08, 0x08, 0x08, 0x08,
+                                                       0x0C, 0x0C, 0x0C,
+                                                       0x0C);
     vector unsigned char vswiz;
     vector unsigned int srcvec;
 #define RESHIFT(X) (3 - ((X) >> 3))
-    Uint32 rmask = RESHIFT (srcfmt->Rshift) << (dstfmt->Rshift);
-    Uint32 gmask = RESHIFT (srcfmt->Gshift) << (dstfmt->Gshift);
-    Uint32 bmask = RESHIFT (srcfmt->Bshift) << (dstfmt->Bshift);
+    Uint32 rmask = RESHIFT(srcfmt->Rshift) << (dstfmt->Rshift);
+    Uint32 gmask = RESHIFT(srcfmt->Gshift) << (dstfmt->Gshift);
+    Uint32 bmask = RESHIFT(srcfmt->Bshift) << (dstfmt->Bshift);
     Uint32 amask;
     /* Use zero for alpha if either surface doesn't have alpha */
     if (dstfmt->Amask) {
         amask =
-            ((srcfmt->Amask) ? RESHIFT (srcfmt->Ashift) : 0x10) << (dstfmt->
-                                                                    Ashift);
+            ((srcfmt->Amask) ? RESHIFT(srcfmt->Ashift) : 0x10) << (dstfmt->
+                                                                   Ashift);
     } else {
         amask =
             0x10101010 & ((dstfmt->Rmask | dstfmt->Gmask | dstfmt->Bmask) ^
@@ -151,13 +150,13 @@ calc_swizzle32 (const SDL_PixelFormat * srcfmt,
     }
 #undef RESHIFT
     ((unsigned int *) (char *) &srcvec)[0] = (rmask | gmask | bmask | amask);
-    vswiz = vec_add (plus, (vector unsigned char) vec_splat (srcvec, 0));
+    vswiz = vec_add(plus, (vector unsigned char) vec_splat(srcvec, 0));
     return (vswiz);
 }
 
-static void Blit_RGB888_RGB565 (SDL_BlitInfo * info);
+static void Blit_RGB888_RGB565(SDL_BlitInfo * info);
 static void
-Blit_RGB888_RGB565Altivec (SDL_BlitInfo * info)
+Blit_RGB888_RGB565Altivec(SDL_BlitInfo * info)
 {
     int height = info->d_height;
     Uint8 *src = (Uint8 *) info->s_pixels;
@@ -165,22 +164,22 @@ Blit_RGB888_RGB565Altivec (SDL_BlitInfo * info)
     Uint8 *dst = (Uint8 *) info->d_pixels;
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
-    vector unsigned char valpha = vec_splat_u8 (0);
-    vector unsigned char vpermute = calc_swizzle32 (srcfmt, NULL);
-    vector unsigned char vgmerge = VECUINT8_LITERAL (0x00, 0x02, 0x00, 0x06,
-                                                     0x00, 0x0a, 0x00, 0x0e,
-                                                     0x00, 0x12, 0x00, 0x16,
-                                                     0x00, 0x1a, 0x00, 0x1e);
-    vector unsigned short v1 = vec_splat_u16 (1);
-    vector unsigned short v3 = vec_splat_u16 (3);
+    vector unsigned char valpha = vec_splat_u8(0);
+    vector unsigned char vpermute = calc_swizzle32(srcfmt, NULL);
+    vector unsigned char vgmerge = VECUINT8_LITERAL(0x00, 0x02, 0x00, 0x06,
+                                                    0x00, 0x0a, 0x00, 0x0e,
+                                                    0x00, 0x12, 0x00, 0x16,
+                                                    0x00, 0x1a, 0x00, 0x1e);
+    vector unsigned short v1 = vec_splat_u16(1);
+    vector unsigned short v3 = vec_splat_u16(3);
     vector unsigned short v3f =
-        VECUINT16_LITERAL (0x003f, 0x003f, 0x003f, 0x003f,
-                           0x003f, 0x003f, 0x003f, 0x003f);
+        VECUINT16_LITERAL(0x003f, 0x003f, 0x003f, 0x003f,
+                          0x003f, 0x003f, 0x003f, 0x003f);
     vector unsigned short vfc =
-        VECUINT16_LITERAL (0x00fc, 0x00fc, 0x00fc, 0x00fc,
-                           0x00fc, 0x00fc, 0x00fc, 0x00fc);
-    vector unsigned short vf800 = (vector unsigned short) vec_splat_u8 (-7);
-    vf800 = vec_sl (vf800, vec_splat_u16 (8));
+        VECUINT16_LITERAL(0x00fc, 0x00fc, 0x00fc, 0x00fc,
+                          0x00fc, 0x00fc, 0x00fc, 0x00fc);
+    vector unsigned short vf800 = (vector unsigned short) vec_splat_u8(-7);
+    vf800 = vec_sl(vf800, vec_splat_u16(8));
 
     while (height--) {
         vector unsigned char valigner;
@@ -205,42 +204,41 @@ Blit_RGB888_RGB565Altivec (SDL_BlitInfo * info)
             widthvar--; \
         }
 
-        ONE_PIXEL_BLEND (((UNALIGNED_PTR (dst)) && (width)), width);
+        ONE_PIXEL_BLEND(((UNALIGNED_PTR(dst)) && (width)), width);
 
         /* After all that work, here's the vector part! */
         extrawidth = (width % 8);       /* trailing unaligned stores */
         width -= extrawidth;
-        vsrc = vec_ld (0, src);
-        valigner = VEC_ALIGNER (src);
+        vsrc = vec_ld(0, src);
+        valigner = VEC_ALIGNER(src);
 
         while (width) {
             vector unsigned short vpixel, vrpixel, vgpixel, vbpixel;
             vector unsigned int vsrc1, vsrc2;
             vector unsigned char vdst;
 
-            voverflow = vec_ld (15, src);
-            vsrc = vec_perm (vsrc, voverflow, valigner);
-            vsrc1 = (vector unsigned int) vec_perm (vsrc, valpha, vpermute);
+            voverflow = vec_ld(15, src);
+            vsrc = vec_perm(vsrc, voverflow, valigner);
+            vsrc1 = (vector unsigned int) vec_perm(vsrc, valpha, vpermute);
             src += 16;
             vsrc = voverflow;
-            voverflow = vec_ld (15, src);
-            vsrc = vec_perm (vsrc, voverflow, valigner);
-            vsrc2 = (vector unsigned int) vec_perm (vsrc, valpha, vpermute);
+            voverflow = vec_ld(15, src);
+            vsrc = vec_perm(vsrc, voverflow, valigner);
+            vsrc2 = (vector unsigned int) vec_perm(vsrc, valpha, vpermute);
             /* 1555 */
-            vpixel = (vector unsigned short) vec_packpx (vsrc1, vsrc2);
-            vgpixel =
-                (vector unsigned short) vec_perm (vsrc1, vsrc2, vgmerge);
-            vgpixel = vec_and (vgpixel, vfc);
-            vgpixel = vec_sl (vgpixel, v3);
-            vrpixel = vec_sl (vpixel, v1);
-            vrpixel = vec_and (vrpixel, vf800);
-            vbpixel = vec_and (vpixel, v3f);
+            vpixel = (vector unsigned short) vec_packpx(vsrc1, vsrc2);
+            vgpixel = (vector unsigned short) vec_perm(vsrc1, vsrc2, vgmerge);
+            vgpixel = vec_and(vgpixel, vfc);
+            vgpixel = vec_sl(vgpixel, v3);
+            vrpixel = vec_sl(vpixel, v1);
+            vrpixel = vec_and(vrpixel, vf800);
+            vbpixel = vec_and(vpixel, v3f);
             vdst =
-                vec_or ((vector unsigned char) vrpixel,
-                        (vector unsigned char) vgpixel);
+                vec_or((vector unsigned char) vrpixel,
+                       (vector unsigned char) vgpixel);
             /* 565 */
-            vdst = vec_or (vdst, (vector unsigned char) vbpixel);
-            vec_st (vdst, 0, dst);
+            vdst = vec_or(vdst, (vector unsigned char) vbpixel);
+            vec_st(vdst, 0, dst);
 
             width -= 8;
             src += 16;
@@ -248,10 +246,10 @@ Blit_RGB888_RGB565Altivec (SDL_BlitInfo * info)
             vsrc = voverflow;
         }
 
-        assert (width == 0);
+        assert(width == 0);
 
         /* do scalar until we can align... */
-        ONE_PIXEL_BLEND ((extrawidth), extrawidth);
+        ONE_PIXEL_BLEND((extrawidth), extrawidth);
 #undef ONE_PIXEL_BLEND
 
         src += srcskip;         /* move to next row, accounting for pitch. */
@@ -262,7 +260,7 @@ Blit_RGB888_RGB565Altivec (SDL_BlitInfo * info)
 }
 
 static void
-Blit_RGB565_32Altivec (SDL_BlitInfo * info)
+Blit_RGB565_32Altivec(SDL_BlitInfo * info)
 {
     int height = info->d_height;
     Uint8 *src = (Uint8 *) info->s_pixels;
@@ -275,64 +273,64 @@ Blit_RGB565_32Altivec (SDL_BlitInfo * info)
     vector unsigned char valpha;
     vector unsigned char vpermute;
     vector unsigned short vf800;
-    vector unsigned int v8 = vec_splat_u32 (8);
-    vector unsigned int v16 = vec_add (v8, v8);
-    vector unsigned short v2 = vec_splat_u16 (2);
-    vector unsigned short v3 = vec_splat_u16 (3);
+    vector unsigned int v8 = vec_splat_u32(8);
+    vector unsigned int v16 = vec_add(v8, v8);
+    vector unsigned short v2 = vec_splat_u16(2);
+    vector unsigned short v3 = vec_splat_u16(3);
     /* 
        0x10 - 0x1f is the alpha
        0x00 - 0x0e evens are the red
        0x01 - 0x0f odds are zero
      */
-    vector unsigned char vredalpha1 =
-        VECUINT8_LITERAL (0x10, 0x00, 0x01, 0x01,
-                          0x10, 0x02, 0x01, 0x01,
-                          0x10, 0x04, 0x01, 0x01,
-                          0x10, 0x06, 0x01, 0x01);
+    vector unsigned char vredalpha1 = VECUINT8_LITERAL(0x10, 0x00, 0x01, 0x01,
+                                                       0x10, 0x02, 0x01, 0x01,
+                                                       0x10, 0x04, 0x01, 0x01,
+                                                       0x10, 0x06, 0x01,
+                                                       0x01);
     vector unsigned char vredalpha2 =
         (vector unsigned
-         char) (vec_add ((vector unsigned int) vredalpha1, vec_sl (v8, v16))
+         char) (vec_add((vector unsigned int) vredalpha1, vec_sl(v8, v16))
         );
     /*
        0x00 - 0x0f is ARxx ARxx ARxx ARxx
        0x11 - 0x0f odds are blue
      */
-    vector unsigned char vblue1 = VECUINT8_LITERAL (0x00, 0x01, 0x02, 0x11,
-                                                    0x04, 0x05, 0x06, 0x13,
-                                                    0x08, 0x09, 0x0a, 0x15,
-                                                    0x0c, 0x0d, 0x0e, 0x17);
+    vector unsigned char vblue1 = VECUINT8_LITERAL(0x00, 0x01, 0x02, 0x11,
+                                                   0x04, 0x05, 0x06, 0x13,
+                                                   0x08, 0x09, 0x0a, 0x15,
+                                                   0x0c, 0x0d, 0x0e, 0x17);
     vector unsigned char vblue2 =
-        (vector unsigned char) (vec_add ((vector unsigned int) vblue1, v8)
+        (vector unsigned char) (vec_add((vector unsigned int) vblue1, v8)
         );
     /*
        0x00 - 0x0f is ARxB ARxB ARxB ARxB
        0x10 - 0x0e evens are green
      */
-    vector unsigned char vgreen1 = VECUINT8_LITERAL (0x00, 0x01, 0x10, 0x03,
-                                                     0x04, 0x05, 0x12, 0x07,
-                                                     0x08, 0x09, 0x14, 0x0b,
-                                                     0x0c, 0x0d, 0x16, 0x0f);
+    vector unsigned char vgreen1 = VECUINT8_LITERAL(0x00, 0x01, 0x10, 0x03,
+                                                    0x04, 0x05, 0x12, 0x07,
+                                                    0x08, 0x09, 0x14, 0x0b,
+                                                    0x0c, 0x0d, 0x16, 0x0f);
     vector unsigned char vgreen2 =
         (vector unsigned
-         char) (vec_add ((vector unsigned int) vgreen1, vec_sl (v8, v8))
+         char) (vec_add((vector unsigned int) vgreen1, vec_sl(v8, v8))
         );
 
 
-    assert (srcfmt->BytesPerPixel == 2);
-    assert (dstfmt->BytesPerPixel == 4);
+    assert(srcfmt->BytesPerPixel == 2);
+    assert(dstfmt->BytesPerPixel == 4);
 
-    vf800 = (vector unsigned short) vec_splat_u8 (-7);
-    vf800 = vec_sl (vf800, vec_splat_u16 (8));
+    vf800 = (vector unsigned short) vec_splat_u8(-7);
+    vf800 = vec_sl(vf800, vec_splat_u16(8));
 
     if (dstfmt->Amask && srcfmt->alpha) {
         ((unsigned char *) &valpha)[0] = alpha = srcfmt->alpha;
-        valpha = vec_splat (valpha, 0);
+        valpha = vec_splat(valpha, 0);
     } else {
         alpha = 0;
-        valpha = vec_splat_u8 (0);
+        valpha = vec_splat_u8(0);
     }
 
-    vpermute = calc_swizzle32 (NULL, dstfmt);
+    vpermute = calc_swizzle32(NULL, dstfmt);
     while (height--) {
         vector unsigned char valigner;
         vector unsigned char voverflow;
@@ -354,40 +352,40 @@ Blit_RGB565_32Altivec (SDL_BlitInfo * info)
             dst += 4; \
             widthvar--; \
         }
-        ONE_PIXEL_BLEND (((UNALIGNED_PTR (dst)) && (width)), width);
+        ONE_PIXEL_BLEND(((UNALIGNED_PTR(dst)) && (width)), width);
 
         /* After all that work, here's the vector part! */
         extrawidth = (width % 8);       /* trailing unaligned stores */
         width -= extrawidth;
-        vsrc = vec_ld (0, src);
-        valigner = VEC_ALIGNER (src);
+        vsrc = vec_ld(0, src);
+        valigner = VEC_ALIGNER(src);
 
         while (width) {
             vector unsigned short vR, vG, vB;
             vector unsigned char vdst1, vdst2;
 
-            voverflow = vec_ld (15, src);
-            vsrc = vec_perm (vsrc, voverflow, valigner);
+            voverflow = vec_ld(15, src);
+            vsrc = vec_perm(vsrc, voverflow, valigner);
 
-            vR = vec_and ((vector unsigned short) vsrc, vf800);
-            vB = vec_sl ((vector unsigned short) vsrc, v3);
-            vG = vec_sl (vB, v2);
+            vR = vec_and((vector unsigned short) vsrc, vf800);
+            vB = vec_sl((vector unsigned short) vsrc, v3);
+            vG = vec_sl(vB, v2);
 
             vdst1 =
-                (vector unsigned char) vec_perm ((vector unsigned char) vR,
-                                                 valpha, vredalpha1);
-            vdst1 = vec_perm (vdst1, (vector unsigned char) vB, vblue1);
-            vdst1 = vec_perm (vdst1, (vector unsigned char) vG, vgreen1);
-            vdst1 = vec_perm (vdst1, valpha, vpermute);
-            vec_st (vdst1, 0, dst);
+                (vector unsigned char) vec_perm((vector unsigned char) vR,
+                                                valpha, vredalpha1);
+            vdst1 = vec_perm(vdst1, (vector unsigned char) vB, vblue1);
+            vdst1 = vec_perm(vdst1, (vector unsigned char) vG, vgreen1);
+            vdst1 = vec_perm(vdst1, valpha, vpermute);
+            vec_st(vdst1, 0, dst);
 
             vdst2 =
-                (vector unsigned char) vec_perm ((vector unsigned char) vR,
-                                                 valpha, vredalpha2);
-            vdst2 = vec_perm (vdst2, (vector unsigned char) vB, vblue2);
-            vdst2 = vec_perm (vdst2, (vector unsigned char) vG, vgreen2);
-            vdst2 = vec_perm (vdst2, valpha, vpermute);
-            vec_st (vdst2, 16, dst);
+                (vector unsigned char) vec_perm((vector unsigned char) vR,
+                                                valpha, vredalpha2);
+            vdst2 = vec_perm(vdst2, (vector unsigned char) vB, vblue2);
+            vdst2 = vec_perm(vdst2, (vector unsigned char) vG, vgreen2);
+            vdst2 = vec_perm(vdst2, valpha, vpermute);
+            vec_st(vdst2, 16, dst);
 
             width -= 8;
             dst += 32;
@@ -395,11 +393,11 @@ Blit_RGB565_32Altivec (SDL_BlitInfo * info)
             vsrc = voverflow;
         }
 
-        assert (width == 0);
+        assert(width == 0);
 
 
         /* do scalar until we can align... */
-        ONE_PIXEL_BLEND ((extrawidth), extrawidth);
+        ONE_PIXEL_BLEND((extrawidth), extrawidth);
 #undef ONE_PIXEL_BLEND
 
         src += srcskip;         /* move to next row, accounting for pitch. */
@@ -410,7 +408,7 @@ Blit_RGB565_32Altivec (SDL_BlitInfo * info)
 
 
 static void
-Blit_RGB555_32Altivec (SDL_BlitInfo * info)
+Blit_RGB555_32Altivec(SDL_BlitInfo * info)
 {
     int height = info->d_height;
     Uint8 *src = (Uint8 *) info->s_pixels;
@@ -423,64 +421,64 @@ Blit_RGB555_32Altivec (SDL_BlitInfo * info)
     vector unsigned char valpha;
     vector unsigned char vpermute;
     vector unsigned short vf800;
-    vector unsigned int v8 = vec_splat_u32 (8);
-    vector unsigned int v16 = vec_add (v8, v8);
-    vector unsigned short v1 = vec_splat_u16 (1);
-    vector unsigned short v3 = vec_splat_u16 (3);
+    vector unsigned int v8 = vec_splat_u32(8);
+    vector unsigned int v16 = vec_add(v8, v8);
+    vector unsigned short v1 = vec_splat_u16(1);
+    vector unsigned short v3 = vec_splat_u16(3);
     /* 
        0x10 - 0x1f is the alpha
        0x00 - 0x0e evens are the red
        0x01 - 0x0f odds are zero
      */
-    vector unsigned char vredalpha1 =
-        VECUINT8_LITERAL (0x10, 0x00, 0x01, 0x01,
-                          0x10, 0x02, 0x01, 0x01,
-                          0x10, 0x04, 0x01, 0x01,
-                          0x10, 0x06, 0x01, 0x01);
+    vector unsigned char vredalpha1 = VECUINT8_LITERAL(0x10, 0x00, 0x01, 0x01,
+                                                       0x10, 0x02, 0x01, 0x01,
+                                                       0x10, 0x04, 0x01, 0x01,
+                                                       0x10, 0x06, 0x01,
+                                                       0x01);
     vector unsigned char vredalpha2 =
         (vector unsigned
-         char) (vec_add ((vector unsigned int) vredalpha1, vec_sl (v8, v16))
+         char) (vec_add((vector unsigned int) vredalpha1, vec_sl(v8, v16))
         );
     /*
        0x00 - 0x0f is ARxx ARxx ARxx ARxx
        0x11 - 0x0f odds are blue
      */
-    vector unsigned char vblue1 = VECUINT8_LITERAL (0x00, 0x01, 0x02, 0x11,
-                                                    0x04, 0x05, 0x06, 0x13,
-                                                    0x08, 0x09, 0x0a, 0x15,
-                                                    0x0c, 0x0d, 0x0e, 0x17);
+    vector unsigned char vblue1 = VECUINT8_LITERAL(0x00, 0x01, 0x02, 0x11,
+                                                   0x04, 0x05, 0x06, 0x13,
+                                                   0x08, 0x09, 0x0a, 0x15,
+                                                   0x0c, 0x0d, 0x0e, 0x17);
     vector unsigned char vblue2 =
-        (vector unsigned char) (vec_add ((vector unsigned int) vblue1, v8)
+        (vector unsigned char) (vec_add((vector unsigned int) vblue1, v8)
         );
     /*
        0x00 - 0x0f is ARxB ARxB ARxB ARxB
        0x10 - 0x0e evens are green
      */
-    vector unsigned char vgreen1 = VECUINT8_LITERAL (0x00, 0x01, 0x10, 0x03,
-                                                     0x04, 0x05, 0x12, 0x07,
-                                                     0x08, 0x09, 0x14, 0x0b,
-                                                     0x0c, 0x0d, 0x16, 0x0f);
+    vector unsigned char vgreen1 = VECUINT8_LITERAL(0x00, 0x01, 0x10, 0x03,
+                                                    0x04, 0x05, 0x12, 0x07,
+                                                    0x08, 0x09, 0x14, 0x0b,
+                                                    0x0c, 0x0d, 0x16, 0x0f);
     vector unsigned char vgreen2 =
         (vector unsigned
-         char) (vec_add ((vector unsigned int) vgreen1, vec_sl (v8, v8))
+         char) (vec_add((vector unsigned int) vgreen1, vec_sl(v8, v8))
         );
 
 
-    assert (srcfmt->BytesPerPixel == 2);
-    assert (dstfmt->BytesPerPixel == 4);
+    assert(srcfmt->BytesPerPixel == 2);
+    assert(dstfmt->BytesPerPixel == 4);
 
-    vf800 = (vector unsigned short) vec_splat_u8 (-7);
-    vf800 = vec_sl (vf800, vec_splat_u16 (8));
+    vf800 = (vector unsigned short) vec_splat_u8(-7);
+    vf800 = vec_sl(vf800, vec_splat_u16(8));
 
     if (dstfmt->Amask && srcfmt->alpha) {
         ((unsigned char *) &valpha)[0] = alpha = srcfmt->alpha;
-        valpha = vec_splat (valpha, 0);
+        valpha = vec_splat(valpha, 0);
     } else {
         alpha = 0;
-        valpha = vec_splat_u8 (0);
+        valpha = vec_splat_u8(0);
     }
 
-    vpermute = calc_swizzle32 (NULL, dstfmt);
+    vpermute = calc_swizzle32(NULL, dstfmt);
     while (height--) {
         vector unsigned char valigner;
         vector unsigned char voverflow;
@@ -502,40 +500,40 @@ Blit_RGB555_32Altivec (SDL_BlitInfo * info)
             dst += 4; \
             widthvar--; \
         }
-        ONE_PIXEL_BLEND (((UNALIGNED_PTR (dst)) && (width)), width);
+        ONE_PIXEL_BLEND(((UNALIGNED_PTR(dst)) && (width)), width);
 
         /* After all that work, here's the vector part! */
         extrawidth = (width % 8);       /* trailing unaligned stores */
         width -= extrawidth;
-        vsrc = vec_ld (0, src);
-        valigner = VEC_ALIGNER (src);
+        vsrc = vec_ld(0, src);
+        valigner = VEC_ALIGNER(src);
 
         while (width) {
             vector unsigned short vR, vG, vB;
             vector unsigned char vdst1, vdst2;
 
-            voverflow = vec_ld (15, src);
-            vsrc = vec_perm (vsrc, voverflow, valigner);
+            voverflow = vec_ld(15, src);
+            vsrc = vec_perm(vsrc, voverflow, valigner);
 
-            vR = vec_and (vec_sl ((vector unsigned short) vsrc, v1), vf800);
-            vB = vec_sl ((vector unsigned short) vsrc, v3);
-            vG = vec_sl (vB, v3);
+            vR = vec_and(vec_sl((vector unsigned short) vsrc, v1), vf800);
+            vB = vec_sl((vector unsigned short) vsrc, v3);
+            vG = vec_sl(vB, v3);
 
             vdst1 =
-                (vector unsigned char) vec_perm ((vector unsigned char) vR,
-                                                 valpha, vredalpha1);
-            vdst1 = vec_perm (vdst1, (vector unsigned char) vB, vblue1);
-            vdst1 = vec_perm (vdst1, (vector unsigned char) vG, vgreen1);
-            vdst1 = vec_perm (vdst1, valpha, vpermute);
-            vec_st (vdst1, 0, dst);
+                (vector unsigned char) vec_perm((vector unsigned char) vR,
+                                                valpha, vredalpha1);
+            vdst1 = vec_perm(vdst1, (vector unsigned char) vB, vblue1);
+            vdst1 = vec_perm(vdst1, (vector unsigned char) vG, vgreen1);
+            vdst1 = vec_perm(vdst1, valpha, vpermute);
+            vec_st(vdst1, 0, dst);
 
             vdst2 =
-                (vector unsigned char) vec_perm ((vector unsigned char) vR,
-                                                 valpha, vredalpha2);
-            vdst2 = vec_perm (vdst2, (vector unsigned char) vB, vblue2);
-            vdst2 = vec_perm (vdst2, (vector unsigned char) vG, vgreen2);
-            vdst2 = vec_perm (vdst2, valpha, vpermute);
-            vec_st (vdst2, 16, dst);
+                (vector unsigned char) vec_perm((vector unsigned char) vR,
+                                                valpha, vredalpha2);
+            vdst2 = vec_perm(vdst2, (vector unsigned char) vB, vblue2);
+            vdst2 = vec_perm(vdst2, (vector unsigned char) vG, vgreen2);
+            vdst2 = vec_perm(vdst2, valpha, vpermute);
+            vec_st(vdst2, 16, dst);
 
             width -= 8;
             dst += 32;
@@ -543,11 +541,11 @@ Blit_RGB555_32Altivec (SDL_BlitInfo * info)
             vsrc = voverflow;
         }
 
-        assert (width == 0);
+        assert(width == 0);
 
 
         /* do scalar until we can align... */
-        ONE_PIXEL_BLEND ((extrawidth), extrawidth);
+        ONE_PIXEL_BLEND((extrawidth), extrawidth);
 #undef ONE_PIXEL_BLEND
 
         src += srcskip;         /* move to next row, accounting for pitch. */
@@ -556,10 +554,10 @@ Blit_RGB555_32Altivec (SDL_BlitInfo * info)
 
 }
 
-static void BlitNtoNKey (SDL_BlitInfo * info);
-static void BlitNtoNKeyCopyAlpha (SDL_BlitInfo * info);
+static void BlitNtoNKey(SDL_BlitInfo * info);
+static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info);
 static void
-Blit32to32KeyAltivec (SDL_BlitInfo * info)
+Blit32to32KeyAltivec(SDL_BlitInfo * info)
 {
     int height = info->d_height;
     Uint32 *srcp = (Uint32 *) info->s_pixels;
@@ -579,29 +577,28 @@ Blit32to32KeyAltivec (SDL_BlitInfo * info)
     vector unsigned char vzero;
     vector unsigned int vckey;
     vector unsigned int vrgbmask;
-    vpermute = calc_swizzle32 (srcfmt, dstfmt);
+    vpermute = calc_swizzle32(srcfmt, dstfmt);
     if (info->d_width < 16) {
         if (copy_alpha) {
-            BlitNtoNKeyCopyAlpha (info);
+            BlitNtoNKeyCopyAlpha(info);
         } else {
-            BlitNtoNKey (info);
+            BlitNtoNKey(info);
         }
         return;
     }
-    vzero = vec_splat_u8 (0);
+    vzero = vec_splat_u8(0);
     if (alpha) {
         ((unsigned char *) &valpha)[0] = (unsigned char) alpha;
         valpha =
-            (vector unsigned int) vec_splat ((vector unsigned char) valpha,
-                                             0);
+            (vector unsigned int) vec_splat((vector unsigned char) valpha, 0);
     } else {
         valpha = (vector unsigned int) vzero;
     }
     ckey &= rgbmask;
     ((unsigned int *) (char *) &vckey)[0] = ckey;
-    vckey = vec_splat (vckey, 0);
+    vckey = vec_splat(vckey, 0);
     ((unsigned int *) (char *) &vrgbmask)[0] = rgbmask;
-    vrgbmask = vec_splat (vrgbmask, 0);
+    vrgbmask = vec_splat(vrgbmask, 0);
 
     while (height--) {
 #define ONE_PIXEL_BLEND(condition, widthvar) \
@@ -635,39 +632,39 @@ Blit32to32KeyAltivec (SDL_BlitInfo * info)
             } \
         }
         int width = info->d_width;
-        ONE_PIXEL_BLEND ((UNALIGNED_PTR (dstp)) && (width), width);
-        assert (width > 0);
+        ONE_PIXEL_BLEND((UNALIGNED_PTR(dstp)) && (width), width);
+        assert(width > 0);
         if (width > 0) {
             int extrawidth = (width % 4);
-            vector unsigned char valigner = VEC_ALIGNER (srcp);
-            vector unsigned int vs = vec_ld (0, srcp);
+            vector unsigned char valigner = VEC_ALIGNER(srcp);
+            vector unsigned int vs = vec_ld(0, srcp);
             width -= extrawidth;
-            assert (width >= 4);
+            assert(width >= 4);
             while (width) {
                 vector unsigned char vsel;
                 vector unsigned int vd;
-                vector unsigned int voverflow = vec_ld (15, srcp);
+                vector unsigned int voverflow = vec_ld(15, srcp);
                 /* load the source vec */
-                vs = vec_perm (vs, voverflow, valigner);
+                vs = vec_perm(vs, voverflow, valigner);
                 /* vsel is set for items that match the key */
-                vsel = (vector unsigned char) vec_and (vs, vrgbmask);
-                vsel = (vector unsigned char) vec_cmpeq (vs, vckey);
+                vsel = (vector unsigned char) vec_and(vs, vrgbmask);
+                vsel = (vector unsigned char) vec_cmpeq(vs, vckey);
                 /* permute the src vec to the dest format */
-                vs = vec_perm (vs, valpha, vpermute);
+                vs = vec_perm(vs, valpha, vpermute);
                 /* load the destination vec */
-                vd = vec_ld (0, dstp);
+                vd = vec_ld(0, dstp);
                 /* select the source and dest into vs */
-                vd = (vector unsigned int) vec_sel ((vector unsigned char) vs,
-                                                    (vector unsigned char) vd,
-                                                    vsel);
+                vd = (vector unsigned int) vec_sel((vector unsigned char) vs,
+                                                   (vector unsigned char) vd,
+                                                   vsel);
 
-                vec_st (vd, 0, dstp);
+                vec_st(vd, 0, dstp);
                 srcp += 4;
                 width -= 4;
                 dstp += 4;
                 vs = voverflow;
             }
-            ONE_PIXEL_BLEND ((extrawidth), extrawidth);
+            ONE_PIXEL_BLEND((extrawidth), extrawidth);
 #undef ONE_PIXEL_BLEND
             srcp += srcskip >> 2;
             dstp += dstskip >> 2;
@@ -678,7 +675,7 @@ Blit32to32KeyAltivec (SDL_BlitInfo * info)
 /* Altivec code to swizzle one 32-bit surface to a different 32-bit format. */
 /* Use this on a G5 */
 static void
-ConvertAltivec32to32_noprefetch (SDL_BlitInfo * info)
+ConvertAltivec32to32_noprefetch(SDL_BlitInfo * info)
 {
     int height = info->d_height;
     Uint32 *src = (Uint32 *) info->s_pixels;
@@ -687,18 +684,18 @@ ConvertAltivec32to32_noprefetch (SDL_BlitInfo * info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    vector unsigned int vzero = vec_splat_u32 (0);
-    vector unsigned char vpermute = calc_swizzle32 (srcfmt, dstfmt);
+    vector unsigned int vzero = vec_splat_u32(0);
+    vector unsigned char vpermute = calc_swizzle32(srcfmt, dstfmt);
     if (dstfmt->Amask && !srcfmt->Amask) {
         if (srcfmt->alpha) {
             vector unsigned char valpha;
             ((unsigned char *) &valpha)[0] = srcfmt->alpha;
-            vzero = (vector unsigned int) vec_splat (valpha, 0);
+            vzero = (vector unsigned int) vec_splat(valpha, 0);
         }
     }
 
-    assert (srcfmt->BytesPerPixel == 4);
-    assert (dstfmt->BytesPerPixel == 4);
+    assert(srcfmt->BytesPerPixel == 4);
+    assert(dstfmt->BytesPerPixel == 4);
 
     while (height--) {
         vector unsigned char valigner;
@@ -711,37 +708,37 @@ ConvertAltivec32to32_noprefetch (SDL_BlitInfo * info)
         int extrawidth;
 
         /* do scalar until we can align... */
-        while ((UNALIGNED_PTR (dst)) && (width)) {
+        while ((UNALIGNED_PTR(dst)) && (width)) {
             bits = *(src++);
-            RGBA_FROM_8888 (bits, srcfmt, r, g, b, a);
-            *(dst++) = MAKE8888 (dstfmt, r, g, b, a);
+            RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
+            *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             width--;
         }
 
         /* After all that work, here's the vector part! */
         extrawidth = (width % 4);
         width -= extrawidth;
-        valigner = VEC_ALIGNER (src);
-        vbits = vec_ld (0, src);
+        valigner = VEC_ALIGNER(src);
+        vbits = vec_ld(0, src);
 
         while (width) {
-            voverflow = vec_ld (15, src);
+            voverflow = vec_ld(15, src);
             src += 4;
             width -= 4;
-            vbits = vec_perm (vbits, voverflow, valigner);      /* src is ready. */
-            vbits = vec_perm (vbits, vzero, vpermute);  /* swizzle it. */
-            vec_st (vbits, 0, dst);     /* store it back out. */
+            vbits = vec_perm(vbits, voverflow, valigner);       /* src is ready. */
+            vbits = vec_perm(vbits, vzero, vpermute);   /* swizzle it. */
+            vec_st(vbits, 0, dst);      /* store it back out. */
             dst += 4;
             vbits = voverflow;
         }
 
-        assert (width == 0);
+        assert(width == 0);
 
         /* cover pixels at the end of the row that didn't fit in 16 bytes. */
         while (extrawidth) {
             bits = *(src++);    /* max 7 pixels, don't bother with prefetch. */
-            RGBA_FROM_8888 (bits, srcfmt, r, g, b, a);
-            *(dst++) = MAKE8888 (dstfmt, r, g, b, a);
+            RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
+            *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             extrawidth--;
         }
 
@@ -754,10 +751,10 @@ ConvertAltivec32to32_noprefetch (SDL_BlitInfo * info)
 /* Altivec code to swizzle one 32-bit surface to a different 32-bit format. */
 /* Use this on a G4 */
 static void
-ConvertAltivec32to32_prefetch (SDL_BlitInfo * info)
+ConvertAltivec32to32_prefetch(SDL_BlitInfo * info)
 {
-    const int scalar_dst_lead = sizeof (Uint32) * 4;
-    const int vector_dst_lead = sizeof (Uint32) * 16;
+    const int scalar_dst_lead = sizeof(Uint32) * 4;
+    const int vector_dst_lead = sizeof(Uint32) * 16;
 
     int height = info->d_height;
     Uint32 *src = (Uint32 *) info->s_pixels;
@@ -766,18 +763,18 @@ ConvertAltivec32to32_prefetch (SDL_BlitInfo * info)
     int dstskip = info->d_skip;
     SDL_PixelFormat *srcfmt = info->src;
     SDL_PixelFormat *dstfmt = info->dst;
-    vector unsigned int vzero = vec_splat_u32 (0);
-    vector unsigned char vpermute = calc_swizzle32 (srcfmt, dstfmt);
+    vector unsigned int vzero = vec_splat_u32(0);
+    vector unsigned char vpermute = calc_swizzle32(srcfmt, dstfmt);
     if (dstfmt->Amask && !srcfmt->Amask) {
         if (srcfmt->alpha) {
             vector unsigned char valpha;
             ((unsigned char *) &valpha)[0] = srcfmt->alpha;
-            vzero = (vector unsigned int) vec_splat (valpha, 0);
+            vzero = (vector unsigned int) vec_splat(valpha, 0);
         }
     }
 
-    assert (srcfmt->BytesPerPixel == 4);
-    assert (dstfmt->BytesPerPixel == 4);
+    assert(srcfmt->BytesPerPixel == 4);
+    assert(dstfmt->BytesPerPixel == 4);
 
     while (height--) {
         vector unsigned char valigner;
@@ -790,45 +787,45 @@ ConvertAltivec32to32_prefetch (SDL_BlitInfo * info)
         int extrawidth;
 
         /* do scalar until we can align... */
-        while ((UNALIGNED_PTR (dst)) && (width)) {
-            vec_dstt (src + scalar_dst_lead, DST_CTRL (2, 32, 1024),
-                      DST_CHAN_SRC);
-            vec_dstst (dst + scalar_dst_lead, DST_CTRL (2, 32, 1024),
-                       DST_CHAN_DEST);
+        while ((UNALIGNED_PTR(dst)) && (width)) {
+            vec_dstt(src + scalar_dst_lead, DST_CTRL(2, 32, 1024),
+                     DST_CHAN_SRC);
+            vec_dstst(dst + scalar_dst_lead, DST_CTRL(2, 32, 1024),
+                      DST_CHAN_DEST);
             bits = *(src++);
-            RGBA_FROM_8888 (bits, srcfmt, r, g, b, a);
-            *(dst++) = MAKE8888 (dstfmt, r, g, b, a);
+            RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
+            *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             width--;
         }
 
         /* After all that work, here's the vector part! */
         extrawidth = (width % 4);
         width -= extrawidth;
-        valigner = VEC_ALIGNER (src);
-        vbits = vec_ld (0, src);
+        valigner = VEC_ALIGNER(src);
+        vbits = vec_ld(0, src);
 
         while (width) {
-            vec_dstt (src + vector_dst_lead, DST_CTRL (2, 32, 1024),
-                      DST_CHAN_SRC);
-            vec_dstst (dst + vector_dst_lead, DST_CTRL (2, 32, 1024),
-                       DST_CHAN_DEST);
-            voverflow = vec_ld (15, src);
+            vec_dstt(src + vector_dst_lead, DST_CTRL(2, 32, 1024),
+                     DST_CHAN_SRC);
+            vec_dstst(dst + vector_dst_lead, DST_CTRL(2, 32, 1024),
+                      DST_CHAN_DEST);
+            voverflow = vec_ld(15, src);
             src += 4;
             width -= 4;
-            vbits = vec_perm (vbits, voverflow, valigner);      /* src is ready. */
-            vbits = vec_perm (vbits, vzero, vpermute);  /* swizzle it. */
-            vec_st (vbits, 0, dst);     /* store it back out. */
+            vbits = vec_perm(vbits, voverflow, valigner);       /* src is ready. */
+            vbits = vec_perm(vbits, vzero, vpermute);   /* swizzle it. */
+            vec_st(vbits, 0, dst);      /* store it back out. */
             dst += 4;
             vbits = voverflow;
         }
 
-        assert (width == 0);
+        assert(width == 0);
 
         /* cover pixels at the end of the row that didn't fit in 16 bytes. */
         while (extrawidth) {
             bits = *(src++);    /* max 7 pixels, don't bother with prefetch. */
-            RGBA_FROM_8888 (bits, srcfmt, r, g, b, a);
-            *(dst++) = MAKE8888 (dstfmt, r, g, b, a);
+            RGBA_FROM_8888(bits, srcfmt, r, g, b, a);
+            *(dst++) = MAKE8888(dstfmt, r, g, b, a);
             extrawidth--;
         }
 
@@ -836,29 +833,29 @@ ConvertAltivec32to32_prefetch (SDL_BlitInfo * info)
         dst += dstskip >> 2;
     }
 
-    vec_dss (DST_CHAN_SRC);
-    vec_dss (DST_CHAN_DEST);
+    vec_dss(DST_CHAN_SRC);
+    vec_dss(DST_CHAN_DEST);
 }
 
 static Uint32
-GetBlitFeatures (void)
+GetBlitFeatures(void)
 {
     static Uint32 features = 0xffffffff;
     if (features == 0xffffffff) {
         /* Provide an override for testing .. */
-        char *override = SDL_getenv ("SDL_ALTIVEC_BLIT_FEATURES");
+        char *override = SDL_getenv("SDL_ALTIVEC_BLIT_FEATURES");
         if (override) {
             features = 0;
-            SDL_sscanf (override, "%u", &features);
+            SDL_sscanf(override, "%u", &features);
         } else {
             features = (0
                         /* Feature 1 is has-MMX */
-                        | ((SDL_HasMMX ())? 1 : 0)
+                        | ((SDL_HasMMX())? 1 : 0)
                         /* Feature 2 is has-AltiVec */
-                        | ((SDL_HasAltiVec ())? 2 : 0)
+                        | ((SDL_HasAltiVec())? 2 : 0)
                         /* Feature 4 is dont-use-prefetch */
                         /* !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4. */
-                        | ((GetL3CacheSize () == 0) ? 4 : 0)
+                        | ((GetL3CacheSize() == 0) ? 4 : 0)
                 );
         }
     }
@@ -902,7 +899,7 @@ GetBlitFeatures (void)
 	              (((src)&0x000000C0)>>6)); \
 }
 static void
-Blit_RGB888_index8 (SDL_BlitInfo * info)
+Blit_RGB888_index8(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -934,22 +931,22 @@ Blit_RGB888_index8 (SDL_BlitInfo * info)
             for (c = width / 4; c; --c) {
                 /* Pack RGB into 8bit pixel */
                 ++src;
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
             }
             switch (width & 3) {
             case 3:
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
             case 2:
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
             case 1:
-                RGB888_RGB332 (*dst++, *src);
+                RGB888_RGB332(*dst++, *src);
                 ++src;
             }
 #endif /* USE_DUFFS_LOOP */
@@ -971,30 +968,30 @@ Blit_RGB888_index8 (SDL_BlitInfo * info)
 #else
             for (c = width / 4; c; --c) {
                 /* Pack RGB into 8bit pixel */
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
             }
             switch (width & 3) {
             case 3:
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
             case 2:
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
             case 1:
-                RGB888_RGB332 (Pixel, *src);
+                RGB888_RGB332(Pixel, *src);
                 *dst++ = map[Pixel];
                 ++src;
             }
@@ -1020,7 +1017,7 @@ Blit_RGB888_index8 (SDL_BlitInfo * info)
 	                     (((src[LO])&0x000000F8)>>3); \
 }
 static void
-Blit_RGB888_RGB555 (SDL_BlitInfo * info)
+Blit_RGB888_RGB555(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1061,32 +1058,32 @@ Blit_RGB888_RGB555 (SDL_BlitInfo * info)
 
         while (height--) {
             /* Perform copy alignment */
-            RGB888_RGB555 (dst, src);
+            RGB888_RGB555(dst, src);
             ++src;
             ++dst;
 
             /* Copy in 4 pixel chunks */
             for (c = width / 4; c; --c) {
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
             }
             /* Get any leftovers */
             switch (width & 3) {
             case 3:
-                RGB888_RGB555 (dst, src);
+                RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
             case 2:
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
                 break;
             case 1:
-                RGB888_RGB555 (dst, src);
+                RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
                 break;
@@ -1098,26 +1095,26 @@ Blit_RGB888_RGB555 (SDL_BlitInfo * info)
         while (height--) {
             /* Copy in 4 pixel chunks */
             for (c = width / 4; c; --c) {
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
             }
             /* Get any leftovers */
             switch (width & 3) {
             case 3:
-                RGB888_RGB555 (dst, src);
+                RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
             case 2:
-                RGB888_RGB555_TWO (dst, src);
+                RGB888_RGB555_TWO(dst, src);
                 src += 2;
                 dst += 2;
                 break;
             case 1:
-                RGB888_RGB555 (dst, src);
+                RGB888_RGB555(dst, src);
                 ++src;
                 ++dst;
                 break;
@@ -1144,7 +1141,7 @@ Blit_RGB888_RGB555 (SDL_BlitInfo * info)
 	                     (((src[LO])&0x000000F8)>>3); \
 }
 static void
-Blit_RGB888_RGB565 (SDL_BlitInfo * info)
+Blit_RGB888_RGB565(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1185,32 +1182,32 @@ Blit_RGB888_RGB565 (SDL_BlitInfo * info)
 
         while (height--) {
             /* Perform copy alignment */
-            RGB888_RGB565 (dst, src);
+            RGB888_RGB565(dst, src);
             ++src;
             ++dst;
 
             /* Copy in 4 pixel chunks */
             for (c = width / 4; c; --c) {
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
             }
             /* Get any leftovers */
             switch (width & 3) {
             case 3:
-                RGB888_RGB565 (dst, src);
+                RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
             case 2:
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
                 break;
             case 1:
-                RGB888_RGB565 (dst, src);
+                RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
                 break;
@@ -1222,26 +1219,26 @@ Blit_RGB888_RGB565 (SDL_BlitInfo * info)
         while (height--) {
             /* Copy in 4 pixel chunks */
             for (c = width / 4; c; --c) {
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
             }
             /* Get any leftovers */
             switch (width & 3) {
             case 3:
-                RGB888_RGB565 (dst, src);
+                RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
             case 2:
-                RGB888_RGB565_TWO (dst, src);
+                RGB888_RGB565_TWO(dst, src);
                 src += 2;
                 dst += 2;
                 break;
             case 1:
-                RGB888_RGB565 (dst, src);
+                RGB888_RGB565(dst, src);
                 ++src;
                 ++dst;
                 break;
@@ -1259,7 +1256,7 @@ Blit_RGB888_RGB565 (SDL_BlitInfo * info)
 /* Special optimized blit for RGB 5-6-5 --> 32-bit RGB surfaces */
 #define RGB565_32(dst, src, map) (map[src[LO]*2] + map[src[HI]*2+1])
 static void
-Blit_RGB565_32 (SDL_BlitInfo * info, const Uint32 * map)
+Blit_RGB565_32(SDL_BlitInfo * info, const Uint32 * map)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1294,25 +1291,25 @@ Blit_RGB565_32 (SDL_BlitInfo * info, const Uint32 * map)
     while (height--) {
         /* Copy in 4 pixel chunks */
         for (c = width / 4; c; --c) {
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
         }
         /* Get any leftovers */
         switch (width & 3) {
         case 3:
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
         case 2:
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
         case 1:
-            *dst++ = RGB565_32 (dst, src, map);
+            *dst++ = RGB565_32(dst, src, map);
             src += 2;
             break;
         }
@@ -1454,9 +1451,9 @@ static const Uint32 RGB565_ARGB8888_LUT[512] = {
     0x00001cf6, 0xffffc200, 0x00001cff, 0xffffe200
 };
 static void
-Blit_RGB565_ARGB8888 (SDL_BlitInfo * info)
+Blit_RGB565_ARGB8888(SDL_BlitInfo * info)
 {
-    Blit_RGB565_32 (info, RGB565_ARGB8888_LUT);
+    Blit_RGB565_32(info, RGB565_ARGB8888_LUT);
 }
 
 /* Special optimized blit for RGB 5-6-5 --> ABGR 8-8-8-8 */
@@ -1591,9 +1588,9 @@ static const Uint32 RGB565_ABGR8888_LUT[512] = {
     0xfff61c00, 0x0000c2ff, 0xffff1c00, 0x0000e2ff
 };
 static void
-Blit_RGB565_ABGR8888 (SDL_BlitInfo * info)
+Blit_RGB565_ABGR8888(SDL_BlitInfo * info)
 {
-    Blit_RGB565_32 (info, RGB565_ABGR8888_LUT);
+    Blit_RGB565_32(info, RGB565_ABGR8888_LUT);
 }
 
 /* Special optimized blit for RGB 5-6-5 --> RGBA 8-8-8-8 */
@@ -1728,9 +1725,9 @@ static const Uint32 RGB565_RGBA8888_LUT[512] = {
     0x001cf6ff, 0xffc20000, 0x001cffff, 0xffe20000,
 };
 static void
-Blit_RGB565_RGBA8888 (SDL_BlitInfo * info)
+Blit_RGB565_RGBA8888(SDL_BlitInfo * info)
 {
-    Blit_RGB565_32 (info, RGB565_RGBA8888_LUT);
+    Blit_RGB565_32(info, RGB565_RGBA8888_LUT);
 }
 
 /* Special optimized blit for RGB 5-6-5 --> BGRA 8-8-8-8 */
@@ -1865,9 +1862,9 @@ static const Uint32 RGB565_BGRA8888_LUT[512] = {
     0xf61c0000, 0x00c2ffff, 0xff1c0000, 0x00e2ffff
 };
 static void
-Blit_RGB565_BGRA8888 (SDL_BlitInfo * info)
+Blit_RGB565_BGRA8888(SDL_BlitInfo * info)
 {
-    Blit_RGB565_32 (info, RGB565_BGRA8888_LUT);
+    Blit_RGB565_32(info, RGB565_BGRA8888_LUT);
 }
 
 /* Special optimized blit for RGB 8-8-8 --> RGB 3-3-2 */
@@ -1879,7 +1876,7 @@ Blit_RGB565_BGRA8888 (SDL_BlitInfo * info)
 }
 #endif
 static void
-Blit_RGB888_index8_map (SDL_BlitInfo * info)
+Blit_RGB888_index8_map(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1916,30 +1913,30 @@ Blit_RGB888_index8_map (SDL_BlitInfo * info)
     while (height--) {
         for (c = width / 4; c; --c) {
             /* Pack RGB into 8bit pixel */
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
         }
         switch (width & 3) {
         case 3:
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
         case 2:
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
         case 1:
-            RGB888_RGB332 (Pixel, *src);
+            RGB888_RGB332(Pixel, *src);
             *dst++ = map[Pixel];
             ++src;
         }
@@ -1949,7 +1946,7 @@ Blit_RGB888_index8_map (SDL_BlitInfo * info)
 #endif /* USE_DUFFS_LOOP */
 }
 static void
-BlitNto1 (SDL_BlitInfo * info)
+BlitNto1(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -1994,7 +1991,7 @@ BlitNto1 (SDL_BlitInfo * info)
 			/* *INDENT-ON* */
 #else
             for (c = width; c; --c) {
-                DISEMBLE_RGB (src, srcbpp, srcfmt, Pixel, sR, sG, sB);
+                DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
                 if (1) {
                     /* Pack RGB into 8bit pixel */
                     *dst = ((sR >> 5) << (3 + 2)) |
@@ -2026,7 +2023,7 @@ BlitNto1 (SDL_BlitInfo * info)
 			/* *INDENT-ON* */
 #else
             for (c = width; c; --c) {
-                DISEMBLE_RGB (src, srcbpp, srcfmt, Pixel, sR, sG, sB);
+                DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
                 if (1) {
                     /* Pack RGB into 8bit pixel */
                     *dst = map[((sR >> 5) << (3 + 2)) |
@@ -2044,7 +2041,7 @@ BlitNto1 (SDL_BlitInfo * info)
 
 /* blits 32 bit RGB<->RGBA with both surfaces having the same R,G,B fields */
 static void
-Blit4to4MaskAlpha (SDL_BlitInfo * info)
+Blit4to4MaskAlpha(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2093,7 +2090,7 @@ Blit4to4MaskAlpha (SDL_BlitInfo * info)
 }
 
 static void
-BlitNtoN (SDL_BlitInfo * info)
+BlitNtoN(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2128,7 +2125,7 @@ BlitNtoN (SDL_BlitInfo * info)
 }
 
 static void
-BlitNtoNCopyAlpha (SDL_BlitInfo * info)
+BlitNtoNCopyAlpha(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2147,8 +2144,8 @@ BlitNtoNCopyAlpha (SDL_BlitInfo * info)
         for (c = width; c; --c) {
             Uint32 Pixel;
             unsigned sR, sG, sB, sA;
-            DISEMBLE_RGBA (src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
-            ASSEMBLE_RGBA (dst, dstbpp, dstfmt, sR, sG, sB, sA);
+            DISEMBLE_RGBA(src, srcbpp, srcfmt, Pixel, sR, sG, sB, sA);
+            ASSEMBLE_RGBA(dst, dstbpp, dstfmt, sR, sG, sB, sA);
             dst += dstbpp;
             src += srcbpp;
         }
@@ -2158,7 +2155,7 @@ BlitNtoNCopyAlpha (SDL_BlitInfo * info)
 }
 
 static void
-BlitNto1Key (SDL_BlitInfo * info)
+BlitNto1Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2224,7 +2221,7 @@ BlitNto1Key (SDL_BlitInfo * info)
 }
 
 static void
-Blit2to2Key (SDL_BlitInfo * info)
+Blit2to2Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2258,7 +2255,7 @@ Blit2to2Key (SDL_BlitInfo * info)
 }
 
 static void
-BlitNtoNKey (SDL_BlitInfo * info)
+BlitNtoNKey(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2302,7 +2299,7 @@ BlitNtoNKey (SDL_BlitInfo * info)
 }
 
 static void
-BlitNtoNKeyCopyAlpha (SDL_BlitInfo * info)
+BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -2478,7 +2475,7 @@ static const struct blit_table *normal_blit[] = {
 #define MASKOK(x, y) (((x) == (y)) || ((y) == 0x00000000))
 
 SDL_loblit
-SDL_CalculateBlitN (SDL_Surface * surface, int blit_index)
+SDL_CalculateBlitN(SDL_Surface * surface, int blit_index)
 {
     struct private_swaccel *sdata;
     SDL_PixelFormat *srcfmt;
@@ -2494,7 +2491,7 @@ SDL_CalculateBlitN (SDL_Surface * surface, int blit_index)
 
     if (blit_index & 2) {
         /* alpha or alpha+colorkey */
-        return SDL_CalculateAlphaBlit (surface, blit_index);
+        return SDL_CalculateAlphaBlit(surface, blit_index);
     }
 
     /* We don't support destinations less than 8-bits */
@@ -2514,7 +2511,7 @@ SDL_CalculateBlitN (SDL_Surface * surface, int blit_index)
         else {
 #if SDL_ALTIVEC_BLITTERS
             if ((srcfmt->BytesPerPixel == 4) && (dstfmt->BytesPerPixel == 4)
-                && SDL_HasAltiVec ()) {
+                && SDL_HasAltiVec()) {
                 return Blit32to32KeyAltivec;
             } else
 #endif
@@ -2552,15 +2549,15 @@ SDL_CalculateBlitN (SDL_Surface * surface, int blit_index)
             a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
         table = normal_blit[srcfmt->BytesPerPixel - 1];
         for (which = 0; table[which].dstbpp; ++which) {
-            if (MASKOK (srcfmt->Rmask, table[which].srcR) &&
-                MASKOK (srcfmt->Gmask, table[which].srcG) &&
-                MASKOK (srcfmt->Bmask, table[which].srcB) &&
-                MASKOK (dstfmt->Rmask, table[which].dstR) &&
-                MASKOK (dstfmt->Gmask, table[which].dstG) &&
-                MASKOK (dstfmt->Bmask, table[which].dstB) &&
+            if (MASKOK(srcfmt->Rmask, table[which].srcR) &&
+                MASKOK(srcfmt->Gmask, table[which].srcG) &&
+                MASKOK(srcfmt->Bmask, table[which].srcB) &&
+                MASKOK(dstfmt->Rmask, table[which].dstR) &&
+                MASKOK(dstfmt->Gmask, table[which].dstG) &&
+                MASKOK(dstfmt->Bmask, table[which].dstB) &&
                 dstfmt->BytesPerPixel == table[which].dstbpp &&
                 (a_need & table[which].alpha) == a_need &&
-                ((table[which].blit_features & GetBlitFeatures ()) ==
+                ((table[which].blit_features & GetBlitFeatures()) ==
                  table[which].blit_features))
                 break;
         }
@@ -2583,15 +2580,15 @@ SDL_CalculateBlitN (SDL_Surface * surface, int blit_index)
 #ifdef DEBUG_ASM
 #if SDL_HERMES_BLITTERS
     if (blitfun == ConvertMMX)
-        fprintf (stderr, "Using mmx blit\n");
+        fprintf(stderr, "Using mmx blit\n");
     else if (blitfun == ConvertX86)
-        fprintf (stderr, "Using asm blit\n");
+        fprintf(stderr, "Using asm blit\n");
     else
 #endif
     if ((blitfun == BlitNtoN) || (blitfun == BlitNto1))
-        fprintf (stderr, "Using C blit\n");
+        fprintf(stderr, "Using C blit\n");
     else
-        fprintf (stderr, "Using optimized C blit\n");
+        fprintf(stderr, "Using optimized C blit\n");
 #endif /* DEBUG_ASM */
 
     return (blitfun);

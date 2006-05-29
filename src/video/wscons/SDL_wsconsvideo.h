@@ -32,7 +32,7 @@
 #include "SDL_mutex.h"
 #include "../SDL_sysvideo.h"
 
-void WSCONS_ReportError (char *fmt, ...);
+void WSCONS_ReportError(char *fmt, ...);
 
 /* Hidden "this" pointer for the video functions */
 #define _THIS	SDL_VideoDevice *this
@@ -40,10 +40,10 @@ void WSCONS_ReportError (char *fmt, ...);
 
 /* Private display data */
 
-typedef void WSCONS_bitBlit (Uint8 * src_pos, int srcRightDelta,        // pixels, not bytes
-                             int srcDownDelta,  // pixels, not bytes
-                             Uint8 * dst_pos,
-                             int dst_linebytes, int width, int height);
+typedef void WSCONS_bitBlit(Uint8 * src_pos, int srcRightDelta, // pixels, not bytes
+                            int srcDownDelta,   // pixels, not bytes
+                            Uint8 * dst_pos,
+                            int dst_linebytes, int width, int height);
 
 struct SDL_PrivateVideoData
 {

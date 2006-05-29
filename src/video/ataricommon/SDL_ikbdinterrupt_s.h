@@ -55,8 +55,8 @@ extern Uint16 SDL_AtariIkbd_enabled;
 
 /* Functions */
 
-extern void SDL_AtariIkbdInstall (void);
-extern void SDL_AtariIkbdUninstall (void);
+extern void SDL_AtariIkbdInstall(void);
+extern void SDL_AtariIkbdUninstall(void);
 
 #endif /* _SDL_IKBDINTERRUPT_S_H_ */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -49,12 +49,12 @@ struct CDcaps SDL_CDcaps = {
 int SDL_numcds;
 
 int
-SDL_CDROMInit (void)
+SDL_CDROMInit(void)
 {
     int retval;
 
     SDL_numcds = 0;
-    retval = SDL_SYS_CDInit ();
+    retval = SDL_SYS_CDInit();
     if (retval == 0) {
         SDL_cdinitted = 1;
     }
@@ -64,7 +64,7 @@ SDL_CDROMInit (void)
 
 /* Check to see if the CD-ROM subsystem has been initialized */
 static int
-CheckInit (int check_cdrom, SDL_CD ** cdrom)
+CheckInit(int check_cdrom, SDL_CD ** cdrom)
 {
     int okay;
 
@@ -72,63 +72,63 @@ CheckInit (int check_cdrom, SDL_CD ** cdrom)
     if (check_cdrom && (*cdrom == NULL)) {
         *cdrom = default_cdrom;
         if (*cdrom == NULL) {
-            SDL_SetError ("CD-ROM not opened");
+            SDL_SetError("CD-ROM not opened");
             okay = 0;
         }
     }
     if (!SDL_cdinitted) {
-        SDL_SetError ("CD-ROM subsystem not initialized");
+        SDL_SetError("CD-ROM subsystem not initialized");
     }
     return (okay);
 }
 
 int
-SDL_CDNumDrives (void)
+SDL_CDNumDrives(void)
 {
-    if (!CheckInit (0, NULL)) {
+    if (!CheckInit(0, NULL)) {
         return (-1);
     }
     return (SDL_numcds);
 }
 
 const char *
-SDL_CDName (int drive)
+SDL_CDName(int drive)
 {
-    if (!CheckInit (0, NULL)) {
+    if (!CheckInit(0, NULL)) {
         return (NULL);
     }
     if (drive >= SDL_numcds) {
-        SDL_SetError ("Invalid CD-ROM drive index");
+        SDL_SetError("Invalid CD-ROM drive index");
         return (NULL);
     }
     if (SDL_CDcaps.Name) {
-        return (SDL_CDcaps.Name (drive));
+        return (SDL_CDcaps.Name(drive));
     } else {
         return ("");
     }
 }
 
 SDL_CD *
-SDL_CDOpen (int drive)
+SDL_CDOpen(int drive)
 {
     struct SDL_CD *cdrom;
 
-    if (!CheckInit (0, NULL)) {
+    if (!CheckInit(0, NULL)) {
         return (NULL);
     }
     if (drive >= SDL_numcds) {
-        SDL_SetError ("Invalid CD-ROM drive index");
+        SDL_SetError("Invalid CD-ROM drive index");
         return (NULL);
     }
-    cdrom = (SDL_CD *) SDL_malloc (sizeof (*cdrom));
+    cdrom = (SDL_CD *) SDL_malloc(sizeof(*cdrom));
     if (cdrom == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (NULL);
     }
-    SDL_memset (cdrom, 0, sizeof (*cdrom));
-    cdrom->id = SDL_CDcaps.Open (drive);
+    SDL_memset(cdrom, 0, sizeof(*cdrom));
+    cdrom->id = SDL_CDcaps.Open(drive);
     if (cdrom->id < 0) {
-        SDL_free (cdrom);
+        SDL_free(cdrom);
         return (NULL);
     }
     default_cdrom = cdrom;
@@ -136,14 +136,14 @@ SDL_CDOpen (int drive)
 }
 
 CDstatus
-SDL_CDStatus (SDL_CD * cdrom)
+SDL_CDStatus(SDL_CD * cdrom)
 {
     CDstatus status;
     int i;
     Uint32 position;
 
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
@@ -151,13 +151,13 @@ SDL_CDStatus (SDL_CD * cdrom)
     cdrom->numtracks = 0;
     cdrom->cur_track = 0;
     cdrom->cur_frame = 0;
-    status = SDL_CDcaps.Status (cdrom, &i);
+    status = SDL_CDcaps.Status(cdrom, &i);
     position = (Uint32) i;
     cdrom->status = status;
 
     /* Get the table of contents, if there's a CD available */
-    if (CD_INDRIVE (status)) {
-        if (SDL_CDcaps.GetTOC (cdrom) < 0) {
+    if (CD_INDRIVE(status)) {
+        if (SDL_CDcaps.GetTOC(cdrom) < 0) {
             status = CD_ERROR;
         }
         /* If the drive is playing, get current play position */
@@ -166,9 +166,9 @@ SDL_CDStatus (SDL_CD * cdrom)
                 /* Keep looking */ ;
             }
 #ifdef DEBUG_CDROM
-            fprintf (stderr,
-                     "Current position: %d, track = %d (offset is %d)\n",
-                     position, i - 1, cdrom->track[i - 1].offset);
+            fprintf(stderr,
+                    "Current position: %d, track = %d (offset is %d)\n",
+                    position, i - 1, cdrom->track[i - 1].offset);
 #endif
             cdrom->cur_track = i - 1;
             position -= cdrom->track[cdrom->cur_track].offset;
@@ -179,20 +179,20 @@ SDL_CDStatus (SDL_CD * cdrom)
 }
 
 int
-SDL_CDPlayTracks (SDL_CD * cdrom,
-                  int strack, int sframe, int ntracks, int nframes)
+SDL_CDPlayTracks(SDL_CD * cdrom,
+                 int strack, int sframe, int ntracks, int nframes)
 {
     int etrack, eframe;
     int start, length;
 
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
     /* Determine the starting and ending tracks */
     if ((strack < 0) || (strack >= cdrom->numtracks)) {
-        SDL_SetError ("Invalid starting track");
+        SDL_SetError("Invalid starting track");
         return (CD_ERROR);
     }
     if (!ntracks && !nframes) {
@@ -207,7 +207,7 @@ SDL_CDPlayTracks (SDL_CD * cdrom,
         }
     }
     if (etrack > cdrom->numtracks) {
-        SDL_SetError ("Invalid play length");
+        SDL_SetError("Invalid play length");
         return (CD_ERROR);
     }
 
@@ -217,7 +217,7 @@ SDL_CDPlayTracks (SDL_CD * cdrom,
         ++strack;
     }
     if (sframe >= (int) cdrom->track[strack].length) {
-        SDL_SetError ("Invalid starting frame for track %d", strack);
+        SDL_SetError("Invalid starting frame for track %d", strack);
         return (CD_ERROR);
     }
     while ((etrack > strack) &&
@@ -225,7 +225,7 @@ SDL_CDPlayTracks (SDL_CD * cdrom,
         --etrack;
     }
     if (eframe > (int) cdrom->track[etrack].length) {
-        SDL_SetError ("Invalid ending frame for track %d", etrack);
+        SDL_SetError("Invalid ending frame for track %d", etrack);
         return (CD_ERROR);
     }
 
@@ -242,37 +242,37 @@ SDL_CDPlayTracks (SDL_CD * cdrom,
 
     /* Play! */
 #ifdef DEBUG_CDROM
-    fprintf (stderr, "Playing %d frames at offset %d\n", length, start);
+    fprintf(stderr, "Playing %d frames at offset %d\n", length, start);
 #endif
-    return (SDL_CDcaps.Play (cdrom, start, length));
+    return (SDL_CDcaps.Play(cdrom, start, length));
 }
 
 int
-SDL_CDPlay (SDL_CD * cdrom, int sframe, int length)
+SDL_CDPlay(SDL_CD * cdrom, int sframe, int length)
 {
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
-    return (SDL_CDcaps.Play (cdrom, sframe, length));
+    return (SDL_CDcaps.Play(cdrom, sframe, length));
 }
 
 int
-SDL_CDPause (SDL_CD * cdrom)
+SDL_CDPause(SDL_CD * cdrom)
 {
     CDstatus status;
     int retval;
 
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
-    status = SDL_CDcaps.Status (cdrom, NULL);
+    status = SDL_CDcaps.Status(cdrom, NULL);
     switch (status) {
     case CD_PLAYING:
-        retval = SDL_CDcaps.Pause (cdrom);
+        retval = SDL_CDcaps.Pause(cdrom);
         break;
     default:
         retval = 0;
@@ -282,20 +282,20 @@ SDL_CDPause (SDL_CD * cdrom)
 }
 
 int
-SDL_CDResume (SDL_CD * cdrom)
+SDL_CDResume(SDL_CD * cdrom)
 {
     CDstatus status;
     int retval;
 
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
-    status = SDL_CDcaps.Status (cdrom, NULL);
+    status = SDL_CDcaps.Status(cdrom, NULL);
     switch (status) {
     case CD_PAUSED:
-        retval = SDL_CDcaps.Resume (cdrom);
+        retval = SDL_CDcaps.Resume(cdrom);
     default:
         retval = 0;
         break;
@@ -304,21 +304,21 @@ SDL_CDResume (SDL_CD * cdrom)
 }
 
 int
-SDL_CDStop (SDL_CD * cdrom)
+SDL_CDStop(SDL_CD * cdrom)
 {
     CDstatus status;
     int retval;
 
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
 
-    status = SDL_CDcaps.Status (cdrom, NULL);
+    status = SDL_CDcaps.Status(cdrom, NULL);
     switch (status) {
     case CD_PLAYING:
     case CD_PAUSED:
-        retval = SDL_CDcaps.Stop (cdrom);
+        retval = SDL_CDcaps.Stop(cdrom);
     default:
         retval = 0;
         break;
@@ -327,31 +327,31 @@ SDL_CDStop (SDL_CD * cdrom)
 }
 
 int
-SDL_CDEject (SDL_CD * cdrom)
+SDL_CDEject(SDL_CD * cdrom)
 {
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return (CD_ERROR);
     }
-    return (SDL_CDcaps.Eject (cdrom));
+    return (SDL_CDcaps.Eject(cdrom));
 }
 
 void
-SDL_CDClose (SDL_CD * cdrom)
+SDL_CDClose(SDL_CD * cdrom)
 {
     /* Check if the CD-ROM subsystem has been initialized */
-    if (!CheckInit (1, &cdrom)) {
+    if (!CheckInit(1, &cdrom)) {
         return;
     }
-    SDL_CDcaps.Close (cdrom);
-    SDL_free (cdrom);
+    SDL_CDcaps.Close(cdrom);
+    SDL_free(cdrom);
     default_cdrom = NULL;
 }
 
 void
-SDL_CDROMQuit (void)
+SDL_CDROMQuit(void)
 {
-    SDL_SYS_CDQuit ();
+    SDL_SYS_CDQuit();
     SDL_cdinitted = 0;
 }
 

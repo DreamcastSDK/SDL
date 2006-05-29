@@ -62,21 +62,21 @@ static SDL_Thread *SDL_EventThread = NULL;      /* Thread handle */
 static Uint32 event_thread;     /* The event thread id */
 
 void
-SDL_Lock_EventThread (void)
+SDL_Lock_EventThread(void)
 {
-    if (SDL_EventThread && (SDL_ThreadID () != event_thread)) {
+    if (SDL_EventThread && (SDL_ThreadID() != event_thread)) {
         /* Grab lock and spin until we're sure event thread stopped */
-        SDL_mutexP (SDL_EventLock.lock);
+        SDL_mutexP(SDL_EventLock.lock);
         while (!SDL_EventLock.safe) {
-            SDL_Delay (1);
+            SDL_Delay(1);
         }
     }
 }
 void
-SDL_Unlock_EventThread (void)
+SDL_Unlock_EventThread(void)
 {
-    if (SDL_EventThread && (SDL_ThreadID () != event_thread)) {
-        SDL_mutexV (SDL_EventLock.lock);
+    if (SDL_EventThread && (SDL_ThreadID() != event_thread)) {
+        SDL_mutexV(SDL_EventLock.lock);
     }
 }
 
@@ -92,41 +92,41 @@ SDL_Unlock_EventThread (void)
 #endif
 
 static int SDLCALL
-SDL_GobbleEvents (void *unused)
+SDL_GobbleEvents(void *unused)
 {
-    event_thread = SDL_ThreadID ();
+    event_thread = SDL_ThreadID();
 
 #ifdef __OS2__
 #ifdef USE_DOSSETPRIORITY
     /* Increase thread priority, so it will process events in time for sure! */
-    DosSetPriority (PRTYS_THREAD, PRTYC_REGULAR, +16, 0);
+    DosSetPriority(PRTYS_THREAD, PRTYC_REGULAR, +16, 0);
 #endif
 #endif
 
     while (SDL_EventQ.active) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+        SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
         /* Get events from the video subsystem */
         if (_this) {
-            _this->PumpEvents (_this);
+            _this->PumpEvents(_this);
         }
 
         /* Queue pending key-repeat events */
-        SDL_CheckKeyRepeat ();
+        SDL_CheckKeyRepeat();
 
 #if !SDL_JOYSTICK_DISABLED
         /* Check for joystick state change */
         if (SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK)) {
-            SDL_JoystickUpdate ();
+            SDL_JoystickUpdate();
         }
 #endif
 
         /* Give up the CPU for the rest of our timeslice */
         SDL_EventLock.safe = 1;
         if (SDL_timer_running) {
-            SDL_ThreadedTimerCheck ();
+            SDL_ThreadedTimerCheck();
         }
-        SDL_Delay (1);
+        SDL_Delay(1);
 
         /* Check for event locking.
            On the P of the lock mutex, if the lock is held, this thread
@@ -136,25 +136,25 @@ SDL_GobbleEvents (void *unused)
            so as soon as the mutex is free, other threads can see that
            it's not safe to interfere with the event thread.
          */
-        SDL_mutexP (SDL_EventLock.lock);
+        SDL_mutexP(SDL_EventLock.lock);
         SDL_EventLock.safe = 0;
-        SDL_mutexV (SDL_EventLock.lock);
+        SDL_mutexV(SDL_EventLock.lock);
     }
-    SDL_SetTimerThreaded (0);
+    SDL_SetTimerThreaded(0);
     event_thread = 0;
     return (0);
 }
 
 static int
-SDL_StartEventThread (Uint32 flags)
+SDL_StartEventThread(Uint32 flags)
 {
     /* Reset everything to zero */
     SDL_EventThread = NULL;
-    SDL_memset (&SDL_EventLock, 0, sizeof (SDL_EventLock));
+    SDL_memset(&SDL_EventLock, 0, sizeof(SDL_EventLock));
 
     /* Create the lock and set ourselves active */
 #if !SDL_THREADS_DISABLED
-    SDL_EventQ.lock = SDL_CreateMutex ();
+    SDL_EventQ.lock = SDL_CreateMutex();
     if (SDL_EventQ.lock == NULL) {
 #ifdef __MACOS__                /* MacOS classic you can't multithread, so no lock needed */
         ;
@@ -166,20 +166,20 @@ SDL_StartEventThread (Uint32 flags)
     SDL_EventQ.active = 1;
 
     if ((flags & SDL_INIT_EVENTTHREAD) == SDL_INIT_EVENTTHREAD) {
-        SDL_EventLock.lock = SDL_CreateMutex ();
+        SDL_EventLock.lock = SDL_CreateMutex();
         if (SDL_EventLock.lock == NULL) {
             return (-1);
         }
         SDL_EventLock.safe = 0;
 
         /* The event thread will handle timers too */
-        SDL_SetTimerThreaded (2);
+        SDL_SetTimerThreaded(2);
 #if (defined(__WIN32__) && !defined(_WIN32_WCE)) && !defined(HAVE_LIBC)
 #undef SDL_CreateThread
         SDL_EventThread =
-            SDL_CreateThread (SDL_GobbleEvents, NULL, NULL, NULL);
+            SDL_CreateThread(SDL_GobbleEvents, NULL, NULL, NULL);
 #else
-        SDL_EventThread = SDL_CreateThread (SDL_GobbleEvents, NULL);
+        SDL_EventThread = SDL_CreateThread(SDL_GobbleEvents, NULL);
 #endif
         if (SDL_EventThread == NULL) {
             return (-1);
@@ -191,21 +191,21 @@ SDL_StartEventThread (Uint32 flags)
 }
 
 static void
-SDL_StopEventThread (void)
+SDL_StopEventThread(void)
 {
     SDL_EventQ.active = 0;
     if (SDL_EventThread) {
-        SDL_WaitThread (SDL_EventThread, NULL);
+        SDL_WaitThread(SDL_EventThread, NULL);
         SDL_EventThread = NULL;
-        SDL_DestroyMutex (SDL_EventLock.lock);
+        SDL_DestroyMutex(SDL_EventLock.lock);
     }
 #ifndef IPOD
-    SDL_DestroyMutex (SDL_EventQ.lock);
+    SDL_DestroyMutex(SDL_EventQ.lock);
 #endif
 }
 
 Uint32
-SDL_EventThreadID (void)
+SDL_EventThreadID(void)
 {
     return (event_thread);
 }
@@ -213,15 +213,15 @@ SDL_EventThreadID (void)
 /* Public functions */
 
 void
-SDL_StopEventLoop (void)
+SDL_StopEventLoop(void)
 {
     /* Halt the event thread, if running */
-    SDL_StopEventThread ();
+    SDL_StopEventThread();
 
     /* Shutdown event handlers */
-    SDL_KeyboardQuit ();
-    SDL_MouseQuit ();
-    SDL_QuitQuit ();
+    SDL_KeyboardQuit();
+    SDL_MouseQuit();
+    SDL_QuitQuit();
 
     /* Clean out EventQ */
     SDL_EventQ.head = 0;
@@ -231,18 +231,18 @@ SDL_StopEventLoop (void)
 
 /* This function (and associated calls) may be called more than once */
 int
-SDL_StartEventLoop (Uint32 flags)
+SDL_StartEventLoop(Uint32 flags)
 {
     int retcode;
 
     /* Clean out the event queue */
     SDL_EventThread = NULL;
     SDL_EventQ.lock = NULL;
-    SDL_StopEventLoop ();
+    SDL_StopEventLoop();
 
     /* No filter to start with, process most event types */
     SDL_EventOK = NULL;
-    SDL_memset (SDL_ProcessEvents, SDL_ENABLE, sizeof (SDL_ProcessEvents));
+    SDL_memset(SDL_ProcessEvents, SDL_ENABLE, sizeof(SDL_ProcessEvents));
     SDL_eventstate = ~0;
     /* It's not save to call SDL_EventState() yet */
     SDL_eventstate &= ~(0x00000001 << SDL_SYSWMEVENT);
@@ -250,17 +250,17 @@ SDL_StartEventLoop (Uint32 flags)
 
     /* Initialize event handlers */
     retcode = 0;
-    retcode += SDL_KeyboardInit ();
-    retcode += SDL_MouseInit ();
-    retcode += SDL_QuitInit ();
+    retcode += SDL_KeyboardInit();
+    retcode += SDL_MouseInit();
+    retcode += SDL_QuitInit();
     if (retcode < 0) {
         /* We don't expect them to fail, but... */
         return (-1);
     }
 
     /* Create the lock and event thread */
-    if (SDL_StartEventThread (flags) < 0) {
-        SDL_StopEventLoop ();
+    if (SDL_StartEventThread(flags) < 0) {
+        SDL_StopEventLoop();
         return (-1);
     }
     return (0);
@@ -269,7 +269,7 @@ SDL_StartEventLoop (Uint32 flags)
 
 /* Add an event to the event queue -- called with the queue locked */
 static int
-SDL_AddEvent (SDL_Event * event)
+SDL_AddEvent(SDL_Event * event)
 {
     int tail, added;
 
@@ -296,7 +296,7 @@ SDL_AddEvent (SDL_Event * event)
 /* Cut an event, and return the next valid spot, or the tail */
 /*                           -- called with the queue locked */
 static int
-SDL_CutEvent (int spot)
+SDL_CutEvent(int spot)
 {
     if (spot == SDL_EventQ.head) {
         SDL_EventQ.head = (SDL_EventQ.head + 1) % MAXEVENTS;
@@ -324,8 +324,8 @@ SDL_CutEvent (int spot)
 
 /* Lock the event queue, take a peep at it, and unlock it */
 int
-SDL_PeepEvents (SDL_Event * events, int numevents, SDL_eventaction action,
-                Uint32 mask)
+SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
+               Uint32 mask)
 {
     int i, used;
 
@@ -335,10 +335,10 @@ SDL_PeepEvents (SDL_Event * events, int numevents, SDL_eventaction action,
     }
     /* Lock the event queue */
     used = 0;
-    if (SDL_mutexP (SDL_EventQ.lock) == 0) {
+    if (SDL_mutexP(SDL_EventQ.lock) == 0) {
         if (action == SDL_ADDEVENT) {
             for (i = 0; i < numevents; ++i) {
-                used += SDL_AddEvent (&events[i]);
+                used += SDL_AddEvent(&events[i]);
             }
         } else {
             SDL_Event tmpevent;
@@ -352,10 +352,10 @@ SDL_PeepEvents (SDL_Event * events, int numevents, SDL_eventaction action,
             }
             spot = SDL_EventQ.head;
             while ((used < numevents) && (spot != SDL_EventQ.tail)) {
-                if (mask & SDL_EVENTMASK (SDL_EventQ.event[spot].type)) {
+                if (mask & SDL_EVENTMASK(SDL_EventQ.event[spot].type)) {
                     events[used++] = SDL_EventQ.event[spot];
                     if (action == SDL_GETEVENT) {
-                        spot = SDL_CutEvent (spot);
+                        spot = SDL_CutEvent(spot);
                     } else {
                         spot = (spot + 1) % MAXEVENTS;
                     }
@@ -364,9 +364,9 @@ SDL_PeepEvents (SDL_Event * events, int numevents, SDL_eventaction action,
                 }
             }
         }
-        SDL_mutexV (SDL_EventQ.lock);
+        SDL_mutexV(SDL_EventQ.lock);
     } else {
-        SDL_SetError ("Couldn't lock event queue");
+        SDL_SetError("Couldn't lock event queue");
         used = -1;
     }
     return (used);
@@ -374,23 +374,23 @@ SDL_PeepEvents (SDL_Event * events, int numevents, SDL_eventaction action,
 
 /* Run the system dependent event loops */
 void
-SDL_PumpEvents (void)
+SDL_PumpEvents(void)
 {
     if (!SDL_EventThread) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+        SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
         /* Get events from the video subsystem */
         if (_this) {
-            _this->PumpEvents (_this);
+            _this->PumpEvents(_this);
         }
 
         /* Queue pending key-repeat events */
-        SDL_CheckKeyRepeat ();
+        SDL_CheckKeyRepeat();
 
 #if !SDL_JOYSTICK_DISABLED
         /* Check for joystick state change */
         if (SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK)) {
-            SDL_JoystickUpdate ();
+            SDL_JoystickUpdate();
         }
 #endif
     }
@@ -399,58 +399,58 @@ SDL_PumpEvents (void)
 /* Public functions */
 
 int
-SDL_PollEvent (SDL_Event * event)
+SDL_PollEvent(SDL_Event * event)
 {
-    SDL_PumpEvents ();
+    SDL_PumpEvents();
 
     /* We can't return -1, just return 0 (no event) on error */
-    if (SDL_PeepEvents (event, 1, SDL_GETEVENT, SDL_ALLEVENTS) <= 0)
+    if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_ALLEVENTS) <= 0)
         return 0;
     return 1;
 }
 
 int
-SDL_WaitEvent (SDL_Event * event)
+SDL_WaitEvent(SDL_Event * event)
 {
     while (1) {
-        SDL_PumpEvents ();
-        switch (SDL_PeepEvents (event, 1, SDL_GETEVENT, SDL_ALLEVENTS)) {
+        SDL_PumpEvents();
+        switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_ALLEVENTS)) {
         case -1:
             return 0;
         case 1:
             return 1;
         case 0:
-            SDL_Delay (10);
+            SDL_Delay(10);
         }
     }
 }
 
 int
-SDL_PushEvent (SDL_Event * event)
+SDL_PushEvent(SDL_Event * event)
 {
-    if (SDL_PeepEvents (event, 1, SDL_ADDEVENT, 0) <= 0)
+    if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0) <= 0)
         return -1;
     return 0;
 }
 
 void
-SDL_SetEventFilter (SDL_EventFilter filter)
+SDL_SetEventFilter(SDL_EventFilter filter)
 {
     SDL_Event bitbucket;
 
     /* Set filter and discard pending events */
     SDL_EventOK = filter;
-    while (SDL_PollEvent (&bitbucket) > 0);
+    while (SDL_PollEvent(&bitbucket) > 0);
 }
 
 SDL_EventFilter
-SDL_GetEventFilter (void)
+SDL_GetEventFilter(void)
 {
     return (SDL_EventOK);
 }
 
 Uint8
-SDL_EventState (Uint8 type, int state)
+SDL_EventState(Uint8 type, int state)
 {
     SDL_Event bitbucket;
     Uint8 current_state;
@@ -469,7 +469,7 @@ SDL_EventState (Uint8 type, int state)
                 SDL_eventstate &= ~(0x00000001 << (type));
             }
         }
-        while (SDL_PollEvent (&bitbucket) > 0);
+        while (SDL_PollEvent(&bitbucket) > 0);
         return (current_state);
     }
 
@@ -485,7 +485,7 @@ SDL_EventState (Uint8 type, int state)
         } else {
             SDL_eventstate &= ~(0x00000001 << (type));
         }
-        while (SDL_PollEvent (&bitbucket) > 0);
+        while (SDL_PollEvent(&bitbucket) > 0);
         break;
     default:
         /* Querying state? */
@@ -497,19 +497,19 @@ SDL_EventState (Uint8 type, int state)
 /* This is a generic event handler.
  */
 int
-SDL_PrivateSysWMEvent (SDL_SysWMmsg * message)
+SDL_PrivateSysWMEvent(SDL_SysWMmsg * message)
 {
     int posted;
 
     posted = 0;
     if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
         SDL_Event event;
-        SDL_memset (&event, 0, sizeof (event));
+        SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_SYSWMEVENT;
         event.syswm.msg = message;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
-            SDL_PushEvent (&event);
+            SDL_PushEvent(&event);
         }
     }
     /* Update internal event state */

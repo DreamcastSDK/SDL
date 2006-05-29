@@ -16,10 +16,10 @@
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 
-extern void FastInitialize (void);
-extern UInt64 FastMicroseconds (void);
-extern UInt64 FastMilliseconds (void);
-extern StringPtr FastMethod (void);
+extern void FastInitialize(void);
+extern UInt64 FastMicroseconds(void);
+extern UInt64 FastMilliseconds(void);
+extern StringPtr FastMethod(void);
 
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */
 /* **** **** **** **** **** **** **** **** **** **** **** **** **** **** **** */

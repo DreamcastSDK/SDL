@@ -33,7 +33,7 @@ static int FifoFreeCount = 0;
 
 /* Wait for vertical retrace */
 static void
-WaitVBL (_THIS)
+WaitVBL(_THIS)
 {
     volatile Uint8 *port = (Uint8 *) (mapped_io + PCIO_OFFSET + 0x3DA);
 
@@ -41,14 +41,14 @@ WaitVBL (_THIS)
     while (!(*port & 0x08));
 }
 static void
-NV3WaitIdle (_THIS)
+NV3WaitIdle(_THIS)
 {
     RivaRop *Rop = (RivaRop *) (mapped_io + ROP_OFFSET);
     while ((Rop->FifoFree < FifoEmptyCount) ||
            (*(mapped_io + PGRAPH_OFFSET + 0x000006B0) & 0x01));
 }
 static void
-NV4WaitIdle (_THIS)
+NV4WaitIdle(_THIS)
 {
     RivaRop *Rop = (RivaRop *) (mapped_io + ROP_OFFSET);
     while ((Rop->FifoFree < FifoEmptyCount) ||
@@ -58,21 +58,21 @@ NV4WaitIdle (_THIS)
 #if 0                           /* Not yet implemented? */
 /* Sets video mem colorkey and accelerated blit function */
 static int
-SetHWColorKey (_THIS, SDL_Surface * surface, Uint32 key)
+SetHWColorKey(_THIS, SDL_Surface * surface, Uint32 key)
 {
     return (0);
 }
 
 /* Sets per surface hardware alpha value */
 static int
-SetHWAlpha (_THIS, SDL_Surface * surface, Uint8 value)
+SetHWAlpha(_THIS, SDL_Surface * surface, Uint8 value)
 {
     return (0);
 }
 #endif /* Not yet implemented */
 
 static int
-FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
+FillHWRect(_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
 {
     int dstX, dstY;
     int dstW, dstH;
@@ -83,36 +83,36 @@ FillHWRect (_THIS, SDL_Surface * dst, SDL_Rect * rect, Uint32 color)
         return -2;              /* no hardware access */
     }
     if (dst == this->screen) {
-        SDL_mutexP (hw_lock);
+        SDL_mutexP(hw_lock);
     }
 
     /* Set up the X/Y base coordinates */
     dstW = rect->w;
     dstH = rect->h;
-    FB_dst_to_xy (this, dst, &dstX, &dstY);
+    FB_dst_to_xy(this, dst, &dstX, &dstY);
 
     /* Adjust for the current rectangle */
     dstX += rect->x;
     dstY += rect->y;
 
-    RIVA_FIFO_FREE (Bitmap, 1);
+    RIVA_FIFO_FREE(Bitmap, 1);
     Bitmap->Color1A = color;
 
-    RIVA_FIFO_FREE (Bitmap, 2);
+    RIVA_FIFO_FREE(Bitmap, 2);
     Bitmap->UnclippedRectangle[0].TopLeft = (dstX << 16) | dstY;
     Bitmap->UnclippedRectangle[0].WidthHeight = (dstW << 16) | dstH;
 
-    FB_AddBusySurface (dst);
+    FB_AddBusySurface(dst);
 
     if (dst == this->screen) {
-        SDL_mutexV (hw_lock);
+        SDL_mutexV(hw_lock);
     }
     return (0);
 }
 
 static int
-HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
-             SDL_Surface * dst, SDL_Rect * dstrect)
+HWAccelBlit(SDL_Surface * src, SDL_Rect * srcrect,
+            SDL_Surface * dst, SDL_Rect * dstrect)
 {
     SDL_VideoDevice *this = current_video;
     int srcX, srcY;
@@ -122,7 +122,7 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
 
     /* FIXME: For now, only blit to display surface */
     if (dst->pitch != SDL_VideoSurface->pitch) {
-        return (src->map->sw_blit (src, srcrect, dst, dstrect));
+        return (src->map->sw_blit(src, srcrect, dst, dstrect));
     }
 
     /* Don't blit to the display surface when switched away */
@@ -130,14 +130,14 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
         return -2;              /* no hardware access */
     }
     if (dst == this->screen) {
-        SDL_mutexP (hw_lock);
+        SDL_mutexP(hw_lock);
     }
 
     /* Calculate source and destination base coordinates (in pixels) */
     dstW = dstrect->w;
     dstH = dstrect->h;
-    FB_dst_to_xy (this, src, &srcX, &srcY);
-    FB_dst_to_xy (this, dst, &dstX, &dstY);
+    FB_dst_to_xy(this, src, &srcX, &srcY);
+    FB_dst_to_xy(this, dst, &dstX, &dstY);
 
     /* Adjust for the current blit rectangles */
     srcX += srcrect->x;
@@ -145,22 +145,22 @@ HWAccelBlit (SDL_Surface * src, SDL_Rect * srcrect,
     dstX += dstrect->x;
     dstY += dstrect->y;
 
-    RIVA_FIFO_FREE (Blt, 3);
+    RIVA_FIFO_FREE(Blt, 3);
     Blt->TopLeftSrc = (srcY << 16) | srcX;
     Blt->TopLeftDst = (dstY << 16) | dstX;
     Blt->WidthHeight = (dstH << 16) | dstW;
 
-    FB_AddBusySurface (src);
-    FB_AddBusySurface (dst);
+    FB_AddBusySurface(src);
+    FB_AddBusySurface(dst);
 
     if (dst == this->screen) {
-        SDL_mutexV (hw_lock);
+        SDL_mutexV(hw_lock);
     }
     return (0);
 }
 
 static int
-CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
+CheckHWBlit(_THIS, SDL_Surface * src, SDL_Surface * dst)
 {
     int accelerated;
 
@@ -188,7 +188,7 @@ CheckHWBlit (_THIS, SDL_Surface * src, SDL_Surface * dst)
 }
 
 void
-FB_RivaAccel (_THIS, __u32 card)
+FB_RivaAccel(_THIS, __u32 card)
 {
     RivaRop *Rop = (RivaRop *) (mapped_io + ROP_OFFSET);
 

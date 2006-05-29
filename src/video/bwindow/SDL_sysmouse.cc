@@ -41,9 +41,9 @@ extern "C"
     };
 
 /* Can this be done in the BeOS? */
-    WMcursor *BE_CreateWMCursor (_THIS,
-                                 Uint8 * data, Uint8 * mask, int w, int h,
-                                 int hot_x, int hot_y)
+    WMcursor *BE_CreateWMCursor(_THIS,
+                                Uint8 * data, Uint8 * mask, int w, int h,
+                                int hot_x, int hot_y)
     {
         WMcursor *cursor;
         int allowed_x;
@@ -55,22 +55,22 @@ extern "C"
           allowed_y = 16;       /* BeOS limitation */
         if ((w > allowed_x) || (h > allowed_y))
         {
-            SDL_SetError ("Only cursors of dimension (%dx%d) are allowed",
-                          allowed_x, allowed_y);
+            SDL_SetError("Only cursors of dimension (%dx%d) are allowed",
+                         allowed_x, allowed_y);
             return (NULL);
         }
 
         /* Allocate the cursor */
-        cursor = (WMcursor *) SDL_malloc (sizeof (WMcursor));
+        cursor = (WMcursor *) SDL_malloc(sizeof(WMcursor));
         if (cursor == NULL) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             return (NULL);
         }
         cursor->bits =
-            (char *) SDL_malloc (4 + 2 * ((allowed_x / 8) * allowed_y));
+            (char *) SDL_malloc(4 + 2 * ((allowed_x / 8) * allowed_y));
         if (cursor->bits == NULL) {
-            SDL_free (cursor);
-            SDL_OutOfMemory ();
+            SDL_free(cursor);
+            SDL_OutOfMemory();
             return (NULL);
         }
         cursor->bits[0] = allowed_y;    /* Size of the cursor */
@@ -80,16 +80,16 @@ extern "C"
         cptr = &cursor->bits[4];
 
         /* Pad out to the normal cursor size */
-        run = PADDED_BITS (w);
-        pad = PADDED_BITS (allowed_x) - run;
+        run = PADDED_BITS(w);
+        pad = PADDED_BITS(allowed_x) - run;
         for (i = 0; i < h; ++i) {
-            SDL_memcpy (cptr, data, run);
-            SDL_memset (cptr + run, 0, pad);
+            SDL_memcpy(cptr, data, run);
+            SDL_memset(cptr + run, 0, pad);
             data += run;
             cptr += (run + pad);
         }
         for (; i < allowed_y; ++i) {
-            SDL_memset (cptr, 0, run + pad);
+            SDL_memset(cptr, 0, run + pad);
             cptr += (run + pad);
         }
         for (i = 0; i < h; ++i) {
@@ -97,47 +97,47 @@ extern "C"
                inverted color pixels black, since inverted color pixels
                aren't supported under BeOS.
              */
-            SDL_memcpy (cptr, mask, run);
-            SDL_memset (cptr + run, 0, pad);
+            SDL_memcpy(cptr, mask, run);
+            SDL_memset(cptr + run, 0, pad);
             mask += run;
             cptr += (run + pad);
         }
         for (; i < allowed_y; ++i) {
-            SDL_memset (cptr, 0, run + pad);
+            SDL_memset(cptr, 0, run + pad);
             cptr += (run + pad);
         }
         return (cursor);
     }
 
-    int BE_ShowWMCursor (_THIS, WMcursor * cursor)
+    int BE_ShowWMCursor(_THIS, WMcursor * cursor)
     {
-        if (be_app->Lock ()) {
+        if (be_app->Lock()) {
             if (cursor == NULL) {
                 if (SDL_BlankCursor != NULL) {
-                    be_app->SetCursor (SDL_BlankCursor->bits);
+                    be_app->SetCursor(SDL_BlankCursor->bits);
                 }
             } else {
-                be_app->SetCursor (cursor->bits);
+                be_app->SetCursor(cursor->bits);
             }
-            be_app->Unlock ();
+            be_app->Unlock();
         }
         return (1);
     }
 
-    void BE_FreeWMCursor (_THIS, WMcursor * cursor)
+    void BE_FreeWMCursor(_THIS, WMcursor * cursor)
     {
-        SDL_free (cursor->bits);
-        SDL_free (cursor);
+        SDL_free(cursor->bits);
+        SDL_free(cursor);
     }
 
 /* Implementation by Christian Bauer <cbauer@student.physik.uni-mainz.de> */
-    void BE_WarpWMCursor (_THIS, Uint16 x, Uint16 y)
+    void BE_WarpWMCursor(_THIS, Uint16 x, Uint16 y)
     {
-        BPoint pt (x, y);
-        SDL_Win->Lock ();
-        SDL_Win->ConvertToScreen (&pt);
-        SDL_Win->Unlock ();
-        set_mouse_position ((int32) pt.x, (int32) pt.y);
+        BPoint pt(x, y);
+        SDL_Win->Lock();
+        SDL_Win->ConvertToScreen(&pt);
+        SDL_Win->Unlock();
+        set_mouse_position((int32) pt.x, (int32) pt.y);
     }
 
 };                              /* Extern C */

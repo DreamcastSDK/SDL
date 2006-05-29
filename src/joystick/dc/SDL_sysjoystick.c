@@ -54,7 +54,7 @@ struct joystick_hwdata
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     int numdevs;
 
@@ -63,8 +63,8 @@ SDL_SYS_JoystickInit (void)
     numdevs = 0;
     for (p = 0; p < MAPLE_PORT_COUNT; p++) {
         for (u = 0; u < MAPLE_UNIT_COUNT; u++) {
-            if (maple_device_func (p, u) & MAPLE_FUNC_CONTROLLER) {
-                SYS_Joystick_addr[numdevs] = maple_addr (p, u);
+            if (maple_device_func(p, u) & MAPLE_FUNC_CONTROLLER) {
+                SYS_Joystick_addr[numdevs] = maple_addr(p, u);
                 numdevs++;
             }
         }
@@ -75,7 +75,7 @@ SDL_SYS_JoystickInit (void)
 
 /* Function to get the device-dependent name of a joystick */
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     maple_device_t *dev;
     if (maple_compat_resolve
@@ -90,16 +90,16 @@ SDL_SYS_JoystickName (int index)
    It returns 0, or -1 if there is an error.
  */
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     /* allocate memory for system specific hardware data */
     joystick->hwdata =
-        (struct joystick_hwdata *) SDL_malloc (sizeof (*joystick->hwdata));
+        (struct joystick_hwdata *) SDL_malloc(sizeof(*joystick->hwdata));
     if (joystick->hwdata == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    SDL_memset (joystick->hwdata, 0, sizeof (*joystick->hwdata));
+    SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
 
     /* fill nbuttons, naxes, and nhats fields */
     joystick->nbuttons = MAX_BUTTONS;
@@ -116,7 +116,7 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
  */
 
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     const int sdl_buttons[] = {
         CONT_C,
@@ -134,7 +134,7 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
     int buttons, prev_buttons, i, changed;
 
     addr = SYS_Joystick_addr[joystick->index];
-    if (cont_get_cond (addr, &cond) < 0)
+    if (cont_get_cond(addr, &cond) < 0)
         return;
 
     buttons = cond.buttons;
@@ -152,7 +152,7 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
             hat |= SDL_HAT_LEFT;
         if (buttons & CONT_DPAD_RIGHT)
             hat |= SDL_HAT_RIGHT;
-        SDL_PrivateJoystickHat (joystick, 0, hat);
+        SDL_PrivateJoystickHat(joystick, 0, hat);
     }
     if ((changed) &
         (CONT_DPAD2_UP | CONT_DPAD2_DOWN | CONT_DPAD2_LEFT |
@@ -166,30 +166,30 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
             hat |= SDL_HAT_LEFT;
         if (buttons & CONT_DPAD2_RIGHT)
             hat |= SDL_HAT_RIGHT;
-        SDL_PrivateJoystickHat (joystick, 1, hat);
+        SDL_PrivateJoystickHat(joystick, 1, hat);
     }
 
-    for (i = 0; i < sizeof (sdl_buttons) / sizeof (sdl_buttons[0]); i++) {
+    for (i = 0; i < sizeof(sdl_buttons) / sizeof(sdl_buttons[0]); i++) {
         if (changed & sdl_buttons[i]) {
-            SDL_PrivateJoystickButton (joystick, i,
-                                       (buttons & sdl_buttons[i]) ?
-                                       SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickButton(joystick, i,
+                                      (buttons & sdl_buttons[i]) ?
+                                      SDL_PRESSED : SDL_RELEASED);
         }
     }
 
     prev_cond = &joystick->hwdata->prev_cond;
     if (cond.joyx != prev_cond->joyx)
-        SDL_PrivateJoystickAxis (joystick, 0, cond.joyx - 128);
+        SDL_PrivateJoystickAxis(joystick, 0, cond.joyx - 128);
     if (cond.joyy != prev_cond->joyy)
-        SDL_PrivateJoystickAxis (joystick, 1, cond.joyy - 128);
+        SDL_PrivateJoystickAxis(joystick, 1, cond.joyy - 128);
     if (cond.rtrig != prev_cond->rtrig)
-        SDL_PrivateJoystickAxis (joystick, 2, cond.rtrig);
+        SDL_PrivateJoystickAxis(joystick, 2, cond.rtrig);
     if (cond.ltrig != prev_cond->ltrig)
-        SDL_PrivateJoystickAxis (joystick, 3, cond.ltrig);
+        SDL_PrivateJoystickAxis(joystick, 3, cond.ltrig);
     if (cond.joy2x != prev_cond->joy2x)
-        SDL_PrivateJoystickAxis (joystick, 4, cond.joy2x - 128);
+        SDL_PrivateJoystickAxis(joystick, 4, cond.joy2x - 128);
     if (cond.joy2y != prev_cond->joy2y)
-        SDL_PrivateJoystickAxis (joystick, 5, cond.joy2y - 128);
+        SDL_PrivateJoystickAxis(joystick, 5, cond.joy2y - 128);
 
     joystick->hwdata->prev_buttons = buttons;
     joystick->hwdata->prev_cond = cond;
@@ -197,17 +197,17 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
 
 /* Function to close a joystick after use */
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata != NULL) {
         /* free system specific hardware data */
-        SDL_free (joystick->hwdata);
+        SDL_free(joystick->hwdata);
     }
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     return;
 }

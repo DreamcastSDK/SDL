@@ -40,69 +40,69 @@
 #include "SDL_nxevents_c.h"
 
 // Initialization/Query functions
-static int NX_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Surface *NX_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                     int height, int bpp, Uint32 flags);
-static int NX_SetColors (_THIS, int firstcolor, int ncolors,
-                         SDL_Color * colors);
-static void NX_VideoQuit (_THIS);
-static void NX_DestroyWindow (_THIS, SDL_Surface * screen);
-static int NX_ToggleFullScreen (_THIS, int on);
-static void NX_UpdateMouse (_THIS);
-static int NX_SetGammaRamp (_THIS, Uint16 * ramp);
-static int NX_GetGammaRamp (_THIS, Uint16 * ramp);
+static int NX_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Surface *NX_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                    int height, int bpp, Uint32 flags);
+static int NX_SetColors(_THIS, int firstcolor, int ncolors,
+                        SDL_Color * colors);
+static void NX_VideoQuit(_THIS);
+static void NX_DestroyWindow(_THIS, SDL_Surface * screen);
+static int NX_ToggleFullScreen(_THIS, int on);
+static void NX_UpdateMouse(_THIS);
+static int NX_SetGammaRamp(_THIS, Uint16 * ramp);
+static int NX_GetGammaRamp(_THIS, Uint16 * ramp);
 
 // Microwin driver bootstrap functions
 static int
-NX_Available ()
+NX_Available()
 {
-    Dprintf ("enter NX_Available\n");
+    Dprintf("enter NX_Available\n");
 
-    if (GrOpen () < 0)
+    if (GrOpen() < 0)
         return 0;
-    GrClose ();
+    GrClose();
 
-    Dprintf ("leave NX_Available\n");
+    Dprintf("leave NX_Available\n");
     return 1;
 }
 
 static void
-NX_DeleteDevice (SDL_VideoDevice * device)
+NX_DeleteDevice(SDL_VideoDevice * device)
 {
-    Dprintf ("enter NX_DeleteDevice\n");
+    Dprintf("enter NX_DeleteDevice\n");
 
     if (device) {
         if (device->hidden)
-            SDL_free (device->hidden);
+            SDL_free(device->hidden);
         if (device->gl_data)
-            SDL_free (device->gl_data);
-        SDL_free (device);
+            SDL_free(device->gl_data);
+        SDL_free(device);
     }
 
-    Dprintf ("leave NX_DeleteDevice\n");
+    Dprintf("leave NX_DeleteDevice\n");
 }
 
 static SDL_VideoDevice *
-NX_CreateDevice (int devindex)
+NX_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
-    Dprintf ("enter NX_CreateDevice\n");
+    Dprintf("enter NX_CreateDevice\n");
 
     // Initialize all variables that we clean on shutdown
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
         device->gl_data = NULL;
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
-        NX_DeleteDevice (device);
+        SDL_OutOfMemory();
+        NX_DeleteDevice(device);
         return 0;
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     // Set the function pointers
     device->VideoInit = NX_VideoInit;
@@ -151,7 +151,7 @@ NX_CreateDevice (int devindex)
 
     device->free = NX_DeleteDevice;
 
-    Dprintf ("leave NX_CreateDevice\n");
+    Dprintf("leave NX_CreateDevice\n");
     return device;
 }
 
@@ -160,11 +160,11 @@ VideoBootStrap NX_bootstrap = {
 };
 
 static void
-create_aux_windows (_THIS)
+create_aux_windows(_THIS)
 {
     GR_WM_PROPERTIES props;
 
-    Dprintf ("enter create_aux_windows\n");
+    Dprintf("enter create_aux_windows\n");
 
     // Don't create any extra windows if we are being managed
     if (SDL_windowid) {
@@ -173,43 +173,43 @@ create_aux_windows (_THIS)
     }
 
     if (FSwindow && FSwindow != GR_ROOT_WINDOW_ID) {
-        GrDestroyWindow (FSwindow);
+        GrDestroyWindow(FSwindow);
     }
 
-    FSwindow = GrNewWindow (GR_ROOT_WINDOW_ID, 0, 0, 1, 1, 0, BLACK, BLACK);
+    FSwindow = GrNewWindow(GR_ROOT_WINDOW_ID, 0, 0, 1, 1, 0, BLACK, BLACK);
     props.flags = GR_WM_FLAGS_PROPS;
     props.props = GR_WM_PROPS_NODECORATE;
-    GrSetWMProperties (FSwindow, &props);
+    GrSetWMProperties(FSwindow, &props);
 
-    GrSelectEvents (FSwindow, (GR_EVENT_MASK_EXPOSURE |
-                               GR_EVENT_MASK_BUTTON_DOWN |
-                               GR_EVENT_MASK_BUTTON_UP |
-                               GR_EVENT_MASK_FOCUS_IN |
-                               GR_EVENT_MASK_FOCUS_OUT |
-                               GR_EVENT_MASK_KEY_DOWN | GR_EVENT_MASK_KEY_UP |
-                               GR_EVENT_MASK_MOUSE_ENTER |
-                               GR_EVENT_MASK_MOUSE_EXIT |
-                               GR_EVENT_MASK_MOUSE_MOTION |
-                               GR_EVENT_MASK_UPDATE |
-                               GR_EVENT_MASK_CLOSE_REQ));
+    GrSelectEvents(FSwindow, (GR_EVENT_MASK_EXPOSURE |
+                              GR_EVENT_MASK_BUTTON_DOWN |
+                              GR_EVENT_MASK_BUTTON_UP |
+                              GR_EVENT_MASK_FOCUS_IN |
+                              GR_EVENT_MASK_FOCUS_OUT |
+                              GR_EVENT_MASK_KEY_DOWN | GR_EVENT_MASK_KEY_UP |
+                              GR_EVENT_MASK_MOUSE_ENTER |
+                              GR_EVENT_MASK_MOUSE_EXIT |
+                              GR_EVENT_MASK_MOUSE_MOTION |
+                              GR_EVENT_MASK_UPDATE |
+                              GR_EVENT_MASK_CLOSE_REQ));
 
-    Dprintf ("leave create_aux_windows\n");
+    Dprintf("leave create_aux_windows\n");
 }
 
 int
-NX_VideoInit (_THIS, SDL_PixelFormat * vformat)
+NX_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     GR_SCREEN_INFO si;
 
-    Dprintf ("enter NX_VideoInit\n");
+    Dprintf("enter NX_VideoInit\n");
 
-    if (GrOpen () < 0) {
-        SDL_SetError ("GrOpen() fail");
+    if (GrOpen() < 0) {
+        SDL_SetError("GrOpen() fail");
         return -1;
     }
     // use share memory to speed up
 #ifdef NANOX_SHARE_MEMORY
-    GrReqShmCmds (0xFFFF);
+    GrReqShmCmds(0xFFFF);
 #endif
 
     SDL_Window = 0;
@@ -219,7 +219,7 @@ NX_VideoInit (_THIS, SDL_PixelFormat * vformat)
     GammaRamp_G = NULL;
     GammaRamp_B = NULL;
 
-    GrGetScreenInfo (&si);
+    GrGetScreenInfo(&si);
     SDL_Visual.bpp = si.bpp;
 
     /* Determine the current screen size */
@@ -227,9 +227,9 @@ NX_VideoInit (_THIS, SDL_PixelFormat * vformat)
     this->info.current_h = si.rows;
 
     // GetVideoMode
-    SDL_modelist = (SDL_Rect **) SDL_malloc (sizeof (SDL_Rect *) * 2);
+    SDL_modelist = (SDL_Rect **) SDL_malloc(sizeof(SDL_Rect *) * 2);
     if (SDL_modelist) {
-        SDL_modelist[0] = (SDL_Rect *) SDL_malloc (sizeof (SDL_Rect));
+        SDL_modelist[0] = (SDL_Rect *) SDL_malloc(sizeof(SDL_Rect));
         if (SDL_modelist[0]) {
             SDL_modelist[0]->x = 0;
             SDL_modelist[0]->y = 0;
@@ -251,142 +251,142 @@ NX_VideoInit (_THIS, SDL_PixelFormat * vformat)
         vformat->Bmask = SDL_Visual.blue_mask;
     }
     // See if we have been passed a window to use
-    SDL_windowid = getenv ("SDL_WINDOWID");
+    SDL_windowid = getenv("SDL_WINDOWID");
 
     // Create the fullscreen (and managed windows : no implement)
-    create_aux_windows (this);
+    create_aux_windows(this);
 
-    Dprintf ("leave NX_VideoInit\n");
+    Dprintf("leave NX_VideoInit\n");
     return 0;
 }
 
 void
-NX_VideoQuit (_THIS)
+NX_VideoQuit(_THIS)
 {
-    Dprintf ("enter NX_VideoQuit\n");
+    Dprintf("enter NX_VideoQuit\n");
 
     // Start shutting down the windows
-    NX_DestroyImage (this, this->screen);
-    NX_DestroyWindow (this, this->screen);
+    NX_DestroyImage(this, this->screen);
+    NX_DestroyWindow(this, this->screen);
     if (FSwindow && FSwindow != GR_ROOT_WINDOW_ID) {
-        GrDestroyWindow (FSwindow);
+        GrDestroyWindow(FSwindow);
     }
-    NX_FreeVideoModes (this);
-    SDL_free (GammaRamp_R);
-    SDL_free (GammaRamp_G);
-    SDL_free (GammaRamp_B);
+    NX_FreeVideoModes(this);
+    SDL_free(GammaRamp_R);
+    SDL_free(GammaRamp_G);
+    SDL_free(GammaRamp_B);
 
 #ifdef ENABLE_NANOX_DIRECT_FB
     if (Clientfb)
-        GrCloseClientFramebuffer ();
+        GrCloseClientFramebuffer();
 #endif
-    GrClose ();
+    GrClose();
 
-    Dprintf ("leave NX_VideoQuit\n");
+    Dprintf("leave NX_VideoQuit\n");
 }
 
 static void
-NX_DestroyWindow (_THIS, SDL_Surface * screen)
+NX_DestroyWindow(_THIS, SDL_Surface * screen)
 {
-    Dprintf ("enter NX_DestroyWindow\n");
+    Dprintf("enter NX_DestroyWindow\n");
 
     if (!SDL_windowid) {
         if (screen && (screen->flags & SDL_FULLSCREEN)) {
             screen->flags &= ~SDL_FULLSCREEN;
-            NX_LeaveFullScreen (this);
+            NX_LeaveFullScreen(this);
         }
         // Destroy the output window
         if (SDL_Window && SDL_Window != GR_ROOT_WINDOW_ID) {
-            GrDestroyWindow (SDL_Window);
+            GrDestroyWindow(SDL_Window);
         }
     }
     // Free the graphics context
     if (!SDL_GC) {
-        GrDestroyGC (SDL_GC);
+        GrDestroyGC(SDL_GC);
         SDL_GC = 0;
     }
 
-    Dprintf ("leave NX_DestroyWindow\n");
+    Dprintf("leave NX_DestroyWindow\n");
 }
 
 static int
-NX_CreateWindow (_THIS, SDL_Surface * screen,
-                 int w, int h, int bpp, Uint32 flags)
+NX_CreateWindow(_THIS, SDL_Surface * screen,
+                int w, int h, int bpp, Uint32 flags)
 {
-    Dprintf ("enter NX_CreateWindow\n");
+    Dprintf("enter NX_CreateWindow\n");
 
     // If a window is already present, destroy it and start fresh
     if (SDL_Window && SDL_Window != GR_ROOT_WINDOW_ID) {
-        NX_DestroyWindow (this, screen);
+        NX_DestroyWindow(this, screen);
     }
     // See if we have been given a window id
     if (SDL_windowid) {
-        SDL_Window = SDL_strtol (SDL_windowid, NULL, 0);
+        SDL_Window = SDL_strtol(SDL_windowid, NULL, 0);
     } else {
         SDL_Window = 0;
     }
 
-    if (!SDL_ReallocFormat (screen, bpp, SDL_Visual.red_mask,
-                            SDL_Visual.green_mask, SDL_Visual.blue_mask, 0))
+    if (!SDL_ReallocFormat(screen, bpp, SDL_Visual.red_mask,
+                           SDL_Visual.green_mask, SDL_Visual.blue_mask, 0))
         return -1;
 
     // Create (or use) the nanox display window
     if (!SDL_windowid) {
 
         SDL_Window =
-            GrNewWindow (GR_ROOT_WINDOW_ID, 0, 0, w, h, 0, BLACK, WHITE);
+            GrNewWindow(GR_ROOT_WINDOW_ID, 0, 0, w, h, 0, BLACK, WHITE);
 
-        GrSelectEvents (SDL_Window, (GR_EVENT_MASK_EXPOSURE |
-                                     GR_EVENT_MASK_BUTTON_DOWN |
-                                     GR_EVENT_MASK_BUTTON_UP |
-                                     GR_EVENT_MASK_FOCUS_IN |
-                                     GR_EVENT_MASK_FOCUS_OUT |
-                                     GR_EVENT_MASK_KEY_DOWN |
-                                     GR_EVENT_MASK_KEY_UP |
-                                     GR_EVENT_MASK_MOUSE_ENTER |
-                                     GR_EVENT_MASK_MOUSE_EXIT |
-                                     GR_EVENT_MASK_MOUSE_MOTION |
-                                     GR_EVENT_MASK_UPDATE |
-                                     GR_EVENT_MASK_CLOSE_REQ));
+        GrSelectEvents(SDL_Window, (GR_EVENT_MASK_EXPOSURE |
+                                    GR_EVENT_MASK_BUTTON_DOWN |
+                                    GR_EVENT_MASK_BUTTON_UP |
+                                    GR_EVENT_MASK_FOCUS_IN |
+                                    GR_EVENT_MASK_FOCUS_OUT |
+                                    GR_EVENT_MASK_KEY_DOWN |
+                                    GR_EVENT_MASK_KEY_UP |
+                                    GR_EVENT_MASK_MOUSE_ENTER |
+                                    GR_EVENT_MASK_MOUSE_EXIT |
+                                    GR_EVENT_MASK_MOUSE_MOTION |
+                                    GR_EVENT_MASK_UPDATE |
+                                    GR_EVENT_MASK_CLOSE_REQ));
     }
 
     /* Create the graphics context here, once we have a window */
-    SDL_GC = GrNewGC ();
+    SDL_GC = GrNewGC();
     if (SDL_GC == 0) {
-        SDL_SetError ("Couldn't create graphics context");
+        SDL_SetError("Couldn't create graphics context");
         return (-1);
     }
     // Map them both and go fullscreen, if requested
     if (!SDL_windowid) {
-        GrMapWindow (SDL_Window);
+        GrMapWindow(SDL_Window);
         if (flags & SDL_FULLSCREEN) {
             screen->flags |= SDL_FULLSCREEN;
-            NX_EnterFullScreen (this);
+            NX_EnterFullScreen(this);
         } else {
             screen->flags &= ~SDL_FULLSCREEN;
         }
     }
 #ifdef ENABLE_NANOX_DIRECT_FB
     /* attempt allocating the client side framebuffer */
-    Clientfb = GrOpenClientFramebuffer ();
+    Clientfb = GrOpenClientFramebuffer();
     /* NULL return will default to using GrArea() */
 #endif
 
-    Dprintf ("leave NX_CreateWindow\n");
+    Dprintf("leave NX_CreateWindow\n");
     return 0;
 }
 
 SDL_Surface *
-NX_SetVideoMode (_THIS, SDL_Surface * current,
-                 int width, int height, int bpp, Uint32 flags)
+NX_SetVideoMode(_THIS, SDL_Surface * current,
+                int width, int height, int bpp, Uint32 flags)
 {
-    Dprintf ("enter NX_SetVideoMode\n");
+    Dprintf("enter NX_SetVideoMode\n");
 
     // Lock the event thread, in multi-threading environments
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
     bpp = SDL_Visual.bpp;
-    if (NX_CreateWindow (this, current, width, height, bpp, flags) < 0) {
+    if (NX_CreateWindow(this, current, width, height, bpp, flags) < 0) {
         current = NULL;
         goto done;
     }
@@ -394,15 +394,15 @@ NX_SetVideoMode (_THIS, SDL_Surface * current,
     if (current->w != width || current->h != height) {
         current->w = width;
         current->h = height;
-        current->pitch = SDL_CalculatePitch (current);
-        NX_ResizeImage (this, current, flags);
+        current->pitch = SDL_CalculatePitch(current);
+        NX_ResizeImage(this, current, flags);
     }
     current->flags |= (flags & (SDL_RESIZABLE | SDL_NOFRAME));
 
   done:
-    SDL_Unlock_EventThread ();
+    SDL_Unlock_EventThread();
 
-    Dprintf ("leave NX_SetVideoMode\n");
+    Dprintf("leave NX_SetVideoMode\n");
 
     // We're done!
     return current;
@@ -410,12 +410,12 @@ NX_SetVideoMode (_THIS, SDL_Surface * current,
 
 // ncolors <= 256
 int
-NX_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+NX_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
     GR_PALETTE pal;
 
-    Dprintf ("enter NX_SetColors\n");
+    Dprintf("enter NX_SetColors\n");
 
     if (ncolors > 256)
         return 0;
@@ -426,100 +426,100 @@ NX_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
         pal.palette[i].g = colors[i].g;
         pal.palette[i].b = colors[i].b;
     }
-    GrSetSystemPalette (firstcolor, &pal);
+    GrSetSystemPalette(firstcolor, &pal);
 
-    Dprintf ("leave NX_SetColors\n");
+    Dprintf("leave NX_SetColors\n");
     return 1;
 }
 
 static int
-NX_ToggleFullScreen (_THIS, int on)
+NX_ToggleFullScreen(_THIS, int on)
 {
     SDL_Rect rect;
     Uint32 event_thread;
 
-    Dprintf ("enter NX_ToggleFullScreen\n");
+    Dprintf("enter NX_ToggleFullScreen\n");
 
     // Don't switch if we don't own the window
     if (SDL_windowid)
         return 0;
 
     // Don't lock if we are the event thread
-    event_thread = SDL_EventThreadID ();
-    if (event_thread && (SDL_ThreadID () == event_thread)) {
+    event_thread = SDL_EventThreadID();
+    if (event_thread && (SDL_ThreadID() == event_thread)) {
         event_thread = 0;
     }
     if (event_thread) {
-        SDL_Lock_EventThread ();
+        SDL_Lock_EventThread();
     }
 
     if (on) {
-        NX_EnterFullScreen (this);
+        NX_EnterFullScreen(this);
     } else {
         this->screen->flags &= ~SDL_FULLSCREEN;
-        NX_LeaveFullScreen (this);
+        NX_LeaveFullScreen(this);
     }
 
     rect.x = rect.y = 0;
     rect.w = this->screen->w, rect.h = this->screen->h;
-    NX_NormalUpdate (this, 1, &rect);
+    NX_NormalUpdate(this, 1, &rect);
 
     if (event_thread) {
-        SDL_Unlock_EventThread ();
+        SDL_Unlock_EventThread();
     }
 
-    Dprintf ("leave NX_ToggleFullScreen\n");
+    Dprintf("leave NX_ToggleFullScreen\n");
     return 1;
 }
 
 // Update the current mouse state and position
 static void
-NX_UpdateMouse (_THIS)
+NX_UpdateMouse(_THIS)
 {
     int x, y;
     GR_WINDOW_INFO info;
     GR_SCREEN_INFO si;
 
 
-    Dprintf ("enter NX_UpdateMouse\n");
+    Dprintf("enter NX_UpdateMouse\n");
 
     // Lock the event thread, in multi-threading environments
-    SDL_Lock_EventThread ();
+    SDL_Lock_EventThread();
 
-    GrGetScreenInfo (&si);
-    GrGetWindowInfo (SDL_Window, &info);
+    GrGetScreenInfo(&si);
+    GrGetWindowInfo(SDL_Window, &info);
     x = si.xpos - info.x;
     y = si.ypos - info.y;
     if (x >= 0 && x <= info.width && y >= 0 && y <= info.height) {
-        SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
-        SDL_PrivateMouseMotion (0, 0, x, y);
+        SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
+        SDL_PrivateMouseMotion(0, 0, x, y);
     } else {
-        SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+        SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
     }
 
-    SDL_Unlock_EventThread ();
-    Dprintf ("leave NX_UpdateMouse\n");
+    SDL_Unlock_EventThread();
+    Dprintf("leave NX_UpdateMouse\n");
 }
 
 static int
-NX_SetGammaRamp (_THIS, Uint16 * ramp)
+NX_SetGammaRamp(_THIS, Uint16 * ramp)
 {
     int i;
     Uint16 *red, *green, *blue;
 
-    Dprintf ("enter NX_SetGammaRamp\n");
+    Dprintf("enter NX_SetGammaRamp\n");
 
     if (SDL_Visual.bpp != 32 && SDL_Visual.bpp != 24)
         return -1;
 
     if (!GammaRamp_R)
-        GammaRamp_R = (Uint16 *) SDL_malloc (sizeof (Uint16) * CI_SIZE);
+        GammaRamp_R = (Uint16 *) SDL_malloc(sizeof(Uint16) * CI_SIZE);
     if (!GammaRamp_G)
-        GammaRamp_G = (Uint16 *) SDL_malloc (sizeof (Uint16) * CI_SIZE);
+        GammaRamp_G = (Uint16 *) SDL_malloc(sizeof(Uint16) * CI_SIZE);
     if (!GammaRamp_B)
-        GammaRamp_B = (Uint16 *) SDL_malloc (sizeof (Uint16) * CI_SIZE);
+        GammaRamp_B = (Uint16 *) SDL_malloc(sizeof(Uint16) * CI_SIZE);
     if ((!GammaRamp_R) || (!GammaRamp_G) || (!GammaRamp_B)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return -1;
     }
 
@@ -535,19 +535,19 @@ NX_SetGammaRamp (_THIS, Uint16 * ramp)
         GammaRamp_G[i] = green[i];
         GammaRamp_B[i] = blue[i];
     }
-    SDL_UpdateRect (this->screen, 0, 0, 0, 0);
+    SDL_UpdateRect(this->screen, 0, 0, 0, 0);
 
-    Dprintf ("leave NX_SetGammaRamp\n");
+    Dprintf("leave NX_SetGammaRamp\n");
     return 0;
 }
 
 static int
-NX_GetGammaRamp (_THIS, Uint16 * ramp)
+NX_GetGammaRamp(_THIS, Uint16 * ramp)
 {
     int i;
     Uint16 *red, *green, *blue;
 
-    Dprintf ("enter NX_GetGammaRamp\n");
+    Dprintf("enter NX_GetGammaRamp\n");
 
     if (SDL_Visual.bpp != 32 && SDL_Visual.bpp != 24)
         return -1;
@@ -565,7 +565,7 @@ NX_GetGammaRamp (_THIS, Uint16 * ramp)
             red[i] = green[i] = blue[i] = i;
     }
 
-    Dprintf ("leave NX_GetGammaRamp\n");
+    Dprintf("leave NX_GetGammaRamp\n");
     return 0;
 }
 

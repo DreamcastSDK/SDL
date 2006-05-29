@@ -27,15 +27,15 @@ struct
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
-quit (int rc)
+quit(int rc)
 {
-    SDL_Quit ();
-    exit (rc);
+    SDL_Quit();
+    exit(rc);
 }
 
 
 void SDLCALL
-fillerup (void *unused, Uint8 * stream, int len)
+fillerup(void *unused, Uint8 * stream, int len)
 {
     Uint8 *waveptr;
     int waveleft;
@@ -46,88 +46,87 @@ fillerup (void *unused, Uint8 * stream, int len)
 
     /* Go! */
     while (waveleft <= len) {
-        SDL_MixAudio (stream, waveptr, waveleft, SDL_MIX_MAXVOLUME);
+        SDL_MixAudio(stream, waveptr, waveleft, SDL_MIX_MAXVOLUME);
         stream += waveleft;
         len -= waveleft;
         waveptr = wave.sound;
         waveleft = wave.soundlen;
         wave.soundpos = 0;
     }
-    SDL_MixAudio (stream, waveptr, len, SDL_MIX_MAXVOLUME);
+    SDL_MixAudio(stream, waveptr, len, SDL_MIX_MAXVOLUME);
     wave.soundpos += len;
 }
 
 static int done = 0;
 void
-poked (int sig)
+poked(int sig)
 {
     done = 1;
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     int i, n;
 
     /* Print available audio drivers */
-    n = SDL_GetNumAudioDrivers ();
+    n = SDL_GetNumAudioDrivers();
     if (n == 0) {
-        printf ("No built-in audio drivers\n");
+        printf("No built-in audio drivers\n");
     } else {
-        printf ("Built-in audio drivers:");
+        printf("Built-in audio drivers:");
         for (i = 0; i < n; ++i) {
             if (i > 0) {
-                printf (",");
+                printf(",");
             }
-            printf (" %s", SDL_GetAudioDriver (i));
+            printf(" %s", SDL_GetAudioDriver(i));
         }
-        printf ("\n");
+        printf("\n");
     }
 
     /* Load the SDL library */
-    if (SDL_Init (SDL_INIT_AUDIO) < 0) {
-        fprintf (stderr, "Couldn't initialize SDL: %s\n", SDL_GetError ());
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
     if (argv[1] == NULL) {
         argv[1] = "sample.wav";
     }
     /* Load the wave file into memory */
-    if (SDL_LoadWAV (argv[1],
-                     &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
-        fprintf (stderr, "Couldn't load %s: %s\n", argv[1], SDL_GetError ());
-        quit (1);
+    if (SDL_LoadWAV(argv[1], &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
+        fprintf(stderr, "Couldn't load %s: %s\n", argv[1], SDL_GetError());
+        quit(1);
     }
 
     wave.spec.callback = fillerup;
 #if HAVE_SIGNAL_H
     /* Set the signals */
 #ifdef SIGHUP
-    signal (SIGHUP, poked);
+    signal(SIGHUP, poked);
 #endif
-    signal (SIGINT, poked);
+    signal(SIGINT, poked);
 #ifdef SIGQUIT
-    signal (SIGQUIT, poked);
+    signal(SIGQUIT, poked);
 #endif
-    signal (SIGTERM, poked);
+    signal(SIGTERM, poked);
 #endif /* HAVE_SIGNAL_H */
 
     /* Initialize fillerup() variables */
-    if (SDL_OpenAudio (&wave.spec, NULL) < 0) {
-        fprintf (stderr, "Couldn't open audio: %s\n", SDL_GetError ());
-        SDL_FreeWAV (wave.sound);
-        quit (2);
+    if (SDL_OpenAudio(&wave.spec, NULL) < 0) {
+        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+        SDL_FreeWAV(wave.sound);
+        quit(2);
     }
-    SDL_PauseAudio (0);
+    SDL_PauseAudio(0);
 
     /* Let the audio run */
-    printf ("Using audio driver: %s\n", SDL_GetCurrentAudioDriver ());
-    while (!done && (SDL_GetAudioStatus () == SDL_AUDIO_PLAYING))
-        SDL_Delay (1000);
+    printf("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
+        SDL_Delay(1000);
 
     /* Clean up on signal */
-    SDL_CloseAudio ();
-    SDL_FreeWAV (wave.sound);
-    SDL_Quit ();
+    SDL_CloseAudio();
+    SDL_FreeWAV(wave.sound);
+    SDL_Quit();
     return (0);
 }

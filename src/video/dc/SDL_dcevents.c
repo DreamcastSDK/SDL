@@ -61,7 +61,7 @@ const static unsigned short sdl_shift[] = {
 #define	MOUSE_WHEELDOWN	(1<<5)
 
 static void
-mouse_update (void)
+mouse_update(void)
 {
     const static char sdl_mousebtn[] = {
         MOUSE_LEFTBUTTON,
@@ -78,8 +78,7 @@ mouse_update (void)
     int buttons, changed;
     int i;
 
-    if ((addr = maple_first_mouse ()) == 0
-        || mouse_get_cond (addr, &cond) < 0)
+    if ((addr = maple_first_mouse()) == 0 || mouse_get_cond(addr, &cond) < 0)
         return;
 
     buttons = cond.buttons ^ 0xff;
@@ -89,20 +88,20 @@ mouse_update (void)
         buttons |= MOUSE_WHEELDOWN;
 
     if (cond.dx || cond.dy)
-        SDL_PrivateMouseMotion (0, 1, cond.dx, cond.dy);
+        SDL_PrivateMouseMotion(0, 1, cond.dx, cond.dy);
 
     changed = buttons ^ prev_buttons;
-    for (i = 0; i < sizeof (sdl_mousebtn); i++) {
+    for (i = 0; i < sizeof(sdl_mousebtn); i++) {
         if (changed & sdl_mousebtn[i]) {
-            SDL_PrivateMouseButton ((buttons & sdl_mousebtn[i]) ?
-                                    SDL_PRESSED : SDL_RELEASED, i, 0, 0);
+            SDL_PrivateMouseButton((buttons & sdl_mousebtn[i]) ?
+                                   SDL_PRESSED : SDL_RELEASED, i, 0, 0);
         }
     }
     prev_buttons = buttons;
 }
 
 static void
-keyboard_update (void)
+keyboard_update(void)
 {
     static kbd_state_t old_state;
     static uint8 old_addr;
@@ -116,40 +115,40 @@ keyboard_update (void)
 
     int i;
 
-    addr = maple_first_kb ();
+    addr = maple_first_kb();
 
     if (addr == 0)
         return;
 
     if (addr != old_addr) {
         old_addr = addr;
-        SDL_memset (&old_state, 0, sizeof (old_state));
+        SDL_memset(&old_state, 0, sizeof(old_state));
     }
 
-    maple_raddr (addr, &port, &unit);
+    maple_raddr(addr, &port, &unit);
 
-    state = maple_dev_state (port, unit);
+    state = maple_dev_state(port, unit);
     if (!state)
         return;
 
     shiftkeys = state->shift_keys ^ old_state.shift_keys;
-    for (i = 0; i < sizeof (sdl_shift); i++) {
+    for (i = 0; i < sizeof(sdl_shift); i++) {
         if ((shiftkeys >> i) & 1) {
             keysym.sym = sdl_shift[i];
-            SDL_PrivateKeyboard (((state->
-                                   shift_keys >> i) & 1) ? SDL_PRESSED :
-                                 SDL_RELEASED, &keysym);
+            SDL_PrivateKeyboard(((state->
+                                  shift_keys >> i) & 1) ? SDL_PRESSED :
+                                SDL_RELEASED, &keysym);
         }
     }
 
-    for (i = 0; i < sizeof (sdl_key); i++) {
+    for (i = 0; i < sizeof(sdl_key); i++) {
         if (state->matrix[i] != old_state.matrix[i]) {
             int key = sdl_key[i];
             if (key) {
                 keysym.sym = key;
-                SDL_PrivateKeyboard (state->
-                                     matrix[i] ? SDL_PRESSED :
-                                     SDL_RELEASED, &keysym);
+                SDL_PrivateKeyboard(state->
+                                    matrix[i] ? SDL_PRESSED :
+                                    SDL_RELEASED, &keysym);
             }
         }
     }
@@ -158,14 +157,14 @@ keyboard_update (void)
 }
 
 void
-DC_PumpEvents (_THIS)
+DC_PumpEvents(_THIS)
 {
-    keyboard_update ();
-    mouse_update ();
+    keyboard_update();
+    mouse_update();
 }
 
 void
-DC_InitOSKeymap (_THIS)
+DC_InitOSKeymap(_THIS)
 {
     /* do nothing. */
 }

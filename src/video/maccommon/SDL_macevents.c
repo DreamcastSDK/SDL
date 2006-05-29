@@ -54,59 +54,59 @@
 #define iAbout	1               /* About menu item */
 
 /* Functions to handle the About menu */
-static void Mac_DoAppleMenu (_THIS, long item);
+static void Mac_DoAppleMenu(_THIS, long item);
 
 /* The translation table from a macintosh key scancode to a SDL keysym */
 static SDLKey MAC_keymap[256];
-static SDL_keysym *TranslateKey (int scancode, int modifiers,
-                                 SDL_keysym * keysym, int pressed);
+static SDL_keysym *TranslateKey(int scancode, int modifiers,
+                                SDL_keysym * keysym, int pressed);
 
 /* Handle activation and deactivation  -- returns whether an event was posted */
 static int
-Mac_HandleActivate (int activate)
+Mac_HandleActivate(int activate)
 {
     if (activate) {
         /* Show the current SDL application cursor */
-        SDL_SetCursor (NULL);
+        SDL_SetCursor(NULL);
 
         /* put our mask back case it changed during context switch */
-        SetEventMask (everyEvent & ~autoKeyMask);
+        SetEventMask(everyEvent & ~autoKeyMask);
     } else {
 #if TARGET_API_MAC_CARBON
         {
             Cursor cursor;
-            SetCursor (GetQDGlobalsArrow (&cursor));
+            SetCursor(GetQDGlobalsArrow(&cursor));
         }
 #else
-        SetCursor (&theQD->arrow);
+        SetCursor(&theQD->arrow);
 #endif
         if (!Mac_cursor_showing) {
-            ShowCursor ();
+            ShowCursor();
             Mac_cursor_showing = 1;
         }
     }
-    return (SDL_PrivateAppActive (activate, SDL_APPINPUTFOCUS));
+    return (SDL_PrivateAppActive(activate, SDL_APPINPUTFOCUS));
 }
 
 static void
-myGlobalToLocal (_THIS, Point * pt)
+myGlobalToLocal(_THIS, Point * pt)
 {
     if (SDL_VideoSurface && !(SDL_VideoSurface->flags & SDL_FULLSCREEN)) {
         GrafPtr saveport;
-        GetPort (&saveport);
+        GetPort(&saveport);
 #if TARGET_API_MAC_CARBON
-        SetPort (GetWindowPort (SDL_Window));
+        SetPort(GetWindowPort(SDL_Window));
 #else
-        SetPort (SDL_Window);
+        SetPort(SDL_Window);
 #endif
-        GlobalToLocal (pt);
-        SetPort (saveport);
+        GlobalToLocal(pt);
+        SetPort(saveport);
     }
 }
 
 /* The main MacOS event handler */
 static int
-Mac_HandleEvents (_THIS, int wait4it)
+Mac_HandleEvents(_THIS, int wait4it)
 {
     static int mouse_button = 1;
     int i;
@@ -139,28 +139,28 @@ Mac_HandleEvents (_THIS, int wait4it)
         } else {
             wait_time = 0;
         }
-        WaitNextEvent (everyEvent, &event, wait_time, nil);
+        WaitNextEvent(everyEvent, &event, wait_time, nil);
     } else {
 #if ! TARGET_API_MAC_CARBON
-        GetOSEvent (everyEvent, &event);
+        GetOSEvent(everyEvent, &event);
 #endif
     }
 
 #if TARGET_API_MAC_CARBON
     /* for some reason, event.where isn't set ? */
-    GetGlobalMouse (&event.where);
+    GetGlobalMouse(&event.where);
 #endif
 
     /* Check for mouse motion */
     if ((event.where.h != last_where.h) || (event.where.v != last_where.v)) {
         Point pt;
         pt = last_where = event.where;
-        myGlobalToLocal (this, &pt);
-        SDL_PrivateMouseMotion (0, 0, pt.h, pt.v);
+        myGlobalToLocal(this, &pt);
+        SDL_PrivateMouseMotion(0, 0, pt.h, pt.v);
     }
 
     /* Check the current state of the keyboard */
-    if (SDL_GetAppState () & SDL_APPINPUTFOCUS) {
+    if (SDL_GetAppState() & SDL_APPINPUTFOCUS) {
         KeyMap keys;
 
         /* Check for special non-event keys */
@@ -207,7 +207,7 @@ Mac_HandleEvents (_THIS, int wait4it)
                     } else {
                         mode = SDL_RELEASED;
                     }
-                    SDL_PrivateKeyboard (mode, &keysym);
+                    SDL_PrivateKeyboard(mode, &keysym);
                 }
             }
 
@@ -219,15 +219,15 @@ Mac_HandleEvents (_THIS, int wait4it)
            actual keyboard state because on Mac OS X a keydown event
            is immediately followed by a keyup event.
          */
-        GetKeys (keys);
+        GetKeys(keys);
         if ((keys[0] != last_keys[0]) || (keys[1] != last_keys[1]) ||
             (keys[2] != last_keys[2]) || (keys[3] != last_keys[3])) {
             SDL_keysym keysym;
             int old_bit, new_bit;
 
 #ifdef DEBUG_KEYBOARD
-            fprintf (sterr, "New keys: 0x%x 0x%x 0x%x 0x%x\n",
-                     new_keys[0], new_keys[1], new_keys[2], new_keys[3]);
+            fprintf(sterr, "New keys: 0x%x 0x%x 0x%x 0x%x\n",
+                    new_keys[0], new_keys[1], new_keys[2], new_keys[3]);
 #endif
             for (i = 0; i < 128; ++i) {
                 old_bit = (((Uint8 *) last_keys)[i / 8] >> (i % 8)) & 0x01;
@@ -235,13 +235,13 @@ Mac_HandleEvents (_THIS, int wait4it)
                 if (old_bit != new_bit) {
                     /* Post the keyboard event */
 #ifdef DEBUG_KEYBOARD
-                    fprintf (stderr, "Scancode: 0x%2.2X\n", i);
+                    fprintf(stderr, "Scancode: 0x%2.2X\n", i);
 #endif
-                    SDL_PrivateKeyboard (new_bit,
-                                         TranslateKey (i,
-                                                       event.
-                                                       modifiers,
-                                                       &keysym, new_bit));
+                    SDL_PrivateKeyboard(new_bit,
+                                        TranslateKey(i,
+                                                     event.
+                                                     modifiers,
+                                                     &keysym, new_bit));
                 }
             }
 
@@ -260,32 +260,32 @@ Mac_HandleEvents (_THIS, int wait4it)
             WindowRef win;
             short area;
 
-            area = FindWindow (event.where, &win);
+            area = FindWindow(event.where, &win);
             /* Support switching between the SIOUX console
                and SDL_Window by clicking in the window.
              */
-            if (win && (win != FrontWindow ())) {
-                SelectWindow (win);
+            if (win && (win != FrontWindow())) {
+                SelectWindow(win);
             }
             switch (area) {
             case inMenuBar:    /* Only the apple menu exists */
-                Mac_DoAppleMenu (this, MenuSelect (event.where));
-                HiliteMenu (0);
+                Mac_DoAppleMenu(this, MenuSelect(event.where));
+                HiliteMenu(0);
                 break;
             case inDrag:
 #if TARGET_API_MAC_CARBON
-                DragWindow (win, event.where, NULL);
+                DragWindow(win, event.where, NULL);
 #else
-                DragWindow (win, event.where, &theQD->screenBits.bounds);
+                DragWindow(win, event.where, &theQD->screenBits.bounds);
 #endif
                 break;
             case inGoAway:
-                if (TrackGoAway (win, event.where)) {
-                    SDL_PrivateQuit ();
+                if (TrackGoAway(win, event.where)) {
+                    SDL_PrivateQuit();
                 }
                 break;
             case inContent:
-                myGlobalToLocal (this, &event.where);
+                myGlobalToLocal(this, &event.where);
                 /* Treat command-click as right mouse button */
                 if (event.modifiers & optionKey) {
                     mouse_button = 2;
@@ -294,9 +294,9 @@ Mac_HandleEvents (_THIS, int wait4it)
                 } else {
                     mouse_button = 1;
                 }
-                SDL_PrivateMouseButton (SDL_PRESSED,
-                                        mouse_button, event.where.h,
-                                        event.where.v);
+                SDL_PrivateMouseButton(SDL_PRESSED,
+                                       mouse_button, event.where.h,
+                                       event.where.v);
                 break;
             case inGrow:
                 {
@@ -308,45 +308,43 @@ Mac_HandleEvents (_THIS, int wait4it)
                         break;
                     }
 #if TARGET_API_MAC_CARBON
-                    newSize = GrowWindow (win, event.where, NULL);
+                    newSize = GrowWindow(win, event.where, NULL);
 #else
                     newSize =
-                        GrowWindow (win, event.where,
-                                    &theQD->screenBits.bounds);
+                        GrowWindow(win, event.where,
+                                   &theQD->screenBits.bounds);
 #endif
                     if (newSize) {
 #if !TARGET_API_MAC_CARBON
-                        EraseRect (&theQD->screenBits.bounds);
+                        EraseRect(&theQD->screenBits.bounds);
 #endif
-                        SizeWindow (win, LoWord (newSize),
-                                    HiWord (newSize), 1);
-                        SDL_PrivateResize (LoWord (newSize),
-                                           HiWord (newSize));
+                        SizeWindow(win, LoWord(newSize), HiWord(newSize), 1);
+                        SDL_PrivateResize(LoWord(newSize), HiWord(newSize));
                     }
                 }
                 break;
             case inZoomIn:
             case inZoomOut:
-                if (TrackBox (win, event.where, area)) {
+                if (TrackBox(win, event.where, area)) {
                     Rect rect;
 #if !TARGET_API_MAC_CARBON
-                    EraseRect (&theQD->screenBits.bounds);
+                    EraseRect(&theQD->screenBits.bounds);
 #endif
-                    ZoomWindow (win, area, 0);
+                    ZoomWindow(win, area, 0);
                     if (area == inZoomIn) {
-                        GetWindowUserState (SDL_Window, &rect);
+                        GetWindowUserState(SDL_Window, &rect);
                     } else {
-                        GetWindowStandardState (SDL_Window, &rect);
+                        GetWindowStandardState(SDL_Window, &rect);
                     }
-                    SDL_PrivateResize (rect.right - rect.left,
-                                       rect.bottom - rect.top);
+                    SDL_PrivateResize(rect.right - rect.left,
+                                      rect.bottom - rect.top);
                 }
                 break;
 #if TARGET_API_MAC_CARBON
             case inCollapseBox:
-                if (TrackBox (win, event.where, area)) {
-                    if (IsWindowCollapsable (win)) {
-                        CollapseWindow (win, !IsWindowCollapsed (win));
+                if (TrackBox(win, event.where, area)) {
+                    if (IsWindowCollapsable(win)) {
+                        CollapseWindow(win, !IsWindowCollapsed(win));
                         /* There should be something done like in inGrow case, but... */
                     }
                 }
@@ -356,7 +354,7 @@ Mac_HandleEvents (_THIS, int wait4it)
 #if TARGET_API_MAC_CARBON
                 /* Never happens in Carbon? */
 #else
-                SystemClick (&event, win);
+                SystemClick(&event, win);
 #endif
                 break;
             default:
@@ -366,16 +364,16 @@ Mac_HandleEvents (_THIS, int wait4it)
         break;
     case mouseUp:
         {
-            myGlobalToLocal (this, &event.where);
+            myGlobalToLocal(this, &event.where);
             /* Release the mouse button we simulated in the last press.
                The drawback of this methos is we cannot press more than
                one button. However, this doesn't matter, since there is
                only a single logical mouse button, even if you have a
                multi-button mouse, this doesn't matter at all.
              */
-            SDL_PrivateMouseButton (SDL_RELEASED,
-                                    mouse_button, event.where.h,
-                                    event.where.v);
+            SDL_PrivateMouseButton(SDL_RELEASED,
+                                   mouse_button, event.where.h,
+                                   event.where.v);
         }
         break;
 #if 0                           /* Handled above the switch statement */
@@ -383,35 +381,35 @@ Mac_HandleEvents (_THIS, int wait4it)
         {
             SDL_keysym keysym;
 
-            SDL_PrivateKeyboard (SDL_PRESSED,
-                                 TranslateKey ((event.
-                                                message & keyCodeMask) >> 8
-                                               event.modifiers, &keysym, 1));
+            SDL_PrivateKeyboard(SDL_PRESSED,
+                                TranslateKey((event.
+                                              message & keyCodeMask) >> 8
+                                             event.modifiers, &keysym, 1));
         }
         break;
     case keyUp:
         {
             SDL_keysym keysym;
 
-            SDL_PrivateKeyboard (SDL_RELEASED,
-                                 TranslateKey ((event.
-                                                message & keyCodeMask) >> 8
-                                               event.modifiers, &keysym, 0));
+            SDL_PrivateKeyboard(SDL_RELEASED,
+                                TranslateKey((event.
+                                              message & keyCodeMask) >> 8
+                                             event.modifiers, &keysym, 0));
         }
         break;
 #endif
     case updateEvt:
         {
-            BeginUpdate (SDL_Window);
+            BeginUpdate(SDL_Window);
 #if SDL_VIDEO_OPENGL
             if (SDL_VideoSurface->flags & SDL_INTERNALOPENGL)
-                SDL_GL_SwapBuffers ();
+                SDL_GL_SwapBuffers();
             else
 #endif
             if ((SDL_VideoSurface->flags & SDL_HWSURFACE) == SDL_SWSURFACE) {
-                SDL_UpdateRect (SDL_VideoSurface, 0, 0, 0, 0);
+                SDL_UpdateRect(SDL_VideoSurface, 0, 0, 0, 0);
             }
-            EndUpdate (SDL_Window);
+            EndUpdate(SDL_Window);
         }
         /* If this was an update event for the SIOUX console, we return 0
            in order to stop an endless series of updates being triggered.
@@ -422,7 +420,7 @@ Mac_HandleEvents (_THIS, int wait4it)
         break;
     case activateEvt:
         {
-            Mac_HandleActivate (!!(event.modifiers & activeFlag));
+            Mac_HandleActivate(!!(event.modifiers & activeFlag));
         }
         break;
     case diskEvt:
@@ -432,8 +430,8 @@ Mac_HandleEvents (_THIS, int wait4it)
 #else
             if (((event.message >> 16) & 0xFFFF) != noErr) {
                 Point spot;
-                SetPt (&spot, 0x0070, 0x0050);
-                DIBadMount (spot, event.message);
+                SetPt(&spot, 0x0070, 0x0050);
+                DIBadMount(spot, event.message);
             }
 #endif
         }
@@ -444,15 +442,15 @@ Mac_HandleEvents (_THIS, int wait4it)
 #if 0                           /* Handled above the switch statement */
             case mouseMovedMessage:
                 {
-                    myGlobalToLocal (this, &event.where);
-                    SDL_PrivateMouseMotion (0, 0,
-                                            event.where.h, event.where.v);
+                    myGlobalToLocal(this, &event.where);
+                    SDL_PrivateMouseMotion(0, 0,
+                                           event.where.h, event.where.v);
                 }
                 break;
 #endif /* 0 */
             case suspendResumeMessage:
                 {
-                    Mac_HandleActivate (!!(event.message & resumeFlag));
+                    Mac_HandleActivate(!!(event.message & resumeFlag));
                 }
                 break;
             }
@@ -469,16 +467,16 @@ Mac_HandleEvents (_THIS, int wait4it)
 
 
 void
-Mac_PumpEvents (_THIS)
+Mac_PumpEvents(_THIS)
 {
     /* Process pending MacOS events */
-    while (Mac_HandleEvents (this, 0)) {
+    while (Mac_HandleEvents(this, 0)) {
         /* Loop and check again */ ;
     }
 }
 
 void
-Mac_InitOSKeymap (_THIS)
+Mac_InitOSKeymap(_THIS)
 {
     const void *KCHRPtr;
     UInt32 state;
@@ -487,7 +485,7 @@ Mac_InitOSKeymap (_THIS)
     int world = SDLK_WORLD_0;
 
     /* Map the MAC keysyms */
-    for (i = 0; i < SDL_arraysize (MAC_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(MAC_keymap); ++i)
         MAC_keymap[i] = SDLK_UNKNOWN;
 
     /* Defined MAC_* constants */
@@ -620,7 +618,7 @@ Mac_InitOSKeymap (_THIS)
      */
 
     /* Get a pointer to the systems cached KCHR */
-    KCHRPtr = (void *) GetScriptManagerVariable (smKCHRCache);
+    KCHRPtr = (void *) GetScriptManagerVariable(smKCHRCache);
     if (KCHRPtr) {
         /* Loop over all 127 possible scan codes */
         for (i = 0; i < 0x7F; i++) {
@@ -628,12 +626,12 @@ Mac_InitOSKeymap (_THIS)
             state = 0;
 
             /* Now translate the key code to a key value */
-            value = KeyTranslate (KCHRPtr, i, &state) & 0xff;
+            value = KeyTranslate(KCHRPtr, i, &state) & 0xff;
 
             /* If the state become 0, it was a dead key. We need to translate again,
                passing in the new state, to get the actual key value */
             if (state != 0)
-                value = KeyTranslate (KCHRPtr, i, &state) & 0xff;
+                value = KeyTranslate(KCHRPtr, i, &state) & 0xff;
 
             /* Now we should have an ascii value, or 0. Try to figure out to which SDL symbol it maps */
             if (value >= 128)   /* Some non-ASCII char, map it to SDLK_WORLD_* */
@@ -670,7 +668,7 @@ Mac_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, int modifiers, SDL_keysym * keysym, int pressed)
+TranslateKey(int scancode, int modifiers, SDL_keysym * keysym, int pressed)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -683,50 +681,50 @@ TranslateKey (int scancode, int modifiers, SDL_keysym * keysym, int pressed)
         Ptr new_keymap;
 
         /* Get the current keyboard map resource */
-        new_keymap = (Ptr) GetScriptManagerVariable (smKCHRCache);
+        new_keymap = (Ptr) GetScriptManagerVariable(smKCHRCache);
         if (new_keymap != keymap) {
             keymap = new_keymap;
             state = 0;
         }
-        keysym->unicode = KeyTranslate (keymap,
-                                        keysym->scancode | modifiers,
-                                        &state) & 0xFFFF;
+        keysym->unicode = KeyTranslate(keymap,
+                                       keysym->scancode | modifiers,
+                                       &state) & 0xFFFF;
     }
     return (keysym);
 }
 
 void
-Mac_InitEvents (_THIS)
+Mac_InitEvents(_THIS)
 {
     /* Create apple menu bar */
-    apple_menu = GetMenu (mApple);
+    apple_menu = GetMenu(mApple);
     if (apple_menu != nil) {
-        AppendResMenu (apple_menu, 'DRVR');
-        InsertMenu (apple_menu, 0);
+        AppendResMenu(apple_menu, 'DRVR');
+        InsertMenu(apple_menu, 0);
     }
-    DrawMenuBar ();
+    DrawMenuBar();
 
     /* Get rid of spurious events at startup */
-    FlushEvents (everyEvent, 0);
+    FlushEvents(everyEvent, 0);
 
     /* Allow every event but keyrepeat */
-    SetEventMask (everyEvent & ~autoKeyMask);
+    SetEventMask(everyEvent & ~autoKeyMask);
 }
 
 void
-Mac_QuitEvents (_THIS)
+Mac_QuitEvents(_THIS)
 {
-    ClearMenuBar ();
+    ClearMenuBar();
     if (apple_menu != nil) {
-        ReleaseResource ((char **) apple_menu);
+        ReleaseResource((char **) apple_menu);
     }
 
     /* Clean up pending events */
-    FlushEvents (everyEvent, 0);
+    FlushEvents(everyEvent, 0);
 }
 
 static void
-Mac_DoAppleMenu (_THIS, long choice)
+Mac_DoAppleMenu(_THIS, long choice)
 {
 #if !TARGET_API_MAC_CARBON      /* No Apple menu in OS X */
     short menu, item;
@@ -748,8 +746,8 @@ Mac_DoAppleMenu (_THIS, long choice)
                 {
                     Str255 name;
 
-                    GetMenuItemText (apple_menu, item, name);
-                    OpenDeskAcc (name);
+                    GetMenuItemText(apple_menu, item, name);
+                    OpenDeskAcc(name);
                 }
                 break;
             }
@@ -770,7 +768,7 @@ QDGlobals *theQD = NULL;
 
 /* Exported to the macmain code */
 void
-SDL_InitQuickDraw (struct QDGlobals *the_qd)
+SDL_InitQuickDraw(struct QDGlobals *the_qd)
 {
 #if !TARGET_API_MAC_CARBON
     theQD = the_qd;

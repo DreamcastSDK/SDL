@@ -29,7 +29,7 @@
 /* Functions to blit from 8-bit surfaces to other surfaces */
 
 static void
-Blit1to1 (SDL_BlitInfo * info)
+Blit1to1(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -79,7 +79,7 @@ Blit1to1 (SDL_BlitInfo * info)
 #define LO	1
 #endif
 static void
-Blit1to2 (SDL_BlitInfo * info)
+Blit1to2(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -185,7 +185,7 @@ Blit1to2 (SDL_BlitInfo * info)
 #endif /* USE_DUFFS_LOOP */
 }
 static void
-Blit1to3 (SDL_BlitInfo * info)
+Blit1to3(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -233,7 +233,7 @@ Blit1to3 (SDL_BlitInfo * info)
     }
 }
 static void
-Blit1to4 (SDL_BlitInfo * info)
+Blit1to4(SDL_BlitInfo * info)
 {
 #ifndef USE_DUFFS_LOOP
     int c;
@@ -281,7 +281,7 @@ Blit1to4 (SDL_BlitInfo * info)
 }
 
 static void
-Blit1to1Key (SDL_BlitInfo * info)
+Blit1to1Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -328,7 +328,7 @@ Blit1to1Key (SDL_BlitInfo * info)
 }
 
 static void
-Blit1to2Key (SDL_BlitInfo * info)
+Blit1to2Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -360,7 +360,7 @@ Blit1to2Key (SDL_BlitInfo * info)
 }
 
 static void
-Blit1to3Key (SDL_BlitInfo * info)
+Blit1to3Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -393,7 +393,7 @@ Blit1to3Key (SDL_BlitInfo * info)
 }
 
 static void
-Blit1to4Key (SDL_BlitInfo * info)
+Blit1to4Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -425,7 +425,7 @@ Blit1to4Key (SDL_BlitInfo * info)
 }
 
 static void
-Blit1toNAlpha (SDL_BlitInfo * info)
+Blit1toNAlpha(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -466,7 +466,7 @@ Blit1toNAlpha (SDL_BlitInfo * info)
 }
 
 static void
-Blit1toNAlphaKey (SDL_BlitInfo * info)
+Blit1toNAlphaKey(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -519,7 +519,7 @@ static SDL_loblit one_blitkey[] = {
 };
 
 SDL_loblit
-SDL_CalculateBlit1 (SDL_Surface * surface, int blit_index)
+SDL_CalculateBlit1(SDL_Surface * surface, int blit_index)
 {
     int which;
     SDL_PixelFormat *dstfmt;

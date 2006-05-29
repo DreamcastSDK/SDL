@@ -29,13 +29,13 @@
 #include "SDL_nximage_c.h"
 
 void
-NX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
+NX_NormalUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     int i, j, xinc, yinc, destinc, rowinc;
     int x, y, w, h;
     unsigned char *src = NULL, *dest = NULL;
 
-    Dprintf ("enter NX_NormalUpdate\n");
+    Dprintf("enter NX_NormalUpdate\n");
 
     /* These are the values for the incoming image */
     xinc = this->screen->format->BytesPerPixel;
@@ -106,38 +106,38 @@ NX_NormalUpdate (_THIS, int numrects, SDL_Rect * rects)
 #endif
         else {
             for (j = h; j > 0; --j, src += yinc, dest += destinc)
-                SDL_memcpy (dest, src, rowinc);
+                SDL_memcpy(dest, src, rowinc);
         }
         if (!Clientfb) {
             if (currently_fullscreen) {
-                GrArea (FSwindow, SDL_GC, x + OffsetX, y + OffsetY, w,
-                        h, Image_buff, pixel_type);
+                GrArea(FSwindow, SDL_GC, x + OffsetX, y + OffsetY, w,
+                       h, Image_buff, pixel_type);
             } else {
-                GrArea (SDL_Window, SDL_GC, x, y, w, h, Image_buff,
-                        pixel_type);
+                GrArea(SDL_Window, SDL_GC, x, y, w, h, Image_buff,
+                       pixel_type);
             }
         }
     }
-    GrFlush ();
+    GrFlush();
 
-    Dprintf ("leave NX_NormalUpdate\n");
+    Dprintf("leave NX_NormalUpdate\n");
 }
 
 int
-NX_SetupImage (_THIS, SDL_Surface * screen)
+NX_SetupImage(_THIS, SDL_Surface * screen)
 {
     int size = screen->h * screen->pitch;
 
-    Dprintf ("enter NX_SetupImage\n");
+    Dprintf("enter NX_SetupImage\n");
 
-    screen->pixels = (void *) SDL_malloc (size);
+    screen->pixels = (void *) SDL_malloc(size);
 
     if (!Clientfb) {
-        Image_buff = (unsigned char *) SDL_malloc (size);
+        Image_buff = (unsigned char *) SDL_malloc(size);
         if (screen->pixels == NULL || Image_buff == NULL) {
-            SDL_free (screen->pixels);
-            SDL_free (Image_buff);
-            SDL_OutOfMemory ();
+            SDL_free(screen->pixels);
+            SDL_free(Image_buff);
+            SDL_OutOfMemory();
             return -1;
         }
     }
@@ -146,37 +146,37 @@ NX_SetupImage (_THIS, SDL_Surface * screen)
 
     this->UpdateRects = NX_NormalUpdate;
 
-    Dprintf ("leave NX_SetupImage\n");
+    Dprintf("leave NX_SetupImage\n");
     return 0;
 }
 
 void
-NX_DestroyImage (_THIS, SDL_Surface * screen)
+NX_DestroyImage(_THIS, SDL_Surface * screen)
 {
-    Dprintf ("enter NX_DestroyImage\n");
+    Dprintf("enter NX_DestroyImage\n");
 
     if (SDL_Image)
-        SDL_free (SDL_Image);
+        SDL_free(SDL_Image);
     if (Image_buff)
-        SDL_free (Image_buff);
+        SDL_free(Image_buff);
     if (screen)
         screen->pixels = NULL;
 
-    Dprintf ("leave NX_DestroyImage\n");
+    Dprintf("leave NX_DestroyImage\n");
 }
 
 int
-NX_ResizeImage (_THIS, SDL_Surface * screen, Uint32 flags)
+NX_ResizeImage(_THIS, SDL_Surface * screen, Uint32 flags)
 {
     int retval;
     GR_SCREEN_INFO si;
 
-    Dprintf ("enter NX_ResizeImage\n");
+    Dprintf("enter NX_ResizeImage\n");
 
-    NX_DestroyImage (this, screen);
-    retval = NX_SetupImage (this, screen);
+    NX_DestroyImage(this, screen);
+    retval = NX_SetupImage(this, screen);
 
-    GrGetScreenInfo (&si);
+    GrGetScreenInfo(&si);
     OffsetX = (si.cols - screen->w) / 2;
     OffsetY = (si.rows - screen->h) / 2;
 
@@ -184,19 +184,19 @@ NX_ResizeImage (_THIS, SDL_Surface * screen, Uint32 flags)
     if (Clientfb) {
         /* Get current window position and fb pointer */
         if (currently_fullscreen)
-            GrGetWindowFBInfo (FSwindow, &fbinfo);
+            GrGetWindowFBInfo(FSwindow, &fbinfo);
         else
-            GrGetWindowFBInfo (SDL_Window, &fbinfo);
+            GrGetWindowFBInfo(SDL_Window, &fbinfo);
     }
 #endif
-    Dprintf ("leave NX_ResizeImage\n");
+    Dprintf("leave NX_ResizeImage\n");
     return retval;
 }
 
 void
-NX_RefreshDisplay (_THIS)
+NX_RefreshDisplay(_THIS)
 {
-    Dprintf ("enter NX_RefreshDisplay\n");
+    Dprintf("enter NX_RefreshDisplay\n");
 
     // Don't refresh a display that doesn't have an image (like GL)
     if (!SDL_Image) {
@@ -208,7 +208,7 @@ NX_RefreshDisplay (_THIS)
         char *src, *dest = NULL;
         int xinc, yinc, rowinc;
 
-        GrGetWindowFBInfo (SDL_Window, &fbinfo);
+        GrGetWindowFBInfo(SDL_Window, &fbinfo);
 
         xinc = this->screen->format->BytesPerPixel;
         yinc = this->screen->pitch;
@@ -223,21 +223,21 @@ NX_RefreshDisplay (_THIS)
 
         for (j = this->screen->h; j > 0;
              --j, src += yinc, dest += fbinfo.pitch)
-            SDL_memcpy (dest, src, rowinc);
+            SDL_memcpy(dest, src, rowinc);
     } else
 #endif
     {
         if (currently_fullscreen) {
-            GrArea (FSwindow, SDL_GC, OffsetX, OffsetY, this->screen->w,
-                    this->screen->h, SDL_Image, pixel_type);
+            GrArea(FSwindow, SDL_GC, OffsetX, OffsetY, this->screen->w,
+                   this->screen->h, SDL_Image, pixel_type);
         } else {
-            GrArea (SDL_Window, SDL_GC, 0, 0, this->screen->w,
-                    this->screen->h, SDL_Image, pixel_type);
+            GrArea(SDL_Window, SDL_GC, 0, 0, this->screen->w,
+                   this->screen->h, SDL_Image, pixel_type);
         }
     }
-    GrFlush ();
+    GrFlush();
 
-    Dprintf ("leave NX_RefreshDisplay\n");
+    Dprintf("leave NX_RefreshDisplay\n");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

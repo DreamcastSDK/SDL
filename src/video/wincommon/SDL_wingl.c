@@ -35,40 +35,40 @@
 
 /* If setting the HDC fails, we may need to recreate the window (MSDN) */
 static int
-WIN_GL_ResetWindow (_THIS)
+WIN_GL_ResetWindow(_THIS)
 {
     int status = 0;
 
 #ifndef _WIN32_WCE              /* FIXME WinCE needs the UNICODE version of CreateWindow() */
     /* This doesn't work with DirectX code (see CVS comments) */
     /* If we were passed a window, then we can't create a new one */
-    if (!SDL_windowid && SDL_strcmp (this->name, "windib") == 0) {
+    if (!SDL_windowid && SDL_strcmp(this->name, "windib") == 0) {
         /* Save the existing window attributes */
         LONG style;
         RECT rect = { 0, 0, 0, 0 };
-        style = GetWindowLong (SDL_Window, GWL_STYLE);
-        GetWindowRect (SDL_Window, &rect);
-        DestroyWindow (SDL_Window);
-        WIN_FlushMessageQueue ();
+        style = GetWindowLong(SDL_Window, GWL_STYLE);
+        GetWindowRect(SDL_Window, &rect);
+        DestroyWindow(SDL_Window);
+        WIN_FlushMessageQueue();
 
-        SDL_Window = CreateWindow (SDL_Appname, SDL_Appname,
-                                   style,
-                                   rect.left, rect.top,
-                                   (rect.right - rect.left) + 1,
-                                   (rect.top - rect.bottom) + 1,
-                                   NULL, NULL, SDL_Instance, NULL);
-        WIN_FlushMessageQueue ();
+        SDL_Window = CreateWindow(SDL_Appname, SDL_Appname,
+                                  style,
+                                  rect.left, rect.top,
+                                  (rect.right - rect.left) + 1,
+                                  (rect.top - rect.bottom) + 1,
+                                  NULL, NULL, SDL_Instance, NULL);
+        WIN_FlushMessageQueue();
 
         if (SDL_Window) {
-            this->SetCaption (this, this->wm_title, this->wm_icon);
+            this->SetCaption(this, this->wm_title, this->wm_icon);
         } else {
-            SDL_SetError ("Couldn't create window");
+            SDL_SetError("Couldn't create window");
             status = -1;
         }
     } else
 #endif /* !_WIN32_WCE */
     {
-        SDL_SetError ("Unable to reset window for OpenGL context");
+        SDL_SetError("Unable to reset window for OpenGL context");
         status = -1;
     }
     return (status);
@@ -77,13 +77,13 @@ WIN_GL_ResetWindow (_THIS)
 #if SDL_VIDEO_OPENGL
 
 static int
-ExtensionSupported (const char *extension, const char *extensions)
+ExtensionSupported(const char *extension, const char *extensions)
 {
     const char *start;
     const char *where, *terminator;
 
     /* Extension names should not have spaces. */
-    where = SDL_strchr (extension, ' ');
+    where = SDL_strchr(extension, ' ');
     if (where || *extension == '\0')
         return 0;
 
@@ -97,11 +97,11 @@ ExtensionSupported (const char *extension, const char *extensions)
     start = extensions;
 
     for (;;) {
-        where = SDL_strstr (start, extension);
+        where = SDL_strstr(start, extension);
         if (!where)
             break;
 
-        terminator = where + SDL_strlen (extension);
+        terminator = where + SDL_strlen(extension);
         if (where == start || *(where - 1) == ' ')
             if (*terminator == ' ' || *terminator == '\0')
                 return 1;
@@ -113,7 +113,7 @@ ExtensionSupported (const char *extension, const char *extensions)
 }
 
 static void
-Init_WGL_ARB_extensions (_THIS)
+Init_WGL_ARB_extensions(_THIS)
 {
     HWND hwnd;
     HDC hdc;
@@ -122,39 +122,39 @@ Init_WGL_ARB_extensions (_THIS)
     const char *(WINAPI * wglGetExtensionsStringARB) (HDC) = 0;
     const char *extensions;
 
-    hwnd = CreateWindow (SDL_Appname, SDL_Appname, WS_POPUP | WS_DISABLED,
-                         0, 0, 10, 10, NULL, NULL, SDL_Instance, NULL);
-    WIN_FlushMessageQueue ();
+    hwnd = CreateWindow(SDL_Appname, SDL_Appname, WS_POPUP | WS_DISABLED,
+                        0, 0, 10, 10, NULL, NULL, SDL_Instance, NULL);
+    WIN_FlushMessageQueue();
 
-    hdc = GetDC (hwnd);
+    hdc = GetDC(hwnd);
 
-    pformat = ChoosePixelFormat (hdc, &GL_pfd);
-    SetPixelFormat (hdc, pformat, &GL_pfd);
+    pformat = ChoosePixelFormat(hdc, &GL_pfd);
+    SetPixelFormat(hdc, pformat, &GL_pfd);
 
-    hglrc = this->gl_data->wglCreateContext (hdc);
+    hglrc = this->gl_data->wglCreateContext(hdc);
     if (hglrc) {
-        this->gl_data->wglMakeCurrent (hdc, hglrc);
+        this->gl_data->wglMakeCurrent(hdc, hglrc);
     }
 
     wglGetExtensionsStringARB = (const char *(WINAPI *) (HDC))
-        this->gl_data->wglGetProcAddress ("wglGetExtensionsStringARB");
+        this->gl_data->wglGetProcAddress("wglGetExtensionsStringARB");
 
     if (wglGetExtensionsStringARB) {
-        extensions = wglGetExtensionsStringARB (hdc);
+        extensions = wglGetExtensionsStringARB(hdc);
     } else {
         extensions = NULL;
     }
 
     this->gl_data->WGL_ARB_pixel_format = 0;
-    if (ExtensionSupported ("WGL_ARB_pixel_format", extensions)) {
-        this->gl_data->wglChoosePixelFormatARB = (BOOL (WINAPI *)
+    if (ExtensionSupported("WGL_ARB_pixel_format", extensions)) {
+        this->gl_data->wglChoosePixelFormatARB = (BOOL(WINAPI *)
                                                   (HDC, const int *,
                                                    const FLOAT *, UINT, int *,
                                                    UINT *)) this->gl_data->
-            wglGetProcAddress ("wglChoosePixelFormatARB");
+            wglGetProcAddress("wglChoosePixelFormatARB");
         this->gl_data->wglGetPixelFormatAttribivARB =
-            (BOOL (WINAPI *) (HDC, int, int, UINT, const int *, int *))
-            this->gl_data->wglGetProcAddress ("wglGetPixelFormatAttribivARB");
+            (BOOL(WINAPI *) (HDC, int, int, UINT, const int *, int *))
+            this->gl_data->wglGetProcAddress("wglGetPixelFormatAttribivARB");
 
         if ((this->gl_data->wglChoosePixelFormatARB != NULL) &&
             (this->gl_data->wglGetPixelFormatAttribivARB != NULL)) {
@@ -163,18 +163,18 @@ Init_WGL_ARB_extensions (_THIS)
     }
 
     if (hglrc) {
-        this->gl_data->wglMakeCurrent (NULL, NULL);
-        this->gl_data->wglDeleteContext (hglrc);
+        this->gl_data->wglMakeCurrent(NULL, NULL);
+        this->gl_data->wglDeleteContext(hglrc);
     }
-    ReleaseDC (hwnd, hdc);
-    DestroyWindow (hwnd);
-    WIN_FlushMessageQueue ();
+    ReleaseDC(hwnd, hdc);
+    DestroyWindow(hwnd);
+    WIN_FlushMessageQueue();
 }
 
 #endif /* SDL_VIDEO_OPENGL */
 
 int
-WIN_GL_SetupWindow (_THIS)
+WIN_GL_SetupWindow(_THIS)
 {
     int retval;
 #if SDL_VIDEO_OPENGL
@@ -189,22 +189,22 @@ WIN_GL_SetupWindow (_THIS)
     /* load the gl driver from a default path */
     if (!this->gl_config.driver_loaded) {
         /* no driver has been loaded, use default (ourselves) */
-        if (WIN_GL_LoadLibrary (this, NULL) < 0) {
+        if (WIN_GL_LoadLibrary(this, NULL) < 0) {
             return (-1);
         }
     }
 
     for (i = 0;; ++i) {
         /* Get the window device context for our OpenGL drawing */
-        GL_hdc = GetDC (SDL_Window);
+        GL_hdc = GetDC(SDL_Window);
         if (GL_hdc == NULL) {
-            SDL_SetError ("Unable to get DC for SDL_Window");
+            SDL_SetError("Unable to get DC for SDL_Window");
             return (-1);
         }
 
         /* Set up the pixel format descriptor with our needed format */
-        SDL_memset (&GL_pfd, 0, sizeof (GL_pfd));
-        GL_pfd.nSize = sizeof (GL_pfd);
+        SDL_memset(&GL_pfd, 0, sizeof(GL_pfd));
+        GL_pfd.nSize = sizeof(GL_pfd);
         GL_pfd.nVersion = 1;
         GL_pfd.dwFlags = (PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL);
         if (this->gl_config.double_buffer) {
@@ -230,7 +230,7 @@ WIN_GL_SetupWindow (_THIS)
         GL_pfd.cStencilBits = this->gl_config.stencil_size;
 
         /* initialize WGL_ARB_pixel_format */
-        Init_WGL_ARB_extensions (this);
+        Init_WGL_ARB_extensions(this);
 
         /* setup WGL_ARB_pixel_format attribs */
         iAttr = &iAttribs[0];
@@ -309,39 +309,39 @@ WIN_GL_SetupWindow (_THIS)
 
         /* Choose and set the closest available pixel format */
         if (!this->gl_data->WGL_ARB_pixel_format ||
-            !this->gl_data->wglChoosePixelFormatARB (GL_hdc, iAttribs,
-                                                     fAttribs, 1,
-                                                     &pixel_format, &matching)
+            !this->gl_data->wglChoosePixelFormatARB(GL_hdc, iAttribs,
+                                                    fAttribs, 1,
+                                                    &pixel_format, &matching)
             || !matching) {
-            pixel_format = ChoosePixelFormat (GL_hdc, &GL_pfd);
+            pixel_format = ChoosePixelFormat(GL_hdc, &GL_pfd);
             this->gl_data->WGL_ARB_pixel_format = 0;
         }
         if (!pixel_format) {
-            SDL_SetError ("No matching GL pixel format available");
+            SDL_SetError("No matching GL pixel format available");
             return (-1);
         }
-        if (!SetPixelFormat (GL_hdc, pixel_format, &GL_pfd)) {
+        if (!SetPixelFormat(GL_hdc, pixel_format, &GL_pfd)) {
             if (i == 0) {
                 /* First time through, try resetting the window */
-                if (WIN_GL_ResetWindow (this) < 0) {
+                if (WIN_GL_ResetWindow(this) < 0) {
                     return (-1);
                 }
                 continue;
             }
-            SDL_SetError ("Unable to set HDC pixel format");
+            SDL_SetError("Unable to set HDC pixel format");
             return (-1);
         }
         /* We either succeeded or failed by this point */
         break;
     }
-    DescribePixelFormat (GL_hdc, pixel_format, sizeof (GL_pfd), &GL_pfd);
+    DescribePixelFormat(GL_hdc, pixel_format, sizeof(GL_pfd), &GL_pfd);
 
-    GL_hrc = this->gl_data->wglCreateContext (GL_hdc);
+    GL_hrc = this->gl_data->wglCreateContext(GL_hdc);
     if (GL_hrc == NULL) {
-        SDL_SetError ("Unable to create GL context");
+        SDL_SetError("Unable to create GL context");
         return (-1);
     }
-    if (WIN_GL_MakeCurrent (this) < 0) {
+    if (WIN_GL_MakeCurrent(this) < 0) {
         return (-1);
     }
     gl_active = 1;
@@ -350,24 +350,24 @@ WIN_GL_SetupWindow (_THIS)
      * somewhat a documented and reliable hack - it was originally
      * as a feature added by mistake, but since so many people rely
      * on it, it will not be removed.  strstr should be safe here.*/
-    glGetStringFunc = WIN_GL_GetProcAddress (this, "glGetString");
+    glGetStringFunc = WIN_GL_GetProcAddress(this, "glGetString");
     if (glGetStringFunc) {
-        wglext = (const char *) glGetStringFunc (GL_EXTENSIONS);
+        wglext = (const char *) glGetStringFunc(GL_EXTENSIONS);
     } else {
         /* Uh oh, something is seriously wrong here... */
         wglext = NULL;
     }
-    if (!wglext || !SDL_strstr (wglext, "WGL_EXT_swap_control")) {
+    if (!wglext || !SDL_strstr(wglext, "WGL_EXT_swap_control")) {
         this->gl_data->wglSwapIntervalEXT = NULL;
         this->gl_data->wglGetSwapIntervalEXT = NULL;
     }
     if (this->gl_config.swap_control >= 0) {
         if (this->gl_data->wglSwapIntervalEXT) {
-            this->gl_data->wglSwapIntervalEXT (this->gl_config.swap_control);
+            this->gl_data->wglSwapIntervalEXT(this->gl_config.swap_control);
         }
     }
 #else
-    SDL_SetError ("WIN driver not configured with OpenGL");
+    SDL_SetError("WIN driver not configured with OpenGL");
 #endif
     if (gl_active) {
         retval = 0;
@@ -378,22 +378,22 @@ WIN_GL_SetupWindow (_THIS)
 }
 
 void
-WIN_GL_ShutDown (_THIS)
+WIN_GL_ShutDown(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     /* Clean up OpenGL */
     if (GL_hrc) {
-        this->gl_data->wglMakeCurrent (NULL, NULL);
-        this->gl_data->wglDeleteContext (GL_hrc);
+        this->gl_data->wglMakeCurrent(NULL, NULL);
+        this->gl_data->wglDeleteContext(GL_hrc);
         GL_hrc = NULL;
     }
     if (GL_hdc) {
-        ReleaseDC (SDL_Window, GL_hdc);
+        ReleaseDC(SDL_Window, GL_hdc);
         GL_hdc = NULL;
     }
     gl_active = 0;
 
-    WIN_GL_UnloadLibrary (this);
+    WIN_GL_UnloadLibrary(this);
 #endif /* SDL_VIDEO_OPENGL */
 }
 
@@ -401,13 +401,13 @@ WIN_GL_ShutDown (_THIS)
 
 /* Make the current context active */
 int
-WIN_GL_MakeCurrent (_THIS)
+WIN_GL_MakeCurrent(_THIS)
 {
     int retval;
 
     retval = 0;
-    if (!this->gl_data->wglMakeCurrent (GL_hdc, GL_hrc)) {
-        SDL_SetError ("Unable to make GL context current");
+    if (!this->gl_data->wglMakeCurrent(GL_hdc, GL_hrc)) {
+        SDL_SetError("Unable to make GL context current");
         retval = -1;
     }
     return (retval);
@@ -415,7 +415,7 @@ WIN_GL_MakeCurrent (_THIS)
 
 /* Get attribute data from glX. */
 int
-WIN_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+WIN_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
     int retval;
 
@@ -470,10 +470,10 @@ WIN_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
             break;
         case SDL_GL_ACCELERATED_VISUAL:
             wgl_attrib = WGL_ACCELERATION_ARB;
-            this->gl_data->wglGetPixelFormatAttribivARB (GL_hdc,
-                                                         pixel_format, 0,
-                                                         1, &wgl_attrib,
-                                                         value);
+            this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc,
+                                                        pixel_format, 0,
+                                                        1, &wgl_attrib,
+                                                        value);
             if (*value == WGL_NO_ACCELERATION_ARB) {
                 *value = SDL_FALSE;
             } else {
@@ -483,16 +483,15 @@ WIN_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
             break;
         case SDL_GL_SWAP_CONTROL:
             if (this->gl_data->wglGetSwapIntervalEXT) {
-                return this->gl_data->wglGetSwapIntervalEXT ();
+                return this->gl_data->wglGetSwapIntervalEXT();
             } else {
                 return -1;
             }
         default:
             return (-1);
         }
-        this->gl_data->wglGetPixelFormatAttribivARB (GL_hdc, pixel_format,
-                                                     0, 1, &wgl_attrib,
-                                                     value);
+        this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc, pixel_format,
+                                                    0, 1, &wgl_attrib, value);
 
         return 0;
     }
@@ -560,16 +559,16 @@ WIN_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
 }
 
 void
-WIN_GL_SwapBuffers (_THIS)
+WIN_GL_SwapBuffers(_THIS)
 {
-    SwapBuffers (GL_hdc);
+    SwapBuffers(GL_hdc);
 }
 
 void
-WIN_GL_UnloadLibrary (_THIS)
+WIN_GL_UnloadLibrary(_THIS)
 {
     if (this->gl_config.driver_loaded) {
-        FreeLibrary ((HMODULE) this->gl_config.dll_handle);
+        FreeLibrary((HMODULE) this->gl_config.dll_handle);
 
         this->gl_data->wglGetProcAddress = NULL;
         this->gl_data->wglCreateContext = NULL;
@@ -587,68 +586,68 @@ WIN_GL_UnloadLibrary (_THIS)
 
 /* Passing a NULL path means load pointers from the application */
 int
-WIN_GL_LoadLibrary (_THIS, const char *path)
+WIN_GL_LoadLibrary(_THIS, const char *path)
 {
     HMODULE handle;
 
     if (gl_active) {
-        SDL_SetError ("OpenGL context already created");
+        SDL_SetError("OpenGL context already created");
         return -1;
     }
 
     if (path == NULL) {
         path = DEFAULT_GL_DRIVER_PATH;
     }
-    handle = LoadLibrary (path);
+    handle = LoadLibrary(path);
     if (handle == NULL) {
-        SDL_SetError ("Could not load OpenGL library");
+        SDL_SetError("Could not load OpenGL library");
         return -1;
     }
 
     /* Unload the old driver and reset the pointers */
-    WIN_GL_UnloadLibrary (this);
+    WIN_GL_UnloadLibrary(this);
 
     /* Load new function pointers */
-    SDL_memset (this->gl_data, 0, sizeof (*this->gl_data));
+    SDL_memset(this->gl_data, 0, sizeof(*this->gl_data));
     this->gl_data->wglGetProcAddress = (void *(WINAPI *) (const char *))
-        GetProcAddress (handle, "wglGetProcAddress");
-    this->gl_data->wglCreateContext = (HGLRC (WINAPI *) (HDC))
-        GetProcAddress (handle, "wglCreateContext");
-    this->gl_data->wglDeleteContext = (BOOL (WINAPI *) (HGLRC))
-        GetProcAddress (handle, "wglDeleteContext");
-    this->gl_data->wglMakeCurrent = (BOOL (WINAPI *) (HDC, HGLRC))
-        GetProcAddress (handle, "wglMakeCurrent");
+        GetProcAddress(handle, "wglGetProcAddress");
+    this->gl_data->wglCreateContext = (HGLRC(WINAPI *) (HDC))
+        GetProcAddress(handle, "wglCreateContext");
+    this->gl_data->wglDeleteContext = (BOOL(WINAPI *) (HGLRC))
+        GetProcAddress(handle, "wglDeleteContext");
+    this->gl_data->wglMakeCurrent = (BOOL(WINAPI *) (HDC, HGLRC))
+        GetProcAddress(handle, "wglMakeCurrent");
     this->gl_data->wglSwapIntervalEXT = (void (WINAPI *) (int))
-        GetProcAddress (handle, "wglSwapIntervalEXT");
+        GetProcAddress(handle, "wglSwapIntervalEXT");
     this->gl_data->wglGetSwapIntervalEXT = (int (WINAPI *) (void))
-        GetProcAddress (handle, "wglGetSwapIntervalEXT");
+        GetProcAddress(handle, "wglGetSwapIntervalEXT");
 
     if ((this->gl_data->wglGetProcAddress == NULL) ||
         (this->gl_data->wglCreateContext == NULL) ||
         (this->gl_data->wglDeleteContext == NULL) ||
         (this->gl_data->wglMakeCurrent == NULL)) {
-        SDL_SetError ("Could not retrieve OpenGL functions");
-        FreeLibrary (handle);
+        SDL_SetError("Could not retrieve OpenGL functions");
+        FreeLibrary(handle);
         return -1;
     }
 
     this->gl_config.dll_handle = handle;
-    SDL_strlcpy (this->gl_config.driver_path, path,
-                 SDL_arraysize (this->gl_config.driver_path));
+    SDL_strlcpy(this->gl_config.driver_path, path,
+                SDL_arraysize(this->gl_config.driver_path));
     this->gl_config.driver_loaded = 1;
     return 0;
 }
 
 void *
-WIN_GL_GetProcAddress (_THIS, const char *proc)
+WIN_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *func;
 
     /* This is to pick up extensions */
-    func = this->gl_data->wglGetProcAddress (proc);
+    func = this->gl_data->wglGetProcAddress(proc);
     if (!func) {
         /* This is probably a normal GL function */
-        func = GetProcAddress (this->gl_config.dll_handle, proc);
+        func = GetProcAddress(this->gl_config.dll_handle, proc);
     }
     return func;
 }

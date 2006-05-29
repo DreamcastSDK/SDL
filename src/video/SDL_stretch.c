@@ -56,7 +56,7 @@
 static unsigned char copy_row[4096];
 
 static int
-generate_rowbytes (int src_w, int dst_w, int bpp)
+generate_rowbytes(int src_w, int dst_w, int bpp)
 {
     static struct
     {
@@ -89,7 +89,7 @@ generate_rowbytes (int src_w, int dst_w, int bpp)
         store = STORE_WORD;
         break;
     default:
-        SDL_SetError ("ASM stretch of %d bytes isn't supported\n", bpp);
+        SDL_SetError("ASM stretch of %d bytes isn't supported\n", bpp);
         return (-1);
     }
     pos = 0x10000;
@@ -112,8 +112,8 @@ generate_rowbytes (int src_w, int dst_w, int bpp)
     *eip++ = RETURN;
 
     /* Verify that we didn't overflow (too late) */
-    if (eip > (copy_row + sizeof (copy_row))) {
-        SDL_SetError ("Copy buffer overflow");
+    if (eip > (copy_row + sizeof(copy_row))) {
+        SDL_SetError("Copy buffer overflow");
         return (-1);
     }
     return (0);
@@ -139,12 +139,12 @@ void name(type *src, int src_w, type *dst, int dst_w)	\
 		pos += inc;				\
 	}						\
 }
-DEFINE_COPY_ROW (copy_row1, Uint8)
-    DEFINE_COPY_ROW (copy_row2, Uint16) DEFINE_COPY_ROW (copy_row4, Uint32)
+DEFINE_COPY_ROW(copy_row1, Uint8)
+    DEFINE_COPY_ROW(copy_row2, Uint16) DEFINE_COPY_ROW(copy_row4, Uint32)
 #endif /* USE_ASM_STRETCH */
 /* The ASM code doesn't handle 24-bpp stretch blits */
      void
-     copy_row3 (Uint8 * src, int src_w, Uint8 * dst, int dst_w)
+     copy_row3(Uint8 * src, int src_w, Uint8 * dst, int dst_w)
 {
     int i;
     int pos, inc;
@@ -170,8 +170,8 @@ DEFINE_COPY_ROW (copy_row1, Uint8)
    NOTE:  This function is not safe to call from multiple threads!
 */
 int
-SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
-                 SDL_Surface * dst, SDL_Rect * dstrect)
+SDL_SoftStretch(SDL_Surface * src, SDL_Rect * srcrect,
+                SDL_Surface * dst, SDL_Rect * dstrect)
 {
     int src_locked;
     int dst_locked;
@@ -189,7 +189,7 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
     const int bpp = dst->format->BytesPerPixel;
 
     if (src->format->BitsPerPixel != dst->format->BitsPerPixel) {
-        SDL_SetError ("Only works with same format surfaces");
+        SDL_SetError("Only works with same format surfaces");
         return (-1);
     }
 
@@ -198,7 +198,7 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
         if ((srcrect->x < 0) || (srcrect->y < 0) ||
             ((srcrect->x + srcrect->w) > src->w) ||
             ((srcrect->y + srcrect->h) > src->h)) {
-            SDL_SetError ("Invalid source blit rectangle");
+            SDL_SetError("Invalid source blit rectangle");
             return (-1);
         }
     } else {
@@ -212,7 +212,7 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
         if ((dstrect->x < 0) || (dstrect->y < 0) ||
             ((dstrect->x + dstrect->w) > dst->w) ||
             ((dstrect->y + dstrect->h) > dst->h)) {
-            SDL_SetError ("Invalid destination blit rectangle");
+            SDL_SetError("Invalid destination blit rectangle");
             return (-1);
         }
     } else {
@@ -225,21 +225,21 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
 
     /* Lock the destination if it's in hardware */
     dst_locked = 0;
-    if (SDL_MUSTLOCK (dst)) {
-        if (SDL_LockSurface (dst) < 0) {
-            SDL_SetError ("Unable to lock destination surface");
+    if (SDL_MUSTLOCK(dst)) {
+        if (SDL_LockSurface(dst) < 0) {
+            SDL_SetError("Unable to lock destination surface");
             return (-1);
         }
         dst_locked = 1;
     }
     /* Lock the source if it's in hardware */
     src_locked = 0;
-    if (SDL_MUSTLOCK (src)) {
-        if (SDL_LockSurface (src) < 0) {
+    if (SDL_MUSTLOCK(src)) {
+        if (SDL_LockSurface(src) < 0) {
             if (dst_locked) {
-                SDL_UnlockSurface (dst);
+                SDL_UnlockSurface(dst);
             }
-            SDL_SetError ("Unable to lock source surface");
+            SDL_SetError("Unable to lock source surface");
             return (-1);
         }
         src_locked = 1;
@@ -254,7 +254,7 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
 
 #ifdef USE_ASM_STRETCH
     /* Write the opcodes for this stretch */
-    if ((bpp != 3) && (generate_rowbytes (srcrect->w, dstrect->w, bpp) < 0)) {
+    if ((bpp != 3) && (generate_rowbytes(srcrect->w, dstrect->w, bpp) < 0)) {
         return (-1);
     }
 #endif
@@ -272,11 +272,11 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
 #ifdef USE_ASM_STRETCH
         switch (bpp) {
         case 3:
-            copy_row3 (srcp, srcrect->w, dstp, dstrect->w);
+            copy_row3(srcp, srcrect->w, dstp, dstrect->w);
             break;
         default:
 #ifdef __GNUC__
-          __asm__ __volatile__ ("call *%4": "=&D" (u1), "=&S" (u2): "0" (dstp), "1" (srcp), "r" (copy_row):"memory");
+          __asm__ __volatile__("call *%4": "=&D"(u1), "=&S"(u2): "0"(dstp), "1"(srcp), "r"(copy_row):"memory");
 #elif defined(_MSC_VER) || defined(__WATCOMC__)
             {
                 void *code = copy_row;
@@ -294,18 +294,18 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
 #else
         switch (bpp) {
         case 1:
-            copy_row1 (srcp, srcrect->w, dstp, dstrect->w);
+            copy_row1(srcp, srcrect->w, dstp, dstrect->w);
             break;
         case 2:
-            copy_row2 ((Uint16 *) srcp, srcrect->w,
-                       (Uint16 *) dstp, dstrect->w);
+            copy_row2((Uint16 *) srcp, srcrect->w,
+                      (Uint16 *) dstp, dstrect->w);
             break;
         case 3:
-            copy_row3 (srcp, srcrect->w, dstp, dstrect->w);
+            copy_row3(srcp, srcrect->w, dstp, dstrect->w);
             break;
         case 4:
-            copy_row4 ((Uint32 *) srcp, srcrect->w,
-                       (Uint32 *) dstp, dstrect->w);
+            copy_row4((Uint32 *) srcp, srcrect->w,
+                      (Uint32 *) dstp, dstrect->w);
             break;
         }
 #endif
@@ -314,10 +314,10 @@ SDL_SoftStretch (SDL_Surface * src, SDL_Rect * srcrect,
 
     /* We need to unlock the surfaces if they're locked */
     if (dst_locked) {
-        SDL_UnlockSurface (dst);
+        SDL_UnlockSurface(dst);
     }
     if (src_locked) {
-        SDL_UnlockSurface (src);
+        SDL_UnlockSurface(src);
     }
     return (0);
 }

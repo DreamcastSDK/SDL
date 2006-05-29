@@ -52,13 +52,13 @@ enum
 void (*Atari_ShutdownEvents) (void);
 
 static void
-Atari_InitializeEvents (_THIS)
+Atari_InitializeEvents(_THIS)
 {
     const char *envr;
     unsigned long cookie_mch;
 
     /* Test if we are on an Atari machine or not */
-    if (Getcookie (C__MCH, &cookie_mch) == C_NOTFOUND) {
+    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
         cookie_mch = 0;
     }
     cookie_mch >>= 16;
@@ -81,25 +81,25 @@ Atari_InitializeEvents (_THIS)
         break;
     }
 
-    envr = SDL_getenv ("SDL_ATARI_EVENTSDRIVER");
+    envr = SDL_getenv("SDL_ATARI_EVENTSDRIVER");
 
     if (!envr) {
         return;
     }
 
-    if (SDL_strcmp (envr, "ikbd") == 0) {
+    if (SDL_strcmp(envr, "ikbd") == 0) {
         this->InitOSKeymap = AtariIkbd_InitOSKeymap;
         this->PumpEvents = AtariIkbd_PumpEvents;
         Atari_ShutdownEvents = AtariIkbd_ShutdownEvents;
     }
 
-    if (SDL_strcmp (envr, "gemdos") == 0) {
+    if (SDL_strcmp(envr, "gemdos") == 0) {
         this->InitOSKeymap = AtariGemdos_InitOSKeymap;
         this->PumpEvents = AtariGemdos_PumpEvents;
         Atari_ShutdownEvents = AtariGemdos_ShutdownEvents;
     }
 
-    if (SDL_strcmp (envr, "bios") == 0) {
+    if (SDL_strcmp(envr, "bios") == 0) {
         this->InitOSKeymap = AtariBios_InitOSKeymap;
         this->PumpEvents = AtariBios_PumpEvents;
         Atari_ShutdownEvents = AtariBios_ShutdownEvents;
@@ -107,21 +107,21 @@ Atari_InitializeEvents (_THIS)
 }
 
 void
-Atari_InitOSKeymap (_THIS)
+Atari_InitOSKeymap(_THIS)
 {
-    Atari_InitializeEvents (this);
+    Atari_InitializeEvents(this);
 
     /* Call choosen routine */
-    this->InitOSKeymap (this);
+    this->InitOSKeymap(this);
 }
 
 void
-Atari_PumpEvents (_THIS)
+Atari_PumpEvents(_THIS)
 {
-    Atari_InitializeEvents (this);
+    Atari_InitializeEvents(this);
 
     /* Call choosen routine */
-    this->PumpEvents (this);
+    this->PumpEvents(this);
 }
 
 /* Atari to Unicode charset translation table */

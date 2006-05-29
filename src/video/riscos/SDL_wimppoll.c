@@ -50,28 +50,28 @@
 #endif
 
 /* Local functions */
-void WIMP_Poll (_THIS, int waitTime);
-void WIMP_SetFocus (int win);
+void WIMP_Poll(_THIS, int waitTime);
+void WIMP_SetFocus(int win);
 
 /* SDL_riscossprite functions */
-void WIMP_PlotSprite (_THIS, int x, int y);
-void WIMP_ModeChanged (_THIS);
-void WIMP_PaletteChanged (_THIS);
+void WIMP_PlotSprite(_THIS, int x, int y);
+void WIMP_ModeChanged(_THIS);
+void WIMP_PaletteChanged(_THIS);
 
 
-extern void WIMP_PollMouse (_THIS);
-extern void RISCOS_PollKeyboard ();
+extern void WIMP_PollMouse(_THIS);
+extern void RISCOS_PollKeyboard();
 
 #if SDL_THREADS_DISABLED
 /* Timer running function */
-extern void RISCOS_CheckTimer ();
+extern void RISCOS_CheckTimer();
 #else
 extern int riscos_using_threads;
 #endif
 
 /* Mouse cursor handling */
-extern void WIMP_ReshowCursor (_THIS);
-extern void WIMP_RestoreWimpCursor ();
+extern void WIMP_ReshowCursor(_THIS);
+extern void WIMP_RestoreWimpCursor();
 
 int hasFocus = 0;
 int mouseInWindow = 0;
@@ -80,22 +80,22 @@ int mouseInWindow = 0;
 static int resizeOnOpen = 0;
 
 void
-WIMP_PumpEvents (_THIS)
+WIMP_PumpEvents(_THIS)
 {
-    WIMP_Poll (this, 0);
+    WIMP_Poll(this, 0);
     if (hasFocus)
-        RISCOS_PollKeyboard ();
+        RISCOS_PollKeyboard();
     if (mouseInWindow)
-        WIMP_PollMouse (this);
+        WIMP_PollMouse(this);
 #if SDL_THREADS_DISABLED
     if (SDL_timer_running)
-        RISCOS_CheckTimer ();
+        RISCOS_CheckTimer();
 #endif
 }
 
 
 void
-WIMP_Poll (_THIS, int waitTime)
+WIMP_Poll(_THIS, int waitTime)
 {
     _kernel_swi_regs regs;
     int message[64];
@@ -109,7 +109,7 @@ WIMP_Poll (_THIS, int waitTime)
         return;
 
     if (waitTime > 0) {
-        _kernel_swi (OS_ReadMonotonicTime, &regs, &regs);
+        _kernel_swi(OS_ReadMonotonicTime, &regs, &regs);
         waitTime += regs.r[0];
     }
 
@@ -117,7 +117,7 @@ WIMP_Poll (_THIS, int waitTime)
 #if !SDL_THREADS_DISABLED
         /* Stop thread callbacks while program is paged out */
         if (riscos_using_threads)
-            __pthread_stop_ticker ();
+            __pthread_stop_ticker();
 #endif
 
         if (waitTime <= 0) {
@@ -126,12 +126,12 @@ WIMP_Poll (_THIS, int waitTime)
             if (waitTime < 0)
                 regs.r[0] |= 1;
             regs.r[1] = (int) message;
-            _kernel_swi (Wimp_Poll, &regs, &regs);
+            _kernel_swi(Wimp_Poll, &regs, &regs);
         } else {
             regs.r[0] = pollMask;
             regs.r[1] = (int) message;
             regs.r[2] = waitTime;
-            _kernel_swi (Wimp_PollIdle, &regs, &regs);
+            _kernel_swi(Wimp_PollIdle, &regs, &regs);
         }
 
         /* Flag to specify if we post a SDL_SysWMEvent */
@@ -145,16 +145,16 @@ WIMP_Poll (_THIS, int waitTime)
             break;
 
         case 1:                /* Redraw window */
-            _kernel_swi (Wimp_RedrawWindow, &regs, &regs);
+            _kernel_swi(Wimp_RedrawWindow, &regs, &regs);
             if (message[0] == sdlWindow) {
                 while (regs.r[0]) {
-                    WIMP_PlotSprite (this, message[1], message[2]);
-                    _kernel_swi (Wimp_GetRectangle, &regs, &regs);
+                    WIMP_PlotSprite(this, message[1], message[2]);
+                    _kernel_swi(Wimp_GetRectangle, &regs, &regs);
                 }
             } else {
                 /* TODO: Currently we just eat them - we may need to pass them on */
                 while (regs.r[0]) {
-                    _kernel_swi (Wimp_GetRectangle, &regs, &regs);
+                    _kernel_swi(Wimp_GetRectangle, &regs, &regs);
                 }
             }
             break;
@@ -168,7 +168,7 @@ WIMP_Poll (_THIS, int waitTime)
                 message[4] =
                     message[2] + (this->screen->h << this->hidden->yeig);
             }
-            _kernel_swi (Wimp_OpenWindow, &regs, &regs);
+            _kernel_swi(Wimp_OpenWindow, &regs, &regs);
             break;
 
         case 3:                /* Close window */
@@ -179,7 +179,7 @@ WIMP_Poll (_THIS, int waitTime)
                  ** in the background so I just post the quit message and hope the application
                  ** does the correct thing.
                  */
-                SDL_PrivateQuit ();
+                SDL_PrivateQuit();
             } else
                 sysEvent = 1;
             doPoll = 0;
@@ -190,8 +190,8 @@ WIMP_Poll (_THIS, int waitTime)
                 mouseInWindow = 0;
                 //TODO: Lose buttons / dragging
                 /* Reset to default pointer */
-                WIMP_RestoreWimpCursor ();
-                SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+                WIMP_RestoreWimpCursor();
+                SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
             } else
                 sysEvent = 1;
             break;
@@ -199,8 +199,8 @@ WIMP_Poll (_THIS, int waitTime)
         case 5:                /* Pointer_Entering_Window */
             if (message[0] == sdlWindow) {
                 mouseInWindow = 1;
-                WIMP_ReshowCursor (this);
-                SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+                WIMP_ReshowCursor(this);
+                SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
             } else
                 sysEvent = 1;
             break;
@@ -209,7 +209,7 @@ WIMP_Poll (_THIS, int waitTime)
             if (hasFocus == 0) {
                 /* First click gives focus if it's not a menu */
                 /* we only count non-menu clicks on a window that has the focus */
-                WIMP_SetFocus (message[3]);
+                WIMP_SetFocus(message[3]);
             } else
                 doPoll = 0;     // So PollMouse gets a chance to pick it up
             break;
@@ -234,7 +234,7 @@ WIMP_Poll (_THIS, int waitTime)
         case 11:               /* Lose Caret */
             hasFocus = 0;
             if (message[0] == sdlWindow)
-                SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+                SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
             else
                 sysEvent = 1;
             break;
@@ -242,7 +242,7 @@ WIMP_Poll (_THIS, int waitTime)
         case 12:               /* Gain Caret */
             hasFocus = 1;
             if (message[0] == sdlWindow)
-                SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+                SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
             else
                 sysEvent = 1;
             break;
@@ -254,21 +254,21 @@ WIMP_Poll (_THIS, int waitTime)
             switch (message[4]) {
             case 0:            /* Quit Event */
                 /* No choice - have to quit */
-                SDL_Quit ();
-                exit (0);
+                SDL_Quit();
+                exit(0);
                 break;
 
             case 8:            /* Pre Quit */
-                SDL_PrivateQuit ();
+                SDL_PrivateQuit();
                 break;
 
             case 0x400c1:      /* Mode change */
-                WIMP_ModeChanged (this);
+                WIMP_ModeChanged(this);
                 resizeOnOpen = 1;
                 break;
 
             case 9:            /* Palette changed */
-                WIMP_PaletteChanged (this);
+                WIMP_PaletteChanged(this);
                 break;
             }
             break;
@@ -282,12 +282,12 @@ WIMP_Poll (_THIS, int waitTime)
         if (sysEvent) {
             SDL_SysWMmsg wmmsg;
 
-            SDL_VERSION (&wmmsg.version);
+            SDL_VERSION(&wmmsg.version);
             wmmsg.eventCode = code;
-            SDL_memcpy (wmmsg.pollBlock, message, 64 * sizeof (int));
+            SDL_memcpy(wmmsg.pollBlock, message, 64 * sizeof(int));
 
             /* Fall out of polling loop if message is successfully posted */
-            if (SDL_PrivateSysWMEvent (&wmmsg))
+            if (SDL_PrivateSysWMEvent(&wmmsg))
                 doPoll = 0;
         }
 #if !SDL_THREADS_DISABLED
@@ -295,9 +295,9 @@ WIMP_Poll (_THIS, int waitTime)
             /* Restart ticker here so other thread can not interfere
                with the Redraw processing */
             if (riscos_using_threads)
-                __pthread_start_ticker ();
+                __pthread_start_ticker();
             /* Give other threads a better chance of running */
-            pthread_yield ();
+            pthread_yield();
         }
 #endif
     }
@@ -305,7 +305,7 @@ WIMP_Poll (_THIS, int waitTime)
 
 /* Set focus to specified window */
 void
-WIMP_SetFocus (int win)
+WIMP_SetFocus(int win)
 {
     _kernel_swi_regs regs;
 
@@ -316,19 +316,19 @@ WIMP_SetFocus (int win)
     regs.r[4] = 1 << 25;        /* Caret is invisible */
     regs.r[5] = 0;              /* index into string */
 
-    _kernel_swi (Wimp_SetCaretPosition, &regs, &regs);
+    _kernel_swi(Wimp_SetCaretPosition, &regs, &regs);
 }
 
 /** Run background task while in a sleep command */
 void
-RISCOS_BackgroundTasks (void)
+RISCOS_BackgroundTasks(void)
 {
     if (current_video && current_video->hidden->window_handle) {
-        WIMP_Poll (current_video, 0);
+        WIMP_Poll(current_video, 0);
     }
 #if SDL_THREADS_DISABLED
     if (SDL_timer_running)
-        RISCOS_CheckTimer ();
+        RISCOS_CheckTimer();
 #endif
 }
 

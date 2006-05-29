@@ -69,7 +69,7 @@ static char *xf86vidmode_extension_name = XF86VIDMODENAME;
  *                                                                           *
  *****************************************************************************/
 
-static XEXT_CLOSE_DISPLAY_PROTO (close_display);
+static XEXT_CLOSE_DISPLAY_PROTO(close_display);
 static /* const */ XExtensionHooks xf86vidmode_extension_hooks = {
     NULL,                       /* create_gc */
     NULL,                       /* copy_gc */
@@ -85,23 +85,23 @@ static /* const */ XExtensionHooks xf86vidmode_extension_hooks = {
 };
 
 static
-XEXT_GENERATE_FIND_DISPLAY (find_display, xf86vidmode_info,
-                            xf86vidmode_extension_name,
-                            &xf86vidmode_extension_hooks, 0, NULL)
-     static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86vidmode_info)
+XEXT_GENERATE_FIND_DISPLAY(find_display, xf86vidmode_info,
+                           xf86vidmode_extension_name,
+                           &xf86vidmode_extension_hooks, 0, NULL)
+     static XEXT_GENERATE_CLOSE_DISPLAY(close_display, xf86vidmode_info)
 /*****************************************************************************
  *                                                                           *
  *		    public XFree86-VidMode Extension routines                *
  *                                                                           *
  *****************************************************************************/
   Bool
-SDL_NAME (XF86VidModeQueryExtension) (dpy, event_basep, error_basep)
+SDL_NAME(XF86VidModeQueryExtension) (dpy, event_basep, error_basep)
      Display *dpy;
      int *event_basep, *error_basep;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
 
-    if (XextHasExtension (info)) {
+    if (XextHasExtension(info)) {
         *event_basep = info->codes->first_event;
         *error_basep = info->codes->first_error;
         return True;
@@ -110,7 +110,7 @@ SDL_NAME (XF86VidModeQueryExtension) (dpy, event_basep, error_basep)
     }
 }
 
-Bool SDL_NAME (XF86VidModeQueryVersion) (dpy, majorVersion, minorVersion)
+Bool SDL_NAME(XF86VidModeQueryVersion) (dpy, majorVersion, minorVersion)
      Display *
          dpy;
      int *
@@ -118,128 +118,128 @@ Bool SDL_NAME (XF86VidModeQueryVersion) (dpy, majorVersion, minorVersion)
      int *
          minorVersion;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeQueryVersionReply rep;
     xXF86VidModeQueryVersionReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeQueryVersion, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeQueryVersion, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeQueryVersion;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     *majorVersion = rep.majorVersion;
     *minorVersion = rep.minorVersion;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     if (*majorVersion >= 2)
-        SDL_NAME (XF86VidModeSetClientVersion) (dpy);
+        SDL_NAME(XF86VidModeSetClientVersion) (dpy);
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeSetClientVersion) (Display * dpy)
+Bool SDL_NAME(XF86VidModeSetClientVersion) (Display * dpy)
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSetClientVersionReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeSetClientVersion, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetClientVersion, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeSetClientVersion;
     req->major = XF86VIDMODE_MAJOR_VERSION;
     req->minor = XF86VIDMODE_MINOR_VERSION;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 Bool
-SDL_NAME (XF86VidModeSetGamma) (Display * dpy, int screen,
-                                SDL_NAME (XF86VidModeGamma) * Gamma)
+SDL_NAME(XF86VidModeSetGamma) (Display * dpy, int screen,
+                               SDL_NAME(XF86VidModeGamma) * Gamma)
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSetGammaReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeSetGamma, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetGamma, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeSetGamma;
     req->screen = screen;
     req->red = (CARD32) (Gamma->red * 10000.);
     req->green = (CARD32) (Gamma->green * 10000.);
     req->blue = (CARD32) (Gamma->blue * 10000.);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 Bool
-SDL_NAME (XF86VidModeGetGamma) (Display * dpy, int screen,
-                                SDL_NAME (XF86VidModeGamma) * Gamma)
+SDL_NAME(XF86VidModeGetGamma) (Display * dpy, int screen,
+                               SDL_NAME(XF86VidModeGamma) * Gamma)
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetGammaReply rep;
     xXF86VidModeGetGammaReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetGamma, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetGamma, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetGamma;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     Gamma->red = ((float) rep.red) / 10000.;
     Gamma->green = ((float) rep.green) / 10000.;
     Gamma->blue = ((float) rep.blue) / 10000.;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeGetModeLine) (dpy, screen, dotclock, modeline)
+Bool SDL_NAME(XF86VidModeGetModeLine) (dpy, screen, dotclock, modeline)
      Display *
          dpy;
      int
          screen;
      int *
          dotclock;
-SDL_NAME (XF86VidModeModeLine) * modeline;
+SDL_NAME(XF86VidModeModeLine) * modeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetModeLineReply rep;
     xXF86OldVidModeGetModeLineReply oldrep;
     xXF86VidModeGetModeLineReq *req;
     int majorVersion, minorVersion;
 
-    XF86VidModeCheckExtension (dpy, info, False);
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    XF86VidModeCheckExtension(dpy, info, False);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetModeLine, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetModeLine, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetModeLine;
     req->screen = screen;
 
     if (majorVersion < 2) {
-        if (!_XReply (dpy, (xReply *) & oldrep,
-                      (SIZEOF (xXF86OldVidModeGetModeLineReply) -
-                       SIZEOF (xReply)) >> 2, xFalse)) {
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if (!_XReply(dpy, (xReply *) & oldrep,
+                     (SIZEOF(xXF86OldVidModeGetModeLineReply) -
+                      SIZEOF(xReply)) >> 2, xFalse)) {
+            UnlockDisplay(dpy);
+            SyncHandle();
             return False;
         }
         *dotclock = oldrep.dotclock;
@@ -255,11 +255,11 @@ SDL_NAME (XF86VidModeModeLine) * modeline;
         modeline->flags = oldrep.flags;
         modeline->privsize = oldrep.privsize;
     } else {
-        if (!_XReply (dpy, (xReply *) & rep,
-                      (SIZEOF (xXF86VidModeGetModeLineReply) -
-                       SIZEOF (xReply)) >> 2, xFalse)) {
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if (!_XReply(dpy, (xReply *) & rep,
+                     (SIZEOF(xXF86VidModeGetModeLineReply) -
+                      SIZEOF(xReply)) >> 2, xFalse)) {
+            UnlockDisplay(dpy);
+            SyncHandle();
             return False;
         }
         *dotclock = rep.dotclock;
@@ -277,41 +277,39 @@ SDL_NAME (XF86VidModeModeLine) * modeline;
     }
 
     if (modeline->privsize > 0) {
-        if (!
-            (modeline->private =
-             Xcalloc (modeline->privsize, sizeof (INT32)))) {
-            _XEatData (dpy, (modeline->privsize) * sizeof (INT32));
-            Xfree (modeline->private);
+        if (!(modeline->private = Xcalloc(modeline->privsize, sizeof(INT32)))) {
+            _XEatData(dpy, (modeline->privsize) * sizeof(INT32));
+            Xfree(modeline->private);
             return False;
         }
-        _XRead (dpy, (char *) modeline->private,
-                modeline->privsize * sizeof (INT32));
+        _XRead(dpy, (char *) modeline->private,
+               modeline->privsize * sizeof(INT32));
     } else {
         modeline->private = NULL;
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 Bool
-SDL_NAME (XF86VidModeGetAllModeLines) (dpy, screen, modecount, modelinesPtr)
+SDL_NAME(XF86VidModeGetAllModeLines) (dpy, screen, modecount, modelinesPtr)
      Display *dpy;
      int screen;
      int *modecount;
-SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
+SDL_NAME(XF86VidModeModeInfo) *** modelinesPtr;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetAllModeLinesReply rep;
     xXF86VidModeGetAllModeLinesReq *req;
-    SDL_NAME (XF86VidModeModeInfo) * mdinfptr, **modelines;
+    SDL_NAME(XF86VidModeModeInfo) * mdinfptr, **modelines;
     xXF86VidModeModeInfo xmdline;
     xXF86OldVidModeModeInfo oldxmdline;
     int i;
     int majorVersion, minorVersion;
     Bool protocolBug = False;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
     /*
      * Note: There was a bug in the protocol implementation in versions
@@ -319,26 +317,26 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
      * Check the server's version, and accept the old format if appropriate.
      */
 
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
     if (majorVersion == 0 && minorVersion < 8) {
         protocolBug = True;
 #ifdef DEBUG
-        fprintf (stderr, "XF86VidModeGetAllModeLines: Warning: Xserver is"
-                 "running an old version (%d.%d)\n", majorVersion,
-                 minorVersion);
+        fprintf(stderr, "XF86VidModeGetAllModeLines: Warning: Xserver is"
+                "running an old version (%d.%d)\n", majorVersion,
+                minorVersion);
 #endif
     }
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetAllModeLines, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetAllModeLines, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetAllModeLines;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep,
-                  (SIZEOF (xXF86VidModeGetAllModeLinesReply) -
-                   SIZEOF (xReply)) >> 2, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep,
+                 (SIZEOF(xXF86VidModeGetAllModeLinesReply) -
+                  SIZEOF(xReply)) >> 2, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
@@ -346,35 +344,34 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
 
     if (!
         (modelines =
-         (SDL_NAME (XF86VidModeModeInfo) **) Xcalloc (rep.modecount,
-                                                      sizeof (SDL_NAME
-                                                              (XF86VidModeModeInfo)
-                                                              *) +
-                                                      sizeof (SDL_NAME
-                                                              (XF86VidModeModeInfo)))))
+         (SDL_NAME(XF86VidModeModeInfo) **) Xcalloc(rep.modecount,
+                                                    sizeof(SDL_NAME
+                                                           (XF86VidModeModeInfo)
+                                                           *) +
+                                                    sizeof(SDL_NAME
+                                                           (XF86VidModeModeInfo)))))
     {
         if (majorVersion < 2)
-            _XEatData (dpy,
-                       (rep.modecount) * sizeof (xXF86OldVidModeModeInfo));
+            _XEatData(dpy, (rep.modecount) * sizeof(xXF86OldVidModeModeInfo));
         else
-            _XEatData (dpy, (rep.modecount) * sizeof (xXF86VidModeModeInfo));
-        Xfree (modelines);
-        UnlockDisplay (dpy);
-        SyncHandle ();
+            _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
+        Xfree(modelines);
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
-    mdinfptr = (SDL_NAME (XF86VidModeModeInfo) *) ((char *) modelines
-                                                   +
-                                                   rep.modecount *
-                                                   sizeof (SDL_NAME
-                                                           (XF86VidModeModeInfo)
-                                                           *));
+    mdinfptr = (SDL_NAME(XF86VidModeModeInfo) *) ((char *) modelines
+                                                  +
+                                                  rep.modecount *
+                                                  sizeof(SDL_NAME
+                                                         (XF86VidModeModeInfo)
+                                                         *));
 
     for (i = 0; i < rep.modecount; i++) {
         modelines[i] = mdinfptr++;
         if (majorVersion < 2) {
-            _XRead (dpy, (char *) &oldxmdline,
-                    sizeof (xXF86OldVidModeModeInfo));
+            _XRead(dpy, (char *) &oldxmdline,
+                   sizeof(xXF86OldVidModeModeInfo));
             modelines[i]->dotclock = oldxmdline.dotclock;
             modelines[i]->hdisplay = oldxmdline.hdisplay;
             modelines[i]->hsyncstart = oldxmdline.hsyncstart;
@@ -393,20 +390,19 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
                 modelines[i]->privsize = oldxmdline.privsize;
                 if (oldxmdline.privsize > 0) {
                     if (!(modelines[i]->private =
-                          Xcalloc (oldxmdline.privsize, sizeof (INT32)))) {
-                        _XEatData (dpy,
-                                   (oldxmdline.privsize) * sizeof (INT32));
-                        Xfree (modelines[i]->private);
+                          Xcalloc(oldxmdline.privsize, sizeof(INT32)))) {
+                        _XEatData(dpy, (oldxmdline.privsize) * sizeof(INT32));
+                        Xfree(modelines[i]->private);
                     } else {
-                        _XRead (dpy, (char *) modelines[i]->private,
-                                oldxmdline.privsize * sizeof (INT32));
+                        _XRead(dpy, (char *) modelines[i]->private,
+                               oldxmdline.privsize * sizeof(INT32));
                     }
                 } else {
                     modelines[i]->private = NULL;
                 }
             }
         } else {
-            _XRead (dpy, (char *) &xmdline, sizeof (xXF86VidModeModeInfo));
+            _XRead(dpy, (char *) &xmdline, sizeof(xXF86VidModeModeInfo));
             modelines[i]->dotclock = xmdline.dotclock;
             modelines[i]->hdisplay = xmdline.hdisplay;
             modelines[i]->hsyncstart = xmdline.hsyncstart;
@@ -425,12 +421,12 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
                 modelines[i]->privsize = xmdline.privsize;
                 if (xmdline.privsize > 0) {
                     if (!(modelines[i]->private =
-                          Xcalloc (xmdline.privsize, sizeof (INT32)))) {
-                        _XEatData (dpy, (xmdline.privsize) * sizeof (INT32));
-                        Xfree (modelines[i]->private);
+                          Xcalloc(xmdline.privsize, sizeof(INT32)))) {
+                        _XEatData(dpy, (xmdline.privsize) * sizeof(INT32));
+                        Xfree(modelines[i]->private);
                     } else {
-                        _XRead (dpy, (char *) modelines[i]->private,
-                                xmdline.privsize * sizeof (INT32));
+                        _XRead(dpy, (char *) modelines[i]->private,
+                               xmdline.privsize * sizeof(INT32));
                     }
                 } else {
                     modelines[i]->private = NULL;
@@ -439,8 +435,8 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
         }
     }
     *modelinesPtr = modelines;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
@@ -471,23 +467,23 @@ SDL_NAME (XF86VidModeModeInfo) *** modelinesPtr;
 #endif
 
 Bool
-SDL_NAME (XF86VidModeAddModeLine) (dpy, screen, newmodeline, aftermodeline)
+SDL_NAME(XF86VidModeAddModeLine) (dpy, screen, newmodeline, aftermodeline)
      Display *dpy;
      int screen;
-SDL_NAME (XF86VidModeModeInfo) * newmodeline;
-SDL_NAME (XF86VidModeModeInfo) * aftermodeline;
+SDL_NAME(XF86VidModeModeInfo) * newmodeline;
+SDL_NAME(XF86VidModeModeInfo) * aftermodeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeAddModeLineReq *req;
     xXF86OldVidModeAddModeLineReq *oldreq;
     int majorVersion, minorVersion;
 
-    XF86VidModeCheckExtension (dpy, info, False);
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    XF86VidModeCheckExtension(dpy, info, False);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
     if (majorVersion < 2) {
-        GetOldReq (XF86VidModeAddModeLine, XF86OldVidModeAddModeLine, oldreq);
+        GetOldReq(XF86VidModeAddModeLine, XF86OldVidModeAddModeLine, oldreq);
         oldreq->reqType = info->codes->major_opcode;
         oldreq->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
         oldreq->screen = screen;
@@ -527,11 +523,11 @@ SDL_NAME (XF86VidModeModeInfo) * aftermodeline;
         }
         if (newmodeline->privsize) {
             oldreq->length += newmodeline->privsize;
-            Data32 (dpy, (long *) newmodeline->private,
-                    newmodeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) newmodeline->private,
+                   newmodeline->privsize * sizeof(INT32));
         }
     } else {
-        GetReq (XF86VidModeAddModeLine, req);
+        GetReq(XF86VidModeAddModeLine, req);
         req->reqType = info->codes->major_opcode;
         req->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
         req->screen = screen;
@@ -574,34 +570,34 @@ SDL_NAME (XF86VidModeModeInfo) * aftermodeline;
         }
         if (newmodeline->privsize) {
             req->length += newmodeline->privsize;
-            Data32 (dpy, (long *) newmodeline->private,
-                    newmodeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) newmodeline->private,
+                   newmodeline->privsize * sizeof(INT32));
         }
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeDeleteModeLine) (dpy, screen, modeline)
+Bool SDL_NAME(XF86VidModeDeleteModeLine) (dpy, screen, modeline)
      Display *
          dpy;
      int
          screen;
-SDL_NAME (XF86VidModeModeInfo) * modeline;
+SDL_NAME(XF86VidModeModeInfo) * modeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeDeleteModeLineReq *req;
     xXF86OldVidModeDeleteModeLineReq *oldreq;
     int majorVersion, minorVersion;
 
-    XF86VidModeCheckExtension (dpy, info, 0);
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    XF86VidModeCheckExtension(dpy, info, 0);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
     if (majorVersion < 2) {
-        GetOldReq (XF86VidModeDeleteModeLine, XF86OldVidModeDeleteModeLine,
-                   oldreq);
+        GetOldReq(XF86VidModeDeleteModeLine, XF86OldVidModeDeleteModeLine,
+                  oldreq);
         oldreq->reqType = info->codes->major_opcode;
         oldreq->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
         oldreq->screen = screen;
@@ -618,11 +614,11 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
         oldreq->privsize = modeline->privsize;
         if (modeline->privsize) {
             oldreq->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     } else {
-        GetReq (XF86VidModeDeleteModeLine, req);
+        GetReq(XF86VidModeDeleteModeLine, req);
         req->reqType = info->codes->major_opcode;
         req->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
         req->screen = screen;
@@ -640,33 +636,33 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
         req->privsize = modeline->privsize;
         if (modeline->privsize) {
             req->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeModModeLine) (dpy, screen, modeline)
+Bool SDL_NAME(XF86VidModeModModeLine) (dpy, screen, modeline)
      Display *
          dpy;
      int
          screen;
-SDL_NAME (XF86VidModeModeLine) * modeline;
+SDL_NAME(XF86VidModeModeLine) * modeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeModModeLineReq *req;
     xXF86OldVidModeModModeLineReq *oldreq;
     int majorVersion, minorVersion;
 
-    XF86VidModeCheckExtension (dpy, info, 0);
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    XF86VidModeCheckExtension(dpy, info, 0);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
     if (majorVersion < 2) {
-        GetOldReq (XF86VidModeModModeLine, XF86OldVidModeModModeLine, oldreq);
+        GetOldReq(XF86VidModeModModeLine, XF86OldVidModeModModeLine, oldreq);
         oldreq->reqType = info->codes->major_opcode;
         oldreq->xf86vidmodeReqType = X_XF86VidModeModModeLine;
         oldreq->screen = screen;
@@ -682,11 +678,11 @@ SDL_NAME (XF86VidModeModeLine) * modeline;
         oldreq->privsize = modeline->privsize;
         if (modeline->privsize) {
             oldreq->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     } else {
-        GetReq (XF86VidModeModModeLine, req);
+        GetReq(XF86VidModeModModeLine, req);
         req->reqType = info->codes->major_opcode;
         req->xf86vidmodeReqType = X_XF86VidModeModModeLine;
         req->screen = screen;
@@ -703,36 +699,36 @@ SDL_NAME (XF86VidModeModeLine) * modeline;
         req->privsize = modeline->privsize;
         if (modeline->privsize) {
             req->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Status SDL_NAME (XF86VidModeValidateModeLine) (dpy, screen, modeline)
+Status SDL_NAME(XF86VidModeValidateModeLine) (dpy, screen, modeline)
      Display *
          dpy;
      int
          screen;
-SDL_NAME (XF86VidModeModeInfo) * modeline;
+SDL_NAME(XF86VidModeModeInfo) * modeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeValidateModeLineReq *req;
     xXF86OldVidModeValidateModeLineReq *oldreq;
     xXF86VidModeValidateModeLineReply rep;
     int majorVersion, minorVersion;
 
-    XF86VidModeCheckExtension (dpy, info, 0);
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    XF86VidModeCheckExtension(dpy, info, 0);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
 
     if (majorVersion < 2) {
-        GetOldReq (XF86VidModeValidateModeLine,
-                   XF86OldVidModeValidateModeLine, oldreq);
+        GetOldReq(XF86VidModeValidateModeLine,
+                  XF86OldVidModeValidateModeLine, oldreq);
         oldreq->reqType = info->codes->major_opcode;
         oldreq->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
         oldreq->screen = screen;
@@ -749,11 +745,11 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
         oldreq->privsize = modeline->privsize;
         if (modeline->privsize) {
             oldreq->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     } else {
-        GetReq (XF86VidModeValidateModeLine, req);
+        GetReq(XF86VidModeValidateModeLine, req);
         req->reqType = info->codes->major_opcode;
         req->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
         req->screen = screen;
@@ -771,21 +767,21 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
         req->privsize = modeline->privsize;
         if (modeline->privsize) {
             req->length += modeline->privsize;
-            Data32 (dpy, (long *) modeline->private,
-                    modeline->privsize * sizeof (INT32));
+            Data32(dpy, (long *) modeline->private,
+                   modeline->privsize * sizeof(INT32));
         }
     }
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return MODE_BAD;
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return rep.status;
 }
 
-Bool SDL_NAME (XF86VidModeSwitchMode) (dpy, screen, zoom)
+Bool SDL_NAME(XF86VidModeSwitchMode) (dpy, screen, zoom)
      Display *
          dpy;
      int
@@ -793,36 +789,36 @@ Bool SDL_NAME (XF86VidModeSwitchMode) (dpy, screen, zoom)
      int
          zoom;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSwitchModeReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeSwitchMode, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSwitchMode, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeSwitchMode;
     req->screen = screen;
     req->zoom = zoom;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeSwitchToMode) (dpy, screen, modeline)
+Bool SDL_NAME(XF86VidModeSwitchToMode) (dpy, screen, modeline)
      Display *
          dpy;
      int
          screen;
-SDL_NAME (XF86VidModeModeInfo) * modeline;
+SDL_NAME(XF86VidModeModeInfo) * modeline;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSwitchToModeReq *req;
     xXF86OldVidModeSwitchToModeReq *oldreq;
     int majorVersion, minorVersion;
     Bool protocolBug = False;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
     /*
      * Note: There was a bug in the protocol implementation in versions
@@ -831,20 +827,20 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
      * if appropriate.
      */
 
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
     if (majorVersion == 0 && minorVersion < 8) {
         protocolBug = True;
 #ifdef DEBUG
-        fprintf (stderr, "XF86VidModeSwitchToMode: Warning: Xserver is"
-                 "running an old version (%d.%d)\n", majorVersion,
-                 minorVersion);
+        fprintf(stderr, "XF86VidModeSwitchToMode: Warning: Xserver is"
+                "running an old version (%d.%d)\n", majorVersion,
+                minorVersion);
 #endif
     }
 
-    LockDisplay (dpy);
+    LockDisplay(dpy);
     if (majorVersion < 2) {
-        GetOldReq (XF86VidModeSwitchToMode, XF86OldVidModeSwitchToMode,
-                   oldreq);
+        GetOldReq(XF86VidModeSwitchToMode, XF86OldVidModeSwitchToMode,
+                  oldreq);
         oldreq->reqType = info->codes->major_opcode;
         oldreq->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
         oldreq->screen = screen;
@@ -864,12 +860,12 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
             oldreq->privsize = modeline->privsize;
             if (modeline->privsize) {
                 oldreq->length += modeline->privsize;
-                Data32 (dpy, (long *) modeline->private,
-                        modeline->privsize * sizeof (INT32));
+                Data32(dpy, (long *) modeline->private,
+                       modeline->privsize * sizeof(INT32));
             }
         }
     } else {
-        GetReq (XF86VidModeSwitchToMode, req);
+        GetReq(XF86VidModeSwitchToMode, req);
         req->reqType = info->codes->major_opcode;
         req->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
         req->screen = screen;
@@ -890,17 +886,17 @@ SDL_NAME (XF86VidModeModeInfo) * modeline;
             req->privsize = modeline->privsize;
             if (modeline->privsize) {
                 req->length += modeline->privsize;
-                Data32 (dpy, (long *) modeline->private,
-                        modeline->privsize * sizeof (INT32));
+                Data32(dpy, (long *) modeline->private,
+                       modeline->privsize * sizeof(INT32));
             }
         }
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeLockModeSwitch) (dpy, screen, lock)
+Bool SDL_NAME(XF86VidModeLockModeSwitch) (dpy, screen, lock)
      Display *
          dpy;
      int
@@ -908,45 +904,45 @@ Bool SDL_NAME (XF86VidModeLockModeSwitch) (dpy, screen, lock)
      int
          lock;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeLockModeSwitchReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeLockModeSwitch, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeLockModeSwitch, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeLockModeSwitch;
     req->screen = screen;
     req->lock = lock;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeGetMonitor) (dpy, screen, monitor)
+Bool SDL_NAME(XF86VidModeGetMonitor) (dpy, screen, monitor)
      Display *
          dpy;
      int
          screen;
-SDL_NAME (XF86VidModeMonitor) * monitor;
+SDL_NAME(XF86VidModeMonitor) * monitor;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetMonitorReply rep;
     xXF86VidModeGetMonitorReq *req;
     CARD32 syncrange;
     int i;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetMonitor, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetMonitor, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetMonitor;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     monitor->nhsync = rep.nhsync;
@@ -955,26 +951,26 @@ SDL_NAME (XF86VidModeMonitor) * monitor;
     monitor->bandwidth = (float) rep.bandwidth / 1e6;
 #endif
     if (rep.vendorLength) {
-        if (!(monitor->vendor = (char *) Xcalloc (rep.vendorLength + 1, 1))) {
-            _XEatData (dpy, (rep.nhsync + rep.nvsync) * 4 +
-                       ((rep.vendorLength + 3) & ~3) +
-                       ((rep.modelLength + 3) & ~3));
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if (!(monitor->vendor = (char *) Xcalloc(rep.vendorLength + 1, 1))) {
+            _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+                      ((rep.vendorLength + 3) & ~3) +
+                      ((rep.modelLength + 3) & ~3));
+            UnlockDisplay(dpy);
+            SyncHandle();
             return False;
         }
     } else {
         monitor->vendor = NULL;
     }
     if (rep.modelLength) {
-        if (!(monitor->model = Xcalloc (rep.modelLength + 1, 1))) {
-            _XEatData (dpy, (rep.nhsync + rep.nvsync) * 4 +
-                       ((rep.vendorLength + 3) & ~3) +
-                       ((rep.modelLength + 3) & ~3));
+        if (!(monitor->model = Xcalloc(rep.modelLength + 1, 1))) {
+            _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+                      ((rep.vendorLength + 3) & ~3) +
+                      ((rep.modelLength + 3) & ~3));
             if (monitor->vendor)
-                Xfree (monitor->vendor);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+                Xfree(monitor->vendor);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return False;
         }
     } else {
@@ -982,59 +978,59 @@ SDL_NAME (XF86VidModeMonitor) * monitor;
     }
     if (!
         (monitor->hsync =
-         Xcalloc (rep.nhsync, sizeof (SDL_NAME (XF86VidModeSyncRange))))) {
-        _XEatData (dpy, (rep.nhsync + rep.nvsync) * 4 +
-                   ((rep.vendorLength + 3) & ~3) +
-                   ((rep.modelLength + 3) & ~3));
+         Xcalloc(rep.nhsync, sizeof(SDL_NAME(XF86VidModeSyncRange))))) {
+        _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+                  ((rep.vendorLength + 3) & ~3) +
+                  ((rep.modelLength + 3) & ~3));
 
         if (monitor->vendor)
-            Xfree (monitor->vendor);
+            Xfree(monitor->vendor);
         if (monitor->model)
-            Xfree (monitor->model);
-        UnlockDisplay (dpy);
-        SyncHandle ();
+            Xfree(monitor->model);
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     if (!
         (monitor->vsync =
-         Xcalloc (rep.nvsync, sizeof (SDL_NAME (XF86VidModeSyncRange))))) {
-        _XEatData (dpy, (rep.nhsync + rep.nvsync) * 4 +
-                   ((rep.vendorLength + 3) & ~3) +
-                   ((rep.modelLength + 3) & ~3));
+         Xcalloc(rep.nvsync, sizeof(SDL_NAME(XF86VidModeSyncRange))))) {
+        _XEatData(dpy, (rep.nhsync + rep.nvsync) * 4 +
+                  ((rep.vendorLength + 3) & ~3) +
+                  ((rep.modelLength + 3) & ~3));
         if (monitor->vendor)
-            Xfree (monitor->vendor);
+            Xfree(monitor->vendor);
         if (monitor->model)
-            Xfree (monitor->model);
-        Xfree (monitor->hsync);
-        UnlockDisplay (dpy);
-        SyncHandle ();
+            Xfree(monitor->model);
+        Xfree(monitor->hsync);
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     for (i = 0; i < rep.nhsync; i++) {
-        _XRead (dpy, (char *) &syncrange, 4);
+        _XRead(dpy, (char *) &syncrange, 4);
         monitor->hsync[i].lo = (float) (syncrange & 0xFFFF) / 100.0;
         monitor->hsync[i].hi = (float) (syncrange >> 16) / 100.0;
     }
     for (i = 0; i < rep.nvsync; i++) {
-        _XRead (dpy, (char *) &syncrange, 4);
+        _XRead(dpy, (char *) &syncrange, 4);
         monitor->vsync[i].lo = (float) (syncrange & 0xFFFF) / 100.0;
         monitor->vsync[i].hi = (float) (syncrange >> 16) / 100.0;
     }
     if (rep.vendorLength)
-        _XReadPad (dpy, monitor->vendor, rep.vendorLength);
+        _XReadPad(dpy, monitor->vendor, rep.vendorLength);
     else
         monitor->vendor = "";
     if (rep.modelLength)
-        _XReadPad (dpy, monitor->model, rep.modelLength);
+        _XReadPad(dpy, monitor->model, rep.modelLength);
     else
         monitor->model = "";
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeGetViewPort) (dpy, screen, x, y)
+Bool SDL_NAME(XF86VidModeGetViewPort) (dpy, screen, x, y)
      Display *
          dpy;
      int
@@ -1043,13 +1039,13 @@ Bool SDL_NAME (XF86VidModeGetViewPort) (dpy, screen, x, y)
      x, *
          y;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetViewPortReply rep;
     xXF86VidModeGetViewPortReq *req;
     int majorVersion, minorVersion;
     Bool protocolBug = False;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
     /*
      * Note: There was a bug in the protocol implementation in versions
@@ -1058,17 +1054,17 @@ Bool SDL_NAME (XF86VidModeGetViewPort) (dpy, screen, x, y)
      * versions.
      */
 
-    SDL_NAME (XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
+    SDL_NAME(XF86VidModeQueryVersion) (dpy, &majorVersion, &minorVersion);
     if (majorVersion == 0 && minorVersion < 8) {
         protocolBug = True;
 #ifdef DEBUG
-        fprintf (stderr, "XF86VidModeGetViewPort: Warning: Xserver is"
-                 "running an old version (%d.%d)\n", majorVersion,
-                 minorVersion);
+        fprintf(stderr, "XF86VidModeGetViewPort: Warning: Xserver is"
+                "running an old version (%d.%d)\n", majorVersion,
+                minorVersion);
 #endif
     }
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetViewPort, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetViewPort, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetViewPort;
     req->screen = screen;
@@ -1076,21 +1072,21 @@ Bool SDL_NAME (XF86VidModeGetViewPort) (dpy, screen, x, y)
         *x = 0;
         *y = 0;
     } else {
-        if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-            UnlockDisplay (dpy);
-            SyncHandle ();
+        if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+            UnlockDisplay(dpy);
+            SyncHandle();
             return False;
         }
         *x = rep.x;
         *y = rep.y;
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeSetViewPort) (dpy, screen, x, y)
+Bool SDL_NAME(XF86VidModeSetViewPort) (dpy, screen, x, y)
      Display *
          dpy;
      int
@@ -1099,163 +1095,163 @@ Bool SDL_NAME (XF86VidModeSetViewPort) (dpy, screen, x, y)
          x,
          y;
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSetViewPortReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeSetViewPort, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetViewPort, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeSetViewPort;
     req->screen = screen;
     req->x = x;
     req->y = y;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 Bool
-SDL_NAME (XF86VidModeGetDotClocks) (dpy, screen,
-                                    flagsPtr, numclocksPtr, maxclocksPtr,
-                                    clocksPtr)
+SDL_NAME(XF86VidModeGetDotClocks) (dpy, screen,
+                                   flagsPtr, numclocksPtr, maxclocksPtr,
+                                   clocksPtr)
      Display *dpy;
      int screen;
      int *flagsPtr, *numclocksPtr, *maxclocksPtr, *clocksPtr[];
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetDotClocksReply rep;
     xXF86VidModeGetDotClocksReq *req;
     int i, *dotclocks;
     CARD32 dotclk;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetDotClocks, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetDotClocks, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetDotClocks;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep,
-                  (SIZEOF (xXF86VidModeGetDotClocksReply) -
-                   SIZEOF (xReply)) >> 2, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep,
+                 (SIZEOF(xXF86VidModeGetDotClocksReply) -
+                  SIZEOF(xReply)) >> 2, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     *numclocksPtr = rep.clocks;
     *maxclocksPtr = rep.maxclocks;
     *flagsPtr = rep.flags;
 
-    if (!(dotclocks = (int *) Xcalloc (rep.clocks, sizeof (int)))) {
-        _XEatData (dpy, (rep.clocks) * 4);
-        Xfree (dotclocks);
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!(dotclocks = (int *) Xcalloc(rep.clocks, sizeof(int)))) {
+        _XEatData(dpy, (rep.clocks) * 4);
+        Xfree(dotclocks);
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
     for (i = 0; i < rep.clocks; i++) {
-        _XRead (dpy, (char *) &dotclk, 4);
+        _XRead(dpy, (char *) &dotclk, 4);
         dotclocks[i] = dotclk;
     }
     *clocksPtr = dotclocks;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 Bool
-SDL_NAME (XF86VidModeSetGammaRamp) (Display * dpy,
-                                    int screen,
-                                    int size,
-                                    unsigned short *red,
-                                    unsigned short *green,
-                                    unsigned short *blue)
+SDL_NAME(XF86VidModeSetGammaRamp) (Display * dpy,
+                                   int screen,
+                                   int size,
+                                   unsigned short *red,
+                                   unsigned short *green,
+                                   unsigned short *blue)
 {
     int length = (size + 1) & ~1;
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeSetGammaRampReq *req;
 
-    XF86VidModeCheckExtension (dpy, info, False);
-    LockDisplay (dpy);
-    GetReq (XF86VidModeSetGammaRamp, req);
+    XF86VidModeCheckExtension(dpy, info, False);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeSetGammaRamp, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeSetGammaRamp;
     req->screen = screen;
     req->length += (length >> 1) * 3;
     req->size = size;
-    _XSend (dpy, (char *) red, size * 2);
-    _XSend (dpy, (char *) green, size * 2);
-    _XSend (dpy, (char *) blue, size * 2);
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    _XSend(dpy, (char *) red, size * 2);
+    _XSend(dpy, (char *) green, size * 2);
+    _XSend(dpy, (char *) blue, size * 2);
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 
 Bool
-SDL_NAME (XF86VidModeGetGammaRamp) (Display * dpy,
-                                    int screen,
-                                    int size,
-                                    unsigned short *red,
-                                    unsigned short *green,
-                                    unsigned short *blue)
+SDL_NAME(XF86VidModeGetGammaRamp) (Display * dpy,
+                                   int screen,
+                                   int size,
+                                   unsigned short *red,
+                                   unsigned short *green,
+                                   unsigned short *blue)
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetGammaRampReq *req;
     xXF86VidModeGetGammaRampReply rep;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetGammaRamp, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetGammaRamp, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetGammaRamp;
     req->screen = screen;
     req->size = size;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     if (rep.size) {
-        _XRead (dpy, (char *) red, rep.size << 1);
-        _XRead (dpy, (char *) green, rep.size << 1);
-        _XRead (dpy, (char *) blue, rep.size << 1);
+        _XRead(dpy, (char *) red, rep.size << 1);
+        _XRead(dpy, (char *) green, rep.size << 1);
+        _XRead(dpy, (char *) blue, rep.size << 1);
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86VidModeGetGammaRampSize) (Display * dpy,
-                                             int screen, int *size)
+Bool SDL_NAME(XF86VidModeGetGammaRampSize) (Display * dpy,
+                                            int screen, int *size)
 {
-    XExtDisplayInfo *info = find_display (dpy);
+    XExtDisplayInfo *info = find_display(dpy);
     xXF86VidModeGetGammaRampSizeReq *req;
     xXF86VidModeGetGammaRampSizeReply rep;
 
     *size = 0;
 
-    XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeCheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86VidModeGetGammaRampSize, req);
+    LockDisplay(dpy);
+    GetReq(XF86VidModeGetGammaRampSize, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetGammaRampSize;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xTrue)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xTrue)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     *size = rep.size;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 

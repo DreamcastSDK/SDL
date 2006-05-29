@@ -154,17 +154,17 @@ static Uint32 jp_joypads[2];
 
 /*--- Functions prototypes ---*/
 
-static int GetEnabledAtariJoystick (int index);
-static void UpdateJoypads (void);
+static int GetEnabledAtariJoystick(int index);
+static void UpdateJoypads(void);
 
 /*--- Functions ---*/
 
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     int i;
     unsigned long cookie_mch;
-    const char *envr = SDL_getenv ("SDL_JOYSTICK_ATARI");
+    const char *envr = SDL_getenv("SDL_JOYSTICK_ATARI");
 
 #define TEST_JOY_ENABLED(env,idstring,num) \
 	if (SDL_strstr(env,idstring"-off")) { \
@@ -175,7 +175,7 @@ SDL_SYS_JoystickInit (void)
 	}
 
     /* Cookie _MCH present ? if not, assume ST machine */
-    if (Getcookie (C__MCH, &cookie_mch) != C_FOUND) {
+    if (Getcookie(C__MCH, &cookie_mch) != C_FOUND) {
         cookie_mch = MCH_ST << 16;
     }
 
@@ -200,38 +200,38 @@ SDL_SYS_JoystickInit (void)
             || (cookie_mch == MCH_TT << 16) || (cookie_mch == MCH_F30 << 16)
             || (cookie_mch == MCH_ARANYM << 16)) {
             if (SDL_AtariIkbd_enabled != 0) {
-                TEST_JOY_ENABLED (envr, "ikbd-joy1", IKBD_JOY1);
+                TEST_JOY_ENABLED(envr, "ikbd-joy1", IKBD_JOY1);
             }
         }
         /* Joypads ports only on STE and Falcon */
         if ((cookie_mch == MCH_STE << 16) || (cookie_mch == MCH_F30 << 16)) {
-            TEST_JOY_ENABLED (envr, "porta-pad", PORTA_PAD);
+            TEST_JOY_ENABLED(envr, "porta-pad", PORTA_PAD);
             if (!atarijoysticks[PORTA_PAD].enabled) {
-                TEST_JOY_ENABLED (envr, "porta-joy0", PORTA_JOY0);
-                TEST_JOY_ENABLED (envr, "porta-joy1", PORTA_JOY1);
+                TEST_JOY_ENABLED(envr, "porta-joy0", PORTA_JOY0);
+                TEST_JOY_ENABLED(envr, "porta-joy1", PORTA_JOY1);
                 if (!(atarijoysticks[PORTA_JOY0].enabled)
                     && !(atarijoysticks[PORTA_JOY1].enabled)) {
-                    TEST_JOY_ENABLED (envr, "porta-lp", PORTA_LP);
+                    TEST_JOY_ENABLED(envr, "porta-lp", PORTA_LP);
                     if (!atarijoysticks[PORTA_LP].enabled) {
-                        TEST_JOY_ENABLED (envr, "porta-anpad", PORTA_ANPAD);
+                        TEST_JOY_ENABLED(envr, "porta-anpad", PORTA_ANPAD);
                     }
                 }
             }
 
-            TEST_JOY_ENABLED (envr, "portb-pad", PORTB_PAD);
+            TEST_JOY_ENABLED(envr, "portb-pad", PORTB_PAD);
             if (!atarijoysticks[PORTB_PAD].enabled) {
-                TEST_JOY_ENABLED (envr, "portb-joy0", PORTB_JOY0);
-                TEST_JOY_ENABLED (envr, "portb-joy1", PORTB_JOY1);
+                TEST_JOY_ENABLED(envr, "portb-joy0", PORTB_JOY0);
+                TEST_JOY_ENABLED(envr, "portb-joy1", PORTB_JOY1);
                 if (!(atarijoysticks[PORTB_JOY0].enabled)
                     && !(atarijoysticks[PORTB_JOY1].enabled)) {
-                    TEST_JOY_ENABLED (envr, "portb-anpad", PORTB_ANPAD);
+                    TEST_JOY_ENABLED(envr, "portb-anpad", PORTB_ANPAD);
                 }
             }
         }
 
         if (!atarijoysticks[IKBD_JOY1].enabled) {
             if (SDL_AtariXbios_enabled != 0) {
-                TEST_JOY_ENABLED (envr, "xbios-joy1", XBIOS_JOY1);
+                TEST_JOY_ENABLED(envr, "xbios-joy1", XBIOS_JOY1);
             }
         }
 #if 0
@@ -239,8 +239,8 @@ SDL_SYS_JoystickInit (void)
         if ((cookie_mch == MCH_ST << 16) || ((cookie_mch >> 16) == MCH_STE)
             || (cookie_mch == MCH_TT << 16)
             || (cookie_mch == MCH_F30 << 16)) {
-            TEST_JOY_ENABLED (envr, "para-joy0", PARA_JOY0);
-            TEST_JOY_ENABLED (envr, "para-joy1", PARA_JOY1);
+            TEST_JOY_ENABLED(envr, "para-joy0", PARA_JOY0);
+            TEST_JOY_ENABLED(envr, "para-joy1", PARA_JOY1);
         }
 #endif
     }
@@ -265,7 +265,7 @@ SDL_SYS_JoystickInit (void)
 }
 
 static int
-GetEnabledAtariJoystick (int index)
+GetEnabledAtariJoystick(int index)
 {
     int i, j;
 
@@ -289,11 +289,11 @@ GetEnabledAtariJoystick (int index)
 }
 
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     int numjoystick;
 
-    numjoystick = GetEnabledAtariJoystick (index);
+    numjoystick = GetEnabledAtariJoystick(index);
     if (numjoystick == -1)
         return NULL;
 
@@ -301,11 +301,11 @@ SDL_SYS_JoystickName (int index)
 }
 
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     int numjoystick;
 
-    numjoystick = GetEnabledAtariJoystick (joystick->index);
+    numjoystick = GetEnabledAtariJoystick(joystick->index);
     if (numjoystick == -1)
         return -1;
 
@@ -335,20 +335,20 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
 }
 
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     int numjoystick;
     Uint8 hatstate;
     Uint32 curstate, prevstate;
 
-    numjoystick = GetEnabledAtariJoystick (joystick->index);
+    numjoystick = GetEnabledAtariJoystick(joystick->index);
     if (numjoystick == -1)
         return;
 
     prevstate = atarijoysticks[numjoystick].prevstate;
 
     if (joypad_ports_enabled) {
-        Supexec (UpdateJoypads);
+        Supexec(UpdateJoypads);
     }
 
     switch (numjoystick) {
@@ -378,16 +378,16 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                 if (curstate & IKBD_JOY_DOWN) {
                     hatstate |= SDL_HAT_DOWN;
                 }
-                SDL_PrivateJoystickHat (joystick, 0, hatstate);
+                SDL_PrivateJoystickHat(joystick, 0, hatstate);
 
                 /* Button */
                 if ((curstate & IKBD_JOY_FIRE)
                     && !(prevstate & IKBD_JOY_FIRE)) {
-                    SDL_PrivateJoystickButton (joystick, 0, SDL_PRESSED);
+                    SDL_PrivateJoystickButton(joystick, 0, SDL_PRESSED);
                 }
                 if (!(curstate & IKBD_JOY_FIRE)
                     && (prevstate & IKBD_JOY_FIRE)) {
-                    SDL_PrivateJoystickButton (joystick, 0, SDL_RELEASED);
+                    SDL_PrivateJoystickButton(joystick, 0, SDL_RELEASED);
                 }
             }
             atarijoysticks[numjoystick].prevstate = curstate;
@@ -417,7 +417,7 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                 if (curstate & (1 << JP_DOWN)) {
                     hatstate |= SDL_HAT_DOWN;
                 }
-                SDL_PrivateJoystickHat (joystick, 0, hatstate);
+                SDL_PrivateJoystickHat(joystick, 0, hatstate);
 
                 /* Buttons */
                 for (i = 0; i < JP_NUM_BUTTONS; i++) {
@@ -426,10 +426,10 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                     button = 1 << jp_buttons[i];
 
                     if ((curstate & button) && !(prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_PRESSED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
                     }
                     if (!(curstate & button) && (prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_RELEASED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
                     }
                 }
             }
@@ -477,16 +477,16 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                 if (curstate & PORT_JS_DOWN) {
                     hatstate |= SDL_HAT_DOWN;
                 }
-                SDL_PrivateJoystickHat (joystick, 0, hatstate);
+                SDL_PrivateJoystickHat(joystick, 0, hatstate);
 
                 /* Button */
                 if ((curstate & PORT_JS_FIRE)
                     && !(prevstate & PORT_JS_FIRE)) {
-                    SDL_PrivateJoystickButton (joystick, 0, SDL_PRESSED);
+                    SDL_PrivateJoystickButton(joystick, 0, SDL_PRESSED);
                 }
                 if (!(curstate & PORT_JS_FIRE)
                     && (prevstate & PORT_JS_FIRE)) {
-                    SDL_PrivateJoystickButton (joystick, 0, SDL_RELEASED);
+                    SDL_PrivateJoystickButton(joystick, 0, SDL_RELEASED);
                 }
             }
             atarijoysticks[numjoystick].prevstate = curstate;
@@ -502,11 +502,11 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
 
             if (curstate != prevstate) {
                 /* X axis */
-                SDL_PrivateJoystickAxis (joystick, 0,
-                                         jp_lightpens[0] ^ 0x8000);
+                SDL_PrivateJoystickAxis(joystick, 0,
+                                        jp_lightpens[0] ^ 0x8000);
                 /* Y axis */
-                SDL_PrivateJoystickAxis (joystick, 1,
-                                         jp_lightpens[1] ^ 0x8000);
+                SDL_PrivateJoystickAxis(joystick, 1,
+                                        jp_lightpens[1] ^ 0x8000);
                 /* Buttons */
                 for (i = 0; i < 2; i++) {
                     int button;
@@ -514,10 +514,10 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                     button = 1 << (30 + i);
 
                     if ((curstate & button) && !(prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_PRESSED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
                     }
                     if (!(curstate & button) && (prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_RELEASED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
                     }
                 }
             }
@@ -539,11 +539,11 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
 
             if (curstate != prevstate) {
                 /* X axis */
-                SDL_PrivateJoystickAxis (joystick, 0,
-                                         jp_paddles[numpaddle] ^ 0x8000);
+                SDL_PrivateJoystickAxis(joystick, 0,
+                                        jp_paddles[numpaddle] ^ 0x8000);
                 /* Y axis */
-                SDL_PrivateJoystickAxis (joystick, 1,
-                                         jp_paddles[numpaddle + 1] ^ 0x8000);
+                SDL_PrivateJoystickAxis(joystick, 1,
+                                        jp_paddles[numpaddle + 1] ^ 0x8000);
                 /* Buttons */
                 for (i = 0; i < 2; i++) {
                     int button;
@@ -551,10 +551,10 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
                     button = 1 << (30 + i);
 
                     if ((curstate & button) && !(prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_PRESSED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_PRESSED);
                     }
                     if (!(curstate & button) && (prevstate & button)) {
-                        SDL_PrivateJoystickButton (joystick, i, SDL_RELEASED);
+                        SDL_PrivateJoystickButton(joystick, i, SDL_RELEASED);
                     }
                 }
             }
@@ -572,13 +572,13 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
 }
 
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     return;
 }
 
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     SDL_numjoysticks = 0;
     return;
@@ -599,7 +599,7 @@ struct JOYPAD_IO_S
 #define JOYPAD_IO ((*(volatile struct JOYPAD_IO_S *)JOYPAD_IO_BASE))
 
 static void
-UpdateJoypads (void)
+UpdateJoypads(void)
 {
     Uint16 tmp;
 

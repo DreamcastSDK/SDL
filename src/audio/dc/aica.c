@@ -42,28 +42,28 @@
 
 
 void
-aica_init ()
+aica_init()
 {
     int i, j, old = 0;
 
     /* Initialize AICA channels */
-    G2_LOCK (old);
-    SNDREG32 (0x2800) = 0x0000;
+    G2_LOCK(old);
+    SNDREG32(0x2800) = 0x0000;
 
     for (i = 0; i < 64; i++) {
         for (j = 0; j < 0x80; j += 4) {
             if ((j & 31) == 0)
-                g2_fifo_wait ();
-            CHNREG32 (i, j) = 0;
+                g2_fifo_wait();
+            CHNREG32(i, j) = 0;
         }
-        g2_fifo_wait ();
-        CHNREG32 (i, 0) = 0x8000;
-        CHNREG32 (i, 20) = 0x1f;
+        g2_fifo_wait();
+        CHNREG32(i, 0) = 0x8000;
+        CHNREG32(i, 20) = 0x1f;
     }
 
-    SNDREG32 (0x2800) = 0x000f;
-    g2_fifo_wait ();
-    G2_UNLOCK (old);
+    SNDREG32(0x2800) = 0x000f;
+    g2_fifo_wait();
+    G2_UNLOCK(old);
 }
 
 /* Translates a volume from linear form to logarithmic form (required by
@@ -119,7 +119,7 @@ const static unsigned char logs[] = {
 //#define AICA_VOL(x) (0xff - logs[x&255])
 
 static inline unsigned
-AICA_FREQ (unsigned freq)
+AICA_FREQ(unsigned freq)
 {
     unsigned long freq_lo, freq_base = 5644800;
     int freq_hi = 7;
@@ -156,8 +156,8 @@ AICA_FREQ (unsigned freq)
    This routine (and the similar ones) owe a lot to Marcus' sound example -- 
    I hadn't gotten quite this far into dissecting the individual regs yet. */
 void
-aica_play (int ch, int mode, unsigned long smpptr, int loopst, int loopend,
-           int freq, int vol, int pan, int loopflag)
+aica_play(int ch, int mode, unsigned long smpptr, int loopst, int loopend,
+          int freq, int vol, int pan, int loopflag)
 {
 /*	int i;
 */
@@ -165,7 +165,7 @@ aica_play (int ch, int mode, unsigned long smpptr, int loopst, int loopend,
     int old = 0;
 
     /* Stop the channel (if it's already playing) */
-    aica_stop (ch);
+    aica_stop(ch);
     /* doesn't seem to be needed, but it's here just in case */
 /*
 	for (i=0; i<256; i++) {
@@ -175,26 +175,26 @@ aica_play (int ch, int mode, unsigned long smpptr, int loopst, int loopend,
 		asm("nop");
 	}
 */
-    G2_LOCK (old);
+    G2_LOCK(old);
     /* Envelope setup. The first of these is the loop point,
        e.g., where the sample starts over when it loops. The second
        is the loop end. This is the full length of the sample when
        you are not looping, or the loop end point when you are (though
        storing more than that is a waste of memory if you're not doing
        volume enveloping). */
-    CHNREG32 (ch, 8) = loopst & 0xffff;
-    CHNREG32 (ch, 12) = loopend & 0xffff;
+    CHNREG32(ch, 8) = loopst & 0xffff;
+    CHNREG32(ch, 12) = loopend & 0xffff;
 
     /* Write resulting values */
-    CHNREG32 (ch, 24) = AICA_FREQ (freq);
+    CHNREG32(ch, 24) = AICA_FREQ(freq);
 
     /* Set volume, pan, and some other things that we don't know what
        they do =) */
-    CHNREG32 (ch, 36) = AICA_PAN (pan) | (0xf << 8);
+    CHNREG32(ch, 36) = AICA_PAN(pan) | (0xf << 8);
     /* Convert the incoming volume and pan into hardware values */
     /* Vol starts at zero so we can ramp */
-    vol = AICA_VOL (vol);
-    CHNREG32 (ch, 40) = 0x24 | (vol << 8);
+    vol = AICA_VOL(vol);
+    CHNREG32(ch, 40) = 0x24 | (vol << 8);
     /* Convert the incoming volume and pan into hardware values */
     /* Vol starts at zero so we can ramp */
 
@@ -205,44 +205,44 @@ aica_play (int ch, int mode, unsigned long smpptr, int loopst, int loopend,
        default (below) sets it into normal mode (play and terminate/loop).
        CHNREG32(ch, 16) = 0xf010;
      */
-    CHNREG32 (ch, 16) = 0x1f;   /* No volume envelope */
+    CHNREG32(ch, 16) = 0x1f;    /* No volume envelope */
 
 
     /* Set sample format, buffer address, and looping control. If
        0x0200 mask is set on reg 0, the sample loops infinitely. If
        it's not set, the sample plays once and terminates. We'll
        also set the bits to start playback here. */
-    CHNREG32 (ch, 4) = smpptr & 0xffff;
+    CHNREG32(ch, 4) = smpptr & 0xffff;
     val = 0xc000 | 0x0000 | (mode << 7) | (smpptr >> 16);
     if (loopflag)
         val |= 0x200;
 
-    CHNREG32 (ch, 0) = val;
+    CHNREG32(ch, 0) = val;
 
-    G2_UNLOCK (old);
+    G2_UNLOCK(old);
 
     /* Enable playback */
     /* CHNREG32(ch, 0) |= 0xc000; */
-    g2_fifo_wait ();
+    g2_fifo_wait();
 
 #if 0
     for (i = 0xff; i >= vol; i--) {
         if ((i & 7) == 0)
-            g2_fifo_wait ();
-        CHNREG32 (ch, 40) = 0x24 | (i << 8);;
+            g2_fifo_wait();
+        CHNREG32(ch, 40) = 0x24 | (i << 8);;
     }
 
-    g2_fifo_wait ();
+    g2_fifo_wait();
 #endif
 }
 
 /* Stop the sound on a given channel */
 void
-aica_stop (int ch)
+aica_stop(int ch)
 {
-    g2_write_32 (CHNREGADDR (ch, 0),
-                 (g2_read_32 (CHNREGADDR (ch, 0)) & ~0x4000) | 0x8000);
-    g2_fifo_wait ();
+    g2_write_32(CHNREGADDR(ch, 0),
+                (g2_read_32(CHNREGADDR(ch, 0)) & ~0x4000) | 0x8000);
+    g2_fifo_wait();
 }
 
 
@@ -251,50 +251,50 @@ aica_stop (int ch)
 
 /* Set channel volume */
 void
-aica_vol (int ch, int vol)
+aica_vol(int ch, int vol)
 {
 //      g2_write_8(CHNREGADDR(ch, 41),AICA_VOL(vol));
-    g2_write_32 (CHNREGADDR (ch, 40),
-                 (g2_read_32 (CHNREGADDR (ch, 40)) & 0xffff00ff) |
-                 (AICA_VOL (vol) << 8));
-    g2_fifo_wait ();
+    g2_write_32(CHNREGADDR(ch, 40),
+                (g2_read_32(CHNREGADDR(ch, 40)) & 0xffff00ff) |
+                (AICA_VOL(vol) << 8));
+    g2_fifo_wait();
 }
 
 /* Set channel pan */
 void
-aica_pan (int ch, int pan)
+aica_pan(int ch, int pan)
 {
 //      g2_write_8(CHNREGADDR(ch, 36),AICA_PAN(pan));
-    g2_write_32 (CHNREGADDR (ch, 36),
-                 (g2_read_32 (CHNREGADDR (ch, 36)) & 0xffffff00) |
-                 (AICA_PAN (pan)));
-    g2_fifo_wait ();
+    g2_write_32(CHNREGADDR(ch, 36),
+                (g2_read_32(CHNREGADDR(ch, 36)) & 0xffffff00) |
+                (AICA_PAN(pan)));
+    g2_fifo_wait();
 }
 
 /* Set channel frequency */
 void
-aica_freq (int ch, int freq)
+aica_freq(int ch, int freq)
 {
-    g2_write_32 (CHNREGADDR (ch, 24), AICA_FREQ (freq));
-    g2_fifo_wait ();
+    g2_write_32(CHNREGADDR(ch, 24), AICA_FREQ(freq));
+    g2_fifo_wait();
 }
 
 /* Get channel position */
 int
-aica_get_pos (int ch)
+aica_get_pos(int ch)
 {
 #if 1
     /* Observe channel ch */
-    g2_write_32 (SNDREGADDR (0x280c),
-                 (g2_read_32 (SNDREGADDR (0x280c)) & 0xffff00ff) | (ch << 8));
-    g2_fifo_wait ();
+    g2_write_32(SNDREGADDR(0x280c),
+                (g2_read_32(SNDREGADDR(0x280c)) & 0xffff00ff) | (ch << 8));
+    g2_fifo_wait();
     /* Update position counters */
-    return g2_read_32 (SNDREGADDR (0x2814)) & 0xffff;
+    return g2_read_32(SNDREGADDR(0x2814)) & 0xffff;
 #else
     /* Observe channel ch */
-    g2_write_8 (SNDREGADDR (0x280d), ch);
+    g2_write_8(SNDREGADDR(0x280d), ch);
     /* Update position counters */
-    return g2_read_32 (SNDREGADDR (0x2814)) & 0xffff;
+    return g2_read_32(SNDREGADDR(0x2814)) & 0xffff;
 #endif
 }
 

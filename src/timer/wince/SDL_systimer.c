@@ -35,13 +35,13 @@ static Uint64 start_date;
 static Uint64 start_ticks;
 
 static Uint64
-wce_ticks (void)
+wce_ticks(void)
 {
-    return ((Uint64) GetTickCount ());
+    return ((Uint64) GetTickCount());
 }
 
 static Uint64
-wce_date (void)
+wce_date(void)
 {
     union
     {
@@ -50,8 +50,8 @@ wce_date (void)
     } ftime;
     SYSTEMTIME stime;
 
-    GetSystemTime (&stime);
-    SystemTimeToFileTime (&stime, &ftime.ftime);
+    GetSystemTime(&stime);
+    SystemTimeToFileTime(&stime, &ftime.ftime);
     ftime.itime /= 10000;       // Convert 100ns intervals to 1ms intervals
     // Remove ms portion, which can't be relied on
     ftime.itime -= (ftime.itime % 1000);
@@ -59,43 +59,43 @@ wce_date (void)
 }
 
 static Sint32
-wce_rel_ticks (void)
+wce_rel_ticks(void)
 {
-    return ((Sint32) (wce_ticks () - start_ticks));
+    return ((Sint32) (wce_ticks() - start_ticks));
 }
 
 static Sint32
-wce_rel_date (void)
+wce_rel_date(void)
 {
-    return ((Sint32) (wce_date () - start_date));
+    return ((Sint32) (wce_date() - start_date));
 }
 
 /* Return time in ms relative to when SDL was started */
 Uint32
-SDL_GetTicks ()
+SDL_GetTicks()
 {
-    Sint32 offset = wce_rel_date () - wce_rel_ticks ();
+    Sint32 offset = wce_rel_date() - wce_rel_ticks();
     if ((offset < -1000) || (offset > 1000)) {
 //    fprintf(stderr,"Time desync(%+d), resyncing\n",offset/1000);
         start_ticks -= offset;
     }
 
-    return ((Uint32) wce_rel_ticks ());
+    return ((Uint32) wce_rel_ticks());
 }
 
 /* Give up approx. givem milliseconds to the OS. */
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
-    Sleep (ms);
+    Sleep(ms);
 }
 
 /* Recard start-time of application for reference */
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
-    start_date = wce_date ();
-    start_ticks = wce_ticks ();
+    start_date = wce_date();
+    start_ticks = wce_ticks();
 }
 
 static UINT WIN_timer;
@@ -106,45 +106,45 @@ static HANDLE timersThread = 0;
 static HANDLE timersQuitEvent = 0;
 
 DWORD
-TimersThreadProc (void *data)
+TimersThreadProc(void *data)
 {
-    while (WaitForSingleObject (timersQuitEvent, 10) == WAIT_TIMEOUT) {
-        SDL_ThreadedTimerCheck ();
+    while (WaitForSingleObject(timersQuitEvent, 10) == WAIT_TIMEOUT) {
+        SDL_ThreadedTimerCheck();
     }
     return 0;
 }
 
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     // create a thread to process a threaded timers
     // SetTimer does not suit the needs because 
     // TimerCallbackProc will be called only when WM_TIMER occured
 
-    timersQuitEvent = CreateEvent (0, TRUE, FALSE, 0);
+    timersQuitEvent = CreateEvent(0, TRUE, FALSE, 0);
     if (!timersQuitEvent) {
-        SDL_SetError ("Cannot create event for timers thread");
+        SDL_SetError("Cannot create event for timers thread");
         return -1;
     }
-    timersThread = CreateThread (NULL, 0, TimersThreadProc, 0, 0, 0);
+    timersThread = CreateThread(NULL, 0, TimersThreadProc, 0, 0, 0);
     if (!timersThread) {
         SDL_SetError
             ("Cannot create timers thread, check amount of RAM available");
         return -1;
     }
-    SetThreadPriority (timersThread, THREAD_PRIORITY_HIGHEST);
+    SetThreadPriority(timersThread, THREAD_PRIORITY_HIGHEST);
 
-    return (SDL_SetTimerThreaded (1));
+    return (SDL_SetTimerThreaded(1));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
-    SetEvent (timersQuitEvent);
-    if (WaitForSingleObject (timersThread, 2000) == WAIT_TIMEOUT)
-        TerminateThread (timersThread, 0);
-    CloseHandle (timersThread);
-    CloseHandle (timersQuitEvent);
+    SetEvent(timersQuitEvent);
+    if (WaitForSingleObject(timersThread, 2000) == WAIT_TIMEOUT)
+        TerminateThread(timersThread, 0);
+    CloseHandle(timersThread);
+    CloseHandle(timersQuitEvent);
     return;
 }
 
@@ -156,53 +156,53 @@ SDL_SYS_TimerQuit (void)
 static UINT timerID = 0;
 
 static void CALLBACK
-HandleAlarm (UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
+HandleAlarm(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 {
-    SDL_ThreadedTimerCheck ();
+    SDL_ThreadedTimerCheck();
 }
 
 
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     MMRESULT result;
 
     /* Set timer resolution */
-    result = timeBeginPeriod (TIMER_RESOLUTION);
+    result = timeBeginPeriod(TIMER_RESOLUTION);
     if (result != TIMERR_NOERROR) {
-        SDL_SetError ("Warning: Can't set %d ms timer resolution",
-                      TIMER_RESOLUTION);
+        SDL_SetError("Warning: Can't set %d ms timer resolution",
+                     TIMER_RESOLUTION);
     }
     /* Allow 10 ms of drift so we don't chew on CPU */
     timerID =
-        timeSetEvent (TIMER_RESOLUTION, 1, HandleAlarm, 0, TIME_PERIODIC);
+        timeSetEvent(TIMER_RESOLUTION, 1, HandleAlarm, 0, TIME_PERIODIC);
     if (!timerID) {
-        SDL_SetError ("timeSetEvent() failed");
+        SDL_SetError("timeSetEvent() failed");
         return (-1);
     }
-    return (SDL_SetTimerThreaded (1));
+    return (SDL_SetTimerThreaded(1));
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     if (timerID) {
-        timeKillEvent (timerID);
+        timeKillEvent(timerID);
     }
-    timeEndPeriod (TIMER_RESOLUTION);
+    timeEndPeriod(TIMER_RESOLUTION);
 }
 
 #endif
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
-    SDL_SetError ("Internal logic error: WinCE uses threaded timer");
+    SDL_SetError("Internal logic error: WinCE uses threaded timer");
     return (-1);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
     return;
 }

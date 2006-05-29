@@ -32,7 +32,7 @@ AmigaMesaContext glcont = NULL;
 
 /* Init OpenGL */
 int
-CGX_GL_Init (_THIS)
+CGX_GL_Init(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     int i = 0;
@@ -89,9 +89,9 @@ CGX_GL_Init (_THIS)
     // done...
     attributes[i].ti_Tag = TAG_DONE;
 
-    glcont = AmigaMesaCreateContext (attributes);
+    glcont = AmigaMesaCreateContext(attributes);
     if (glcont == NULL) {
-        SDL_SetError ("Couldn't create OpenGL context");
+        SDL_SetError("Couldn't create OpenGL context");
         return (-1);
     }
     this->gl_data->gl_active = 1;
@@ -99,18 +99,18 @@ CGX_GL_Init (_THIS)
 
     return (0);
 #else
-    SDL_SetError ("OpenGL support not configured");
+    SDL_SetError("OpenGL support not configured");
     return (-1);
 #endif
 }
 
 /* Quit OpenGL */
 void
-CGX_GL_Quit (_THIS)
+CGX_GL_Quit(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     if (glcont != NULL) {
-        AmigaMesaDestroyContext (glcont);
+        AmigaMesaDestroyContext(glcont);
         glcont = NULL;
         this->gl_data->gl_active = 0;
         this->gl_config.driver_loaded = 0;
@@ -120,7 +120,7 @@ CGX_GL_Quit (_THIS)
 
 /* Attach context to another window */
 int
-CGX_GL_Update (_THIS)
+CGX_GL_Update(_THIS)
 {
 #if SDL_VIDEO_OPENGL
     struct TagItem tags[2];
@@ -131,11 +131,11 @@ CGX_GL_Update (_THIS)
     tags[0].ti_Tag = AMA_Window;
     tags[0].ti_Data = (unsigned long) win;
     tags[1].ti_Tag = TAG_DONE;
-    AmigaMesaSetRast (glcont, tags);
+    AmigaMesaSetRast(glcont, tags);
 
     return 0;
 #else
-    SDL_SetError ("OpenGL support not configured");
+    SDL_SetError("OpenGL support not configured");
     return -1;
 #endif
 }
@@ -144,23 +144,23 @@ CGX_GL_Update (_THIS)
 
 /* Make the current context active */
 int
-CGX_GL_MakeCurrent (_THIS)
+CGX_GL_MakeCurrent(_THIS)
 {
     if (glcont == NULL)
         return -1;
 
-    AmigaMesaMakeCurrent (glcont, glcont->buffer);
+    AmigaMesaMakeCurrent(glcont, glcont->buffer);
     return 0;
 }
 
 void
-CGX_GL_SwapBuffers (_THIS)
+CGX_GL_SwapBuffers(_THIS)
 {
-    AmigaMesaSwapBuffers (glcont);
+    AmigaMesaSwapBuffers(glcont);
 }
 
 int
-CGX_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
+CGX_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
 {
     GLenum mesa_attrib;
 
@@ -202,20 +202,20 @@ CGX_GL_GetAttribute (_THIS, SDL_GLattr attrib, int *value)
         return -1;
     }
 
-    AmigaMesaGetConfig (glcont->visual, mesa_attrib, value);
+    AmigaMesaGetConfig(glcont->visual, mesa_attrib, value);
     return 0;
 }
 
 void *
-CGX_GL_GetProcAddress (_THIS, const char *proc)
+CGX_GL_GetProcAddress(_THIS, const char *proc)
 {
     void *func = NULL;
-    func = AmiGetGLProc (proc);
+    func = AmiGetGLProc(proc);
     return func;
 }
 
 int
-CGX_GL_LoadLibrary (_THIS, const char *path)
+CGX_GL_LoadLibrary(_THIS, const char *path)
 {
     /* Library is always open */
     this->gl_config.driver_loaded = 1;

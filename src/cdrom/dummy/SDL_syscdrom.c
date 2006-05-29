@@ -29,13 +29,13 @@
 #include "../SDL_syscdrom.h"
 
 int
-SDL_SYS_CDInit (void)
+SDL_SYS_CDInit(void)
 {
     return (0);
 }
 
 void
-SDL_SYS_CDQuit (void)
+SDL_SYS_CDQuit(void)
 {
     return;
 }

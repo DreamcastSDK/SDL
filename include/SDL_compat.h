@@ -66,29 +66,28 @@ typedef enum
     SDL_GRAB_ON = 1
 } SDL_GrabMode;
 
-extern DECLSPEC const SDL_version *SDLCALL SDL_Linked_Version (void);
-extern DECLSPEC char *SDLCALL SDL_AudioDriverName (char *namebuf, int maxlen);
-extern DECLSPEC char *SDLCALL SDL_VideoDriverName (char *namebuf, int maxlen);
-extern DECLSPEC int SDLCALL SDL_VideoModeOK (int width, int height, int bpp,
-                                             Uint32 flags);
-extern DECLSPEC SDL_Rect **SDLCALL SDL_ListModes (SDL_PixelFormat * format,
-                                                  Uint32 flags);
-extern DECLSPEC SDL_Surface *SDLCALL SDL_SetVideoMode (int width, int height,
-                                                       int bpp, Uint32 flags);
-extern DECLSPEC SDL_Surface *SDLCALL SDL_GetVideoSurface (void);
-extern DECLSPEC void SDLCALL SDL_WM_SetCaption (const char *title,
-                                                const char *icon);
-extern DECLSPEC void SDLCALL SDL_WM_GetCaption (char **title, char **icon);
-extern DECLSPEC void SDLCALL SDL_WM_SetIcon (SDL_Surface * icon,
-                                             Uint8 * mask);
-extern DECLSPEC int SDLCALL SDL_WM_IconifyWindow (void);
-extern DECLSPEC int SDLCALL SDL_WM_ToggleFullScreen (SDL_Surface * surface);
-extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput (SDL_GrabMode mode);
-extern DECLSPEC Uint8 SDLCALL SDL_GetAppState (void);
-extern DECLSPEC int SDLCALL SDL_SetPalette (SDL_Surface * surface, int flags,
-                                            SDL_Color * colors,
-                                            int firstcolor, int ncolors);
-extern DECLSPEC int SDLCALL SDL_GetWMInfo (SDL_SysWMinfo * info);
+extern DECLSPEC const SDL_version *SDLCALL SDL_Linked_Version(void);
+extern DECLSPEC char *SDLCALL SDL_AudioDriverName(char *namebuf, int maxlen);
+extern DECLSPEC char *SDLCALL SDL_VideoDriverName(char *namebuf, int maxlen);
+extern DECLSPEC int SDLCALL SDL_VideoModeOK(int width, int height, int bpp,
+                                            Uint32 flags);
+extern DECLSPEC SDL_Rect **SDLCALL SDL_ListModes(SDL_PixelFormat * format,
+                                                 Uint32 flags);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_SetVideoMode(int width, int height,
+                                                      int bpp, Uint32 flags);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_GetVideoSurface(void);
+extern DECLSPEC void SDLCALL SDL_WM_SetCaption(const char *title,
+                                               const char *icon);
+extern DECLSPEC void SDLCALL SDL_WM_GetCaption(char **title, char **icon);
+extern DECLSPEC void SDLCALL SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask);
+extern DECLSPEC int SDLCALL SDL_WM_IconifyWindow(void);
+extern DECLSPEC int SDLCALL SDL_WM_ToggleFullScreen(SDL_Surface * surface);
+extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
+extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
+extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
+                                           SDL_Color * colors,
+                                           int firstcolor, int ncolors);
+extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

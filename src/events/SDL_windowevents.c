@@ -27,8 +27,8 @@
 #include "SDL_events_c.h"
 
 int
-SDL_PrivateWindowEvent (SDL_WindowID windowID, Uint8 windowevent, int data1,
-                        int data2)
+SDL_PrivateWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
+                       int data2)
 {
     int posted;
 
@@ -43,7 +43,7 @@ SDL_PrivateWindowEvent (SDL_WindowID windowID, Uint8 windowevent, int data1,
         event.window.windowID = windowID;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
-            SDL_PushEvent (&event);
+            SDL_PushEvent(&event);
         }
     }
     return (posted);

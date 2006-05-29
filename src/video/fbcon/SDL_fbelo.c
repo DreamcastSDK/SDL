@@ -79,7 +79,7 @@ static int ELO_MAX_Y = 3540;
 /*	eloParsePacket
 */
 int
-eloParsePacket (unsigned char *mousebuf, int *dx, int *dy, int *button_state)
+eloParsePacket(unsigned char *mousebuf, int *dx, int *dy, int *button_state)
 {
     static int elo_button = 0;
     static int last_x = 0;
@@ -94,8 +94,8 @@ eloParsePacket (unsigned char *mousebuf, int *dx, int *dy, int *button_state)
     x = ((mousebuf[4] << 8) | mousebuf[3]);
     y = ((mousebuf[6] << 8) | mousebuf[5]);
 
-    if ((SDL_abs (x - last_x) > ELO_SNAP_SIZE)
-        || (SDL_abs (y - last_y) > ELO_SNAP_SIZE)) {
+    if ((SDL_abs(x - last_x) > ELO_SNAP_SIZE)
+        || (SDL_abs(y - last_y) > ELO_SNAP_SIZE)) {
         *dx = ((mousebuf[4] << 8) | mousebuf[3]);
         *dy = ((mousebuf[6] << 8) | mousebuf[5]);
     } else {
@@ -121,7 +121,7 @@ eloParsePacket (unsigned char *mousebuf, int *dx, int *dy, int *button_state)
 	to a screen position.
 */
 void
-eloConvertXY (_THIS, int *dx, int *dy)
+eloConvertXY(_THIS, int *dx, int *dy)
 {
     int input_x = *dx;
     int input_y = *dy;
@@ -138,7 +138,7 @@ eloConvertXY (_THIS, int *dx, int *dy)
 /*	eloGetPacket
 */
 int
-eloGetPacket (unsigned char *buffer, int *buffer_p, int *checksum, int fd)
+eloGetPacket(unsigned char *buffer, int *buffer_p, int *checksum, int fd)
 {
     int num_bytes;
     int ok;
@@ -146,22 +146,22 @@ eloGetPacket (unsigned char *buffer, int *buffer_p, int *checksum, int fd)
     if (fd == 0) {
         num_bytes = ELO_PACKET_SIZE;
     } else {
-        num_bytes = read (fd,
-                          (char *) (buffer + *buffer_p),
-                          ELO_PACKET_SIZE - *buffer_p);
+        num_bytes = read(fd,
+                         (char *) (buffer + *buffer_p),
+                         ELO_PACKET_SIZE - *buffer_p);
     }
 
     if (num_bytes < 0) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "System error while reading from Elographics touchscreen.\n");
+        fprintf(stderr,
+                "System error while reading from Elographics touchscreen.\n");
 #endif
         return 0;
     }
 
     while (num_bytes) {
         if ((*buffer_p == 0) && (buffer[0] != ELO_START_BYTE)) {
-            SDL_memcpy (&buffer[0], &buffer[1], num_bytes - 1);
+            SDL_memcpy(&buffer[0], &buffer[1], num_bytes - 1);
         } else {
             if (*buffer_p < ELO_PACKET_SIZE - 1) {
                 *checksum = *checksum + buffer[*buffer_p];
@@ -191,7 +191,7 @@ eloGetPacket (unsigned char *buffer, int *buffer_p, int *checksum, int fd)
 */
 
 int
-eloSendPacket (unsigned char *packet, int fd)
+eloSendPacket(unsigned char *packet, int fd)
 {
     int i, result;
     int sum = ELO_INIT_CHECKSUM;
@@ -203,11 +203,11 @@ eloSendPacket (unsigned char *packet, int fd)
     }
     packet[ELO_PACKET_SIZE - 1] = sum;
 
-    result = write (fd, packet, ELO_PACKET_SIZE);
+    result = write(fd, packet, ELO_PACKET_SIZE);
 
     if (result != ELO_PACKET_SIZE) {
 #ifdef DEBUG_MOUSE
-        printf ("System error while sending to Elographics touchscreen.\n");
+        printf("System error while sending to Elographics touchscreen.\n");
 #endif
         return 0;
     } else {
@@ -219,25 +219,25 @@ eloSendPacket (unsigned char *packet, int fd)
 /*	eloWaitForInput
  */
 int
-eloWaitForInput (int fd, int timeout)
+eloWaitForInput(int fd, int timeout)
 {
     fd_set readfds;
     struct timeval to;
     int r;
 
-    FD_ZERO (&readfds);
-    FD_SET (fd, &readfds);
+    FD_ZERO(&readfds);
+    FD_SET(fd, &readfds);
     to.tv_sec = 0;
     to.tv_usec = timeout;
 
-    r = select (FD_SETSIZE, &readfds, NULL, NULL, &to);
+    r = select(FD_SETSIZE, &readfds, NULL, NULL, &to);
     return r;
 }
 
 /*	eloWaitReply
  */
 int
-eloWaitReply (unsigned char type, unsigned char *reply, int fd)
+eloWaitReply(unsigned char type, unsigned char *reply, int fd)
 {
     int ok;
     int i, result;
@@ -248,20 +248,20 @@ eloWaitReply (unsigned char type, unsigned char *reply, int fd)
     do {
         ok = 0;
 
-        result = eloWaitForInput (fd, ELO_MAX_WAIT);
+        result = eloWaitForInput(fd, ELO_MAX_WAIT);
 
         if (result > 0) {
-            ok = eloGetPacket (reply, &reply_p, &sum, fd);
+            ok = eloGetPacket(reply, &reply_p, &sum, fd);
 
             if (ok && reply[1] != type && type != ELO_PARAMETER) {
 #ifdef DEBUG_MOUSE
-                fprintf (stderr, "Wrong reply received\n");
+                fprintf(stderr, "Wrong reply received\n");
 #endif
                 ok = 0;
             }
         } else {
 #ifdef DEBUG_MOUSE
-            fprintf (stderr, "No input!\n");
+            fprintf(stderr, "No input!\n");
 #endif
         }
 
@@ -279,12 +279,12 @@ eloWaitReply (unsigned char type, unsigned char *reply, int fd)
  */
 
 int
-eloWaitAck (int fd)
+eloWaitAck(int fd)
 {
     unsigned char packet[ELO_PACKET_SIZE];
     int i, nb_errors;
 
-    if (eloWaitReply (ELO_ACK, packet, fd)) {
+    if (eloWaitReply(ELO_ACK, packet, fd)) {
         for (i = 0, nb_errors = 0; i < 4; i++) {
             if (packet[2 + i] != '0') {
                 nb_errors++;
@@ -293,9 +293,9 @@ eloWaitAck (int fd)
 
         if (nb_errors != 0) {
 #ifdef DEBUG_MOUSE
-            fprintf (stderr,
-                     "Elographics acknowledge packet reports %d errors\n",
-                     nb_errors);
+            fprintf(stderr,
+                    "Elographics acknowledge packet reports %d errors\n",
+                    nb_errors);
 #endif
         }
         return 1;
@@ -308,14 +308,14 @@ eloWaitAck (int fd)
 /*	eloSendQuery --
 */
 int
-eloSendQuery (unsigned char *request, unsigned char *reply, int fd)
+eloSendQuery(unsigned char *request, unsigned char *reply, int fd)
 {
     int ok;
 
-    if (eloSendPacket (request, fd)) {
-        ok = eloWaitReply (toupper (request[1]), reply, fd);
+    if (eloSendPacket(request, fd)) {
+        ok = eloWaitReply(toupper(request[1]), reply, fd);
         if (ok) {
-            ok = eloWaitAck (fd);
+            ok = eloWaitAck(fd);
         }
         return ok;
     } else {
@@ -327,10 +327,10 @@ eloSendQuery (unsigned char *request, unsigned char *reply, int fd)
 /*	eloSendControl
 */
 int
-eloSendControl (unsigned char *control, int fd)
+eloSendControl(unsigned char *control, int fd)
 {
-    if (eloSendPacket (control, fd)) {
-        return eloWaitAck (fd);
+    if (eloSendPacket(control, fd)) {
+        return eloWaitAck(fd);
     } else {
         return 0;
     }
@@ -339,7 +339,7 @@ eloSendControl (unsigned char *control, int fd)
 /*	eloInitController
 */
 int
-eloInitController (int fd)
+eloInitController(int fd)
 {
     unsigned char req[ELO_PACKET_SIZE];
     unsigned char reply[ELO_PACKET_SIZE];
@@ -349,85 +349,84 @@ eloInitController (int fd)
     struct termios mouse_termios;
 
     /* try to read the calibration values */
-    buffer = SDL_getenv ("SDL_ELO_MIN_X");
+    buffer = SDL_getenv("SDL_ELO_MIN_X");
     if (buffer) {
-        ELO_MIN_X = SDL_atoi (buffer);
+        ELO_MIN_X = SDL_atoi(buffer);
     }
-    buffer = SDL_getenv ("SDL_ELO_MAX_X");
+    buffer = SDL_getenv("SDL_ELO_MAX_X");
     if (buffer) {
-        ELO_MAX_X = SDL_atoi (buffer);
+        ELO_MAX_X = SDL_atoi(buffer);
     }
-    buffer = SDL_getenv ("SDL_ELO_MIN_Y");
+    buffer = SDL_getenv("SDL_ELO_MIN_Y");
     if (buffer) {
-        ELO_MIN_Y = SDL_atoi (buffer);
+        ELO_MIN_Y = SDL_atoi(buffer);
     }
-    buffer = SDL_getenv ("SDL_ELO_MAX_Y");
+    buffer = SDL_getenv("SDL_ELO_MAX_Y");
     if (buffer) {
-        ELO_MAX_Y = SDL_atoi (buffer);
+        ELO_MAX_Y = SDL_atoi(buffer);
     }
 #ifdef DEBUG_MOUSE
-    fprintf (stderr,
-             "ELO calibration values:\nmin_x: %i\nmax_x: %i\nmin_y: %i\nmax_y: %i\n",
-             ELO_MIN_X, ELO_MAX_X, ELO_MIN_Y, ELO_MAX_Y);
+    fprintf(stderr,
+            "ELO calibration values:\nmin_x: %i\nmax_x: %i\nmin_y: %i\nmax_y: %i\n",
+            ELO_MIN_X, ELO_MAX_X, ELO_MIN_Y, ELO_MAX_Y);
 #endif
 
     /* set comm params */
-    SDL_memset (&mouse_termios, 0, sizeof (mouse_termios));
+    SDL_memset(&mouse_termios, 0, sizeof(mouse_termios));
     mouse_termios.c_cflag = B9600 | CS8 | CREAD | CLOCAL;
     mouse_termios.c_cc[VMIN] = 1;
-    result = tcsetattr (fd, TCSANOW, &mouse_termios);
+    result = tcsetattr(fd, TCSANOW, &mouse_termios);
 
     if (result < 0) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "Unable to configure Elographics touchscreen port\n");
+        fprintf(stderr, "Unable to configure Elographics touchscreen port\n");
 #endif
         return 0;
     }
 
-    SDL_memset (req, 0, ELO_PACKET_SIZE);
-    req[1] = tolower (ELO_PARAMETER);
-    if (!eloSendQuery (req, reply, fd)) {
+    SDL_memset(req, 0, ELO_PACKET_SIZE);
+    req[1] = tolower(ELO_PARAMETER);
+    if (!eloSendQuery(req, reply, fd)) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "Not at the specified rate or model 2310, will continue\n");
+        fprintf(stderr,
+                "Not at the specified rate or model 2310, will continue\n");
 #endif
     }
 
-    SDL_memset (req, 0, ELO_PACKET_SIZE);
-    req[1] = tolower (ELO_ID);
-    if (eloSendQuery (req, reply, fd)) {
+    SDL_memset(req, 0, ELO_PACKET_SIZE);
+    req[1] = tolower(ELO_ID);
+    if (eloSendQuery(req, reply, fd)) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr, "Ok, controller configured!\n");
+        fprintf(stderr, "Ok, controller configured!\n");
 #endif
     } else {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "Unable to ask Elographics touchscreen identification\n");
+        fprintf(stderr,
+                "Unable to ask Elographics touchscreen identification\n");
 #endif
         return 0;
     }
 
-    SDL_memset (req, 0, ELO_PACKET_SIZE);
+    SDL_memset(req, 0, ELO_PACKET_SIZE);
     req[1] = ELO_MODE;
     req[3] = ELO_TOUCH_MODE | ELO_STREAM_MODE | ELO_UNTOUCH_MODE;
     req[4] = ELO_TRACKING_MODE;
-    if (!eloSendControl (req, fd)) {
+    if (!eloSendControl(req, fd)) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "Unable to change Elographics touchscreen operating mode\n");
+        fprintf(stderr,
+                "Unable to change Elographics touchscreen operating mode\n");
 #endif
         return 0;
     }
 
-    SDL_memset (req, 0, ELO_PACKET_SIZE);
+    SDL_memset(req, 0, ELO_PACKET_SIZE);
     req[1] = ELO_REPORT;
     req[2] = ELO_UNTOUCH_DELAY;
     req[3] = ELO_REPORT_DELAY;
-    if (!eloSendControl (req, fd)) {
+    if (!eloSendControl(req, fd)) {
 #ifdef DEBUG_MOUSE
-        fprintf (stderr,
-                 "Unable to change Elographics touchscreen reports timings\n");
+        fprintf(stderr,
+                "Unable to change Elographics touchscreen reports timings\n");
 #endif
         return 0;
     }
@@ -436,27 +435,27 @@ eloInitController (int fd)
 }
 
 int
-eloReadPosition (_THIS, int fd, int *x, int *y, int *button_state, int *realx,
-                 int *realy)
+eloReadPosition(_THIS, int fd, int *x, int *y, int *button_state, int *realx,
+                int *realy)
 {
     unsigned char buffer[ELO_PACKET_SIZE];
     int pointer = 0;
     int checksum = ELO_INIT_CHECKSUM;
 
     while (pointer < ELO_PACKET_SIZE) {
-        if (eloGetPacket (buffer, &pointer, &checksum, fd)) {
+        if (eloGetPacket(buffer, &pointer, &checksum, fd)) {
             break;
         }
     }
 
-    if (!eloParsePacket (buffer, realx, realy, button_state)) {
+    if (!eloParsePacket(buffer, realx, realy, button_state)) {
         return 0;
     }
 
     *x = *realx;
     *y = *realy;
 
-    eloConvertXY (this, x, y);
+    eloConvertXY(this, x, y);
 
     return 1;
 }

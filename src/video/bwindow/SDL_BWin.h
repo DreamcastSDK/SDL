@@ -46,10 +46,10 @@ extern "C"
 class SDL_BWin:public BDirectWindow
 {
   public:
-    SDL_BWin (BRect bounds):BDirectWindow (bounds, "Untitled",
-                                           B_TITLED_WINDOW, 0)
+    SDL_BWin(BRect bounds):BDirectWindow(bounds, "Untitled",
+                                         B_TITLED_WINDOW, 0)
     {
-        InitKeyboard ();
+        InitKeyboard();
         last_buttons = 0;
 
         the_view = NULL;
@@ -57,24 +57,24 @@ class SDL_BWin:public BDirectWindow
         SDL_GLView = NULL;
 #endif
         SDL_View = NULL;
-        Unlock ();
+        Unlock();
         shown = false;
         inhibit_resize = false;
     }
 
-    virtual ~ SDL_BWin ()
+    virtual ~ SDL_BWin()
     {
-        Lock ();
+        Lock();
         if (the_view) {
 #if SDL_VIDEO_OPENGL
             if (the_view == SDL_GLView) {
-                SDL_GLView->UnlockGL ();
+                SDL_GLView->UnlockGL();
             }
 #endif
-            RemoveChild (the_view);
+            RemoveChild(the_view);
             the_view = NULL;
         }
-        Unlock ();
+        Unlock();
 #if SDL_VIDEO_OPENGL
         if (SDL_GLView) {
             delete SDL_GLView;
@@ -85,9 +85,9 @@ class SDL_BWin:public BDirectWindow
         }
     }
 
-    virtual void InitKeyboard (void)
+    virtual void InitKeyboard(void)
     {
-        for (uint i = 0; i < SDL_TABLESIZE (keymap); ++i)
+        for (uint i = 0; i < SDL_TABLESIZE(keymap); ++i)
             keymap[i] = SDLK_UNKNOWN;
 
         keymap[0x01] = SDLK_ESCAPE;
@@ -200,88 +200,88 @@ class SDL_BWin:public BDirectWindow
     }
 
     /* Override the Show() method so we can tell when we've been shown */
-    virtual void Show (void)
+    virtual void Show(void)
     {
-        BWindow::Show ();
+        BWindow::Show();
         shown = true;
     }
-    virtual bool Shown (void)
+    virtual bool Shown(void)
     {
         return (shown);
     }
     /* If called, the next resize event will not be forwarded to SDL. */
-    virtual void InhibitResize (void)
+    virtual void InhibitResize(void)
     {
         inhibit_resize = true;
     }
     /* Handle resizing of the window */
-    virtual void FrameResized (float width, float height)
+    virtual void FrameResized(float width, float height)
     {
         if (inhibit_resize)
             inhibit_resize = false;
         else
-            SDL_PrivateResize ((int) width, (int) height);
+            SDL_PrivateResize((int) width, (int) height);
     }
-    virtual int CreateView (Uint32 flags, Uint32 gl_flags)
+    virtual int CreateView(Uint32 flags, Uint32 gl_flags)
     {
         int retval;
 
         retval = 0;
-        Lock ();
+        Lock();
         if (flags & SDL_INTERNALOPENGL) {
 #if SDL_VIDEO_OPENGL
             if (SDL_GLView == NULL) {
-                SDL_GLView = new BGLView (Bounds (), "SDL GLView",
-                                          B_FOLLOW_ALL_SIDES,
-                                          (B_WILL_DRAW | B_FRAME_EVENTS),
-                                          gl_flags);
+                SDL_GLView = new BGLView(Bounds(), "SDL GLView",
+                                         B_FOLLOW_ALL_SIDES,
+                                         (B_WILL_DRAW | B_FRAME_EVENTS),
+                                         gl_flags);
             }
             if (the_view != SDL_GLView) {
                 if (the_view) {
-                    RemoveChild (the_view);
+                    RemoveChild(the_view);
                 }
-                AddChild (SDL_GLView);
-                SDL_GLView->LockGL ();
+                AddChild(SDL_GLView);
+                SDL_GLView->LockGL();
                 the_view = SDL_GLView;
             }
 #else
-            SDL_SetError ("OpenGL support not enabled");
+            SDL_SetError("OpenGL support not enabled");
             retval = -1;
 #endif
         } else {
             if (SDL_View == NULL) {
-                SDL_View = new SDL_BView (Bounds ());
+                SDL_View = new SDL_BView(Bounds());
             }
             if (the_view != SDL_View) {
                 if (the_view) {
 #if SDL_VIDEO_OPENGL
                     if (the_view == SDL_GLView) {
-                        SDL_GLView->UnlockGL ();
+                        SDL_GLView->UnlockGL();
                     }
 #endif
-                    RemoveChild (the_view);
+                    RemoveChild(the_view);
                 }
-                AddChild (SDL_View);
+                AddChild(SDL_View);
                 the_view = SDL_View;
             }
         }
-        Unlock ();
+        Unlock();
         return (retval);
     }
-    virtual void SetBitmap (BBitmap * bitmap)
+    virtual void SetBitmap(BBitmap * bitmap)
     {
-        SDL_View->SetBitmap (bitmap);
+        SDL_View->SetBitmap(bitmap);
     }
-    virtual void SetXYOffset (int x, int y)
+    virtual void SetXYOffset(int x, int y)
     {
 #if SDL_VIDEO_OPENGL
         if (the_view == SDL_GLView) {
             return;
         }
 #endif
-        SDL_View->SetXYOffset (x, y);
+        SDL_View->SetXYOffset(x, y);
     }
-    virtual void GetXYOffset (int &x, int &y)
+    virtual void GetXYOffset(int &x, int &y)
     {
 #if SDL_VIDEO_OPENGL
         if (the_view == SDL_GLView) {
@@ -290,49 +290,49 @@ class SDL_BWin:public BDirectWindow
             return;
         }
 #endif
-        SDL_View->GetXYOffset (x, y);
+        SDL_View->GetXYOffset(x, y);
     }
-    virtual bool BeginDraw (void)
+    virtual bool BeginDraw(void)
     {
-        return (Lock ());
+        return (Lock());
     }
-    virtual void DrawAsync (BRect updateRect)
+    virtual void DrawAsync(BRect updateRect)
     {
-        SDL_View->DrawAsync (updateRect);
+        SDL_View->DrawAsync(updateRect);
     }
-    virtual void EndDraw (void)
+    virtual void EndDraw(void)
     {
-        SDL_View->Sync ();
-        Unlock ();
+        SDL_View->Sync();
+        Unlock();
     }
 #if SDL_VIDEO_OPENGL
-    virtual void SwapBuffers (void)
+    virtual void SwapBuffers(void)
     {
-        SDL_GLView->UnlockGL ();
-        SDL_GLView->LockGL ();
-        SDL_GLView->SwapBuffers ();
+        SDL_GLView->UnlockGL();
+        SDL_GLView->LockGL();
+        SDL_GLView->SwapBuffers();
     }
 #endif
-    virtual BView *View (void)
+    virtual BView *View(void)
     {
         return (the_view);
     }
 
     /* Hook functions -- overridden */
-    virtual void Minimize (bool minimize)
+    virtual void Minimize(bool minimize)
     {
         /* This is only called when mimimized, not when restored */
         //SDL_PrivateAppActive(minimize, SDL_APPACTIVE);
-        BWindow::Minimize (minimize);
+        BWindow::Minimize(minimize);
     }
-    virtual void WindowActivated (bool active)
+    virtual void WindowActivated(bool active)
     {
-        SDL_PrivateAppActive (active, SDL_APPINPUTFOCUS);
+        SDL_PrivateAppActive(active, SDL_APPINPUTFOCUS);
     }
-    virtual bool QuitRequested (void)
+    virtual bool QuitRequested(void)
     {
         if (SDL_BeAppActive > 0) {
-            SDL_PrivateQuit ();
+            SDL_PrivateQuit();
             /* We don't ever actually close the window here because
                the application should respond to the quit request,
                or ignore it as desired.
@@ -341,14 +341,14 @@ class SDL_BWin:public BDirectWindow
         }
         return (true);          /* Close the app window */
     }
-    virtual void Quit ()
+    virtual void Quit()
     {
-        if (!IsLocked ())
-            Lock ();
-        BDirectWindow::Quit ();
+        if (!IsLocked())
+            Lock();
+        BDirectWindow::Quit();
     }
 
-    virtual int16 Translate2Unicode (const char *buf)
+    virtual int16 Translate2Unicode(const char *buf)
     {
         int32 state, srclen, dstlen;
         unsigned char destbuf[2];
@@ -356,10 +356,10 @@ class SDL_BWin:public BDirectWindow
 
         if ((uchar) buf[0] > 127) {
             state = 0;
-            srclen = SDL_strlen (buf);
-            dstlen = sizeof (destbuf);
-            convert_from_utf8 (B_UNICODE_CONVERSION, buf, &srclen,
-                               (char *) destbuf, &dstlen, &state);
+            srclen = SDL_strlen(buf);
+            dstlen = sizeof(destbuf);
+            convert_from_utf8(B_UNICODE_CONVERSION, buf, &srclen,
+                              (char *) destbuf, &dstlen, &state);
             unicode = destbuf[0];
             unicode <<= 8;
             unicode |= destbuf[1];
@@ -369,15 +369,15 @@ class SDL_BWin:public BDirectWindow
         /* For some reason function keys map to control characters */
 # define CTRL(X)	((X)-'@')
         switch (unicode) {
-        case CTRL ('A'):
-        case CTRL ('B'):
-        case CTRL ('C'):
-        case CTRL ('D'):
-        case CTRL ('E'):
-        case CTRL ('K'):
-        case CTRL ('L'):
-        case CTRL ('P'):
-            if (!(SDL_GetModState () & KMOD_CTRL))
+        case CTRL('A'):
+        case CTRL('B'):
+        case CTRL('C'):
+        case CTRL('D'):
+        case CTRL('E'):
+        case CTRL('K'):
+        case CTRL('L'):
+        case CTRL('P'):
+            if (!(SDL_GetModState() & KMOD_CTRL))
                 unicode = 0;
             break;
             /* Keyboard input maps newline to carriage return */
@@ -391,30 +391,30 @@ class SDL_BWin:public BDirectWindow
         return unicode;
     }
 
-    virtual void DispatchMessage (BMessage * msg, BHandler * target)
+    virtual void DispatchMessage(BMessage * msg, BHandler * target)
     {
         switch (msg->what) {
         case B_MOUSE_MOVED:
             {
                 BPoint where;
                 int32 transit;
-                if (msg->FindPoint ("where", &where) == B_OK
-                    && msg->FindInt32 ("be:transit", &transit) == B_OK) {
+                if (msg->FindPoint("where", &where) == B_OK
+                    && msg->FindInt32("be:transit", &transit) == B_OK) {
                     if (transit == B_EXITED_VIEW) {
-                        if (SDL_GetAppState () & SDL_APPMOUSEFOCUS) {
-                            SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
-                            be_app->SetCursor (B_HAND_CURSOR);
+                        if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) {
+                            SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
+                            be_app->SetCursor(B_HAND_CURSOR);
                         }
                     } else {
                         int x, y;
-                        if (!(SDL_GetAppState () & SDL_APPMOUSEFOCUS)) {
-                            SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
-                            SDL_SetCursor (NULL);
+                        if (!(SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
+                            SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
+                            SDL_SetCursor(NULL);
                         }
-                        GetXYOffset (x, y);
+                        GetXYOffset(x, y);
                         x = (int) where.x - x;
                         y = (int) where.y - y;
-                        SDL_PrivateMouseMotion (0, 0, x, y);
+                        SDL_PrivateMouseMotion(0, 0, x, y);
                     }
                 }
                 break;
@@ -426,7 +426,7 @@ class SDL_BWin:public BDirectWindow
                    button, each next is not send while last one is holded */
                 int32 buttons;
                 int sdl_buttons = 0;
-                if (msg->FindInt32 ("buttons", &buttons) == B_OK) {
+                if (msg->FindInt32("buttons", &buttons) == B_OK) {
                     /* Add any mouse button events */
                     if (buttons & B_PRIMARY_MOUSE_BUTTON) {
                         sdl_buttons |= SDL_BUTTON_LEFT;
@@ -437,7 +437,7 @@ class SDL_BWin:public BDirectWindow
                     if (buttons & B_TERTIARY_MOUSE_BUTTON) {
                         sdl_buttons |= SDL_BUTTON_MIDDLE;
                     }
-                    SDL_PrivateMouseButton (SDL_PRESSED, sdl_buttons, 0, 0);
+                    SDL_PrivateMouseButton(SDL_PRESSED, sdl_buttons, 0, 0);
 
                     last_buttons = buttons;
                 }
@@ -457,7 +457,7 @@ class SDL_BWin:public BDirectWindow
                    because of how drivers are written?, not BeOS itself. */
                 int32 buttons;
                 int sdl_buttons = 0;
-                if (msg->FindInt32 ("buttons", &buttons) == B_OK) {
+                if (msg->FindInt32("buttons", &buttons) == B_OK) {
                     /* Add any mouse button events */
                     if ((buttons ^ B_PRIMARY_MOUSE_BUTTON) & last_buttons) {
                         sdl_buttons |= SDL_BUTTON_LEFT;
@@ -468,7 +468,7 @@ class SDL_BWin:public BDirectWindow
                     if ((buttons ^ B_TERTIARY_MOUSE_BUTTON) & last_buttons) {
                         sdl_buttons |= SDL_BUTTON_MIDDLE;
                     }
-                    SDL_PrivateMouseButton (SDL_RELEASED, sdl_buttons, 0, 0);
+                    SDL_PrivateMouseButton(SDL_RELEASED, sdl_buttons, 0, 0);
 
                     last_buttons = buttons;
                 }
@@ -479,18 +479,18 @@ class SDL_BWin:public BDirectWindow
             {
                 float x, y;
                 x = y = 0;
-                if (msg->FindFloat ("be:wheel_delta_x", &x) == B_OK
-                    && msg->FindFloat ("be:wheel_delta_y", &y) == B_OK) {
+                if (msg->FindFloat("be:wheel_delta_x", &x) == B_OK
+                    && msg->FindFloat("be:wheel_delta_y", &y) == B_OK) {
                     if (x < 0 || y < 0) {
-                        SDL_PrivateMouseButton (SDL_PRESSED,
-                                                SDL_BUTTON_WHEELDOWN, 0, 0);
-                        SDL_PrivateMouseButton (SDL_RELEASED,
-                                                SDL_BUTTON_WHEELDOWN, 0, 0);
+                        SDL_PrivateMouseButton(SDL_PRESSED,
+                                               SDL_BUTTON_WHEELDOWN, 0, 0);
+                        SDL_PrivateMouseButton(SDL_RELEASED,
+                                               SDL_BUTTON_WHEELDOWN, 0, 0);
                     } else if (x > 0 || y > 0) {
-                        SDL_PrivateMouseButton (SDL_PRESSED,
-                                                SDL_BUTTON_WHEELUP, 0, 0);
-                        SDL_PrivateMouseButton (SDL_RELEASED,
-                                                SDL_BUTTON_WHEELUP, 0, 0);
+                        SDL_PrivateMouseButton(SDL_PRESSED,
+                                               SDL_BUTTON_WHEELUP, 0, 0);
+                        SDL_PrivateMouseButton(SDL_RELEASED,
+                                               SDL_BUTTON_WHEELUP, 0, 0);
                     }
                 }
                 break;
@@ -503,12 +503,12 @@ class SDL_BWin:public BDirectWindow
                 int32 modifiers;
                 int32 key_repeat;
                 /* Workaround for SDL message queue being filled too fast because of BeOS own key-repeat mechanism */
-                if (msg->FindInt32 ("be:key_repeat", &key_repeat) == B_OK
+                if (msg->FindInt32("be:key_repeat", &key_repeat) == B_OK
                     && key_repeat > 0)
                     break;
 
-                if (msg->FindInt32 ("key", &key) == B_OK
-                    && msg->FindInt32 ("modifiers", &modifiers) == B_OK) {
+                if (msg->FindInt32("key", &key) == B_OK
+                    && msg->FindInt32("modifiers", &modifiers) == B_OK) {
                     SDL_keysym keysym;
                     keysym.scancode = key;
                     if ((key > 0) && (key < 128)) {
@@ -523,15 +523,15 @@ class SDL_BWin:public BDirectWindow
                     keysym.unicode = 0;
                     if (SDL_TranslateUNICODE) {
                         const char *bytes;
-                        if (msg->FindString ("bytes", &bytes) == B_OK) {
+                        if (msg->FindString("bytes", &bytes) == B_OK) {
                             /*      FIX THIS?
                                this cares only about first "letter",
                                so if someone maps some key to print
                                "BeOS rulez!" only "B" will be used. */
-                            keysym.unicode = Translate2Unicode (bytes);
+                            keysym.unicode = Translate2Unicode(bytes);
                         }
                     }
-                    SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+                    SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
                 }
                 break;
             }
@@ -541,8 +541,8 @@ class SDL_BWin:public BDirectWindow
             {
                 int32 key;
                 int32 modifiers;
-                if (msg->FindInt32 ("key", &key) == B_OK
-                    && msg->FindInt32 ("modifiers", &modifiers) == B_OK) {
+                if (msg->FindInt32("key", &key) == B_OK
+                    && msg->FindInt32("modifiers", &modifiers) == B_OK) {
                     SDL_keysym keysym;
                     keysym.scancode = key;
                     if ((key > 0) && (key < 128)) {
@@ -554,11 +554,11 @@ class SDL_BWin:public BDirectWindow
                     keysym.unicode = 0;
                     if (SDL_TranslateUNICODE) {
                         const char *bytes;
-                        if (msg->FindString ("bytes", &bytes) == B_OK) {
-                            keysym.unicode = Translate2Unicode (bytes);
+                        if (msg->FindString("bytes", &bytes) == B_OK) {
+                            keysym.unicode = Translate2Unicode(bytes);
                         }
                     }
-                    SDL_PrivateKeyboard (SDL_RELEASED, &keysym);
+                    SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
                 }
                 break;
             }
@@ -572,7 +572,7 @@ class SDL_BWin:public BDirectWindow
             //BDirectWindow::DispatchMessage(msg, target);
             break;
         }
-        BDirectWindow::DispatchMessage (msg, target);
+        BDirectWindow::DispatchMessage(msg, target);
     }
 
   private:

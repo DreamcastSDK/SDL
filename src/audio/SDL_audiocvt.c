@@ -28,13 +28,13 @@
 
 /* Effectively mix right and left channels into a single channel */
 void SDLCALL
-SDL_ConvertMono (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertMono(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Sint32 sample;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting to mono\n");
+    fprintf(stderr, "Converting to mono\n");
 #endif
     switch (format & 0x8018) {
 
@@ -172,13 +172,13 @@ SDL_ConvertMono (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Discard top 4 channels */
 void SDLCALL
-SDL_ConvertStrip (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertStrip(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Sint32 lsample, rsample;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting down to stereo\n");
+    fprintf(stderr, "Converting down to stereo\n");
 #endif
     switch (format & 0x8018) {
 
@@ -293,13 +293,13 @@ SDL_ConvertStrip (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Discard top 2 channels of 6 */
 void SDLCALL
-SDL_ConvertStrip_2 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertStrip_2(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Sint32 lsample, rsample;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting 6 down to quad\n");
+    fprintf(stderr, "Converting 6 down to quad\n");
 #endif
     switch (format & 0x8018) {
 
@@ -413,12 +413,12 @@ SDL_ConvertStrip_2 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Duplicate a mono channel to both stereo channels */
 void SDLCALL
-SDL_ConvertStereo (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertStereo(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting to stereo\n");
+    fprintf(stderr, "Converting to stereo\n");
 #endif
     if ((format & 0xFF) == 16) {
         Uint16 *src, *dst;
@@ -452,12 +452,12 @@ SDL_ConvertStereo (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Duplicate a stereo channel to a pseudo-5.1 stream */
 void SDLCALL
-SDL_ConvertSurround (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertSurround(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting stereo to surround\n");
+    fprintf(stderr, "Converting stereo to surround\n");
 #endif
     switch (format & 0x8018) {
 
@@ -634,12 +634,12 @@ SDL_ConvertSurround (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Duplicate a stereo channel to a pseudo-4.0 stream */
 void SDLCALL
-SDL_ConvertSurround_4 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertSurround_4(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting stereo to quad\n");
+    fprintf(stderr, "Converting stereo to quad\n");
 #endif
     switch (format & 0x8018) {
 
@@ -792,13 +792,13 @@ SDL_ConvertSurround_4 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert 8-bit to 16-bit - LSB */
 void SDLCALL
-SDL_Convert16LSB (SDL_AudioCVT * cvt, Uint16 format)
+SDL_Convert16LSB(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting to 16-bit LSB\n");
+    fprintf(stderr, "Converting to 16-bit LSB\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -817,13 +817,13 @@ SDL_Convert16LSB (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert 8-bit to 16-bit - MSB */
 void SDLCALL
-SDL_Convert16MSB (SDL_AudioCVT * cvt, Uint16 format)
+SDL_Convert16MSB(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting to 16-bit MSB\n");
+    fprintf(stderr, "Converting to 16-bit MSB\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -842,13 +842,13 @@ SDL_Convert16MSB (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert 16-bit to 8-bit */
 void SDLCALL
-SDL_Convert8 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_Convert8(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting to 8-bit\n");
+    fprintf(stderr, "Converting to 8-bit\n");
 #endif
     src = cvt->buf;
     dst = cvt->buf;
@@ -869,13 +869,13 @@ SDL_Convert8 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Toggle signed/unsigned */
 void SDLCALL
-SDL_ConvertSign (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertSign(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *data;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio signedness\n");
+    fprintf(stderr, "Converting audio signedness\n");
 #endif
     data = cvt->buf;
     if ((format & 0xFF) == 16) {
@@ -899,13 +899,13 @@ SDL_ConvertSign (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Toggle endianness */
 void SDLCALL
-SDL_ConvertEndian (SDL_AudioCVT * cvt, Uint16 format)
+SDL_ConvertEndian(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *data, tmp;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio endianness\n");
+    fprintf(stderr, "Converting audio endianness\n");
 #endif
     data = cvt->buf;
     for (i = cvt->len_cvt / 2; i; --i) {
@@ -922,13 +922,13 @@ SDL_ConvertEndian (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate up by multiple of 2 */
 void SDLCALL
-SDL_RateMUL2 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateMUL2(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate * 2\n");
+    fprintf(stderr, "Converting audio rate * 2\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -961,13 +961,13 @@ SDL_RateMUL2 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate up by multiple of 2, for stereo */
 void SDLCALL
-SDL_RateMUL2_c2 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateMUL2_c2(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate * 2\n");
+    fprintf(stderr, "Converting audio rate * 2\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -1005,13 +1005,13 @@ SDL_RateMUL2_c2 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate up by multiple of 2, for quad */
 void SDLCALL
-SDL_RateMUL2_c4 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateMUL2_c4(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate * 2\n");
+    fprintf(stderr, "Converting audio rate * 2\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -1062,13 +1062,13 @@ SDL_RateMUL2_c4 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate up by multiple of 2, for 5.1 */
 void SDLCALL
-SDL_RateMUL2_c6 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateMUL2_c6(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate * 2\n");
+    fprintf(stderr, "Converting audio rate * 2\n");
 #endif
     src = cvt->buf + cvt->len_cvt;
     dst = cvt->buf + cvt->len_cvt * 2;
@@ -1130,13 +1130,13 @@ SDL_RateMUL2_c6 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate down by multiple of 2 */
 void SDLCALL
-SDL_RateDIV2 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateDIV2(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate / 2\n");
+    fprintf(stderr, "Converting audio rate / 2\n");
 #endif
     src = cvt->buf;
     dst = cvt->buf;
@@ -1166,13 +1166,13 @@ SDL_RateDIV2 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate down by multiple of 2, for stereo */
 void SDLCALL
-SDL_RateDIV2_c2 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateDIV2_c2(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate / 2\n");
+    fprintf(stderr, "Converting audio rate / 2\n");
 #endif
     src = cvt->buf;
     dst = cvt->buf;
@@ -1205,13 +1205,13 @@ SDL_RateDIV2_c2 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate down by multiple of 2, for quad */
 void SDLCALL
-SDL_RateDIV2_c4 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateDIV2_c4(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate / 2\n");
+    fprintf(stderr, "Converting audio rate / 2\n");
 #endif
     src = cvt->buf;
     dst = cvt->buf;
@@ -1249,13 +1249,13 @@ SDL_RateDIV2_c4 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Convert rate down by multiple of 2, for 5.1 */
 void SDLCALL
-SDL_RateDIV2_c6 (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateDIV2_c6(SDL_AudioCVT * cvt, Uint16 format)
 {
     int i;
     Uint8 *src, *dst;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate / 2\n");
+    fprintf(stderr, "Converting audio rate / 2\n");
 #endif
     src = cvt->buf;
     dst = cvt->buf;
@@ -1299,13 +1299,13 @@ SDL_RateDIV2_c6 (SDL_AudioCVT * cvt, Uint16 format)
 
 /* Very slow rate conversion routine */
 void SDLCALL
-SDL_RateSLOW (SDL_AudioCVT * cvt, Uint16 format)
+SDL_RateSLOW(SDL_AudioCVT * cvt, Uint16 format)
 {
     double ipos;
     int i, clen;
 
 #ifdef DEBUG_CONVERT
-    fprintf (stderr, "Converting audio rate * %4.4f\n", 1.0 / cvt->rate_incr);
+    fprintf(stderr, "Converting audio rate * %4.4f\n", 1.0 / cvt->rate_incr);
 #endif
     clen = (int) ((double) cvt->len_cvt / cvt->rate_incr);
     if (cvt->rate_incr > 1.0) {
@@ -1378,11 +1378,11 @@ SDL_RateSLOW (SDL_AudioCVT * cvt, Uint16 format)
 }
 
 int
-SDL_ConvertAudio (SDL_AudioCVT * cvt)
+SDL_ConvertAudio(SDL_AudioCVT * cvt)
 {
     /* Make sure there's data to convert */
     if (cvt->buf == NULL) {
-        SDL_SetError ("No buffer allocated for conversion");
+        SDL_SetError("No buffer allocated for conversion");
         return (-1);
     }
     /* Return okay if no conversion is necessary */
@@ -1403,9 +1403,9 @@ SDL_ConvertAudio (SDL_AudioCVT * cvt)
 */
 
 int
-SDL_BuildAudioCVT (SDL_AudioCVT * cvt,
-                   Uint16 src_format, Uint8 src_channels, int src_rate,
-                   Uint16 dst_format, Uint8 dst_channels, int dst_rate)
+SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
+                  Uint16 src_format, Uint8 src_channels, int src_rate,
+                  Uint16 dst_format, Uint8 dst_channels, int dst_rate)
 {
 /*printf("Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
 		src_format, dst_format, src_channels, dst_channels, src_rate, dst_rate);*/

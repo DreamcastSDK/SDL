@@ -90,7 +90,7 @@ static const Uint8 mix8[] = {
 #define ADJUST_VOLUME_U8(s, v)	(s = (((s-128)*v)/SDL_MIX_MAXVOLUME)+128)
 
 void
-SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
+SDL_MixAudio(Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
 {
     Uint16 format;
 
@@ -113,15 +113,15 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
     case AUDIO_U8:
         {
 #if defined(__GNUC__) && defined(__M68000__) && defined(SDL_ASSEMBLY_ROUTINES)
-            SDL_MixAudio_m68k_U8 ((char *) dst, (char *) src,
-                                  (unsigned long) len, (long) volume,
-                                  (char *) mix8);
+            SDL_MixAudio_m68k_U8((char *) dst, (char *) src,
+                                 (unsigned long) len, (long) volume,
+                                 (char *) mix8);
 #else
             Uint8 src_sample;
 
             while (len--) {
                 src_sample = *src;
-                ADJUST_VOLUME_U8 (src_sample, volume);
+                ADJUST_VOLUME_U8(src_sample, volume);
                 *dst = mix8[*dst + src_sample];
                 ++dst;
                 ++src;
@@ -133,19 +133,19 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
     case AUDIO_S8:
         {
 #if defined(__GNUC__) && defined(__i386__) && defined(SDL_ASSEMBLY_ROUTINES)
-            if (SDL_HasMMX ()) {
-                SDL_MixAudio_MMX_S8 ((char *) dst, (char *) src,
-                                     (unsigned int) len, (int) volume);
+            if (SDL_HasMMX()) {
+                SDL_MixAudio_MMX_S8((char *) dst, (char *) src,
+                                    (unsigned int) len, (int) volume);
             } else
 #elif ((defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)) && defined(SDL_ASSEMBLY_ROUTINES)
-            if (SDL_HasMMX ()) {
-                SDL_MixAudio_MMX_S8_VC ((char *) dst, (char *) src,
-                                        (unsigned int) len, (int) volume);
+            if (SDL_HasMMX()) {
+                SDL_MixAudio_MMX_S8_VC((char *) dst, (char *) src,
+                                       (unsigned int) len, (int) volume);
             } else
 #endif
 #if defined(__GNUC__) && defined(__M68000__) && defined(SDL_ASSEMBLY_ROUTINES)
-                SDL_MixAudio_m68k_S8 ((char *) dst, (char *) src,
-                                      (unsigned long) len, (long) volume);
+                SDL_MixAudio_m68k_S8((char *) dst, (char *) src,
+                                     (unsigned long) len, (long) volume);
 #else
             {
                 Sint8 *dst8, *src8;
@@ -158,7 +158,7 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
                 dst8 = (Sint8 *) dst;
                 while (len--) {
                     src_sample = *src8;
-                    ADJUST_VOLUME (src_sample, volume);
+                    ADJUST_VOLUME(src_sample, volume);
                     dst_sample = *dst8 + src_sample;
                     if (dst_sample > max_audioval) {
                         *dst8 = max_audioval;
@@ -178,19 +178,19 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
     case AUDIO_S16LSB:
         {
 #if defined(__GNUC__) && defined(__i386__) && defined(SDL_ASSEMBLY_ROUTINES)
-            if (SDL_HasMMX ()) {
-                SDL_MixAudio_MMX_S16 ((char *) dst, (char *) src,
-                                      (unsigned int) len, (int) volume);
+            if (SDL_HasMMX()) {
+                SDL_MixAudio_MMX_S16((char *) dst, (char *) src,
+                                     (unsigned int) len, (int) volume);
             } else
 #elif ((defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)) && defined(SDL_ASSEMBLY_ROUTINES)
-            if (SDL_HasMMX ()) {
-                SDL_MixAudio_MMX_S16_VC ((char *) dst, (char *) src,
-                                         (unsigned int) len, (int) volume);
+            if (SDL_HasMMX()) {
+                SDL_MixAudio_MMX_S16_VC((char *) dst, (char *) src,
+                                        (unsigned int) len, (int) volume);
             } else
 #endif
 #if defined(__GNUC__) && defined(__M68000__) && defined(SDL_ASSEMBLY_ROUTINES)
-                SDL_MixAudio_m68k_S16LSB ((short *) dst, (short *) src,
-                                          (unsigned long) len, (long) volume);
+                SDL_MixAudio_m68k_S16LSB((short *) dst, (short *) src,
+                                         (unsigned long) len, (long) volume);
 #else
             {
                 Sint16 src1, src2;
@@ -201,7 +201,7 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
                 len /= 2;
                 while (len--) {
                     src1 = ((src[1]) << 8 | src[0]);
-                    ADJUST_VOLUME (src1, volume);
+                    ADJUST_VOLUME(src1, volume);
                     src2 = ((dst[1]) << 8 | dst[0]);
                     src += 2;
                     dst_sample = src1 + src2;
@@ -223,8 +223,8 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
     case AUDIO_S16MSB:
         {
 #if defined(__GNUC__) && defined(__M68000__) && defined(SDL_ASSEMBLY_ROUTINES)
-            SDL_MixAudio_m68k_S16MSB ((short *) dst, (short *) src,
-                                      (unsigned long) len, (long) volume);
+            SDL_MixAudio_m68k_S16MSB((short *) dst, (short *) src,
+                                     (unsigned long) len, (long) volume);
 #else
             Sint16 src1, src2;
             int dst_sample;
@@ -234,7 +234,7 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
             len /= 2;
             while (len--) {
                 src1 = ((src[0]) << 8 | src[1]);
-                ADJUST_VOLUME (src1, volume);
+                ADJUST_VOLUME(src1, volume);
                 src2 = ((dst[0]) << 8 | dst[1]);
                 src += 2;
                 dst_sample = src1 + src2;
@@ -253,7 +253,7 @@ SDL_MixAudio (Uint8 * dst, const Uint8 * src, Uint32 len, int volume)
         break;
 
     default:                   /* If this happens... FIXME! */
-        SDL_SetError ("SDL_MixAudio(): unknown audio format");
+        SDL_SetError("SDL_MixAudio(): unknown audio format");
         return;
     }
 }

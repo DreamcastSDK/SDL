@@ -40,49 +40,49 @@
 
 /* The translation tables from a DirectFB keycode to a SDL keysym */
 static SDLKey keymap[256];
-static SDL_keysym *DirectFB_TranslateKey (DFBInputEvent * ev,
-                                          SDL_keysym * keysym);
-static int DirectFB_TranslateButton (DFBInputEvent * ev);
+static SDL_keysym *DirectFB_TranslateKey(DFBInputEvent * ev,
+                                         SDL_keysym * keysym);
+static int DirectFB_TranslateButton(DFBInputEvent * ev);
 
 static int posted = 0;
 
 
 void
-DirectFB_PumpEvents (_THIS)
+DirectFB_PumpEvents(_THIS)
 {
     DFBInputEvent evt;
 
-    while (HIDDEN->eventbuffer->GetEvent (HIDDEN->eventbuffer,
-                                          DFB_EVENT (&evt)) == DFB_OK) {
+    while (HIDDEN->eventbuffer->GetEvent(HIDDEN->eventbuffer,
+                                         DFB_EVENT(&evt)) == DFB_OK) {
         SDL_keysym keysym;
 
         switch (evt.type) {
         case DIET_BUTTONPRESS:
-            posted += SDL_PrivateMouseButton (SDL_PRESSED,
-                                              DirectFB_TranslateButton
-                                              (&evt), 0, 0);
+            posted += SDL_PrivateMouseButton(SDL_PRESSED,
+                                             DirectFB_TranslateButton
+                                             (&evt), 0, 0);
             break;
         case DIET_BUTTONRELEASE:
-            posted += SDL_PrivateMouseButton (SDL_RELEASED,
-                                              DirectFB_TranslateButton
-                                              (&evt), 0, 0);
+            posted += SDL_PrivateMouseButton(SDL_RELEASED,
+                                             DirectFB_TranslateButton
+                                             (&evt), 0, 0);
             break;
         case DIET_KEYPRESS:
             posted +=
-                SDL_PrivateKeyboard (SDL_PRESSED,
-                                     DirectFB_TranslateKey (&evt, &keysym));
+                SDL_PrivateKeyboard(SDL_PRESSED,
+                                    DirectFB_TranslateKey(&evt, &keysym));
             break;
         case DIET_KEYRELEASE:
             posted +=
-                SDL_PrivateKeyboard (SDL_RELEASED,
-                                     DirectFB_TranslateKey (&evt, &keysym));
+                SDL_PrivateKeyboard(SDL_RELEASED,
+                                    DirectFB_TranslateKey(&evt, &keysym));
             break;
         case DIET_AXISMOTION:
             if (evt.flags & DIEF_AXISREL) {
                 if (evt.axis == DIAI_X)
-                    posted += SDL_PrivateMouseMotion (0, 1, evt.axisrel, 0);
+                    posted += SDL_PrivateMouseMotion(0, 1, evt.axisrel, 0);
                 else if (evt.axis == DIAI_Y)
-                    posted += SDL_PrivateMouseMotion (0, 1, 0, evt.axisrel);
+                    posted += SDL_PrivateMouseMotion(0, 1, 0, evt.axisrel);
             }
             break;
         default:
@@ -92,12 +92,12 @@ DirectFB_PumpEvents (_THIS)
 }
 
 void
-DirectFB_InitOSKeymap (_THIS)
+DirectFB_InitOSKeymap(_THIS)
 {
     int i;
 
     /* Initialize the DirectFB key translation table */
-    for (i = 0; i < SDL_arraysize (keymap); ++i)
+    for (i = 0; i < SDL_arraysize(keymap); ++i)
         keymap[i] = SDLK_UNKNOWN;
 
     keymap[DIKI_A - DIKI_UNKNOWN] = SDLK_a;
@@ -186,13 +186,13 @@ DirectFB_InitOSKeymap (_THIS)
 
 
 static SDL_keysym *
-DirectFB_TranslateKey (DFBInputEvent * ev, SDL_keysym * keysym)
+DirectFB_TranslateKey(DFBInputEvent * ev, SDL_keysym * keysym)
 {
     /* Set the keysym information */
     keysym->scancode = ev->key_id;
     keysym->mod = KMOD_NONE;    /* FIXME */
     keysym->unicode =
-        (DFB_KEY_TYPE (ev->key_symbol) == DIKT_UNICODE) ? ev->key_symbol : 0;
+        (DFB_KEY_TYPE(ev->key_symbol) == DIKT_UNICODE) ? ev->key_symbol : 0;
 
     if (ev->key_symbol > 0 && ev->key_symbol < 128)
         keysym->sym = ev->key_symbol;
@@ -203,7 +203,7 @@ DirectFB_TranslateKey (DFBInputEvent * ev, SDL_keysym * keysym)
 }
 
 static int
-DirectFB_TranslateButton (DFBInputEvent * ev)
+DirectFB_TranslateButton(DFBInputEvent * ev)
 {
     switch (ev->button) {
     case DIBI_LEFT:

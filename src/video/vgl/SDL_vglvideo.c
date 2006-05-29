@@ -45,30 +45,30 @@
 
 
 /* Initialization/Query functions */
-static int VGL_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **VGL_ListModes (_THIS, SDL_PixelFormat * format,
-                                 Uint32 flags);
-static SDL_Surface *VGL_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                      int height, int bpp, Uint32 flags);
-static int VGL_SetColors (_THIS, int firstcolor, int ncolors,
-                          SDL_Color * colors);
-static void VGL_VideoQuit (_THIS);
+static int VGL_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **VGL_ListModes(_THIS, SDL_PixelFormat * format,
+                                Uint32 flags);
+static SDL_Surface *VGL_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                     int height, int bpp, Uint32 flags);
+static int VGL_SetColors(_THIS, int firstcolor, int ncolors,
+                         SDL_Color * colors);
+static void VGL_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int VGL_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int VGL_LockHWSurface (_THIS, SDL_Surface * surface);
-static int VGL_FlipHWSurface (_THIS, SDL_Surface * surface);
-static void VGL_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void VGL_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int VGL_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int VGL_LockHWSurface(_THIS, SDL_Surface * surface);
+static int VGL_FlipHWSurface(_THIS, SDL_Surface * surface);
+static void VGL_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void VGL_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* Misc function */
-static VGLMode **VGLListModes (int depth, int mem_model);
-static void VGLWaitRetrace (void);
+static VGLMode **VGLListModes(int depth, int mem_model);
+static void VGLWaitRetrace(void);
 
 /* VGL driver bootstrap functions */
 
 static int
-VGL_Available (void)
+VGL_Available(void)
 {
     /*
      * Check to see if we are root and stdin is a
@@ -83,15 +83,15 @@ VGL_Available (void)
         struct stat sb;
         struct vt_mode dummy;
 
-        if ((fstat (console, &sb) < 0) ||
-            (ioctl (console, VT_GETMODE, &dummy) < 0)) {
+        if ((fstat(console, &sb) < 0) ||
+            (ioctl(console, VT_GETMODE, &dummy) < 0)) {
             console = -1;
         }
     }
-    if (geteuid () != 0 && console == -1)
+    if (geteuid() != 0 && console == -1)
         return 0;
 
-    modes = VGLListModes (8, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
+    modes = VGLListModes(8, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
     hires_available = 0;
     for (i = 0; modes[i] != NULL; i++) {
         if ((modes[i]->ModeInfo.Xsize > 320) &&
@@ -107,32 +107,32 @@ VGL_Available (void)
 }
 
 static void
-VGL_DeleteDevice (SDL_VideoDevice * device)
+VGL_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-VGL_CreateDevice (int devindex)
+VGL_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = VGL_VideoInit;
@@ -171,7 +171,7 @@ VideoBootStrap VGL_bootstrap = {
 };
 
 static int
-VGL_AddMode (_THIS, VGLMode * inmode)
+VGL_AddMode(_THIS, VGLMode * inmode)
 {
     SDL_Rect *mode;
 
@@ -191,9 +191,9 @@ VGL_AddMode (_THIS, VGLMode * inmode)
     }
 
     /* Set up the new video mode rectangle */
-    mode = (SDL_Rect *) SDL_malloc (sizeof *mode);
+    mode = (SDL_Rect *) SDL_malloc(sizeof *mode);
     if (mode == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return -1;
     }
     mode->x = 0;
@@ -204,12 +204,12 @@ VGL_AddMode (_THIS, VGLMode * inmode)
     /* Allocate the new list of modes, and fill in the new mode */
     next_mode = SDL_nummodes[index];
     SDL_modelist[index] = (SDL_Rect **)
-        SDL_realloc (SDL_modelist[index],
-                     (1 + next_mode + 1) * sizeof (SDL_Rect *));
+        SDL_realloc(SDL_modelist[index],
+                    (1 + next_mode + 1) * sizeof(SDL_Rect *));
     if (SDL_modelist[index] == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         SDL_nummodes[index] = 0;
-        SDL_free (mode);
+        SDL_free(mode);
         return -1;
     }
     SDL_modelist[index][next_mode] = mode;
@@ -220,7 +220,7 @@ VGL_AddMode (_THIS, VGLMode * inmode)
 }
 
 static void
-VGL_UpdateVideoInfo (_THIS)
+VGL_UpdateVideoInfo(_THIS)
 {
     this->info.wm_available = 0;
     this->info.hw_available = 1;
@@ -235,7 +235,7 @@ VGL_UpdateVideoInfo (_THIS)
 }
 
 int
-VGL_VideoInit (_THIS, SDL_PixelFormat * vformat)
+VGL_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     int i;
     int total_modes;
@@ -248,20 +248,20 @@ VGL_VideoInit (_THIS, SDL_PixelFormat * vformat)
     }
 
     /* Enable mouse and keyboard support */
-    if (SDL_getenv ("SDL_NO_RAWKBD") == NULL) {
-        if (VGLKeyboardInit (VGL_CODEKEYS) != 0) {
-            SDL_SetError ("Unable to initialize keyboard");
+    if (SDL_getenv("SDL_NO_RAWKBD") == NULL) {
+        if (VGLKeyboardInit(VGL_CODEKEYS) != 0) {
+            SDL_SetError("Unable to initialize keyboard");
             return -1;
         }
     } else {
-        warnx ("Requiest to put keyboard into a raw mode ignored");
+        warnx("Requiest to put keyboard into a raw mode ignored");
     }
-    if (VGL_initkeymaps (STDIN_FILENO) != 0) {
-        SDL_SetError ("Unable to initialize keymap");
+    if (VGL_initkeymaps(STDIN_FILENO) != 0) {
+        SDL_SetError("Unable to initialize keymap");
         return -1;
     }
-    if (VGL_initmouse (STDIN_FILENO) != 0) {
-        SDL_SetError ("Unable to initialize mouse");
+    if (VGL_initmouse(STDIN_FILENO) != 0) {
+        SDL_SetError("Unable to initialize mouse");
         return -1;
     }
 
@@ -279,28 +279,28 @@ VGL_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
     /* Query for the list of available video modes */
     total_modes = 0;
-    modes = VGLListModes (-1, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
+    modes = VGLListModes(-1, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
     for (i = 0; modes[i] != NULL; i++) {
         if ((modes[i]->ModeInfo.Type == VIDBUF8) ||
             (modes[i]->ModeInfo.Type == VIDBUF16) ||
             (modes[i]->ModeInfo.Type == VIDBUF32)) {
-            VGL_AddMode (this, modes[i]);
+            VGL_AddMode(this, modes[i]);
             total_modes++;
         }
     }
     if (total_modes == 0) {
-        SDL_SetError ("No linear video modes available");
+        SDL_SetError("No linear video modes available");
         return -1;
     }
 
     /* Fill in our hardware acceleration capabilities */
-    VGL_UpdateVideoInfo (this);
+    VGL_UpdateVideoInfo(this);
 
     /* Create the hardware surface lock mutex */
-    hw_lock = SDL_CreateMutex ();
+    hw_lock = SDL_CreateMutex();
     if (hw_lock == NULL) {
-        SDL_SetError ("Unable to create lock mutex");
-        VGL_VideoQuit (this);
+        SDL_SetError("Unable to create lock mutex");
+        VGL_VideoQuit(this);
         return -1;
     }
 
@@ -309,24 +309,24 @@ VGL_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 SDL_Rect **
-VGL_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+VGL_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     return SDL_modelist[((format->BitsPerPixel + 7) / 8) - 1];
 }
 
 /* Various screen update functions available */
-static void VGL_DirectUpdate (_THIS, int numrects, SDL_Rect * rects);
-static void VGL_BankedUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void VGL_DirectUpdate(_THIS, int numrects, SDL_Rect * rects);
+static void VGL_BankedUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 SDL_Surface *
-VGL_SetVideoMode (_THIS, SDL_Surface * current,
-                  int width, int height, int bpp, Uint32 flags)
+VGL_SetVideoMode(_THIS, SDL_Surface * current,
+                 int width, int height, int bpp, Uint32 flags)
 {
     int mode_found;
     int i;
     VGLMode **modes;
 
-    modes = VGLListModes (bpp, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
+    modes = VGLListModes(bpp, V_INFO_MM_DIRECT | V_INFO_MM_PACKED);
     mode_found = 0;
     for (i = 0; modes[i] != NULL; i++) {
         if ((modes[i]->ModeInfo.Xsize == width) &&
@@ -339,21 +339,21 @@ VGL_SetVideoMode (_THIS, SDL_Surface * current,
         }
     }
     if (mode_found == 0) {
-        SDL_SetError ("No matching video mode found");
+        SDL_SetError("No matching video mode found");
         return NULL;
     }
 
     /* Shutdown previous videomode (if any) */
     if (VGLCurMode != NULL)
-        VGLEnd ();
+        VGLEnd();
 
     /* Try to set the requested linear video mode */
-    if (VGLInit (modes[i]->ModeId) != 0) {
-        SDL_SetError ("Unable to switch to requested mode");
+    if (VGLInit(modes[i]->ModeId) != 0) {
+        SDL_SetError("Unable to switch to requested mode");
         return NULL;
     }
 
-    VGLCurMode = SDL_realloc (VGLCurMode, sizeof (VGLMode));
+    VGLCurMode = SDL_realloc(VGLCurMode, sizeof(VGLMode));
     VGLCurMode->ModeInfo = *VGLDisplay;
     VGLCurMode->Depth = modes[i]->Depth;
     VGLCurMode->ModeId = modes[i]->ModeId;
@@ -384,17 +384,17 @@ VGL_SetVideoMode (_THIS, SDL_Surface * current,
             flip_address[0] = (byte *) current->pixels;
             flip_address[1] = (byte *) current->pixels +
                 current->h * current->pitch;
-            VGL_FlipHWSurface (this, current);
+            VGL_FlipHWSurface(this, current);
         }
     }
 
-    if (!SDL_ReallocFormat (current, modes[i]->Depth, VGLCurMode->Rmask,
-                            VGLCurMode->Gmask, VGLCurMode->Bmask, 0)) {
+    if (!SDL_ReallocFormat(current, modes[i]->Depth, VGLCurMode->Rmask,
+                           VGLCurMode->Gmask, VGLCurMode->Bmask, 0)) {
         return NULL;
     }
 
     /* Update hardware acceleration info */
-    VGL_UpdateVideoInfo (this);
+    VGL_UpdateVideoInfo(this);
 
     /* Set the blit function */
     this->UpdateRects = VGL_DirectUpdate;
@@ -405,39 +405,39 @@ VGL_SetVideoMode (_THIS, SDL_Surface * current,
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-VGL_AllocHWSurface (_THIS, SDL_Surface * surface)
+VGL_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return -1;
 }
 static void
-VGL_FreeHWSurface (_THIS, SDL_Surface * surface)
+VGL_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-VGL_LockHWSurface (_THIS, SDL_Surface * surface)
+VGL_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface == SDL_VideoSurface) {
-        SDL_mutexP (hw_lock);
+        SDL_mutexP(hw_lock);
     }
     return 0;
 }
 static void
-VGL_UnlockHWSurface (_THIS, SDL_Surface * surface)
+VGL_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     if (surface == SDL_VideoSurface) {
-        SDL_mutexV (hw_lock);
+        SDL_mutexV(hw_lock);
     }
 }
 
 static int
-VGL_FlipHWSurface (_THIS, SDL_Surface * surface)
+VGL_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
 //      VGLWaitRetrace();
-    if (VGLPanScreen (VGLDisplay, 0, flip_page * surface->h) < 0) {
-        SDL_SetError ("VGLPanSreen() failed");
+    if (VGLPanScreen(VGLDisplay, 0, flip_page * surface->h) < 0) {
+        SDL_SetError("VGLPanSreen() failed");
         return -1;
     }
 
@@ -448,26 +448,26 @@ VGL_FlipHWSurface (_THIS, SDL_Surface * surface)
 }
 
 static void
-VGL_DirectUpdate (_THIS, int numrects, SDL_Rect * rects)
+VGL_DirectUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     return;
 }
 
 static void
-VGL_BankedUpdate (_THIS, int numrects, SDL_Rect * rects)
+VGL_BankedUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     return;
 }
 
 int
-VGL_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+VGL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
 
     for (i = 0; i < ncolors; i++) {
-        VGLSetPaletteIndex (firstcolor + i,
-                            colors[i].r >> 2,
-                            colors[i].g >> 2, colors[i].b >> 2);
+        VGLSetPaletteIndex(firstcolor + i,
+                           colors[i].r >> 2,
+                           colors[i].g >> 2, colors[i].b >> 2);
     }
     return 1;
 }
@@ -476,23 +476,23 @@ VGL_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
    another SDL video routine -- notably UpdateRects.
 */
 void
-VGL_VideoQuit (_THIS)
+VGL_VideoQuit(_THIS)
 {
     int i, j;
 
     /* Return the keyboard to the normal state */
-    VGLKeyboardEnd ();
+    VGLKeyboardEnd();
 
     /* Reset the console video mode if we actually initialised one */
     if (VGLCurMode != NULL) {
-        VGLEnd ();
-        SDL_free (VGLCurMode);
+        VGLEnd();
+        SDL_free(VGLCurMode);
         VGLCurMode = NULL;
     }
 
     /* Clear the lock mutex */
     if (hw_lock != NULL) {
-        SDL_DestroyMutex (hw_lock);
+        SDL_DestroyMutex(hw_lock);
         hw_lock = NULL;
     }
 
@@ -500,9 +500,9 @@ VGL_VideoQuit (_THIS)
     for (i = 0; i < NUM_MODELISTS; i++) {
         if (SDL_modelist[i] != NULL) {
             for (j = 0; SDL_modelist[i][j] != NULL; ++j) {
-                SDL_free (SDL_modelist[i][j]);
+                SDL_free(SDL_modelist[i][j]);
             }
-            SDL_free (SDL_modelist[i]);
+            SDL_free(SDL_modelist[i]);
             SDL_modelist[i] = NULL;
         }
     }
@@ -518,7 +518,7 @@ VGL_VideoQuit (_THIS)
 #define VGL_BLUE_INDEX	2
 
 static VGLMode **
-VGLListModes (int depth, int mem_model)
+VGLListModes(int depth, int mem_model)
 {
     static VGLMode **modes = NULL;
 
@@ -528,15 +528,15 @@ VGLListModes (int depth, int mem_model)
     int adptype, i, modenum;
 
     if (modes == NULL) {
-        modes = SDL_malloc (sizeof (VGLMode *) * M_VESA_MODE_MAX);
-        bzero (modes, sizeof (VGLMode *) * M_VESA_MODE_MAX);
+        modes = SDL_malloc(sizeof(VGLMode *) * M_VESA_MODE_MAX);
+        bzero(modes, sizeof(VGLMode *) * M_VESA_MODE_MAX);
     }
     modesp = modes;
 
     for (modenum = 0; modenum < M_VESA_MODE_MAX; modenum++) {
         minfo.vi_mode = modenum;
-        if (ioctl (0, CONS_MODEINFO, &minfo)
-            || ioctl (0, CONS_CURRENT, &adptype))
+        if (ioctl(0, CONS_MODEINFO, &minfo)
+            || ioctl(0, CONS_CURRENT, &adptype))
             continue;
         if (minfo.vi_mode != modenum)
             continue;
@@ -548,12 +548,12 @@ VGLListModes (int depth, int mem_model)
             continue;
 
         /* reallocf can fail */
-        if ((*modesp = reallocf (*modesp, sizeof (VGLMode))) == NULL)
+        if ((*modesp = reallocf(*modesp, sizeof(VGLMode))) == NULL)
             return NULL;
         modescp = *modesp;
 
         vminfop = &(modescp->ModeInfo);
-        bzero (vminfop, sizeof (VGLBitmap));
+        bzero(vminfop, sizeof(VGLBitmap));
 
         vminfop->Type = NOBUF;
 
@@ -622,9 +622,9 @@ VGLListModes (int depth, int mem_model)
 
         /* XXX */
         if (minfo.vi_mode >= M_VESA_BASE)
-            modescp->ModeId = _IO ('V', minfo.vi_mode - M_VESA_BASE);
+            modescp->ModeId = _IO('V', minfo.vi_mode - M_VESA_BASE);
         else
-            modescp->ModeId = _IO ('S', minfo.vi_mode);
+            modescp->ModeId = _IO('S', minfo.vi_mode);
 
         /* Sort list */
         for (i = 0; modes + i < modesp; i++) {
@@ -645,7 +645,7 @@ VGLListModes (int depth, int mem_model)
     }
 
     if (*modesp != NULL) {
-        SDL_free (*modesp);
+        SDL_free(*modesp);
         *modesp = NULL;
     }
 
@@ -653,10 +653,10 @@ VGLListModes (int depth, int mem_model)
 }
 
 static void
-VGLWaitRetrace (void)
+VGLWaitRetrace(void)
 {
-    while (!(inb (0x3DA) & 8));
-    while (inb (0x3DA) & 8);
+    while (!(inb(0x3DA) & 8));
+    while (inb(0x3DA) & 8);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

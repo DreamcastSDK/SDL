@@ -36,7 +36,7 @@
 #include "SDL_loadso.h"
 
 void *
-SDL_LoadObject (const char *sofile)
+SDL_LoadObject(const char *sofile)
 {
     void *handle = NULL;
     const char *loaderror = NULL;
@@ -46,9 +46,9 @@ SDL_LoadObject (const char *sofile)
     OSErr error;
     char psofile[512];
 
-    SDL_strlcpy (psofile, sofile, SDL_arraysize (psofile));
-    error = GetSharedLibrary (C2PStr (psofile), kCompiledCFragArch,
-                              kLoadCFrag, &library_id, &mainAddr, errName);
+    SDL_strlcpy(psofile, sofile, SDL_arraysize(psofile));
+    error = GetSharedLibrary(C2PStr(psofile), kCompiledCFragArch,
+                             kLoadCFrag, &library_id, &mainAddr, errName);
     switch (error) {
     case noErr:
         loaderror = NULL;
@@ -70,13 +70,13 @@ SDL_LoadObject (const char *sofile)
     if (loaderror == NULL) {
         handle = (void *) (library_id);
     } else {
-        SDL_SetError ("Failed loading %s: %s", sofile, loaderror);
+        SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
     return (handle);
 }
 
 void *
-SDL_LoadFunction (void *handle, const char *name)
+SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = NULL;
     const char *loaderror = NULL;
@@ -84,25 +84,25 @@ SDL_LoadFunction (void *handle, const char *name)
     CFragConnectionID library_id = (CFragConnectionID) handle;
     char pname[512];
 
-    SDL_strlcpy (pname, name, SDL_arraysize (pname));
-    if (FindSymbol (library_id, C2PStr (pname),
-                    (char **) &symbol, &class) != noErr) {
+    SDL_strlcpy(pname, name, SDL_arraysize(pname));
+    if (FindSymbol(library_id, C2PStr(pname),
+                   (char **) &symbol, &class) != noErr) {
         loaderror = "Symbol not found";
     }
 
     if (symbol == NULL) {
-        SDL_SetError ("Failed loading %s: %s", name, loaderror);
+        SDL_SetError("Failed loading %s: %s", name, loaderror);
     }
     return (symbol);
 }
 
 void
-SDL_UnloadObject (void *handle)
+SDL_UnloadObject(void *handle)
 {
     CFragConnectionID library_id;
     if (handle != NULL) {
         library_id = (CFragConnectionID) handle;
-        CloseConnection (&library_id);
+        CloseConnection(&library_id);
     }
 }
 

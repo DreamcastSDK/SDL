@@ -44,13 +44,13 @@ typedef struct
     int height;                 /* height of this screen */
     int ScreenCount;            /* real physical number of screens */
     XID eventMask;              /* selected events for this client */
-} SDL_NAME (XPanoramiXInfo);
+} SDL_NAME(XPanoramiXInfo);
 
 extern
-SDL_NAME (XPanoramiXInfo) *
-SDL_NAME (XPanoramiXAllocInfo) (
+SDL_NAME(XPanoramiXInfo) *
+SDL_NAME(XPanoramiXAllocInfo) (
 #if NeedFunctionPrototypes
-                                   void
+                                  void
 #endif
     );
 /* vi: set ts=4 sw=4 expandtab: */

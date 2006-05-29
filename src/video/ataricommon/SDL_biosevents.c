@@ -62,21 +62,21 @@ enum
 /* The translation tables from a console scancode to a SDL keysym */
 static SDLKey keymap[ATARIBIOS_MAXKEYS];
 
-static SDL_keysym *TranslateKey (int scancode, int asciicode,
-                                 SDL_keysym * keysym, SDL_bool pressed);
-static void UpdateSpecialKeys (int special_keys_state);
+static SDL_keysym *TranslateKey(int scancode, int asciicode,
+                                SDL_keysym * keysym, SDL_bool pressed);
+static void UpdateSpecialKeys(int special_keys_state);
 
 void
-AtariBios_InitOSKeymap (_THIS)
+AtariBios_InitOSKeymap(_THIS)
 {
     int i, vectors_mask;
     unsigned long dummy;
 
-    SDL_memset (bios_currentkeyboard, 0, sizeof (bios_currentkeyboard));
-    SDL_memset (bios_previouskeyboard, 0, sizeof (bios_previouskeyboard));
+    SDL_memset(bios_currentkeyboard, 0, sizeof(bios_currentkeyboard));
+    SDL_memset(bios_previouskeyboard, 0, sizeof(bios_previouskeyboard));
 
     /* Initialize keymap */
-    for (i = 0; i < sizeof (keymap); i++)
+    for (i = 0; i < sizeof(keymap); i++)
         keymap[i] = SDLK_UNKNOWN;
 
     /* Functions keys */
@@ -105,33 +105,33 @@ AtariBios_InitOSKeymap (_THIS)
     keymap[SCANCODE_LEFTALT] = SDLK_LALT;
     keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
 
-    use_dev_mouse = (SDL_AtariDevMouse_Open () != 0) ? SDL_TRUE : SDL_FALSE;
+    use_dev_mouse = (SDL_AtariDevMouse_Open() != 0) ? SDL_TRUE : SDL_FALSE;
 
     vectors_mask = ATARI_XBIOS_JOYSTICKEVENTS;  /* XBIOS joystick events */
     if (!use_dev_mouse) {
         vectors_mask |= ATARI_XBIOS_MOUSEEVENTS;        /* XBIOS mouse events */
     }
-    if (Getcookie (C_MiNT, &dummy) == C_FOUND) {
+    if (Getcookie(C_MiNT, &dummy) == C_FOUND) {
         vectors_mask = 0;
     }
 
-    SDL_AtariXbios_InstallVectors (vectors_mask);
+    SDL_AtariXbios_InstallVectors(vectors_mask);
 }
 
 void
-AtariBios_PumpEvents (_THIS)
+AtariBios_PumpEvents(_THIS)
 {
     int i;
     SDL_keysym keysym;
 
     /* Update pressed keys */
-    SDL_memset (bios_currentkeyboard, 0, ATARIBIOS_MAXKEYS);
+    SDL_memset(bios_currentkeyboard, 0, ATARIBIOS_MAXKEYS);
 
-    while (Bconstat (_CON)) {
+    while (Bconstat(_CON)) {
         unsigned long key_pressed;
         unsigned char asciicode, scancode;
 
-        key_pressed = Bconin (_CON);
+        key_pressed = Bconin(_CON);
 
         asciicode = key_pressed;
         scancode = key_pressed >> 16;
@@ -141,36 +141,36 @@ AtariBios_PumpEvents (_THIS)
     }
 
     /* Read special keys */
-    UpdateSpecialKeys (Kbshift (-1));
+    UpdateSpecialKeys(Kbshift(-1));
 
     /* Now generate events */
     for (i = 0; i < ATARIBIOS_MAXKEYS; i++) {
         /* Key pressed ? */
         if (bios_currentkeyboard[i] && !bios_previouskeyboard[i])
-            SDL_PrivateKeyboard (SDL_PRESSED,
-                                 TranslateKey (i, bios_currentascii[i],
-                                               &keysym, SDL_TRUE));
+            SDL_PrivateKeyboard(SDL_PRESSED,
+                                TranslateKey(i, bios_currentascii[i],
+                                             &keysym, SDL_TRUE));
 
         /* Key unpressed ? */
         if (bios_previouskeyboard[i] && !bios_currentkeyboard[i])
-            SDL_PrivateKeyboard (SDL_RELEASED,
-                                 TranslateKey (i, bios_currentascii[i],
-                                               &keysym, SDL_FALSE));
+            SDL_PrivateKeyboard(SDL_RELEASED,
+                                TranslateKey(i, bios_currentascii[i],
+                                             &keysym, SDL_FALSE));
     }
 
     if (use_dev_mouse) {
-        SDL_AtariDevMouse_PostMouseEvents (this, SDL_TRUE);
+        SDL_AtariDevMouse_PostMouseEvents(this, SDL_TRUE);
     } else {
-        SDL_AtariXbios_PostMouseEvents (this, SDL_TRUE);
+        SDL_AtariXbios_PostMouseEvents(this, SDL_TRUE);
     }
 
     /* Will be previous table */
-    SDL_memcpy (bios_previouskeyboard, bios_currentkeyboard,
-                ATARIBIOS_MAXKEYS);
+    SDL_memcpy(bios_previouskeyboard, bios_currentkeyboard,
+               ATARIBIOS_MAXKEYS);
 }
 
 static void
-UpdateSpecialKeys (int special_keys_state)
+UpdateSpecialKeys(int special_keys_state)
 {
 #define UPDATE_SPECIAL_KEYS(numbit,scancode) \
 	{	\
@@ -180,16 +180,16 @@ UpdateSpecialKeys (int special_keys_state)
 		}	\
 	}
 
-    UPDATE_SPECIAL_KEYS (K_RSHIFT, SCANCODE_RIGHTSHIFT);
-    UPDATE_SPECIAL_KEYS (K_LSHIFT, SCANCODE_LEFTSHIFT);
-    UPDATE_SPECIAL_KEYS (K_CTRL, SCANCODE_LEFTCONTROL);
-    UPDATE_SPECIAL_KEYS (K_ALT, SCANCODE_LEFTALT);
-    UPDATE_SPECIAL_KEYS (K_CAPSLOCK, SCANCODE_CAPSLOCK);
+    UPDATE_SPECIAL_KEYS(K_RSHIFT, SCANCODE_RIGHTSHIFT);
+    UPDATE_SPECIAL_KEYS(K_LSHIFT, SCANCODE_LEFTSHIFT);
+    UPDATE_SPECIAL_KEYS(K_CTRL, SCANCODE_LEFTCONTROL);
+    UPDATE_SPECIAL_KEYS(K_ALT, SCANCODE_LEFTALT);
+    UPDATE_SPECIAL_KEYS(K_CAPSLOCK, SCANCODE_CAPSLOCK);
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, int asciicode, SDL_keysym * keysym,
-              SDL_bool pressed)
+TranslateKey(int scancode, int asciicode, SDL_keysym * keysym,
+             SDL_bool pressed)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -209,11 +209,11 @@ TranslateKey (int scancode, int asciicode, SDL_keysym * keysym,
 }
 
 void
-AtariBios_ShutdownEvents (void)
+AtariBios_ShutdownEvents(void)
 {
-    SDL_AtariXbios_RestoreVectors ();
+    SDL_AtariXbios_RestoreVectors();
     if (use_dev_mouse) {
-        SDL_AtariDevMouse_Close ();
+        SDL_AtariDevMouse_Close();
     }
 }
 

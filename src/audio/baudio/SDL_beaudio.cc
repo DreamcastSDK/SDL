@@ -38,44 +38,44 @@ extern "C"
 
 
 /* Audio driver functions */
-    static int BE_OpenAudio (_THIS, SDL_AudioSpec * spec);
-    static void BE_WaitAudio (_THIS);
-    static void BE_PlayAudio (_THIS);
-    static Uint8 *BE_GetAudioBuf (_THIS);
-    static void BE_CloseAudio (_THIS);
+    static int BE_OpenAudio(_THIS, SDL_AudioSpec * spec);
+    static void BE_WaitAudio(_THIS);
+    static void BE_PlayAudio(_THIS);
+    static Uint8 *BE_GetAudioBuf(_THIS);
+    static void BE_CloseAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 
-    static int Audio_Available (void)
+    static int Audio_Available(void)
     {
         return (1);
     }
 
-    static void Audio_DeleteDevice (SDL_AudioDevice * device)
+    static void Audio_DeleteDevice(SDL_AudioDevice * device)
     {
-        SDL_free (device->hidden);
-        SDL_free (device);
+        SDL_free(device->hidden);
+        SDL_free(device);
     }
 
-    static SDL_AudioDevice *Audio_CreateDevice (int devindex)
+    static SDL_AudioDevice *Audio_CreateDevice(int devindex)
     {
         SDL_AudioDevice *device;
 
         /* Initialize all variables that we clean on shutdown */
-        device = (SDL_AudioDevice *) SDL_malloc (sizeof (SDL_AudioDevice));
+        device = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
         if (device) {
-            SDL_memset (device, 0, (sizeof *device));
+            SDL_memset(device, 0, (sizeof *device));
             device->hidden = (struct SDL_PrivateAudioData *)
-                SDL_malloc ((sizeof *device->hidden));
+                SDL_malloc((sizeof *device->hidden));
         }
         if ((device == NULL) || (device->hidden == NULL)) {
-            SDL_OutOfMemory ();
+            SDL_OutOfMemory();
             if (device) {
-                SDL_free (device);
+                SDL_free(device);
             }
             return (0);
         }
-        SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+        SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
         /* Set the function pointers */
         device->OpenAudio = BE_OpenAudio;
@@ -95,13 +95,13 @@ extern "C"
     };
 
 /* The BeOS callback for handling the audio buffer */
-    static void FillSound (void *device, void *stream, size_t len,
-                           const media_raw_audio_format & format)
+    static void FillSound(void *device, void *stream, size_t len,
+                          const media_raw_audio_format & format)
     {
         SDL_AudioDevice *audio = (SDL_AudioDevice *) device;
 
         /* Silence the buffer, since it's ours */
-        SDL_memset (stream, audio->spec.silence, len);
+        SDL_memset(stream, audio->spec.silence, len);
 
         /* Only do soemthing if audio is enabled */
         if (!audio->enabled)
@@ -109,56 +109,56 @@ extern "C"
 
         if (!audio->paused) {
             if (audio->convert.needed) {
-                SDL_mutexP (audio->mixer_lock);
+                SDL_mutexP(audio->mixer_lock);
                 (*audio->spec.callback) (audio->spec.userdata,
                                          (Uint8 *) audio->convert.buf,
                                          audio->convert.len);
-                SDL_mutexV (audio->mixer_lock);
-                SDL_ConvertAudio (&audio->convert);
-                SDL_memcpy (stream, audio->convert.buf,
-                            audio->convert.len_cvt);
+                SDL_mutexV(audio->mixer_lock);
+                SDL_ConvertAudio(&audio->convert);
+                SDL_memcpy(stream, audio->convert.buf,
+                           audio->convert.len_cvt);
             } else {
-                SDL_mutexP (audio->mixer_lock);
+                SDL_mutexP(audio->mixer_lock);
                 (*audio->spec.callback) (audio->spec.userdata,
                                          (Uint8 *) stream, len);
-                SDL_mutexV (audio->mixer_lock);
+                SDL_mutexV(audio->mixer_lock);
             }
         }
         return;
     }
 
 /* Dummy functions -- we don't use thread-based audio */
-    void BE_WaitAudio (_THIS)
+    void BE_WaitAudio(_THIS)
     {
         return;
     }
-    void BE_PlayAudio (_THIS)
+    void BE_PlayAudio(_THIS)
     {
         return;
     }
-    Uint8 *BE_GetAudioBuf (_THIS)
+    Uint8 *BE_GetAudioBuf(_THIS)
     {
         return (NULL);
     }
 
-    void BE_CloseAudio (_THIS)
+    void BE_CloseAudio(_THIS)
     {
         if (audio_obj) {
-            audio_obj->Stop ();
+            audio_obj->Stop();
             delete audio_obj;
             audio_obj = NULL;
         }
 
         /* Quit the Be Application, if there's nothing left to do */
-        SDL_QuitBeApp ();
+        SDL_QuitBeApp();
     }
 
-    int BE_OpenAudio (_THIS, SDL_AudioSpec * spec)
+    int BE_OpenAudio(_THIS, SDL_AudioSpec * spec)
     {
         media_raw_audio_format format;
 
         /* Initialize the Be Application, if it's not already started */
-        if (SDL_InitBeApp () < 0) {
+        if (SDL_InitBeApp() < 0) {
             return (-1);
         }
 
@@ -188,20 +188,20 @@ extern "C"
         format.buffer_size = spec->samples;
 
         /* Calculate the final parameters for this audio specification */
-        SDL_CalculateAudioSpec (spec);
+        SDL_CalculateAudioSpec(spec);
 
         /* Subscribe to the audio stream (creates a new thread) */
         {
             sigset_t omask;
-            SDL_MaskSignals (&omask);
-            audio_obj = new BSoundPlayer (&format, "SDL Audio", FillSound,
-                                          NULL, _this);
-            SDL_UnmaskSignals (&omask);
+            SDL_MaskSignals(&omask);
+            audio_obj = new BSoundPlayer(&format, "SDL Audio", FillSound,
+                                         NULL, _this);
+            SDL_UnmaskSignals(&omask);
         }
-        if (audio_obj->Start () == B_NO_ERROR) {
-            audio_obj->SetHasData (true);
+        if (audio_obj->Start() == B_NO_ERROR) {
+            audio_obj->SetHasData(true);
         } else {
-            SDL_SetError ("Unable to start Be audio");
+            SDL_SetError("Unable to start Be audio");
             return (-1);
         }
 

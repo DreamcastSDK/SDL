@@ -45,45 +45,45 @@
 UInt64 start;
 
 void
-SDL_StartTicks (void)
+SDL_StartTicks(void)
 {
 #ifdef USE_MICROSECONDS
     UnsignedWide now;
 
-    Microseconds (&now);
-    start = WideTo64bit (now);
+    Microseconds(&now);
+    start = WideTo64bit(now);
 #else
     /* FIXME: Should we implement a wrapping algorithm, like Win32? */
 #endif
 }
 
 Uint32
-SDL_GetTicks (void)
+SDL_GetTicks(void)
 {
 #ifdef USE_MICROSECONDS
     UnsignedWide now;
 
-    Microseconds (&now);
-    return (Uint32) ((WideTo64bit (now) - start) / 1000);
+    Microseconds(&now);
+    return (Uint32) ((WideTo64bit(now) - start) / 1000);
 #else
-    return (LMGetTicks () * MS_PER_TICK);
+    return (LMGetTicks() * MS_PER_TICK);
 #endif
 }
 
 void
-SDL_Delay (Uint32 ms)
+SDL_Delay(Uint32 ms)
 {
 #ifdef USE_MICROSECONDS
     Uint32 end_ms;
 
-    end_ms = SDL_GetTicks () + ms;
+    end_ms = SDL_GetTicks() + ms;
     do {
         /* FIXME: Yield CPU? */ ;
     }
-    while (SDL_GetTicks () < end_ms);
+    while (SDL_GetTicks() < end_ms);
 #else
     UInt32 unused;              /* MJS */
-    Delay (ms / MS_PER_TICK, &unused);
+    Delay(ms / MS_PER_TICK, &unused);
 #endif
 }
 
@@ -99,14 +99,14 @@ static ExtendedTimerRec gExtendedTimerRec;
 
 
 int
-SDL_SYS_TimerInit (void)
+SDL_SYS_TimerInit(void)
 {
     /* We don't need a setup? */
     return (0);
 }
 
 void
-SDL_SYS_TimerQuit (void)
+SDL_SYS_TimerQuit(void)
 {
     /* We don't need a cleanup? */
     return;
@@ -114,47 +114,47 @@ SDL_SYS_TimerQuit (void)
 
 /* Our Stub routine to set up and then call the real routine. */
 pascal void
-TimerCallbackProc (TMTaskPtr tmTaskPtr)
+TimerCallbackProc(TMTaskPtr tmTaskPtr)
 {
     Uint32 ms;
 
-    WakeUpProcess (&((ExtendedTimerPtr) tmTaskPtr)->taskPSN);
+    WakeUpProcess(&((ExtendedTimerPtr) tmTaskPtr)->taskPSN);
 
-    ms = SDL_alarm_callback (SDL_alarm_interval);
+    ms = SDL_alarm_callback(SDL_alarm_interval);
     if (ms) {
-        SDL_alarm_interval = ROUND_RESOLUTION (ms);
-        PrimeTime ((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
+        SDL_alarm_interval = ROUND_RESOLUTION(ms);
+        PrimeTime((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
     } else {
         SDL_alarm_interval = 0;
     }
 }
 
 int
-SDL_SYS_StartTimer (void)
+SDL_SYS_StartTimer(void)
 {
     /*
      * Configure the global structure that stores the timing information.
      */
     gExtendedTimerRec.tmTask.qLink = NULL;
     gExtendedTimerRec.tmTask.qType = 0;
-    gExtendedTimerRec.tmTask.tmAddr = NewTimerUPP (TimerCallbackProc);
+    gExtendedTimerRec.tmTask.tmAddr = NewTimerUPP(TimerCallbackProc);
     gExtendedTimerRec.tmTask.tmCount = 0;
     gExtendedTimerRec.tmTask.tmWakeUp = 0;
     gExtendedTimerRec.tmTask.tmReserved = 0;
-    GetCurrentProcess (&gExtendedTimerRec.taskPSN);
+    GetCurrentProcess(&gExtendedTimerRec.taskPSN);
 
     /* Install the task record */
-    InsXTime ((QElemPtr) & gExtendedTimerRec.tmTask);
+    InsXTime((QElemPtr) & gExtendedTimerRec.tmTask);
 
     /* Go! */
-    PrimeTime ((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
+    PrimeTime((QElemPtr) & gExtendedTimerRec.tmTask, SDL_alarm_interval);
     return (0);
 }
 
 void
-SDL_SYS_StopTimer (void)
+SDL_SYS_StopTimer(void)
 {
-    RmvTime ((QElemPtr) & gExtendedTimerRec.tmTask);
+    RmvTime((QElemPtr) & gExtendedTimerRec.tmTask);
 }
 
 #endif /* SDL_TIMER_MACOS */

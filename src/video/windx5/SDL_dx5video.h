@@ -53,15 +53,15 @@ struct SDL_PrivateVideoData
 #define SDL_modeindex		(this->hidden->SDL_modeindex)
 
 /* DirectX function pointers for video and events */
-extern HRESULT (WINAPI * DDrawCreate) (GUID FAR * lpGUID,
-                                       LPDIRECTDRAW FAR * lplpDD,
-                                       IUnknown FAR * pUnkOuter);
-extern HRESULT (WINAPI * DInputCreate) (HINSTANCE hinst, DWORD dwVersion,
-                                        LPDIRECTINPUT * ppDI,
-                                        LPUNKNOWN punkOuter);
+extern HRESULT(WINAPI * DDrawCreate) (GUID FAR * lpGUID,
+                                      LPDIRECTDRAW FAR * lplpDD,
+                                      IUnknown FAR * pUnkOuter);
+extern HRESULT(WINAPI * DInputCreate) (HINSTANCE hinst, DWORD dwVersion,
+                                       LPDIRECTINPUT * ppDI,
+                                       LPUNKNOWN punkOuter);
 
 /* DirectDraw error reporting function */
-extern void SetDDerror (const char *function, int code);
+extern void SetDDerror(const char *function, int code);
 
 #endif /* _SDL_dx5video_h */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -49,65 +49,65 @@ struct private_hwdata
 ggi_visual_t VIS;
 
 /* Initialization/Query functions */
-static int GGI_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **GGI_ListModes (_THIS, SDL_PixelFormat * format,
-                                 Uint32 flags);
-static SDL_Surface *GGI_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                      int height, int bpp, Uint32 flags);
-static int GGI_SetColors (_THIS, int firstcolor, int ncolors,
-                          SDL_Color * colors);
-static void GGI_VideoQuit (_THIS);
+static int GGI_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **GGI_ListModes(_THIS, SDL_PixelFormat * format,
+                                Uint32 flags);
+static SDL_Surface *GGI_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                     int height, int bpp, Uint32 flags);
+static int GGI_SetColors(_THIS, int firstcolor, int ncolors,
+                         SDL_Color * colors);
+static void GGI_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int GGI_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int GGI_LockHWSurface (_THIS, SDL_Surface * surface);
-static void GGI_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void GGI_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int GGI_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int GGI_LockHWSurface(_THIS, SDL_Surface * surface);
+static void GGI_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void GGI_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* GGI driver bootstrap functions */
 
 static int
-GGI_Available (void)
+GGI_Available(void)
 {
     ggi_visual_t *vis;
 
     vis = NULL;
-    if (ggiInit () == 0) {
-        vis = ggiOpen (NULL);
+    if (ggiInit() == 0) {
+        vis = ggiOpen(NULL);
         if (vis != NULL) {
-            ggiClose (vis);
+            ggiClose(vis);
         }
     }
     return (vis != NULL);
 }
 
 static void
-GGI_DeleteDevice (SDL_VideoDevice * device)
+GGI_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-GGI_CreateDevice (int devindex)
+GGI_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = GGI_VideoInit;
@@ -148,7 +148,7 @@ static SDL_Rect video_mode;
 static SDL_Rect *SDL_modelist[4] = { NULL, NULL, NULL, NULL };
 
 int
-GGI_VideoInit (_THIS, SDL_PixelFormat * vformat)
+GGI_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     ggi_mode mode = {
         1,
@@ -164,38 +164,38 @@ GGI_VideoInit (_THIS, SDL_PixelFormat * vformat)
     int err, num_bufs;
     ggi_pixel white, black;
 
-    priv = SDL_malloc (sizeof (struct private_hwdata));
+    priv = SDL_malloc(sizeof(struct private_hwdata));
     if (priv == NULL) {
-        SDL_SetError ("Unhandled GGI mode type!\n");
-        GGI_VideoQuit (NULL);
+        SDL_SetError("Unhandled GGI mode type!\n");
+        GGI_VideoQuit(NULL);
     }
 
-    if (ggiInit () != 0) {
-        SDL_SetError ("Unable to initialize GGI!\n");
-        GGI_VideoQuit (NULL);
+    if (ggiInit() != 0) {
+        SDL_SetError("Unable to initialize GGI!\n");
+        GGI_VideoQuit(NULL);
     }
 
-    VIS = ggiOpen (NULL);
+    VIS = ggiOpen(NULL);
     if (VIS == NULL) {
-        SDL_SetError ("Unable to open default GGI visual!\n");
-        ggiExit ();
-        GGI_VideoQuit (NULL);
+        SDL_SetError("Unable to open default GGI visual!\n");
+        ggiExit();
+        GGI_VideoQuit(NULL);
     }
 
-    ggiSetFlags (VIS, GGIFLAG_ASYNC);
+    ggiSetFlags(VIS, GGIFLAG_ASYNC);
 
     /* Validate mode, autodetecting any GGI_AUTO or GT_AUTO fields */
-    ggiCheckMode (VIS, &mode);
+    ggiCheckMode(VIS, &mode);
 
     /* At this point we should have a valid mode - try to set it */
-    err = ggiSetMode (VIS, &mode);
+    err = ggiSetMode(VIS, &mode);
 
     /* If we couldn't set _any_ modes, something is very wrong */
     if (err) {
-        SDL_SetError ("Can't set a mode!\n");
-        ggiClose (VIS);
-        ggiExit ();
-        GGI_VideoQuit (NULL);
+        SDL_SetError("Can't set a mode!\n");
+        ggiClose(VIS);
+        ggiExit();
+        GGI_VideoQuit(NULL);
     }
 
     /* Determine the current screen size */
@@ -203,18 +203,18 @@ GGI_VideoInit (_THIS, SDL_PixelFormat * vformat)
     this->info.current_h = mode.virt.y;
 
     /* Set a palette for palletized modes */
-    if (GT_SCHEME (mode.graphtype) == GT_PALETTE) {
-        ggiSetColorfulPalette (VIS);
-        ggiGetPalette (VIS, 0, 1 << vformat->BitsPerPixel, pal);
+    if (GT_SCHEME(mode.graphtype) == GT_PALETTE) {
+        ggiSetColorfulPalette(VIS);
+        ggiGetPalette(VIS, 0, 1 << vformat->BitsPerPixel, pal);
     }
 
     /* Now we try to get the DirectBuffer info, which determines whether
      * SDL can access hardware surfaces directly. */
 
-    num_bufs = ggiDBGetNumBuffers (VIS);
+    num_bufs = ggiDBGetNumBuffers(VIS);
 
     if (num_bufs > 0) {
-        db = ggiDBGetBuffer (VIS, 0);   /* Only handle one DB for now */
+        db = ggiDBGetBuffer(VIS, 0);    /* Only handle one DB for now */
 
         vformat->BitsPerPixel = db->buffer.plb.pixelformat->depth;
 
@@ -240,17 +240,17 @@ GGI_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 static SDL_Rect **
-GGI_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+GGI_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     return (&SDL_modelist[((format->BitsPerPixel + 7) / 8) - 1]);
 }
 
 /* Various screen update functions available */
-static void GGI_DirectUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void GGI_DirectUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 SDL_Surface *
-GGI_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
-                  int bpp, Uint32 flags)
+GGI_SetVideoMode(_THIS, SDL_Surface * current, int width, int height,
+                 int bpp, Uint32 flags)
 {
     ggi_mode mode = {
         1,
@@ -264,7 +264,7 @@ GGI_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
     ggi_color pal[256];
     int err;
 
-    fprintf (stderr, "GGI_SetVideoMode()\n");
+    fprintf(stderr, "GGI_SetVideoMode()\n");
 
     mode.visible.x = mode.virt.x = width;
     mode.visible.y = mode.virt.y = height;
@@ -296,31 +296,31 @@ GGI_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
         mode.graphtype = GT_32BIT;
         break;
     default:
-        SDL_SetError ("Unknown SDL bit depth, using GT_AUTO....\n");
+        SDL_SetError("Unknown SDL bit depth, using GT_AUTO....\n");
         mode.graphtype = GT_AUTO;
     }
 
     /* Validate mode, autodetecting any GGI_AUTO or GT_AUTO fields */
-    ggiCheckMode (VIS, &mode);
+    ggiCheckMode(VIS, &mode);
 
     /* At this point we should have a valid mode - try to set it */
-    err = ggiSetMode (VIS, &mode);
+    err = ggiSetMode(VIS, &mode);
 
     /* If we couldn't set _any_ modes, something is very wrong */
     if (err) {
-        SDL_SetError ("Can't set a mode!\n");
-        ggiClose (VIS);
-        ggiExit ();
-        GGI_VideoQuit (NULL);
+        SDL_SetError("Can't set a mode!\n");
+        ggiClose(VIS);
+        ggiExit();
+        GGI_VideoQuit(NULL);
     }
 
     /* Set a palette for palletized modes */
-    if (GT_SCHEME (mode.graphtype) == GT_PALETTE) {
-        ggiSetColorfulPalette (VIS);
-        ggiGetPalette (VIS, 0, 1 << bpp, pal);
+    if (GT_SCHEME(mode.graphtype) == GT_PALETTE) {
+        ggiSetColorfulPalette(VIS);
+        ggiGetPalette(VIS, 0, 1 << bpp, pal);
     }
 
-    db = ggiDBGetBuffer (VIS, 0);
+    db = ggiDBGetBuffer(VIS, 0);
 
     /* Set up the new mode framebuffer */
     current->flags = (SDL_FULLSCREEN | SDL_HWSURFACE);
@@ -337,41 +337,41 @@ GGI_SetVideoMode (_THIS, SDL_Surface * current, int width, int height,
 }
 
 static int
-GGI_AllocHWSurface (_THIS, SDL_Surface * surface)
+GGI_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-GGI_FreeHWSurface (_THIS, SDL_Surface * surface)
+GGI_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 static int
-GGI_LockHWSurface (_THIS, SDL_Surface * surface)
+GGI_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     return (0);
 }
 static void
-GGI_UnlockHWSurface (_THIS, SDL_Surface * surface)
+GGI_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 static void
-GGI_DirectUpdate (_THIS, int numrects, SDL_Rect * rects)
+GGI_DirectUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     int i;
 
 /*	ggiFlush(VIS); */
 
     for (i = 0; i < numrects; i++) {
-        ggiFlushRegion (VIS, rects[i].x, rects[i].y, rects[i].w, rects[i].h);
+        ggiFlushRegion(VIS, rects[i].x, rects[i].y, rects[i].w, rects[i].h);
     }
     return;
 }
 
 int
-GGI_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+GGI_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
     ggi_color pal[256];
@@ -383,17 +383,17 @@ GGI_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
         pal[i].b = (colors[i].b << 8) | colors[i].b;
     }
 
-    ggiSetPalette (VIS, firstcolor, ncolors, pal);
+    ggiSetPalette(VIS, firstcolor, ncolors, pal);
 
     return 1;
 }
 
 void
-GGI_VideoQuit (_THIS)
+GGI_VideoQuit(_THIS)
 {
 }
 void
-GGI_FinalQuit (void)
+GGI_FinalQuit(void)
 {
 }
 

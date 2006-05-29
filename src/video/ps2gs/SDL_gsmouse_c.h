@@ -30,10 +30,10 @@
 #define CURSOR_H_POW	5       /* 32 = 2^5 */
 
 /* Functions to be exported */
-extern void GS_FreeWMCursor (_THIS, WMcursor * cursor);
-extern WMcursor *GS_CreateWMCursor (_THIS,
-                                    Uint8 * data, Uint8 * mask, int w, int h,
-                                    int hot_x, int hot_y);
-extern void GS_MoveWMCursor (_THIS, int x, int y);
-extern int GS_ShowWMCursor (_THIS, WMcursor * cursor);
+extern void GS_FreeWMCursor(_THIS, WMcursor * cursor);
+extern WMcursor *GS_CreateWMCursor(_THIS,
+                                   Uint8 * data, Uint8 * mask, int w, int h,
+                                   int hot_x, int hot_y);
+extern void GS_MoveWMCursor(_THIS, int x, int y);
+extern int GS_ShowWMCursor(_THIS, WMcursor * cursor);
 /* vi: set ts=4 sw=4 expandtab: */

@@ -77,7 +77,7 @@ typedef struct SDL_keysym
  * If 'enable' is -1, the translation state is not changed.
  * It returns the previous state of keyboard translation.
  */
-extern DECLSPEC int SDLCALL SDL_EnableUNICODE (int enable);
+extern DECLSPEC int SDLCALL SDL_EnableUNICODE(int enable);
 
 /*
  * Enable/Disable keyboard repeat.  Keyboard repeat defaults to off.
@@ -90,8 +90,8 @@ extern DECLSPEC int SDLCALL SDL_EnableUNICODE (int enable);
 /*
  * If 'delay' is set to 0, keyboard repeat is disabled.
  */
-extern DECLSPEC int SDLCALL SDL_EnableKeyRepeat (int delay, int interval);
-extern DECLSPEC void SDLCALL SDL_GetKeyRepeat (int *delay, int *interval);
+extern DECLSPEC int SDLCALL SDL_EnableKeyRepeat(int delay, int interval);
+extern DECLSPEC void SDLCALL SDL_GetKeyRepeat(int *delay, int *interval);
 
 /*
  * Get a snapshot of the current state of the keyboard.
@@ -100,23 +100,23 @@ extern DECLSPEC void SDLCALL SDL_GetKeyRepeat (int *delay, int *interval);
  * 	Uint8 *keystate = SDL_GetKeyState(NULL);
  *	if ( keystate[SDLK_RETURN] ) ... <RETURN> is pressed.
  */
-extern DECLSPEC Uint8 *SDLCALL SDL_GetKeyState (int *numkeys);
+extern DECLSPEC Uint8 *SDLCALL SDL_GetKeyState(int *numkeys);
 
 /*
  * Get the current key modifier state
  */
-extern DECLSPEC SDLMod SDLCALL SDL_GetModState (void);
+extern DECLSPEC SDLMod SDLCALL SDL_GetModState(void);
 
 /*
  * Set the current key modifier state
  * This does not change the keyboard state, only the key modifier flags.
  */
-extern DECLSPEC void SDLCALL SDL_SetModState (SDLMod modstate);
+extern DECLSPEC void SDLCALL SDL_SetModState(SDLMod modstate);
 
 /*
  * Get the name of an SDL virtual keysym
  */
-extern DECLSPEC char *SDLCALL SDL_GetKeyName (SDLKey key);
+extern DECLSPEC char *SDLCALL SDL_GetKeyName(SDLKey key);
 
 
 /* Ends C function definitions when using C++ */

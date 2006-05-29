@@ -26,11 +26,11 @@
 /* Variables and functions exported by SDL_sysevents.c to other parts 
    of the native video subsystem (SDL_sysvideo.c)
 */
-extern int SVGA_initkeymaps (int fd);
-extern void SVGA_mousecallback (int button, int dx, int dy,
-                                int u1, int u2, int u3, int u4);
-extern void SVGA_keyboardcallback (int scancode, int pressed);
+extern int SVGA_initkeymaps(int fd);
+extern void SVGA_mousecallback(int button, int dx, int dy,
+                               int u1, int u2, int u3, int u4);
+extern void SVGA_keyboardcallback(int scancode, int pressed);
 
-extern void SVGA_InitOSKeymap (_THIS);
-extern void SVGA_PumpEvents (_THIS);
+extern void SVGA_InitOSKeymap(_THIS);
+extern void SVGA_PumpEvents(_THIS);
 /* vi: set ts=4 sw=4 expandtab: */

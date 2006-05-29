@@ -309,7 +309,7 @@ struct joystick_hwdata
 #ifndef NO_LOGICAL_JOYSTICKS
 
 static int
-CountLogicalJoysticks (int max)
+CountLogicalJoysticks(int max)
 {
     register int i, j, k, ret, prev;
     const char *name;
@@ -319,23 +319,23 @@ CountLogicalJoysticks (int max)
     ret = 0;
 
     for (i = 0; i < max; i++) {
-        name = SDL_SYS_JoystickName (i);
+        name = SDL_SYS_JoystickName(i);
 
-        fd = open (SDL_joylist[i].fname, O_RDONLY, 0);
+        fd = open(SDL_joylist[i].fname, O_RDONLY, 0);
         if (fd >= 0) {
-            if (ioctl (fd, JSIOCGBUTTONS, &n) < 0) {
+            if (ioctl(fd, JSIOCGBUTTONS, &n) < 0) {
                 nbuttons = -1;
             } else {
                 nbuttons = n;
             }
-            close (fd);
+            close(fd);
         } else {
             nbuttons = -1;
         }
 
         if (name) {
-            for (j = 0; j < SDL_arraysize (joystick_logicalmap); j++) {
-                if (!SDL_strcmp (name, joystick_logicalmap[j].name)
+            for (j = 0; j < SDL_arraysize(joystick_logicalmap); j++) {
+                if (!SDL_strcmp(name, joystick_logicalmap[j].name)
                     && (nbuttons == -1
                         || nbuttons == joystick_logicalmap[j].nbuttons)) {
                     prev = i;
@@ -361,16 +361,16 @@ CountLogicalJoysticks (int max)
 }
 
 static void
-LogicalSuffix (int logicalno, char *namebuf, int len)
+LogicalSuffix(int logicalno, char *namebuf, int len)
 {
     register int slen;
     const static char suffixs[] =
         "01020304050607080910111213141516171819" "20212223242526272829303132";
     const char *suffix;
-    slen = SDL_strlen (namebuf);
+    slen = SDL_strlen(namebuf);
     suffix = NULL;
 
-    if (logicalno * 2 < sizeof (suffixs))
+    if (logicalno * 2 < sizeof(suffixs))
         suffix = suffixs + (logicalno * 2);
 
     if (slen + 4 < len && suffix) {
@@ -389,21 +389,21 @@ LogicalSuffix (int logicalno, char *namebuf, int len)
 	(((1UL << ((nr) & 31)) & (((const unsigned int *) addr)[(nr) >> 5])) != 0)
 
 static int
-EV_IsJoystick (int fd)
+EV_IsJoystick(int fd)
 {
     unsigned long evbit[40];
     unsigned long keybit[40];
     unsigned long absbit[40];
 
-    if ((ioctl (fd, EVIOCGBIT (0, sizeof (evbit)), evbit) < 0) ||
-        (ioctl (fd, EVIOCGBIT (EV_KEY, sizeof (keybit)), keybit) < 0) ||
-        (ioctl (fd, EVIOCGBIT (EV_ABS, sizeof (absbit)), absbit) < 0)) {
+    if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
+        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0)) {
         return (0);
     }
-    if (!(test_bit (EV_KEY, evbit) && test_bit (EV_ABS, evbit) &&
-          test_bit (ABS_X, absbit) && test_bit (ABS_Y, absbit) &&
-          (test_bit (BTN_TRIGGER, keybit) || test_bit (BTN_A, keybit)
-           || test_bit (BTN_1, keybit))))
+    if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
+          test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit) &&
+          (test_bit(BTN_TRIGGER, keybit) || test_bit(BTN_A, keybit)
+           || test_bit(BTN_1, keybit))))
         return 0;
     return (1);
 }
@@ -412,7 +412,7 @@ EV_IsJoystick (int fd)
 
 /* Function to scan the system for joysticks */
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     /* The base path of the joystick devices */
     const char *joydev_pattern[] = {
@@ -433,31 +433,31 @@ SDL_SYS_JoystickInit (void)
     numjoysticks = 0;
 
     /* First see if the user specified a joystick to use */
-    if (SDL_getenv ("SDL_JOYSTICK_DEVICE") != NULL) {
-        SDL_strlcpy (path, SDL_getenv ("SDL_JOYSTICK_DEVICE"), sizeof (path));
-        if (stat (path, &sb) == 0) {
-            fd = open (path, O_RDONLY, 0);
+    if (SDL_getenv("SDL_JOYSTICK_DEVICE") != NULL) {
+        SDL_strlcpy(path, SDL_getenv("SDL_JOYSTICK_DEVICE"), sizeof(path));
+        if (stat(path, &sb) == 0) {
+            fd = open(path, O_RDONLY, 0);
             if (fd >= 0) {
                 /* Assume the user knows what they're doing. */
-                SDL_joylist[numjoysticks].fname = SDL_strdup (path);
+                SDL_joylist[numjoysticks].fname = SDL_strdup(path);
                 if (SDL_joylist[numjoysticks].fname) {
                     dev_nums[numjoysticks] = sb.st_rdev;
                     ++numjoysticks;
                 }
-                close (fd);
+                close(fd);
             }
         }
     }
 
-    for (i = 0; i < SDL_arraysize (joydev_pattern); ++i) {
+    for (i = 0; i < SDL_arraysize(joydev_pattern); ++i) {
         for (j = 0; j < MAX_JOYSTICKS; ++j) {
-            SDL_snprintf (path, SDL_arraysize (path), joydev_pattern[i], j);
+            SDL_snprintf(path, SDL_arraysize(path), joydev_pattern[i], j);
 
             /* rcg06302000 replaced access(F_OK) call with stat().
              * stat() will fail if the file doesn't exist, so it's
              * equivalent behaviour.
              */
-            if (stat (path, &sb) == 0) {
+            if (stat(path, &sb) == 0) {
                 /* Check to make sure it's not already in list.
                  * This happens when we see a stick via symlink.
                  */
@@ -471,23 +471,23 @@ SDL_SYS_JoystickInit (void)
                     continue;
                 }
 
-                fd = open (path, O_RDONLY, 0);
+                fd = open(path, O_RDONLY, 0);
                 if (fd < 0) {
                     continue;
                 }
 #if SDL_INPUT_LINUXEV
 #ifdef DEBUG_INPUT_EVENTS
-                printf ("Checking %s\n", path);
+                printf("Checking %s\n", path);
 #endif
-                if ((i == 0) && !EV_IsJoystick (fd)) {
-                    close (fd);
+                if ((i == 0) && !EV_IsJoystick(fd)) {
+                    close(fd);
                     continue;
                 }
 #endif
-                close (fd);
+                close(fd);
 
                 /* We're fine, add this joystick */
-                SDL_joylist[numjoysticks].fname = SDL_strdup (path);
+                SDL_joylist[numjoysticks].fname = SDL_strdup(path);
                 if (SDL_joylist[numjoysticks].fname) {
                     dev_nums[numjoysticks] = sb.st_rdev;
                     ++numjoysticks;
@@ -509,7 +509,7 @@ SDL_SYS_JoystickInit (void)
 #endif
     }
 #ifndef NO_LOGICAL_JOYSTICKS
-    numjoysticks += CountLogicalJoysticks (numjoysticks);
+    numjoysticks += CountLogicalJoysticks(numjoysticks);
 #endif
 
     return (numjoysticks);
@@ -517,35 +517,35 @@ SDL_SYS_JoystickInit (void)
 
 /* Function to get the device-dependent name of a joystick */
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     int fd;
     static char namebuf[128];
     char *name;
-    SDL_logical_joydecl (int oindex = index);
+    SDL_logical_joydecl(int oindex = index);
 
 #ifndef NO_LOGICAL_JOYSTICKS
-    SDL_joylist_head (index, index);
+    SDL_joylist_head(index, index);
 #endif
     name = NULL;
-    fd = open (SDL_joylist[index].fname, O_RDONLY, 0);
+    fd = open(SDL_joylist[index].fname, O_RDONLY, 0);
     if (fd >= 0) {
         if (
 #if SDL_INPUT_LINUXEV
-               (ioctl (fd, EVIOCGNAME (sizeof (namebuf)), namebuf) <= 0) &&
+               (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) <= 0) &&
 #endif
-               (ioctl (fd, JSIOCGNAME (sizeof (namebuf)), namebuf) <= 0)) {
+               (ioctl(fd, JSIOCGNAME(sizeof(namebuf)), namebuf) <= 0)) {
             name = SDL_joylist[index].fname;
         } else {
             name = namebuf;
         }
-        close (fd);
+        close(fd);
 
 
 #ifndef NO_LOGICAL_JOYSTICKS
         if (SDL_joylist[oindex].prev || SDL_joylist[oindex].next
             || index != oindex) {
-            LogicalSuffix (SDL_joylist[oindex].logicalno, namebuf, 128);
+            LogicalSuffix(SDL_joylist[oindex].logicalno, namebuf, 128);
         }
 #endif
     }
@@ -553,13 +553,13 @@ SDL_SYS_JoystickName (int index)
 }
 
 static int
-allocate_hatdata (SDL_Joystick * joystick)
+allocate_hatdata(SDL_Joystick * joystick)
 {
     int i;
 
     joystick->hwdata->hats =
-        (struct hwdata_hat *) SDL_malloc (joystick->nhats *
-                                          sizeof (struct hwdata_hat));
+        (struct hwdata_hat *) SDL_malloc(joystick->nhats *
+                                         sizeof(struct hwdata_hat));
     if (joystick->hwdata->hats == NULL) {
         return (-1);
     }
@@ -571,13 +571,13 @@ allocate_hatdata (SDL_Joystick * joystick)
 }
 
 static int
-allocate_balldata (SDL_Joystick * joystick)
+allocate_balldata(SDL_Joystick * joystick)
 {
     int i;
 
     joystick->hwdata->balls =
-        (struct hwdata_ball *) SDL_malloc (joystick->nballs *
-                                           sizeof (struct hwdata_ball));
+        (struct hwdata_ball *) SDL_malloc(joystick->nballs *
+                                          sizeof(struct hwdata_ball));
     if (joystick->hwdata->balls == NULL) {
         return (-1);
     }
@@ -589,7 +589,7 @@ allocate_balldata (SDL_Joystick * joystick)
 }
 
 static SDL_bool
-JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
+JS_ConfigJoystick(SDL_Joystick * joystick, int fd)
 {
     SDL_bool handled;
     unsigned char n;
@@ -601,24 +601,24 @@ JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
     handled = SDL_FALSE;
 
     /* Default joystick device settings */
-    if (ioctl (fd, JSIOCGAXES, &n) < 0) {
+    if (ioctl(fd, JSIOCGAXES, &n) < 0) {
         joystick->naxes = 2;
     } else {
         joystick->naxes = n;
     }
-    if (ioctl (fd, JSIOCGBUTTONS, &n) < 0) {
+    if (ioctl(fd, JSIOCGBUTTONS, &n) < 0) {
         joystick->nbuttons = 2;
     } else {
         joystick->nbuttons = n;
     }
 
-    name = SDL_SYS_JoystickName (joystick->index);
+    name = SDL_SYS_JoystickName(joystick->index);
     old_axes = joystick->naxes;
 
     /* Generic analog joystick support */
-    if (SDL_strstr (name, "Analog") == name && SDL_strstr (name, "-hat")) {
-        if (SDL_sscanf (name, "Analog %d-axis %*d-button %d-hat",
-                        &tmp_naxes, &tmp_nhats) == 2) {
+    if (SDL_strstr(name, "Analog") == name && SDL_strstr(name, "-hat")) {
+        if (SDL_sscanf(name, "Analog %d-axis %*d-button %d-hat",
+                       &tmp_naxes, &tmp_nhats) == 2) {
 
             joystick->naxes = tmp_naxes;
             joystick->nhats = tmp_nhats;
@@ -628,8 +628,8 @@ JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
     }
 
     /* Special joystick support */
-    for (i = 0; i < SDL_arraysize (special_joysticks); ++i) {
-        if (SDL_strcmp (name, special_joysticks[i].name) == 0) {
+    for (i = 0; i < SDL_arraysize(special_joysticks); ++i) {
+        if (SDL_strcmp(name, special_joysticks[i].name) == 0) {
 
             joystick->naxes = special_joysticks[i].naxes;
             joystick->nhats = special_joysticks[i].nhats;
@@ -641,17 +641,17 @@ JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
     }
 
     /* User environment joystick support */
-    if ((env = SDL_getenv ("SDL_LINUX_JOYSTICK"))) {
+    if ((env = SDL_getenv("SDL_LINUX_JOYSTICK"))) {
         *env_name = '\0';
-        if (*env == '\'' && SDL_sscanf (env, "'%[^']s'", env_name) == 1)
-            env += SDL_strlen (env_name) + 2;
-        else if (SDL_sscanf (env, "%s", env_name) == 1)
-            env += SDL_strlen (env_name);
+        if (*env == '\'' && SDL_sscanf(env, "'%[^']s'", env_name) == 1)
+            env += SDL_strlen(env_name) + 2;
+        else if (SDL_sscanf(env, "%s", env_name) == 1)
+            env += SDL_strlen(env_name);
 
-        if (SDL_strcmp (name, env_name) == 0) {
+        if (SDL_strcmp(name, env_name) == 0) {
 
-            if (SDL_sscanf (env, "%d %d %d", &tmp_naxes, &tmp_nhats,
-                            &tmp_nballs) == 3) {
+            if (SDL_sscanf(env, "%d %d %d", &tmp_naxes, &tmp_nhats,
+                           &tmp_nballs) == 3) {
 
                 joystick->naxes = tmp_naxes;
                 joystick->nhats = tmp_nhats;
@@ -665,12 +665,12 @@ JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
     /* Remap hats and balls */
     if (handled) {
         if (joystick->nhats > 0) {
-            if (allocate_hatdata (joystick) < 0) {
+            if (allocate_hatdata(joystick) < 0) {
                 joystick->nhats = 0;
             }
         }
         if (joystick->nballs > 0) {
-            if (allocate_balldata (joystick) < 0) {
+            if (allocate_balldata(joystick) < 0) {
                 joystick->nballs = 0;
             }
         }
@@ -682,7 +682,7 @@ JS_ConfigJoystick (SDL_Joystick * joystick, int fd)
 #if SDL_INPUT_LINUXEV
 
 static SDL_bool
-EV_ConfigJoystick (SDL_Joystick * joystick, int fd)
+EV_ConfigJoystick(SDL_Joystick * joystick, int fd)
 {
     int i, t;
     unsigned long keybit[40];
@@ -690,25 +690,25 @@ EV_ConfigJoystick (SDL_Joystick * joystick, int fd)
     unsigned long relbit[40];
 
     /* See if this device uses the new unified event API */
-    if ((ioctl (fd, EVIOCGBIT (EV_KEY, sizeof (keybit)), keybit) >= 0) &&
-        (ioctl (fd, EVIOCGBIT (EV_ABS, sizeof (absbit)), absbit) >= 0) &&
-        (ioctl (fd, EVIOCGBIT (EV_REL, sizeof (relbit)), relbit) >= 0)) {
+    if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
+        (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) >= 0) &&
+        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0)) {
         joystick->hwdata->is_hid = SDL_TRUE;
 
         /* Get the number of buttons, axes, and other thingamajigs */
         for (i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
-            if (test_bit (i, keybit)) {
+            if (test_bit(i, keybit)) {
 #ifdef DEBUG_INPUT_EVENTS
-                printf ("Joystick has button: 0x%x\n", i);
+                printf("Joystick has button: 0x%x\n", i);
 #endif
                 joystick->hwdata->key_map[i - BTN_MISC] = joystick->nbuttons;
                 ++joystick->nbuttons;
             }
         }
         for (i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
-            if (test_bit (i, keybit)) {
+            if (test_bit(i, keybit)) {
 #ifdef DEBUG_INPUT_EVENTS
-                printf ("Joystick has button: 0x%x\n", i);
+                printf("Joystick has button: 0x%x\n", i);
 #endif
                 joystick->hwdata->key_map[i - BTN_MISC] = joystick->nbuttons;
                 ++joystick->nbuttons;
@@ -720,16 +720,15 @@ EV_ConfigJoystick (SDL_Joystick * joystick, int fd)
                 i = ABS_HAT3Y;
                 continue;
             }
-            if (test_bit (i, absbit)) {
+            if (test_bit(i, absbit)) {
                 int values[5];
 
-                if (ioctl (fd, EVIOCGABS (i), values) < 0)
+                if (ioctl(fd, EVIOCGABS(i), values) < 0)
                     continue;
 #ifdef DEBUG_INPUT_EVENTS
-                printf ("Joystick has absolute axis: %x\n", i);
-                printf ("Values = { %d, %d, %d, %d, %d }\n",
-                        values[0], values[1],
-                        values[2], values[3], values[4]);
+                printf("Joystick has absolute axis: %x\n", i);
+                printf("Values = { %d, %d, %d, %d, %d }\n",
+                       values[0], values[1], values[2], values[3], values[4]);
 #endif /* DEBUG_INPUT_EVENTS */
                 joystick->hwdata->abs_map[i] = joystick->naxes;
                 if (values[1] == values[2]) {
@@ -752,25 +751,25 @@ EV_ConfigJoystick (SDL_Joystick * joystick, int fd)
             }
         }
         for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
-            if (test_bit (i, absbit) || test_bit (i + 1, absbit)) {
+            if (test_bit(i, absbit) || test_bit(i + 1, absbit)) {
 #ifdef DEBUG_INPUT_EVENTS
-                printf ("Joystick has hat %d\n", (i - ABS_HAT0X) / 2);
+                printf("Joystick has hat %d\n", (i - ABS_HAT0X) / 2);
 #endif
                 ++joystick->nhats;
             }
         }
-        if (test_bit (REL_X, relbit) || test_bit (REL_Y, relbit)) {
+        if (test_bit(REL_X, relbit) || test_bit(REL_Y, relbit)) {
             ++joystick->nballs;
         }
 
         /* Allocate data to keep track of these thingamajigs */
         if (joystick->nhats > 0) {
-            if (allocate_hatdata (joystick) < 0) {
+            if (allocate_hatdata(joystick) < 0) {
                 joystick->nhats = 0;
             }
         }
         if (joystick->nballs > 0) {
-            if (allocate_balldata (joystick) < 0) {
+            if (allocate_balldata(joystick) < 0) {
                 joystick->nballs = 0;
             }
         }
@@ -782,7 +781,7 @@ EV_ConfigJoystick (SDL_Joystick * joystick, int fd)
 
 #ifndef NO_LOGICAL_JOYSTICKS
 static void
-ConfigLogicalJoystick (SDL_Joystick * joystick)
+ConfigLogicalJoystick(SDL_Joystick * joystick)
 {
     struct joystick_logical_layout *layout;
 
@@ -803,17 +802,17 @@ ConfigLogicalJoystick (SDL_Joystick * joystick)
    It returns 0, or -1 if there is an error.
  */
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     int fd;
-    SDL_logical_joydecl (int realindex);
-    SDL_logical_joydecl (SDL_Joystick * realjoy = NULL);
+    SDL_logical_joydecl(int realindex);
+    SDL_logical_joydecl(SDL_Joystick * realjoy = NULL);
 
     /* Open the joystick and set the joystick file descriptor */
 #ifndef NO_LOGICAL_JOYSTICKS
     if (SDL_joylist[joystick->index].fname == NULL) {
-        SDL_joylist_head (realindex, joystick->index);
-        realjoy = SDL_JoystickOpen (realindex);
+        SDL_joylist_head(realindex, joystick->index);
+        realjoy = SDL_JoystickOpen(realindex);
 
         if (realjoy == NULL)
             return (-1);
@@ -821,40 +820,40 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
         fd = realjoy->hwdata->fd;
 
     } else {
-        fd = open (SDL_joylist[joystick->index].fname, O_RDONLY, 0);
+        fd = open(SDL_joylist[joystick->index].fname, O_RDONLY, 0);
     }
     SDL_joylist[joystick->index].joy = joystick;
 #else
-    fd = open (SDL_joylist[joystick->index].fname, O_RDONLY, 0);
+    fd = open(SDL_joylist[joystick->index].fname, O_RDONLY, 0);
 #endif
 
     if (fd < 0) {
-        SDL_SetError ("Unable to open %s\n", SDL_joylist[joystick->index]);
+        SDL_SetError("Unable to open %s\n", SDL_joylist[joystick->index]);
         return (-1);
     }
     joystick->hwdata = (struct joystick_hwdata *)
-        SDL_malloc (sizeof (*joystick->hwdata));
+        SDL_malloc(sizeof(*joystick->hwdata));
     if (joystick->hwdata == NULL) {
-        SDL_OutOfMemory ();
-        close (fd);
+        SDL_OutOfMemory();
+        close(fd);
         return (-1);
     }
-    SDL_memset (joystick->hwdata, 0, sizeof (*joystick->hwdata));
+    SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
     joystick->hwdata->fd = fd;
 
     /* Set the joystick to non-blocking read mode */
-    fcntl (fd, F_SETFL, O_NONBLOCK);
+    fcntl(fd, F_SETFL, O_NONBLOCK);
 
     /* Get the number of buttons and axes on the joystick */
 #ifndef NO_LOGICAL_JOYSTICKS
     if (realjoy)
-        ConfigLogicalJoystick (joystick);
+        ConfigLogicalJoystick(joystick);
     else
 #endif
 #if SDL_INPUT_LINUXEV
-    if (!EV_ConfigJoystick (joystick, fd))
+    if (!EV_ConfigJoystick(joystick, fd))
 #endif
-        JS_ConfigJoystick (joystick, fd);
+        JS_ConfigJoystick(joystick, fd);
 
     return (0);
 }
@@ -862,8 +861,8 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
 #ifndef NO_LOGICAL_JOYSTICKS
 
 static SDL_Joystick *
-FindLogicalJoystick (SDL_Joystick * joystick,
-                     struct joystick_logical_mapping *v)
+FindLogicalJoystick(SDL_Joystick * joystick,
+                    struct joystick_logical_mapping *v)
 {
     SDL_Joystick *logicaljoy;
     register int i;
@@ -891,7 +890,7 @@ FindLogicalJoystick (SDL_Joystick * joystick,
 }
 
 static int
-LogicalJoystickButton (SDL_Joystick * joystick, Uint8 button, Uint8 state)
+LogicalJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state)
 {
     struct joystick_logical_mapping *buttons;
     SDL_Joystick *logicaljoy = NULL;
@@ -904,18 +903,18 @@ LogicalJoystickButton (SDL_Joystick * joystick, Uint8 button, Uint8 state)
     /* get the logical joystick that will receive the event
      */
     buttons = SDL_joylist[joystick->index].map->buttonmap + button;
-    logicaljoy = FindLogicalJoystick (joystick, buttons);
+    logicaljoy = FindLogicalJoystick(joystick, buttons);
 
     if (logicaljoy == NULL)
         return 1;
 
-    SDL_PrivateJoystickButton (logicaljoy, buttons->nthing, state);
+    SDL_PrivateJoystickButton(logicaljoy, buttons->nthing, state);
 
     return 1;
 }
 
 static int
-LogicalJoystickAxis (SDL_Joystick * joystick, Uint8 axis, Sint16 value)
+LogicalJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 {
     struct joystick_logical_mapping *axes;
     SDL_Joystick *logicaljoy = NULL;
@@ -928,19 +927,19 @@ LogicalJoystickAxis (SDL_Joystick * joystick, Uint8 axis, Sint16 value)
     /* get the logical joystick that will receive the event
      */
     axes = SDL_joylist[joystick->index].map->axismap + axis;
-    logicaljoy = FindLogicalJoystick (joystick, axes);
+    logicaljoy = FindLogicalJoystick(joystick, axes);
 
     if (logicaljoy == NULL)
         return 1;
 
-    SDL_PrivateJoystickAxis (logicaljoy, axes->nthing, value);
+    SDL_PrivateJoystickAxis(logicaljoy, axes->nthing, value);
 
     return 1;
 }
 #endif /* USE_LOGICAL_JOYSTICKS */
 
 static __inline__ void
-HandleHat (SDL_Joystick * stick, Uint8 hat, int axis, int value)
+HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
 {
     struct hwdata_hat *the_hat;
     const Uint8 position_map[3][3] = {
@@ -948,8 +947,8 @@ HandleHat (SDL_Joystick * stick, Uint8 hat, int axis, int value)
         {SDL_HAT_LEFT, SDL_HAT_CENTERED, SDL_HAT_RIGHT},
         {SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN}
     };
-    SDL_logical_joydecl (SDL_Joystick * logicaljoy = NULL);
-    SDL_logical_joydecl (struct joystick_logical_mapping *hats = NULL);
+    SDL_logical_joydecl(SDL_Joystick * logicaljoy = NULL);
+    SDL_logical_joydecl(struct joystick_logical_mapping *hats = NULL);
 
     the_hat = &stick->hwdata->hats[hat];
     if (value < 0) {
@@ -970,7 +969,7 @@ HandleHat (SDL_Joystick * stick, Uint8 hat, int axis, int value)
             /* get the fake joystick that will receive the event
              */
             hats = SDL_joylist[stick->index].map->hatmap + hat;
-            logicaljoy = FindLogicalJoystick (stick, hats);
+            logicaljoy = FindLogicalJoystick(stick, hats);
         }
 
         if (logicaljoy) {
@@ -979,14 +978,14 @@ HandleHat (SDL_Joystick * stick, Uint8 hat, int axis, int value)
         }
 #endif /* USE_LOGICAL_JOYSTICKS */
 
-        SDL_PrivateJoystickHat (stick, hat,
-                                position_map[the_hat->axis[1]][the_hat->
-                                                               axis[0]]);
+        SDL_PrivateJoystickHat(stick, hat,
+                               position_map[the_hat->axis[1]][the_hat->
+                                                              axis[0]]);
     }
 }
 
 static __inline__ void
-HandleBall (SDL_Joystick * stick, Uint8 ball, int axis, int value)
+HandleBall(SDL_Joystick * stick, Uint8 ball, int axis, int value)
 {
     stick->hwdata->balls[ball].axis[axis] += value;
 }
@@ -997,7 +996,7 @@ HandleBall (SDL_Joystick * stick, Uint8 ball, int axis, int value)
  * and update joystick device state.
  */
 static __inline__ void
-JS_HandleEvents (SDL_Joystick * joystick)
+JS_HandleEvents(SDL_Joystick * joystick)
 {
     struct js_event events[32];
     int i, len;
@@ -1005,52 +1004,51 @@ JS_HandleEvents (SDL_Joystick * joystick)
 
 #ifndef NO_LOGICAL_JOYSTICKS
     if (SDL_joylist[joystick->index].fname == NULL) {
-        SDL_joylist_head (i, joystick->index);
-        JS_HandleEvents (SDL_joylist[i].joy);
+        SDL_joylist_head(i, joystick->index);
+        JS_HandleEvents(SDL_joylist[i].joy);
         return;
     }
 #endif
 
-    while ((len = read (joystick->hwdata->fd, events, (sizeof events))) > 0) {
-        len /= sizeof (events[0]);
+    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
+        len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
             switch (events[i].type & ~JS_EVENT_INIT) {
             case JS_EVENT_AXIS:
                 if (events[i].number < joystick->naxes) {
 #ifndef NO_LOGICAL_JOYSTICKS
-                    if (!LogicalJoystickAxis (joystick,
-                                              events[i].number,
-                                              events[i].value))
+                    if (!LogicalJoystickAxis(joystick,
+                                             events[i].number,
+                                             events[i].value))
 #endif
-                        SDL_PrivateJoystickAxis (joystick,
-                                                 events[i].number,
-                                                 events[i].value);
+                        SDL_PrivateJoystickAxis(joystick,
+                                                events[i].number,
+                                                events[i].value);
                     break;
                 }
                 events[i].number -= joystick->naxes;
                 other_axis = (events[i].number / 2);
                 if (other_axis < joystick->nhats) {
-                    HandleHat (joystick, other_axis,
-                               events[i].number % 2, events[i].value);
+                    HandleHat(joystick, other_axis,
+                              events[i].number % 2, events[i].value);
                     break;
                 }
                 events[i].number -= joystick->nhats * 2;
                 other_axis = (events[i].number / 2);
                 if (other_axis < joystick->nballs) {
-                    HandleBall (joystick, other_axis,
-                                events[i].number % 2, events[i].value);
+                    HandleBall(joystick, other_axis,
+                               events[i].number % 2, events[i].value);
                     break;
                 }
                 break;
             case JS_EVENT_BUTTON:
 #ifndef NO_LOGICAL_JOYSTICKS
-                if (!LogicalJoystickButton (joystick,
-                                            events[i].number,
-                                            events[i].value))
+                if (!LogicalJoystickButton(joystick,
+                                           events[i].number, events[i].value))
 #endif
-                    SDL_PrivateJoystickButton (joystick,
-                                               events[i].number,
-                                               events[i].value);
+                    SDL_PrivateJoystickButton(joystick,
+                                              events[i].number,
+                                              events[i].value);
                 break;
             default:
                 /* ?? */
@@ -1062,7 +1060,7 @@ JS_HandleEvents (SDL_Joystick * joystick)
 
 #if SDL_INPUT_LINUXEV
 static __inline__ int
-EV_AxisCorrect (SDL_Joystick * joystick, int which, int value)
+EV_AxisCorrect(SDL_Joystick * joystick, int which, int value)
 {
     struct axis_correct *correct;
 
@@ -1090,7 +1088,7 @@ EV_AxisCorrect (SDL_Joystick * joystick, int which, int value)
 }
 
 static __inline__ void
-EV_HandleEvents (SDL_Joystick * joystick)
+EV_HandleEvents(SDL_Joystick * joystick)
 {
     struct input_event events[32];
     int i, len;
@@ -1098,13 +1096,13 @@ EV_HandleEvents (SDL_Joystick * joystick)
 
 #ifndef NO_LOGICAL_JOYSTICKS
     if (SDL_joylist[joystick->index].fname == NULL) {
-        SDL_joylist_head (i, joystick->index);
-        return EV_HandleEvents (SDL_joylist[i].joy);
+        SDL_joylist_head(i, joystick->index);
+        return EV_HandleEvents(SDL_joylist[i].joy);
     }
 #endif
 
-    while ((len = read (joystick->hwdata->fd, events, (sizeof events))) > 0) {
-        len /= sizeof (events[0]);
+    while ((len = read(joystick->hwdata->fd, events, (sizeof events))) > 0) {
+        len /= sizeof(events[0]);
         for (i = 0; i < len; ++i) {
             code = events[i].code;
             switch (events[i].type) {
@@ -1112,15 +1110,15 @@ EV_HandleEvents (SDL_Joystick * joystick)
                 if (code >= BTN_MISC) {
                     code -= BTN_MISC;
 #ifndef NO_LOGICAL_JOYSTICKS
-                    if (!LogicalJoystickButton (joystick,
-                                                joystick->hwdata->
-                                                key_map[code],
-                                                events[i].value))
+                    if (!LogicalJoystickButton(joystick,
+                                               joystick->hwdata->
+                                               key_map[code],
+                                               events[i].value))
 #endif
-                        SDL_PrivateJoystickButton (joystick,
-                                                   joystick->hwdata->
-                                                   key_map[code],
-                                                   events[i].value);
+                        SDL_PrivateJoystickButton(joystick,
+                                                  joystick->hwdata->
+                                                  key_map[code],
+                                                  events[i].value);
                 }
                 break;
             case EV_ABS:
@@ -1134,20 +1132,20 @@ EV_HandleEvents (SDL_Joystick * joystick)
                 case ABS_HAT3X:
                 case ABS_HAT3Y:
                     code -= ABS_HAT0X;
-                    HandleHat (joystick, code / 2, code % 2, events[i].value);
+                    HandleHat(joystick, code / 2, code % 2, events[i].value);
                     break;
                 default:
                     events[i].value =
-                        EV_AxisCorrect (joystick, code, events[i].value);
+                        EV_AxisCorrect(joystick, code, events[i].value);
 #ifndef NO_LOGICAL_JOYSTICKS
-                    if (!LogicalJoystickAxis (joystick,
-                                              joystick->hwdata->
-                                              abs_map[code], events[i].value))
+                    if (!LogicalJoystickAxis(joystick,
+                                             joystick->hwdata->
+                                             abs_map[code], events[i].value))
 #endif
-                        SDL_PrivateJoystickAxis (joystick,
-                                                 joystick->hwdata->
-                                                 abs_map[code],
-                                                 events[i].value);
+                        SDL_PrivateJoystickAxis(joystick,
+                                                joystick->hwdata->
+                                                abs_map[code],
+                                                events[i].value);
                     break;
                 }
                 break;
@@ -1156,8 +1154,7 @@ EV_HandleEvents (SDL_Joystick * joystick)
                 case REL_X:
                 case REL_Y:
                     code -= REL_X;
-                    HandleBall (joystick, code / 2, code % 2,
-                                events[i].value);
+                    HandleBall(joystick, code / 2, code % 2, events[i].value);
                     break;
                 default:
                     break;
@@ -1172,16 +1169,16 @@ EV_HandleEvents (SDL_Joystick * joystick)
 #endif /* SDL_INPUT_LINUXEV */
 
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     int i;
 
 #if SDL_INPUT_LINUXEV
     if (joystick->hwdata->is_hid)
-        EV_HandleEvents (joystick);
+        EV_HandleEvents(joystick);
     else
 #endif
-        JS_HandleEvents (joystick);
+        JS_HandleEvents(joystick);
 
     /* Deliver ball motion updates */
     for (i = 0; i < joystick->nballs; ++i) {
@@ -1192,20 +1189,20 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
         if (xrel || yrel) {
             joystick->hwdata->balls[i].axis[0] = 0;
             joystick->hwdata->balls[i].axis[1] = 0;
-            SDL_PrivateJoystickBall (joystick, (Uint8) i, xrel, yrel);
+            SDL_PrivateJoystickBall(joystick, (Uint8) i, xrel, yrel);
         }
     }
 }
 
 /* Function to close a joystick after use */
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
 #ifndef NO_LOGICAL_JOYSTICKS
     register int i;
     if (SDL_joylist[joystick->index].fname == NULL) {
-        SDL_joylist_head (i, joystick->index);
-        SDL_JoystickClose (SDL_joylist[i].joy);
+        SDL_joylist_head(i, joystick->index);
+        SDL_JoystickClose(SDL_joylist[i].joy);
     }
 #endif
 
@@ -1213,26 +1210,26 @@ SDL_SYS_JoystickClose (SDL_Joystick * joystick)
 #ifndef NO_LOGICAL_JOYSTICKS
         if (SDL_joylist[joystick->index].fname != NULL)
 #endif
-            close (joystick->hwdata->fd);
+            close(joystick->hwdata->fd);
         if (joystick->hwdata->hats) {
-            SDL_free (joystick->hwdata->hats);
+            SDL_free(joystick->hwdata->hats);
         }
         if (joystick->hwdata->balls) {
-            SDL_free (joystick->hwdata->balls);
+            SDL_free(joystick->hwdata->balls);
         }
-        SDL_free (joystick->hwdata);
+        SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
     }
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     int i;
 
     for (i = 0; SDL_joylist[i].fname; ++i) {
-        SDL_free (SDL_joylist[i].fname);
+        SDL_free(SDL_joylist[i].fname);
     }
     SDL_joylist[0].fname = NULL;
 }

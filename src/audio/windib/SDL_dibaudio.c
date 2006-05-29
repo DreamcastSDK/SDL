@@ -37,49 +37,49 @@
 
 
 /* Audio driver functions */
-static int DIB_OpenAudio (_THIS, SDL_AudioSpec * spec);
-static void DIB_ThreadInit (_THIS);
-static void DIB_WaitAudio (_THIS);
-static Uint8 *DIB_GetAudioBuf (_THIS);
-static void DIB_PlayAudio (_THIS);
-static void DIB_WaitDone (_THIS);
-static void DIB_CloseAudio (_THIS);
+static int DIB_OpenAudio(_THIS, SDL_AudioSpec * spec);
+static void DIB_ThreadInit(_THIS);
+static void DIB_WaitAudio(_THIS);
+static Uint8 *DIB_GetAudioBuf(_THIS);
+static void DIB_PlayAudio(_THIS);
+static void DIB_WaitDone(_THIS);
+static void DIB_CloseAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 
 static int
-Audio_Available (void)
+Audio_Available(void)
 {
     return (1);
 }
 
 static void
-Audio_DeleteDevice (SDL_AudioDevice * device)
+Audio_DeleteDevice(SDL_AudioDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_AudioDevice *
-Audio_CreateDevice (int devindex)
+Audio_CreateDevice(int devindex)
 {
     SDL_AudioDevice *this;
 
     /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc (sizeof (SDL_AudioDevice));
+    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
     if (this) {
-        SDL_memset (this, 0, (sizeof *this));
+        SDL_memset(this, 0, (sizeof *this));
         this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc ((sizeof *this->hidden));
+            SDL_malloc((sizeof *this->hidden));
     }
     if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (this) {
-            SDL_free (this);
+            SDL_free(this);
         }
         return (0);
     }
-    SDL_memset (this->hidden, 0, (sizeof *this->hidden));
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
     /* Set the function pointers */
     this->OpenAudio = DIB_OpenAudio;
@@ -103,8 +103,8 @@ AudioBootStrap WAVEOUT_bootstrap = {
 
 /* The Win32 callback for filling the WAVE device */
 static void CALLBACK
-FillSound (HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
-           DWORD dwParam1, DWORD dwParam2)
+FillSound(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
+          DWORD dwParam1, DWORD dwParam2)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) dwInstance;
 
@@ -114,14 +114,14 @@ FillSound (HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
 
     /* Signal that we are done playing a buffer */
 #if defined(_WIN32_WCE) && (_WIN32_WCE < 300)
-    ReleaseSemaphoreCE (audio_sem, 1, NULL);
+    ReleaseSemaphoreCE(audio_sem, 1, NULL);
 #else
-    ReleaseSemaphore (audio_sem, 1, NULL);
+    ReleaseSemaphore(audio_sem, 1, NULL);
 #endif
 }
 
 static void
-SetMMerror (char *function, MMRESULT code)
+SetMMerror(char *function, MMRESULT code)
 {
     size_t len;
     char errbuf[MAXERRORLENGTH];
@@ -129,41 +129,41 @@ SetMMerror (char *function, MMRESULT code)
     wchar_t werrbuf[MAXERRORLENGTH];
 #endif
 
-    SDL_snprintf (errbuf, SDL_arraysize (errbuf), "%s: ", function);
-    len = SDL_strlen (errbuf);
+    SDL_snprintf(errbuf, SDL_arraysize(errbuf), "%s: ", function);
+    len = SDL_strlen(errbuf);
 
 #ifdef _WIN32_WCE
     /* UNICODE version */
-    waveOutGetErrorText (code, werrbuf, MAXERRORLENGTH - len);
-    WideCharToMultiByte (CP_ACP, 0, werrbuf, -1, errbuf + len,
-                         MAXERRORLENGTH - len, NULL, NULL);
+    waveOutGetErrorText(code, werrbuf, MAXERRORLENGTH - len);
+    WideCharToMultiByte(CP_ACP, 0, werrbuf, -1, errbuf + len,
+                        MAXERRORLENGTH - len, NULL, NULL);
 #else
-    waveOutGetErrorText (code, errbuf + len, (UINT) (MAXERRORLENGTH - len));
+    waveOutGetErrorText(code, errbuf + len, (UINT) (MAXERRORLENGTH - len));
 #endif
 
-    SDL_SetError ("%s", errbuf);
+    SDL_SetError("%s", errbuf);
 }
 
 /* Set high priority for the audio thread */
 static void
-DIB_ThreadInit (_THIS)
+DIB_ThreadInit(_THIS)
 {
-    SetThreadPriority (GetCurrentThread (), THREAD_PRIORITY_HIGHEST);
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 }
 
 void
-DIB_WaitAudio (_THIS)
+DIB_WaitAudio(_THIS)
 {
     /* Wait for an audio chunk to finish */
 #if defined(_WIN32_WCE) && (_WIN32_WCE < 300)
-    WaitForSemaphoreCE (audio_sem, INFINITE);
+    WaitForSemaphoreCE(audio_sem, INFINITE);
 #else
-    WaitForSingleObject (audio_sem, INFINITE);
+    WaitForSingleObject(audio_sem, INFINITE);
 #endif
 }
 
 Uint8 *
-DIB_GetAudioBuf (_THIS)
+DIB_GetAudioBuf(_THIS)
 {
     Uint8 *retval;
 
@@ -172,15 +172,15 @@ DIB_GetAudioBuf (_THIS)
 }
 
 void
-DIB_PlayAudio (_THIS)
+DIB_PlayAudio(_THIS)
 {
     /* Queue it up */
-    waveOutWrite (sound, &wavebuf[next_buffer], sizeof (wavebuf[0]));
+    waveOutWrite(sound, &wavebuf[next_buffer], sizeof(wavebuf[0]));
     next_buffer = (next_buffer + 1) % NUM_BUFFERS;
 }
 
 void
-DIB_WaitDone (_THIS)
+DIB_WaitDone(_THIS)
 {
     int i, left;
 
@@ -192,45 +192,45 @@ DIB_WaitDone (_THIS)
             }
         }
         if (left > 0) {
-            SDL_Delay (100);
+            SDL_Delay(100);
         }
     }
     while (left > 0);
 }
 
 void
-DIB_CloseAudio (_THIS)
+DIB_CloseAudio(_THIS)
 {
     int i;
 
     /* Close up audio */
     if (audio_sem) {
 #if defined(_WIN32_WCE) && (_WIN32_WCE < 300)
-        CloseSynchHandle (audio_sem);
+        CloseSynchHandle(audio_sem);
 #else
-        CloseHandle (audio_sem);
+        CloseHandle(audio_sem);
 #endif
     }
     if (sound) {
-        waveOutClose (sound);
+        waveOutClose(sound);
     }
 
     /* Clean up mixing buffers */
     for (i = 0; i < NUM_BUFFERS; ++i) {
         if (wavebuf[i].dwUser != 0xFFFF) {
-            waveOutUnprepareHeader (sound, &wavebuf[i], sizeof (wavebuf[i]));
+            waveOutUnprepareHeader(sound, &wavebuf[i], sizeof(wavebuf[i]));
             wavebuf[i].dwUser = 0xFFFF;
         }
     }
     /* Free raw mixing buffer */
     if (mixbuf != NULL) {
-        SDL_free (mixbuf);
+        SDL_free(mixbuf);
         mixbuf = NULL;
     }
 }
 
 int
-DIB_OpenAudio (_THIS, SDL_AudioSpec * spec)
+DIB_OpenAudio(_THIS, SDL_AudioSpec * spec)
 {
     MMRESULT result;
     int i;
@@ -244,7 +244,7 @@ DIB_OpenAudio (_THIS, SDL_AudioSpec * spec)
     mixbuf = NULL;
 
     /* Set basic WAVE format parameters */
-    SDL_memset (&waveformat, 0, sizeof (waveformat));
+    SDL_memset(&waveformat, 0, sizeof(waveformat));
     waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
     /* Determine the audio parameters from the AudioSpec */
@@ -260,7 +260,7 @@ DIB_OpenAudio (_THIS, SDL_AudioSpec * spec)
         waveformat.wBitsPerSample = 16;
         break;
     default:
-        SDL_SetError ("Unsupported audio format");
+        SDL_SetError("Unsupported audio format");
         return (-1);
     }
     waveformat.nChannels = spec->channels;
@@ -275,14 +275,14 @@ DIB_OpenAudio (_THIS, SDL_AudioSpec * spec)
         spec->samples = ((spec->freq / 4) + 3) & ~3;
 
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec (spec);
+    SDL_CalculateAudioSpec(spec);
 
     /* Open the audio device */
-    result = waveOutOpen (&sound, WAVE_MAPPER, &waveformat,
-                          (DWORD_PTR) FillSound, (DWORD_PTR) this,
-                          CALLBACK_FUNCTION);
+    result = waveOutOpen(&sound, WAVE_MAPPER, &waveformat,
+                         (DWORD_PTR) FillSound, (DWORD_PTR) this,
+                         CALLBACK_FUNCTION);
     if (result != MMSYSERR_NOERROR) {
-        SetMMerror ("waveOutOpen()", result);
+        SetMMerror("waveOutOpen()", result);
         return (-1);
     }
 #ifdef SOUND_DEBUG
@@ -290,41 +290,40 @@ DIB_OpenAudio (_THIS, SDL_AudioSpec * spec)
     {
         WAVEOUTCAPS caps;
 
-        result = waveOutGetDevCaps ((UINT) sound, &caps, sizeof (caps));
+        result = waveOutGetDevCaps((UINT) sound, &caps, sizeof(caps));
         if (result != MMSYSERR_NOERROR) {
-            SetMMerror ("waveOutGetDevCaps()", result);
+            SetMMerror("waveOutGetDevCaps()", result);
             return (-1);
         }
-        printf ("Audio device: %s\n", caps.szPname);
+        printf("Audio device: %s\n", caps.szPname);
     }
 #endif
 
     /* Create the audio buffer semaphore */
 #if defined(_WIN32_WCE) && (_WIN32_WCE < 300)
-    audio_sem = CreateSemaphoreCE (NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
+    audio_sem = CreateSemaphoreCE(NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
 #else
-    audio_sem = CreateSemaphore (NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
+    audio_sem = CreateSemaphore(NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
 #endif
     if (audio_sem == NULL) {
-        SDL_SetError ("Couldn't create semaphore");
+        SDL_SetError("Couldn't create semaphore");
         return (-1);
     }
 
     /* Create the sound buffers */
-    mixbuf = (Uint8 *) SDL_malloc (NUM_BUFFERS * spec->size);
+    mixbuf = (Uint8 *) SDL_malloc(NUM_BUFFERS * spec->size);
     if (mixbuf == NULL) {
-        SDL_SetError ("Out of memory");
+        SDL_SetError("Out of memory");
         return (-1);
     }
     for (i = 0; i < NUM_BUFFERS; ++i) {
-        SDL_memset (&wavebuf[i], 0, sizeof (wavebuf[i]));
+        SDL_memset(&wavebuf[i], 0, sizeof(wavebuf[i]));
         wavebuf[i].lpData = (LPSTR) & mixbuf[i * spec->size];
         wavebuf[i].dwBufferLength = spec->size;
         wavebuf[i].dwFlags = WHDR_DONE;
-        result = waveOutPrepareHeader (sound, &wavebuf[i],
-                                       sizeof (wavebuf[i]));
+        result = waveOutPrepareHeader(sound, &wavebuf[i], sizeof(wavebuf[i]));
         if (result != MMSYSERR_NOERROR) {
-            SetMMerror ("waveOutPrepareHeader()", result);
+            SetMMerror("waveOutPrepareHeader()", result);
             return (-1);
         }
     }

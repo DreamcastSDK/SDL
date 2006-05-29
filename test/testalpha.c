@@ -14,15 +14,15 @@
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
-quit (int rc)
+quit(int rc)
 {
-    SDL_Quit ();
-    exit (rc);
+    SDL_Quit();
+    exit(rc);
 }
 
 /* Fill the screen with a gradient */
 static void
-FillBackground (SDL_Surface * screen)
+FillBackground(SDL_Surface * screen)
 {
     Uint8 *buffer;
     Uint16 *buffer16;
@@ -31,24 +31,24 @@ FillBackground (SDL_Surface * screen)
     int i, k;
 
     /* Set the surface pixels and refresh! */
-    if (SDL_LockSurface (screen) < 0) {
-        fprintf (stderr, "Couldn't lock the display surface: %s\n",
-                 SDL_GetError ());
-        quit (2);
+    if (SDL_LockSurface(screen) < 0) {
+        fprintf(stderr, "Couldn't lock the display surface: %s\n",
+                SDL_GetError());
+        quit(2);
     }
     buffer = (Uint8 *) screen->pixels;
     if (screen->format->BytesPerPixel != 2) {
         for (i = 0; i < screen->h; ++i) {
-            memset (buffer, (i * 255) / screen->h,
-                    screen->w * screen->format->BytesPerPixel);
+            memset(buffer, (i * 255) / screen->h,
+                   screen->w * screen->format->BytesPerPixel);
             buffer += screen->pitch;
         }
     } else {
         for (i = 0; i < screen->h; ++i) {
             gradient = ((i * 255) / screen->h);
             color =
-                (Uint16) SDL_MapRGB (screen->format, gradient, gradient,
-                                     gradient);
+                (Uint16) SDL_MapRGB(screen->format, gradient, gradient,
+                                    gradient);
             buffer16 = (Uint16 *) buffer;
             for (k = 0; k < screen->w; k++) {
                 *(buffer16 + k) = color;
@@ -57,13 +57,13 @@ FillBackground (SDL_Surface * screen)
         }
     }
 
-    SDL_UnlockSurface (screen);
-    SDL_UpdateRect (screen, 0, 0, 0, 0);
+    SDL_UnlockSurface(screen);
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 /* Create a "light" -- a yellowish surface with variable alpha */
 SDL_Surface *
-CreateLight (int radius)
+CreateLight(int radius)
 {
     Uint8 trans, alphamask;
     int range, addition;
@@ -79,19 +79,19 @@ CreateLight (int radius)
     /* Create a 16 (4/4/4/4) bpp square with a full 4-bit alpha channel */
     /* Note: this isn't any faster than a 32 bit alpha surface */
     alphamask = 0x0000000F;
-    light = SDL_CreateRGBSurface (SDL_SWSURFACE, 2 * radius, 2 * radius, 16,
-                                  0x0000F000, 0x00000F00, 0x000000F0,
-                                  alphamask);
+    light = SDL_CreateRGBSurface(SDL_SWSURFACE, 2 * radius, 2 * radius, 16,
+                                 0x0000F000, 0x00000F00, 0x000000F0,
+                                 alphamask);
 #else
     Uint32 *buf;
 
     /* Create a 32 (8/8/8/8) bpp square with a full 8-bit alpha channel */
     alphamask = 0x000000FF;
-    light = SDL_CreateRGBSurface (SDL_SWSURFACE, 2 * radius, 2 * radius, 32,
-                                  0xFF000000, 0x00FF0000, 0x0000FF00,
-                                  alphamask);
+    light = SDL_CreateRGBSurface(SDL_SWSURFACE, 2 * radius, 2 * radius, 32,
+                                 0xFF000000, 0x00FF0000, 0x0000FF00,
+                                 alphamask);
     if (light == NULL) {
-        fprintf (stderr, "Couldn't create light: %s\n", SDL_GetError ());
+        fprintf(stderr, "Couldn't create light: %s\n", SDL_GetError());
         return (NULL);
     }
 #endif
@@ -104,7 +104,7 @@ CreateLight (int radius)
     buf = (Uint32 *) light->pixels;
 #endif
     /* Get a tranparent pixel value - we'll add alpha later */
-    pixel = SDL_MapRGBA (light->format, 0xFF, 0xDD, 0x88, 0);
+    pixel = SDL_MapRGBA(light->format, 0xFF, 0xDD, 0x88, 0);
     for (y = 0; y < light->h; ++y) {
         for (x = 0; x < light->w; ++x) {
             *buf++ = pixel;
@@ -123,7 +123,7 @@ CreateLight (int radius)
             /* Slow distance formula (from center of light) */
             xdist = x - (light->w / 2);
             ydist = y - (light->h / 2);
-            range = (int) sqrt (xdist * xdist + ydist * ydist);
+            range = (int) sqrt(xdist * xdist + ydist * ydist);
 
             /* Scale distance to range of transparency (0-255) */
             if (range > radius) {
@@ -146,7 +146,7 @@ CreateLight (int radius)
         buf += skip;            /* Almost always 0, but just in case... */
     }
     /* Enable RLE acceleration of this alpha surface */
-    SDL_SetAlpha (light, SDL_SRCALPHA | SDL_RLEACCEL, 0);
+    SDL_SetAlpha(light, SDL_SRCALPHA | SDL_RLEACCEL, 0);
 
     /* We're done! */
     return (light);
@@ -156,7 +156,7 @@ static Uint32 flashes = 0;
 static Uint32 flashtime = 0;
 
 void
-FlashLight (SDL_Surface * screen, SDL_Surface * light, int x, int y)
+FlashLight(SDL_Surface * screen, SDL_Surface * light, int x, int y)
 {
     SDL_Rect position;
     Uint32 ticks1;
@@ -167,10 +167,10 @@ FlashLight (SDL_Surface * screen, SDL_Surface * light, int x, int y)
     position.y = y - (light->h / 2);
     position.w = light->w;
     position.h = light->h;
-    ticks1 = SDL_GetTicks ();
-    SDL_BlitSurface (light, NULL, screen, &position);
-    ticks2 = SDL_GetTicks ();
-    SDL_UpdateRects (screen, 1, &position);
+    ticks1 = SDL_GetTicks();
+    SDL_BlitSurface(light, NULL, screen, &position);
+    ticks2 = SDL_GetTicks();
+    SDL_UpdateRects(screen, 1, &position);
     ++flashes;
 
     /* Update time spend doing alpha blitting */
@@ -185,48 +185,46 @@ static int x_vel, y_vel;
 static int alpha_vel;
 
 int
-LoadSprite (SDL_Surface * screen, char *file)
+LoadSprite(SDL_Surface * screen, char *file)
 {
     SDL_Surface *converted;
 
     /* Load the sprite image */
-    sprite = SDL_LoadBMP (file);
+    sprite = SDL_LoadBMP(file);
     if (sprite == NULL) {
-        fprintf (stderr, "Couldn't load %s: %s", file, SDL_GetError ());
+        fprintf(stderr, "Couldn't load %s: %s", file, SDL_GetError());
         return (-1);
     }
 
     /* Set transparent pixel as the pixel at (0,0) */
     if (sprite->format->palette) {
-        SDL_SetColorKey (sprite, SDL_SRCCOLORKEY, *(Uint8 *) sprite->pixels);
+        SDL_SetColorKey(sprite, SDL_SRCCOLORKEY, *(Uint8 *) sprite->pixels);
     }
 
     /* Convert sprite to video format */
-    converted = SDL_DisplayFormat (sprite);
-    SDL_FreeSurface (sprite);
+    converted = SDL_DisplayFormat(sprite);
+    SDL_FreeSurface(sprite);
     if (converted == NULL) {
-        fprintf (stderr, "Couldn't convert background: %s\n",
-                 SDL_GetError ());
+        fprintf(stderr, "Couldn't convert background: %s\n", SDL_GetError());
         return (-1);
     }
     sprite = converted;
 
     /* Create the background */
-    backing = SDL_CreateRGBSurface (SDL_SWSURFACE, sprite->w, sprite->h, 8,
-                                    0, 0, 0, 0);
+    backing = SDL_CreateRGBSurface(SDL_SWSURFACE, sprite->w, sprite->h, 8,
+                                   0, 0, 0, 0);
     if (backing == NULL) {
-        fprintf (stderr, "Couldn't create background: %s\n", SDL_GetError ());
-        SDL_FreeSurface (sprite);
+        fprintf(stderr, "Couldn't create background: %s\n", SDL_GetError());
+        SDL_FreeSurface(sprite);
         return (-1);
     }
 
     /* Convert background to video format */
-    converted = SDL_DisplayFormat (backing);
-    SDL_FreeSurface (backing);
+    converted = SDL_DisplayFormat(backing);
+    SDL_FreeSurface(backing);
     if (converted == NULL) {
-        fprintf (stderr, "Couldn't convert background: %s\n",
-                 SDL_GetError ());
-        SDL_FreeSurface (sprite);
+        fprintf(stderr, "Couldn't convert background: %s\n", SDL_GetError());
+        SDL_FreeSurface(sprite);
         return (-1);
     }
     backing = converted;
@@ -245,14 +243,14 @@ LoadSprite (SDL_Surface * screen, char *file)
 }
 
 void
-AttractSprite (Uint16 x, Uint16 y)
+AttractSprite(Uint16 x, Uint16 y)
 {
     x_vel = ((int) x - position.x) / 10;
     y_vel = ((int) y - position.y) / 10;
 }
 
 void
-MoveSprite (SDL_Surface * screen, SDL_Surface * light)
+MoveSprite(SDL_Surface * screen, SDL_Surface * light)
 {
     SDL_Rect updates[2];
     int alpha;
@@ -260,7 +258,7 @@ MoveSprite (SDL_Surface * screen, SDL_Surface * light)
     /* Erase the sprite if it was visible */
     if (sprite_visible) {
         updates[0] = position;
-        SDL_BlitSurface (backing, NULL, screen, &updates[0]);
+        SDL_BlitSurface(backing, NULL, screen, &updates[0]);
     } else {
         updates[0].x = 0;
         updates[0].y = 0;
@@ -275,8 +273,8 @@ MoveSprite (SDL_Surface * screen, SDL_Surface * light)
     if (light != NULL) {
         int x, y;
 
-        SDL_GetMouseState (&x, &y);
-        FlashLight (screen, light, x, y);
+        SDL_GetMouseState(&x, &y);
+        FlashLight(screen, light, x, y);
     }
 
     /* Move the sprite, bounce at the wall */
@@ -298,39 +296,39 @@ MoveSprite (SDL_Surface * screen, SDL_Surface * light)
     } else if ((alpha + alpha_vel) > 255) {
         alpha_vel = -alpha_vel;
     }
-    SDL_SetAlpha (sprite, SDL_SRCALPHA, (Uint8) (alpha + alpha_vel));
+    SDL_SetAlpha(sprite, SDL_SRCALPHA, (Uint8) (alpha + alpha_vel));
 
     /* Save the area behind the sprite */
     updates[1] = position;
-    SDL_BlitSurface (screen, &updates[1], backing, NULL);
+    SDL_BlitSurface(screen, &updates[1], backing, NULL);
 
     /* Blit the sprite onto the screen */
     updates[1] = position;
-    SDL_BlitSurface (sprite, NULL, screen, &updates[1]);
+    SDL_BlitSurface(sprite, NULL, screen, &updates[1]);
 
     /* Make it so! */
-    SDL_UpdateRects (screen, 2, updates);
+    SDL_UpdateRects(screen, 2, updates);
 }
 
 void
-WarpSprite (SDL_Surface * screen, int x, int y)
+WarpSprite(SDL_Surface * screen, int x, int y)
 {
     SDL_Rect updates[2];
 
     /* Erase, move, Draw, update */
     updates[0] = position;
-    SDL_BlitSurface (backing, NULL, screen, &updates[0]);
+    SDL_BlitSurface(backing, NULL, screen, &updates[0]);
     position.x = x - sprite->w / 2;     /* Center about X */
     position.y = y - sprite->h / 2;     /* Center about Y */
     updates[1] = position;
-    SDL_BlitSurface (screen, &updates[1], backing, NULL);
+    SDL_BlitSurface(screen, &updates[1], backing, NULL);
     updates[1] = position;
-    SDL_BlitSurface (sprite, NULL, screen, &updates[1]);
-    SDL_UpdateRects (screen, 2, updates);
+    SDL_BlitSurface(sprite, NULL, screen, &updates[1]);
+    SDL_UpdateRects(screen, 2, updates);
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     const SDL_VideoInfo *info;
     SDL_Surface *screen;
@@ -345,8 +343,8 @@ main (int argc, char *argv[])
 
 
     /* Initialize SDL */
-    if (SDL_Init (SDL_INIT_VIDEO) < 0) {
-        fprintf (stderr, "Couldn't initialize SDL: %s\n", SDL_GetError ());
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -359,85 +357,85 @@ main (int argc, char *argv[])
     w = 640;
     h = 480;
 #endif
-    info = SDL_GetVideoInfo ();
+    info = SDL_GetVideoInfo();
     if (info->vfmt->BitsPerPixel > 8) {
         video_bpp = info->vfmt->BitsPerPixel;
     } else {
         video_bpp = 16;
-        fprintf (stderr, "forced 16 bpp mode\n");
+        fprintf(stderr, "forced 16 bpp mode\n");
     }
     videoflags = SDL_SWSURFACE;
     for (i = 1; argv[i]; ++i) {
-        if (strcmp (argv[i], "-bpp") == 0) {
-            video_bpp = atoi (argv[++i]);
+        if (strcmp(argv[i], "-bpp") == 0) {
+            video_bpp = atoi(argv[++i]);
             if (video_bpp <= 8) {
                 video_bpp = 16;
-                fprintf (stderr, "forced 16 bpp mode\n");
+                fprintf(stderr, "forced 16 bpp mode\n");
             }
-        } else if (strcmp (argv[i], "-hw") == 0) {
+        } else if (strcmp(argv[i], "-hw") == 0) {
             videoflags |= SDL_HWSURFACE;
-        } else if (strcmp (argv[i], "-warp") == 0) {
+        } else if (strcmp(argv[i], "-warp") == 0) {
             videoflags |= SDL_HWPALETTE;
-        } else if (strcmp (argv[i], "-width") == 0 && argv[i + 1]) {
-            w = atoi (argv[++i]);
-        } else if (strcmp (argv[i], "-height") == 0 && argv[i + 1]) {
-            h = atoi (argv[++i]);
-        } else if (strcmp (argv[i], "-resize") == 0) {
+        } else if (strcmp(argv[i], "-width") == 0 && argv[i + 1]) {
+            w = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "-height") == 0 && argv[i + 1]) {
+            h = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "-resize") == 0) {
             videoflags |= SDL_RESIZABLE;
-        } else if (strcmp (argv[i], "-noframe") == 0) {
+        } else if (strcmp(argv[i], "-noframe") == 0) {
             videoflags |= SDL_NOFRAME;
-        } else if (strcmp (argv[i], "-fullscreen") == 0) {
+        } else if (strcmp(argv[i], "-fullscreen") == 0) {
             videoflags |= SDL_FULLSCREEN;
         } else {
-            fprintf (stderr,
-                     "Usage: %s [-width N] [-height N] [-bpp N] [-warp] [-hw] [-fullscreen]\n",
-                     argv[0]);
-            quit (1);
+            fprintf(stderr,
+                    "Usage: %s [-width N] [-height N] [-bpp N] [-warp] [-hw] [-fullscreen]\n",
+                    argv[0]);
+            quit(1);
         }
     }
 
     /* Set video mode */
-    if ((screen = SDL_SetVideoMode (w, h, video_bpp, videoflags)) == NULL) {
-        fprintf (stderr, "Couldn't set %dx%dx%d video mode: %s\n",
-                 w, h, video_bpp, SDL_GetError ());
-        quit (2);
+    if ((screen = SDL_SetVideoMode(w, h, video_bpp, videoflags)) == NULL) {
+        fprintf(stderr, "Couldn't set %dx%dx%d video mode: %s\n",
+                w, h, video_bpp, SDL_GetError());
+        quit(2);
     }
-    FillBackground (screen);
+    FillBackground(screen);
 
     /* Create the light */
-    light = CreateLight (82);
+    light = CreateLight(82);
     if (light == NULL) {
-        quit (1);
+        quit(1);
     }
 
     /* Load the sprite */
-    if (LoadSprite (screen, "icon.bmp") < 0) {
-        SDL_FreeSurface (light);
-        quit (1);
+    if (LoadSprite(screen, "icon.bmp") < 0) {
+        SDL_FreeSurface(light);
+        quit(1);
     }
 
     /* Print out information about our surfaces */
-    printf ("Screen is at %d bits per pixel\n", screen->format->BitsPerPixel);
+    printf("Screen is at %d bits per pixel\n", screen->format->BitsPerPixel);
     if ((screen->flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-        printf ("Screen is in video memory\n");
+        printf("Screen is in video memory\n");
     } else {
-        printf ("Screen is in system memory\n");
+        printf("Screen is in system memory\n");
     }
     if ((screen->flags & SDL_DOUBLEBUF) == SDL_DOUBLEBUF) {
-        printf ("Screen has double-buffering enabled\n");
+        printf("Screen has double-buffering enabled\n");
     }
     if ((sprite->flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-        printf ("Sprite is in video memory\n");
+        printf("Sprite is in video memory\n");
     } else {
-        printf ("Sprite is in system memory\n");
+        printf("Sprite is in system memory\n");
     }
 
     /* Run a sample blit to trigger blit acceleration */
-    MoveSprite (screen, NULL);
+    MoveSprite(screen, NULL);
     if ((sprite->flags & SDL_HWACCEL) == SDL_HWACCEL) {
-        printf ("Sprite blit uses hardware alpha acceleration\n");
+        printf("Sprite blit uses hardware alpha acceleration\n");
     } else {
-        printf ("Sprite blit dosn't uses hardware alpha acceleration\n");
+        printf("Sprite blit dosn't uses hardware alpha acceleration\n");
     }
 
     /* Set a clipping rectangle to clip the outside edge of the screen */
@@ -447,57 +445,57 @@ main (int argc, char *argv[])
         clip.y = 32;
         clip.w = screen->w - (2 * 32);
         clip.h = screen->h - (2 * 32);
-        SDL_SetClipRect (screen, &clip);
+        SDL_SetClipRect(screen, &clip);
     }
 
     /* Wait for a keystroke */
-    lastticks = SDL_GetTicks ();
+    lastticks = SDL_GetTicks();
     done = 0;
     mouse_pressed = 0;
     while (!done) {
         /* Update the frame -- move the sprite */
         if (mouse_pressed) {
-            MoveSprite (screen, light);
+            MoveSprite(screen, light);
             mouse_pressed = 0;
         } else {
-            MoveSprite (screen, NULL);
+            MoveSprite(screen, NULL);
         }
 
         /* Slow down the loop to 30 frames/second */
-        ticks = SDL_GetTicks ();
+        ticks = SDL_GetTicks();
         if ((ticks - lastticks) < FRAME_TICKS) {
 #ifdef CHECK_SLEEP_GRANULARITY
-            fprintf (stderr, "Sleeping %d ticks\n",
-                     FRAME_TICKS - (ticks - lastticks));
+            fprintf(stderr, "Sleeping %d ticks\n",
+                    FRAME_TICKS - (ticks - lastticks));
 #endif
-            SDL_Delay (FRAME_TICKS - (ticks - lastticks));
+            SDL_Delay(FRAME_TICKS - (ticks - lastticks));
 #ifdef CHECK_SLEEP_GRANULARITY
-            fprintf (stderr, "Slept %d ticks\n", (SDL_GetTicks () - ticks));
+            fprintf(stderr, "Slept %d ticks\n", (SDL_GetTicks() - ticks));
 #endif
         }
         lastticks = ticks;
 
         /* Check for events */
-        while (SDL_PollEvent (&event)) {
+        while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_VIDEORESIZE:
                 screen =
-                    SDL_SetVideoMode (event.resize.w, event.resize.h,
-                                      video_bpp, videoflags);
+                    SDL_SetVideoMode(event.resize.w, event.resize.h,
+                                     video_bpp, videoflags);
                 if (screen) {
-                    FillBackground (screen);
+                    FillBackground(screen);
                 }
                 break;
                 /* Attract sprite while mouse is held down */
             case SDL_MOUSEMOTION:
                 if (event.motion.state != 0) {
-                    AttractSprite (event.motion.x, event.motion.y);
+                    AttractSprite(event.motion.x, event.motion.y);
                     mouse_pressed = 1;
                 }
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 if (event.button.button == 1) {
-                    AttractSprite (event.button.x, event.button.y);
+                    AttractSprite(event.button.x, event.button.y);
                     mouse_pressed = 1;
                 } else {
                     SDL_Rect area;
@@ -506,8 +504,8 @@ main (int argc, char *argv[])
                     area.y = event.button.y - 16;
                     area.w = 32;
                     area.h = 32;
-                    SDL_FillRect (screen, &area, 0);
-                    SDL_UpdateRects (screen, 1, &area);
+                    SDL_FillRect(screen, &area, 0);
+                    SDL_UpdateRects(screen, 1, &area);
                 }
                 break;
             case SDL_KEYDOWN:
@@ -523,16 +521,16 @@ main (int argc, char *argv[])
             }
         }
     }
-    SDL_FreeSurface (light);
-    SDL_FreeSurface (sprite);
-    SDL_FreeSurface (backing);
+    SDL_FreeSurface(light);
+    SDL_FreeSurface(sprite);
+    SDL_FreeSurface(backing);
 
     /* Print out some timing information */
     if (flashes > 0) {
-        printf ("%d alpha blits, ~%4.4f ms per blit\n",
-                flashes, (float) flashtime / flashes);
+        printf("%d alpha blits, ~%4.4f ms per blit\n",
+               flashes, (float) flashtime / flashes);
     }
 
-    SDL_Quit ();
+    SDL_Quit();
     return (0);
 }

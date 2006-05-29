@@ -31,7 +31,7 @@
 #define _THIS	SDL_VideoDevice *this
 
 /* Functions prototypes */
-void GEM_wind_redraw (_THIS, int winhandle, short *inside);
+void GEM_wind_redraw(_THIS, int winhandle, short *inside);
 
 /* Private display data */
 

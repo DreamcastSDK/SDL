@@ -212,7 +212,7 @@ static char *xigmisc_extension_name = XIGMISC_PROTOCOL_NAME;
 /*
  * find_display - locate the display info block
  */
-static int XiGMiscCloseDisplay ();
+static int XiGMiscCloseDisplay();
 
 static XExtensionHooks xigmisc_extension_hooks = {
     NULL,                       /* create_gc */
@@ -230,181 +230,180 @@ static XExtensionHooks xigmisc_extension_hooks = {
 
 
 static
-XEXT_GENERATE_CLOSE_DISPLAY (XiGMiscCloseDisplay, xigmisc_info)
-     static XEXT_GENERATE_FIND_DISPLAY (XiGMiscFindDisplay, xigmisc_info,
-                                        xigmisc_extension_name,
-                                        &xigmisc_extension_hooks,
-                                        XiGMiscNumberEvents, NULL)
+XEXT_GENERATE_CLOSE_DISPLAY(XiGMiscCloseDisplay, xigmisc_info)
+     static XEXT_GENERATE_FIND_DISPLAY(XiGMiscFindDisplay, xigmisc_info,
+                                       xigmisc_extension_name,
+                                       &xigmisc_extension_hooks,
+                                       XiGMiscNumberEvents, NULL)
 /*****************************************************************************/
-     Bool XiGMiscQueryVersion (Display * dpy, int *major, int *minor)
+     Bool XiGMiscQueryVersion(Display * dpy, int *major, int *minor)
 {
     int opcode, event, error;
     xXiGMiscQueryVersionReq *req;
     xXiGMiscQueryVersionReply rep;
-    XExtDisplayInfo *info = XiGMiscFindDisplay (dpy);
+    XExtDisplayInfo *info = XiGMiscFindDisplay(dpy);
 
-    if (!XQueryExtension
-        (dpy, XIGMISC_PROTOCOL_NAME, &opcode, &event, &error))
+    if (!XQueryExtension(dpy, XIGMISC_PROTOCOL_NAME, &opcode, &event, &error))
         return xFalse;
 
-    XiGMiscCheckExtension (dpy, info, xFalse);
+    XiGMiscCheckExtension(dpy, info, xFalse);
 
-    LockDisplay (dpy);
-    XiGMiscGetReq (XiGMiscQueryVersion, req, info);
+    LockDisplay(dpy);
+    XiGMiscGetReq(XiGMiscQueryVersion, req, info);
 
     req->major = XIGMISC_MAJOR_VERSION;
     req->minor = XIGMISC_MINOR_VERSION;
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xTrue)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xTrue)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return xFalse;
     }
 
     *major = rep.major;
     *minor = rep.minor;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return xTrue;
 }
 
 int
-XiGMiscQueryViews (Display * dpy, int screen, XiGMiscViewInfo ** pviews)
+XiGMiscQueryViews(Display * dpy, int screen, XiGMiscViewInfo ** pviews)
 {
     int n, size;
     XiGMiscViewInfo *views;
     xXiGMiscQueryViewsReq *req;
     xXiGMiscQueryViewsReply rep;
-    XExtDisplayInfo *info = XiGMiscFindDisplay (dpy);
-    XiGMiscCheckExtension (dpy, info, 0);
+    XExtDisplayInfo *info = XiGMiscFindDisplay(dpy);
+    XiGMiscCheckExtension(dpy, info, 0);
 
-    LockDisplay (dpy);
-    XiGMiscGetReq (XiGMiscQueryViews, req, info);
+    LockDisplay(dpy);
+    XiGMiscGetReq(XiGMiscQueryViews, req, info);
     req->screen = screen;
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return 0;
     }
 
     n = rep.nviews;
 
     if (n > 0) {
-        size = sizeof (XiGMiscViewInfo) * n;
-        views = (XiGMiscViewInfo *) Xmalloc (size);
+        size = sizeof(XiGMiscViewInfo) * n;
+        views = (XiGMiscViewInfo *) Xmalloc(size);
         if (!views) {
-            _XEatData (dpy, (unsigned long) size);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+            _XEatData(dpy, (unsigned long) size);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return 0;
         }
 
-        _XReadPad (dpy, (void *) views, size);
+        _XReadPad(dpy, (void *) views, size);
 
         *pviews = views;
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return n;
 }
 
 int
-XiGMiscQueryResolutions (Display * dpy, int screen, int view, int *pactive,
-                         XiGMiscResolutionInfo ** presolutions)
+XiGMiscQueryResolutions(Display * dpy, int screen, int view, int *pactive,
+                        XiGMiscResolutionInfo ** presolutions)
 {
     int n, size;
     XiGMiscResolutionInfo *resolutions;
     xXiGMiscQueryResolutionsReq *req;
     xXiGMiscQueryResolutionsReply rep;
-    XExtDisplayInfo *info = XiGMiscFindDisplay (dpy);
-    XiGMiscCheckExtension (dpy, info, 0);
+    XExtDisplayInfo *info = XiGMiscFindDisplay(dpy);
+    XiGMiscCheckExtension(dpy, info, 0);
 
-    LockDisplay (dpy);
-    XiGMiscGetReq (XiGMiscQueryResolutions, req, info);
+    LockDisplay(dpy);
+    XiGMiscGetReq(XiGMiscQueryResolutions, req, info);
     req->screen = screen;
     req->view = view;
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return 0;
     }
 
     n = rep.nresolutions;
 
     if (n > 0) {
-        size = sizeof (XiGMiscResolutionInfo) * n;
-        resolutions = (XiGMiscResolutionInfo *) Xmalloc (size);
+        size = sizeof(XiGMiscResolutionInfo) * n;
+        resolutions = (XiGMiscResolutionInfo *) Xmalloc(size);
         if (!resolutions) {
-            _XEatData (dpy, (unsigned long) size);
-            UnlockDisplay (dpy);
-            SyncHandle ();
+            _XEatData(dpy, (unsigned long) size);
+            UnlockDisplay(dpy);
+            SyncHandle();
             return 0;
         }
 
-        _XReadPad (dpy, (void *) resolutions, size);
+        _XReadPad(dpy, (void *) resolutions, size);
 
         *presolutions = resolutions;
         *pactive = rep.active;
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return n;
 }
 
 void
-XiGMiscChangeResolution (Display * dpy, int screen, int view, int width,
-                         int height, int refresh)
+XiGMiscChangeResolution(Display * dpy, int screen, int view, int width,
+                        int height, int refresh)
 {
     xXiGMiscChangeResolutionReq *req;
-    XExtDisplayInfo *info = XiGMiscFindDisplay (dpy);
+    XExtDisplayInfo *info = XiGMiscFindDisplay(dpy);
 
-    XiGMiscSimpleCheckExtension (dpy, info);
+    XiGMiscSimpleCheckExtension(dpy, info);
 
-    LockDisplay (dpy);
-    XiGMiscGetReq (XiGMiscChangeResolution, req, info);
+    LockDisplay(dpy);
+    XiGMiscGetReq(XiGMiscChangeResolution, req, info);
     req->screen = screen;
     req->view = view;
     req->width = width;
     req->height = height;
     req->refresh = refresh;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 }
 
 
 Bool
-XiGMiscFullScreen (Display * dpy, int screen, XID window, XID cmap)
+XiGMiscFullScreen(Display * dpy, int screen, XID window, XID cmap)
 {
     xXiGMiscFullScreenReq *req;
     xXiGMiscFullScreenReply rep;
-    XExtDisplayInfo *info = XiGMiscFindDisplay (dpy);
+    XExtDisplayInfo *info = XiGMiscFindDisplay(dpy);
 
-    XiGMiscCheckExtension (dpy, info, xFalse);
+    XiGMiscCheckExtension(dpy, info, xFalse);
 
-    LockDisplay (dpy);
-    XiGMiscGetReq (XiGMiscFullScreen, req, info);
+    LockDisplay(dpy);
+    XiGMiscGetReq(XiGMiscFullScreen, req, info);
     req->screen = screen;
     req->pad0 = 0;
     req->pad1 = 0;
     req->window = window;
     req->cmap = cmap;
 
-    if (!_XReply (dpy, (xReply *) & rep, 0, xTrue)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xTrue)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return xFalse;
     }
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
 
     return (rep.success ? xTrue : xFalse);
 }

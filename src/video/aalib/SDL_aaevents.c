@@ -36,11 +36,11 @@
 /* The translation tables from a console scancode to a SDL keysym */
 static SDLKey keymap[401];
 
-static SDL_keysym *TranslateKey (int scancode, SDL_keysym * keysym);
+static SDL_keysym *TranslateKey(int scancode, SDL_keysym * keysym);
 
 
 void
-AA_PumpEvents (_THIS)
+AA_PumpEvents(_THIS)
 {
     int posted = 0;
     int mouse_button, mouse_x, mouse_y;
@@ -57,44 +57,44 @@ AA_PumpEvents (_THIS)
         /* Gather events */
 
         /* Get mouse status */
-        SDL_mutexP (AA_mutex);
-        aa_getmouse (AA_context, &mouse_x, &mouse_y, &mouse_button);
-        SDL_mutexV (AA_mutex);
-        mouse_x = mouse_x * this->screen->w / aa_scrwidth (AA_context);
-        mouse_y = mouse_y * this->screen->h / aa_scrheight (AA_context);
+        SDL_mutexP(AA_mutex);
+        aa_getmouse(AA_context, &mouse_x, &mouse_y, &mouse_button);
+        SDL_mutexV(AA_mutex);
+        mouse_x = mouse_x * this->screen->w / aa_scrwidth(AA_context);
+        mouse_y = mouse_y * this->screen->h / aa_scrheight(AA_context);
 
         /* Compare against previous state and generate events */
         if (prev_button != mouse_button) {
             if (mouse_button & AA_BUTTON1) {
                 if (!(prev_button & AA_BUTTON1)) {
-                    posted += SDL_PrivateMouseButton (SDL_PRESSED, 1, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_PRESSED, 1, 0, 0);
                 }
             } else {
                 if (prev_button & AA_BUTTON1) {
-                    posted += SDL_PrivateMouseButton (SDL_RELEASED, 1, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_RELEASED, 1, 0, 0);
                 }
             }
             if (mouse_button & AA_BUTTON2) {
                 if (!(prev_button & AA_BUTTON2)) {
-                    posted += SDL_PrivateMouseButton (SDL_PRESSED, 2, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_PRESSED, 2, 0, 0);
                 }
             } else {
                 if (prev_button & AA_BUTTON2) {
-                    posted += SDL_PrivateMouseButton (SDL_RELEASED, 2, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_RELEASED, 2, 0, 0);
                 }
             }
             if (mouse_button & AA_BUTTON3) {
                 if (!(prev_button & AA_BUTTON3)) {
-                    posted += SDL_PrivateMouseButton (SDL_PRESSED, 3, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_PRESSED, 3, 0, 0);
                 }
             } else {
                 if (prev_button & AA_BUTTON3) {
-                    posted += SDL_PrivateMouseButton (SDL_RELEASED, 3, 0, 0);
+                    posted += SDL_PrivateMouseButton(SDL_RELEASED, 3, 0, 0);
                 }
             }
         }
         if (prev_x != mouse_x || prev_y != mouse_y) {
-            posted += SDL_PrivateMouseMotion (0, 0, mouse_x, mouse_y);
+            posted += SDL_PrivateMouseMotion(0, 0, mouse_x, mouse_y);
         }
 
         prev_button = mouse_button;
@@ -102,30 +102,28 @@ AA_PumpEvents (_THIS)
         prev_y = mouse_y;
 
         /* Get keyboard event */
-        SDL_mutexP (AA_mutex);
-        evt = aa_getevent (AA_context, 0);
-        SDL_mutexV (AA_mutex);
+        SDL_mutexP(AA_mutex);
+        evt = aa_getevent(AA_context, 0);
+        SDL_mutexV(AA_mutex);
         if ((evt > AA_NONE) && (evt < AA_RELEASE) && (evt != AA_MOUSE)
             && (evt != AA_RESIZE)) {
             /* Key pressed */
 /*    			printf("Key pressed: %d (%c)\n", evt, evt); */
             posted +=
-                SDL_PrivateKeyboard (SDL_PRESSED,
-                                     TranslateKey (evt, &keysym));
+                SDL_PrivateKeyboard(SDL_PRESSED, TranslateKey(evt, &keysym));
         } else if (evt >= AA_RELEASE) {
             /* Key released */
             evt &= ~AA_RELEASE;
 /*  			printf("Key released: %d (%c)\n", evt, evt); */
             posted +=
-                SDL_PrivateKeyboard (SDL_RELEASED,
-                                     TranslateKey (evt, &keysym));
+                SDL_PrivateKeyboard(SDL_RELEASED, TranslateKey(evt, &keysym));
         }
     }
     while (posted);
 }
 
 void
-AA_InitOSKeymap (_THIS)
+AA_InitOSKeymap(_THIS)
 {
     int i;
     static const char *std_keys =
@@ -133,7 +131,7 @@ AA_InitOSKeymap (_THIS)
     const char *std;
 
     /* Initialize the AAlib key translation table */
-    for (i = 0; i < SDL_arraysize (keymap); ++i)
+    for (i = 0; i < SDL_arraysize(keymap); ++i)
         keymap[i] = SDLK_UNKNOWN;
 
     /* Alphabet keys */
@@ -192,10 +190,10 @@ AA_InitOSKeymap (_THIS)
 }
 
 static SDL_keysym *
-TranslateKey (int scancode, SDL_keysym * keysym)
+TranslateKey(int scancode, SDL_keysym * keysym)
 {
     /* Sanity check */
-    if (scancode >= SDL_arraysize (keymap))
+    if (scancode >= SDL_arraysize(keymap))
         scancode = AA_UNKNOWN;
 
     /* Set the keysym information */

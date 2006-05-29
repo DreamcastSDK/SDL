@@ -36,14 +36,14 @@
 static SDLKey NX_NONASCII_keymap[MWKEY_LAST + 1];
 
 void
-NX_InitOSKeymap (_THIS)
+NX_InitOSKeymap(_THIS)
 {
     int i;
 
-    Dprintf ("enter NX_InitOSKeymap\n");
+    Dprintf("enter NX_InitOSKeymap\n");
 
     // Map the nanox scancodes to SDL keysyms
-    for (i = 0; i < SDL_arraysize (NX_NONASCII_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(NX_NONASCII_keymap); ++i)
         NX_NONASCII_keymap[i] = SDLK_UNKNOWN;
 
     NX_NONASCII_keymap[MWKEY_LEFT & 0xFF] = SDLK_LEFT;
@@ -107,15 +107,15 @@ NX_InitOSKeymap (_THIS)
     NX_NONASCII_keymap[MWKEY_BREAK & 0xFF] = SDLK_BREAK;
     NX_NONASCII_keymap[MWKEY_MENU & 0xFF] = SDLK_MENU;
 
-    Dprintf ("leave NX_InitOSKeymap\n");
+    Dprintf("leave NX_InitOSKeymap\n");
 }
 
 SDL_keysym *
-NX_TranslateKey (GR_EVENT_KEYSTROKE * keystroke, SDL_keysym * keysym)
+NX_TranslateKey(GR_EVENT_KEYSTROKE * keystroke, SDL_keysym * keysym)
 {
     GR_KEY ch = keystroke->ch;
 
-    Dprintf ("enter NX_TranslateKey\n");
+    Dprintf("enter NX_TranslateKey\n");
 
     keysym->scancode = keystroke->scancode;
     keysym->sym = SDLK_UNKNOWN;
@@ -159,12 +159,12 @@ NX_TranslateKey (GR_EVENT_KEYSTROKE * keystroke, SDL_keysym * keysym)
 
     keysym->unicode = ch;
 
-    Dprintf ("leave NX_TranslateKey\n");
+    Dprintf("leave NX_TranslateKey\n");
     return keysym;
 }
 
 static int
-check_boundary (_THIS, int x, int y)
+check_boundary(_THIS, int x, int y)
 {
     if (x < OffsetX || y < OffsetY || x > OffsetX + this->screen->w ||
         y > OffsetY + this->screen->h)
@@ -174,60 +174,60 @@ check_boundary (_THIS, int x, int y)
 }
 
 void
-NX_PumpEvents (_THIS)
+NX_PumpEvents(_THIS)
 {
     GR_EVENT event;
     static GR_BUTTON last_button_down = 0;
 
-    GrCheckNextEvent (&event);
+    GrCheckNextEvent(&event);
     while (event.type != GR_EVENT_TYPE_NONE) {
 
         // dispatch event
         switch (event.type) {
         case GR_EVENT_TYPE_MOUSE_ENTER:
             {
-                Dprintf ("mouse enter\n");
-                SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+                Dprintf("mouse enter\n");
+                SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
                 break;
             }
 
         case GR_EVENT_TYPE_MOUSE_EXIT:
             {
-                Dprintf ("mouse exit\n");
-                SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+                Dprintf("mouse exit\n");
+                SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
                 break;
             }
 
         case GR_EVENT_TYPE_FOCUS_IN:
             {
-                Dprintf ("focus in\n");
-                SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+                Dprintf("focus in\n");
+                SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
                 break;
             }
 
         case GR_EVENT_TYPE_FOCUS_OUT:
             {
-                Dprintf ("focus out\n");
-                SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+                Dprintf("focus out\n");
+                SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
                 break;
             }
 
         case GR_EVENT_TYPE_MOUSE_MOTION:
             {
-                Dprintf ("mouse motion\n");
+                Dprintf("mouse motion\n");
 
                 if (SDL_VideoSurface) {
                     if (currently_fullscreen) {
                         if (check_boundary
                             (this, event.button.x, event.button.y)) {
-                            SDL_PrivateMouseMotion (0, 0,
-                                                    event.button.x -
-                                                    OffsetX,
-                                                    event.button.y - OffsetY);
+                            SDL_PrivateMouseMotion(0, 0,
+                                                   event.button.x -
+                                                   OffsetX,
+                                                   event.button.y - OffsetY);
                         }
                     } else {
-                        SDL_PrivateMouseMotion (0, 0, event.button.x,
-                                                event.button.y);
+                        SDL_PrivateMouseMotion(0, 0, event.button.x,
+                                               event.button.y);
                     }
                 }
                 break;
@@ -237,7 +237,7 @@ NX_PumpEvents (_THIS)
             {
                 int button = event.button.buttons;
 
-                Dprintf ("button down\n");
+                Dprintf("button down\n");
 
                 switch (button) {
                 case MWBUTTON_L:
@@ -255,15 +255,15 @@ NX_PumpEvents (_THIS)
                 last_button_down = button;
 
                 if (currently_fullscreen) {
-                    if (check_boundary (this, event.button.x, event.button.y)) {
-                        SDL_PrivateMouseButton (SDL_PRESSED, button,
-                                                event.button.x -
-                                                OffsetX,
-                                                event.button.y - OffsetY);
+                    if (check_boundary(this, event.button.x, event.button.y)) {
+                        SDL_PrivateMouseButton(SDL_PRESSED, button,
+                                               event.button.x -
+                                               OffsetX,
+                                               event.button.y - OffsetY);
                     }
                 } else {
-                    SDL_PrivateMouseButton (SDL_PRESSED, button,
-                                            event.button.x, event.button.y);
+                    SDL_PrivateMouseButton(SDL_PRESSED, button,
+                                           event.button.x, event.button.y);
                 }
                 break;
             }
@@ -271,20 +271,20 @@ NX_PumpEvents (_THIS)
             // do not konw which button is released
         case GR_EVENT_TYPE_BUTTON_UP:
             {
-                Dprintf ("button up\n");
+                Dprintf("button up\n");
 
                 if (currently_fullscreen) {
-                    if (check_boundary (this, event.button.x, event.button.y)) {
-                        SDL_PrivateMouseButton (SDL_RELEASED,
-                                                last_button_down,
-                                                event.button.x -
-                                                OffsetX,
-                                                event.button.y - OffsetY);
+                    if (check_boundary(this, event.button.x, event.button.y)) {
+                        SDL_PrivateMouseButton(SDL_RELEASED,
+                                               last_button_down,
+                                               event.button.x -
+                                               OffsetX,
+                                               event.button.y - OffsetY);
                     }
                 } else {
-                    SDL_PrivateMouseButton (SDL_RELEASED,
-                                            last_button_down,
-                                            event.button.x, event.button.y);
+                    SDL_PrivateMouseButton(SDL_RELEASED,
+                                           last_button_down,
+                                           event.button.x, event.button.y);
                 }
                 last_button_down = 0;
                 break;
@@ -294,10 +294,10 @@ NX_PumpEvents (_THIS)
             {
                 SDL_keysym keysym;
 
-                Dprintf ("key down\n");
-                SDL_PrivateKeyboard (SDL_PRESSED,
-                                     NX_TranslateKey (&event.keystroke,
-                                                      &keysym));
+                Dprintf("key down\n");
+                SDL_PrivateKeyboard(SDL_PRESSED,
+                                    NX_TranslateKey(&event.keystroke,
+                                                    &keysym));
                 break;
             }
 
@@ -305,25 +305,25 @@ NX_PumpEvents (_THIS)
             {
                 SDL_keysym keysym;
 
-                Dprintf ("key up\n");
-                SDL_PrivateKeyboard (SDL_RELEASED,
-                                     NX_TranslateKey (&event.keystroke,
-                                                      &keysym));
+                Dprintf("key up\n");
+                SDL_PrivateKeyboard(SDL_RELEASED,
+                                    NX_TranslateKey(&event.keystroke,
+                                                    &keysym));
                 break;
             }
 
         case GR_EVENT_TYPE_CLOSE_REQ:
             {
-                Dprintf ("close require\n");
-                SDL_PrivateQuit ();
+                Dprintf("close require\n");
+                SDL_PrivateQuit();
                 break;
             }
 
         case GR_EVENT_TYPE_EXPOSURE:
             {
-                Dprintf ("event_type_exposure\n");
+                Dprintf("event_type_exposure\n");
                 if (SDL_VideoSurface) {
-                    NX_RefreshDisplay (this);   //, & event.exposure) ;
+                    NX_RefreshDisplay(this);    //, & event.exposure) ;
                 }
                 break;
             }
@@ -333,14 +333,14 @@ NX_PumpEvents (_THIS)
                 switch (event.update.utype) {
                 case GR_UPDATE_MAP:
                     {
-                        Dprintf ("GR_UPDATE_MAP\n");
+                        Dprintf("GR_UPDATE_MAP\n");
                         // If we're not active, make ourselves active
-                        if (!(SDL_GetAppState () & SDL_APPACTIVE)) {
+                        if (!(SDL_GetAppState() & SDL_APPACTIVE)) {
                             // Send an internal activate event
-                            SDL_PrivateAppActive (1, SDL_APPACTIVE);
+                            SDL_PrivateAppActive(1, SDL_APPACTIVE);
                         }
                         if (SDL_VideoSurface) {
-                            NX_RefreshDisplay (this);
+                            NX_RefreshDisplay(this);
                         }
                         break;
                     }
@@ -348,43 +348,43 @@ NX_PumpEvents (_THIS)
                 case GR_UPDATE_UNMAP:
                 case GR_UPDATE_UNMAPTEMP:
                     {
-                        Dprintf ("GR_UPDATE_UNMAP or GR_UPDATE_UNMAPTEMP\n");
+                        Dprintf("GR_UPDATE_UNMAP or GR_UPDATE_UNMAPTEMP\n");
                         // If we're active, make ourselves inactive
-                        if (SDL_GetAppState () & SDL_APPACTIVE) {
+                        if (SDL_GetAppState() & SDL_APPACTIVE) {
                             // Send an internal deactivate event
-                            SDL_PrivateAppActive (0,
-                                                  SDL_APPACTIVE |
-                                                  SDL_APPINPUTFOCUS);
+                            SDL_PrivateAppActive(0,
+                                                 SDL_APPACTIVE |
+                                                 SDL_APPINPUTFOCUS);
                         }
                         break;
                     }
 
                 case GR_UPDATE_SIZE:
                     {
-                        Dprintf ("GR_UPDATE_SIZE\n");
-                        SDL_PrivateResize (event.update.width,
-                                           event.update.height);
+                        Dprintf("GR_UPDATE_SIZE\n");
+                        SDL_PrivateResize(event.update.width,
+                                          event.update.height);
                         break;
                     }
 
                 case GR_UPDATE_MOVE:
                 case GR_UPDATE_REPARENT:
                     {
-                        Dprintf ("GR_UPDATE_MOVE or GR_UPDATE_REPARENT\n");
+                        Dprintf("GR_UPDATE_MOVE or GR_UPDATE_REPARENT\n");
 #ifdef ENABLE_NANOX_DIRECT_FB
                         if (Clientfb) {
                             /* Get current window position and fb pointer */
                             if (currently_fullscreen)
-                                GrGetWindowFBInfo (FSwindow, &fbinfo);
+                                GrGetWindowFBInfo(FSwindow, &fbinfo);
                             else
-                                GrGetWindowFBInfo (SDL_Window, &fbinfo);
+                                GrGetWindowFBInfo(SDL_Window, &fbinfo);
                         }
 #endif
                         break;
                     }
 
                 default:
-                    Dprintf ("unknown GR_EVENT_TYPE_UPDATE\n");
+                    Dprintf("unknown GR_EVENT_TYPE_UPDATE\n");
                     break;
                 }
                 break;
@@ -392,11 +392,11 @@ NX_PumpEvents (_THIS)
 
         default:
             {
-                Dprintf ("pump event default\n");
+                Dprintf("pump event default\n");
             }
         }
 
-        GrCheckNextEvent (&event);
+        GrCheckNextEvent(&event);
     }
 }
 

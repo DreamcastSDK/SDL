@@ -66,11 +66,11 @@ struct joystick_hwdata
 };
 
 /* Convert a win32 Multimedia API return code to a text message */
-static void SetMMerror (char *function, int code);
+static void SetMMerror(char *function, int code);
 
 
 static char *
-GetJoystickName (int index, const char *szRegKey)
+GetJoystickName(int index, const char *szRegKey)
 {
     /* added 7/24/2004 by Eckhard Stolberg */
     /*
@@ -85,49 +85,48 @@ GetJoystickName (int index, const char *szRegKey)
     unsigned char regvalue[256];
     unsigned char regname[256];
 
-    SDL_snprintf ((char *) regkey, SDL_arraysize (regkey), "%s\\%s\\%s",
-                  REGSTR_PATH_JOYCONFIG, szRegKey, REGSTR_KEY_JOYCURR);
-    regresult = RegOpenKeyExA (HKEY_LOCAL_MACHINE,
-                               (LPTSTR) & regkey, 0, KEY_READ, &hKey);
+    SDL_snprintf((char *) regkey, SDL_arraysize(regkey), "%s\\%s\\%s",
+                 REGSTR_PATH_JOYCONFIG, szRegKey, REGSTR_KEY_JOYCURR);
+    regresult = RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                              (LPTSTR) & regkey, 0, KEY_READ, &hKey);
     if (regresult == ERROR_SUCCESS) {
         /*
            find the registry key name for the
            joystick's properties
          */
-        regsize = sizeof (regname);
-        SDL_snprintf ((char *) regvalue, SDL_arraysize (regvalue),
-                      "Joystick%d%s", index + 1, REGSTR_VAL_JOYOEMNAME);
-        regresult = RegQueryValueExA (hKey,
-                                      (char *) regvalue, 0, 0,
-                                      (LPBYTE) & regname,
-                                      (LPDWORD) & regsize);
-        RegCloseKey (hKey);
+        regsize = sizeof(regname);
+        SDL_snprintf((char *) regvalue, SDL_arraysize(regvalue),
+                     "Joystick%d%s", index + 1, REGSTR_VAL_JOYOEMNAME);
+        regresult = RegQueryValueExA(hKey,
+                                     (char *) regvalue, 0, 0,
+                                     (LPBYTE) & regname, (LPDWORD) & regsize);
+        RegCloseKey(hKey);
         if (regresult == ERROR_SUCCESS) {
             /* open that registry key */
-            SDL_snprintf ((char *) regkey, SDL_arraysize (regkey),
-                          "%s\\%s", REGSTR_PATH_JOYOEM, regname);
+            SDL_snprintf((char *) regkey, SDL_arraysize(regkey),
+                         "%s\\%s", REGSTR_PATH_JOYOEM, regname);
             regresult =
-                RegOpenKeyExA (HKEY_LOCAL_MACHINE, (char *) regkey, 0,
-                               KEY_READ, &hKey);
+                RegOpenKeyExA(HKEY_LOCAL_MACHINE, (char *) regkey, 0,
+                              KEY_READ, &hKey);
             if (regresult == ERROR_SUCCESS) {
                 /* find the size for the OEM name text */
-                regsize = sizeof (regvalue);
+                regsize = sizeof(regvalue);
                 regresult =
-                    RegQueryValueExA (hKey,
-                                      REGSTR_VAL_JOYOEMNAME,
-                                      0, 0, NULL, (LPDWORD) & regsize);
+                    RegQueryValueExA(hKey,
+                                     REGSTR_VAL_JOYOEMNAME,
+                                     0, 0, NULL, (LPDWORD) & regsize);
                 if (regresult == ERROR_SUCCESS) {
                     /*
                        allocate enough memory
                        for the OEM name text ...
                      */
-                    name = (char *) SDL_malloc (regsize);
+                    name = (char *) SDL_malloc(regsize);
                     /* ... and read it from the registry */
                     regresult =
-                        RegQueryValueExA (hKey,
-                                          REGSTR_VAL_JOYOEMNAME, 0, 0,
-                                          (LPBYTE) name, (LPDWORD) & regsize);
-                    RegCloseKey (hKey);
+                        RegQueryValueExA(hKey,
+                                         REGSTR_VAL_JOYOEMNAME, 0, 0,
+                                         (LPBYTE) name, (LPDWORD) & regsize);
+                    RegCloseKey(hKey);
                 }
             }
         }
@@ -141,7 +140,7 @@ GetJoystickName (int index, const char *szRegKey)
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
 int
-SDL_SYS_JoystickInit (void)
+SDL_SYS_JoystickInit(void)
 {
     int i;
     int maxdevs;
@@ -158,19 +157,19 @@ SDL_SYS_JoystickInit (void)
 
     /* Loop over all potential joystick devices */
     numdevs = 0;
-    maxdevs = joyGetNumDevs ();
+    maxdevs = joyGetNumDevs();
     for (i = JOYSTICKID1; i < maxdevs && numdevs < MAX_JOYSTICKS; ++i) {
 
-        joyinfo.dwSize = sizeof (joyinfo);
+        joyinfo.dwSize = sizeof(joyinfo);
         joyinfo.dwFlags = JOY_RETURNALL;
-        result = joyGetPosEx (SYS_JoystickID[i], &joyinfo);
+        result = joyGetPosEx(SYS_JoystickID[i], &joyinfo);
         if (result == JOYERR_NOERROR) {
-            result = joyGetDevCaps (i, &joycaps, sizeof (joycaps));
+            result = joyGetDevCaps(i, &joycaps, sizeof(joycaps));
             if (result == JOYERR_NOERROR) {
                 SYS_JoystickID[numdevs] = i;
                 SYS_Joystick[numdevs] = joycaps;
                 SYS_JoystickName[numdevs] =
-                    GetJoystickName (i, joycaps.szRegKey);
+                    GetJoystickName(i, joycaps.szRegKey);
                 numdevs++;
             }
         }
@@ -180,7 +179,7 @@ SDL_SYS_JoystickInit (void)
 
 /* Function to get the device-dependent name of a joystick */
 const char *
-SDL_SYS_JoystickName (int index)
+SDL_SYS_JoystickName(int index)
 {
     if (SYS_JoystickName[index] != NULL) {
         return (SYS_JoystickName[index]);
@@ -195,7 +194,7 @@ SDL_SYS_JoystickName (int index)
    It returns 0, or -1 if there is an error.
  */
 int
-SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
+SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     int index, i;
     int caps_flags[MAX_AXES - 2] =
@@ -220,12 +219,12 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
 
     /* allocate memory for system specific hardware data */
     joystick->hwdata =
-        (struct joystick_hwdata *) SDL_malloc (sizeof (*joystick->hwdata));
+        (struct joystick_hwdata *) SDL_malloc(sizeof(*joystick->hwdata));
     if (joystick->hwdata == NULL) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         return (-1);
     }
-    SDL_memset (joystick->hwdata, 0, sizeof (*joystick->hwdata));
+    SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
 
     /* set hardware data */
     joystick->hwdata->id = SYS_JoystickID[index];
@@ -252,7 +251,7 @@ SDL_SYS_JoystickOpen (SDL_Joystick * joystick)
 }
 
 static Uint8
-TranslatePOV (DWORD value)
+TranslatePOV(DWORD value)
 {
     Uint8 pos;
 
@@ -280,7 +279,7 @@ TranslatePOV (DWORD value)
  * and update joystick device state.
  */
 void
-SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
+SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     MMRESULT result;
     int i;
@@ -292,14 +291,14 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
     int value, change;
     JOYINFOEX joyinfo;
 
-    joyinfo.dwSize = sizeof (joyinfo);
+    joyinfo.dwSize = sizeof(joyinfo);
     joyinfo.dwFlags = JOY_RETURNALL | JOY_RETURNPOVCTS;
     if (!joystick->hats) {
         joyinfo.dwFlags &= ~(JOY_RETURNPOV | JOY_RETURNPOVCTS);
     }
-    result = joyGetPosEx (joystick->hwdata->id, &joyinfo);
+    result = joyGetPosEx(joystick->hwdata->id, &joyinfo);
     if (result != JOYERR_NOERROR) {
-        SetMMerror ("joyGetPosEx", result);
+        SetMMerror("joyGetPosEx", result);
         return;
     }
 
@@ -320,7 +319,7 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
             change = (value - joystick->axes[i]);
             if ((change < -JOY_AXIS_THRESHOLD)
                 || (change > JOY_AXIS_THRESHOLD)) {
-                SDL_PrivateJoystickAxis (joystick, (Uint8) i, (Sint16) value);
+                SDL_PrivateJoystickAxis(joystick, (Uint8) i, (Sint16) value);
             }
         }
     }
@@ -328,15 +327,15 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
     /* joystick button events */
     if (joyinfo.dwFlags & JOY_RETURNBUTTONS) {
         for (i = 0; i < joystick->nbuttons; ++i) {
-            if (joyinfo.dwButtons & JOY_BUTTON_FLAG (i)) {
+            if (joyinfo.dwButtons & JOY_BUTTON_FLAG(i)) {
                 if (!joystick->buttons[i]) {
-                    SDL_PrivateJoystickButton (joystick, (Uint8) i,
-                                               SDL_PRESSED);
+                    SDL_PrivateJoystickButton(joystick, (Uint8) i,
+                                              SDL_PRESSED);
                 }
             } else {
                 if (joystick->buttons[i]) {
-                    SDL_PrivateJoystickButton (joystick, (Uint8) i,
-                                               SDL_RELEASED);
+                    SDL_PrivateJoystickButton(joystick, (Uint8) i,
+                                              SDL_RELEASED);
                 }
             }
         }
@@ -346,31 +345,31 @@ SDL_SYS_JoystickUpdate (SDL_Joystick * joystick)
     if (joyinfo.dwFlags & JOY_RETURNPOV) {
         Uint8 pos;
 
-        pos = TranslatePOV (joyinfo.dwPOV);
+        pos = TranslatePOV(joyinfo.dwPOV);
         if (pos != joystick->hats[0]) {
-            SDL_PrivateJoystickHat (joystick, 0, pos);
+            SDL_PrivateJoystickHat(joystick, 0, pos);
         }
     }
 }
 
 /* Function to close a joystick after use */
 void
-SDL_SYS_JoystickClose (SDL_Joystick * joystick)
+SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata != NULL) {
         /* free system specific hardware data */
-        SDL_free (joystick->hwdata);
+        SDL_free(joystick->hwdata);
     }
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
-SDL_SYS_JoystickQuit (void)
+SDL_SYS_JoystickQuit(void)
 {
     int i;
     for (i = 0; i < MAX_JOYSTICKS; i++) {
         if (SYS_JoystickName[i] != NULL) {
-            SDL_free (SYS_JoystickName[i]);
+            SDL_free(SYS_JoystickName[i]);
         }
     }
 }
@@ -378,7 +377,7 @@ SDL_SYS_JoystickQuit (void)
 
 /* implementation functions */
 void
-SetMMerror (char *function, int code)
+SetMMerror(char *function, int code)
 {
     static char *error;
     static char errbuf[1024];
@@ -407,17 +406,17 @@ SetMMerror (char *function, int code)
         break;
 
     default:
-        SDL_snprintf (errbuf, SDL_arraysize (errbuf),
-                      "%s: Unknown Multimedia system error: 0x%x",
-                      function, code);
+        SDL_snprintf(errbuf, SDL_arraysize(errbuf),
+                     "%s: Unknown Multimedia system error: 0x%x",
+                     function, code);
         break;
     }
 
     if (!errbuf[0]) {
-        SDL_snprintf (errbuf, SDL_arraysize (errbuf), "%s: %s", function,
-                      error);
+        SDL_snprintf(errbuf, SDL_arraysize(errbuf), "%s: %s", function,
+                     error);
     }
-    SDL_SetError ("%s", errbuf);
+    SDL_SetError("%s", errbuf);
 }
 
 #endif /* SDL_JOYSTICK_WINMM */

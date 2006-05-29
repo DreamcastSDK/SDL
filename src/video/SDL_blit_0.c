@@ -27,7 +27,7 @@
 /* Functions to blit from bitmaps to other surfaces */
 
 static void
-BlitBto1 (SDL_BlitInfo * info)
+BlitBto1(SDL_BlitInfo * info)
 {
     int c;
     int width, height;
@@ -81,7 +81,7 @@ BlitBto1 (SDL_BlitInfo * info)
     }
 }
 static void
-BlitBto2 (SDL_BlitInfo * info)
+BlitBto2(SDL_BlitInfo * info)
 {
     int c;
     int width, height;
@@ -117,7 +117,7 @@ BlitBto2 (SDL_BlitInfo * info)
     }
 }
 static void
-BlitBto3 (SDL_BlitInfo * info)
+BlitBto3(SDL_BlitInfo * info)
 {
     int c, o;
     int width, height;
@@ -155,7 +155,7 @@ BlitBto3 (SDL_BlitInfo * info)
     }
 }
 static void
-BlitBto4 (SDL_BlitInfo * info)
+BlitBto4(SDL_BlitInfo * info)
 {
     int width, height;
     Uint8 *src;
@@ -192,7 +192,7 @@ BlitBto4 (SDL_BlitInfo * info)
 }
 
 static void
-BlitBto1Key (SDL_BlitInfo * info)
+BlitBto1Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -245,7 +245,7 @@ BlitBto1Key (SDL_BlitInfo * info)
 }
 
 static void
-BlitBto2Key (SDL_BlitInfo * info)
+BlitBto2Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -280,7 +280,7 @@ BlitBto2Key (SDL_BlitInfo * info)
 }
 
 static void
-BlitBto3Key (SDL_BlitInfo * info)
+BlitBto3Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -303,7 +303,7 @@ BlitBto3Key (SDL_BlitInfo * info)
             }
             bit = (byte & 0x80) >> 7;
             if (bit != ckey) {
-                SDL_memcpy (dst, &palmap[bit * 4], 3);
+                SDL_memcpy(dst, &palmap[bit * 4], 3);
             }
             byte <<= 1;
             dst += 3;
@@ -314,7 +314,7 @@ BlitBto3Key (SDL_BlitInfo * info)
 }
 
 static void
-BlitBto4Key (SDL_BlitInfo * info)
+BlitBto4Key(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -349,7 +349,7 @@ BlitBto4Key (SDL_BlitInfo * info)
 }
 
 static void
-BlitBtoNAlpha (SDL_BlitInfo * info)
+BlitBtoNAlpha(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -381,9 +381,9 @@ BlitBtoNAlpha (SDL_BlitInfo * info)
                 sR = srcpal[bit].r;
                 sG = srcpal[bit].g;
                 sB = srcpal[bit].b;
-                DISEMBLE_RGB (dst, dstbpp, dstfmt, pixel, dR, dG, dB);
-                ALPHA_BLEND (sR, sG, sB, A, dR, dG, dB);
-                ASSEMBLE_RGB (dst, dstbpp, dstfmt, dR, dG, dB);
+                DISEMBLE_RGB(dst, dstbpp, dstfmt, pixel, dR, dG, dB);
+                ALPHA_BLEND(sR, sG, sB, A, dR, dG, dB);
+                ASSEMBLE_RGB(dst, dstbpp, dstfmt, dR, dG, dB);
             }
             byte <<= 1;
             dst += dstbpp;
@@ -394,7 +394,7 @@ BlitBtoNAlpha (SDL_BlitInfo * info)
 }
 
 static void
-BlitBtoNAlphaKey (SDL_BlitInfo * info)
+BlitBtoNAlphaKey(SDL_BlitInfo * info)
 {
     int width = info->d_width;
     int height = info->d_height;
@@ -428,9 +428,9 @@ BlitBtoNAlphaKey (SDL_BlitInfo * info)
                 sR = srcpal[bit].r;
                 sG = srcpal[bit].g;
                 sB = srcpal[bit].b;
-                DISEMBLE_RGB (dst, dstbpp, dstfmt, pixel, dR, dG, dB);
-                ALPHA_BLEND (sR, sG, sB, A, dR, dG, dB);
-                ASSEMBLE_RGB (dst, dstbpp, dstfmt, dR, dG, dB);
+                DISEMBLE_RGB(dst, dstbpp, dstfmt, pixel, dR, dG, dB);
+                ALPHA_BLEND(sR, sG, sB, A, dR, dG, dB);
+                ASSEMBLE_RGB(dst, dstbpp, dstfmt, dR, dG, dB);
             }
             byte <<= 1;
             dst += dstbpp;
@@ -449,7 +449,7 @@ static SDL_loblit colorkey_blit[] = {
 };
 
 SDL_loblit
-SDL_CalculateBlit0 (SDL_Surface * surface, int blit_index)
+SDL_CalculateBlit0(SDL_Surface * surface, int blit_index)
 {
     int which;
 

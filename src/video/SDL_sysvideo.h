@@ -139,8 +139,8 @@ struct SDL_VideoDevice
                             int firstcolor, int ncolors, SDL_Color * colors);
 
     /* Get some platform dependent window information */
-      SDL_bool (*GetWindowWMInfo) (_THIS, SDL_Window * window,
-                                   SDL_SysWMinfo * info);
+      SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
+                                  SDL_SysWMinfo * info);
 
     /* Create a YUV video surface (possibly overlay) of the given
        format.  The hardware should be able to perform at least 2x
@@ -432,11 +432,11 @@ extern VideoBootStrap glSDL_bootstrap;
 #define SDL_ShadowSurface	((_this && SDL_CurrentDisplay.num_windows > 0) ? SDL_CurrentWindow.shadow : NULL)
 #define SDL_PublicSurface	(SDL_ShadowSurface ? SDL_ShadowSurface : SDL_VideoSurface)
 
-extern SDL_VideoDevice *SDL_GetVideoDevice ();
-extern void SDL_AddBasicVideoDisplay (const SDL_DisplayMode * desktop_mode);
-extern void SDL_AddVideoDisplay (SDL_VideoDisplay * display);
-extern void SDL_AddDisplayMode (int display, const SDL_DisplayMode * mode);
-extern SDL_Window *SDL_GetWindowFromSurface (SDL_Surface * surface);
+extern SDL_VideoDevice *SDL_GetVideoDevice();
+extern void SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
+extern void SDL_AddVideoDisplay(SDL_VideoDisplay * display);
+extern void SDL_AddDisplayMode(int display, const SDL_DisplayMode * mode);
+extern SDL_Window *SDL_GetWindowFromSurface(SDL_Surface * surface);
 
 #endif /* _SDL_sysvideo_h */
 

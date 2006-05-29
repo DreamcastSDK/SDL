@@ -56,17 +56,17 @@ static SDLKey keymap[ATARIBIOS_MAXKEYS];
 
 /* Functions prototypes */
 
-static SDL_keysym *TranslateKey (int scancode, int asciicode,
-                                 SDL_keysym * keysym, SDL_bool pressed);
-static int do_messages (_THIS, short *message);
-static void do_keyboard (short kc, short ks);
-static void do_mouse (_THIS, short mx, short my, short mb, short ks);
+static SDL_keysym *TranslateKey(int scancode, int asciicode,
+                                SDL_keysym * keysym, SDL_bool pressed);
+static int do_messages(_THIS, short *message);
+static void do_keyboard(short kc, short ks);
+static void do_mouse(_THIS, short mx, short my, short mb, short ks);
 
 /* Functions */
 
 static SDL_keysym *
-TranslateKey (int scancode, int asciicode, SDL_keysym * keysym,
-              SDL_bool pressed)
+TranslateKey(int scancode, int asciicode, SDL_keysym * keysym,
+             SDL_bool pressed)
 {
     /* Set the keysym information */
     keysym->scancode = scancode;
@@ -86,16 +86,16 @@ TranslateKey (int scancode, int asciicode, SDL_keysym * keysym,
 }
 
 void
-GEM_InitOSKeymap (_THIS)
+GEM_InitOSKeymap(_THIS)
 {
     int i;
 
-    SDL_memset (gem_currentkeyboard, 0, sizeof (gem_currentkeyboard));
-    SDL_memset (gem_previouskeyboard, 0, sizeof (gem_previouskeyboard));
-    SDL_memset (gem_currentascii, 0, sizeof (gem_currentascii));
+    SDL_memset(gem_currentkeyboard, 0, sizeof(gem_currentkeyboard));
+    SDL_memset(gem_previouskeyboard, 0, sizeof(gem_previouskeyboard));
+    SDL_memset(gem_currentascii, 0, sizeof(gem_currentascii));
 
     /* Initialize keymap */
-    for (i = 0; i < sizeof (keymap); i++)
+    for (i = 0; i < sizeof(keymap); i++)
         keymap[i] = SDLK_UNKNOWN;
 
     /* Functions keys */
@@ -129,14 +129,14 @@ GEM_InitOSKeymap (_THIS)
 }
 
 void
-GEM_PumpEvents (_THIS)
+GEM_PumpEvents(_THIS)
 {
     short mousex, mousey, mouseb, dummy;
     short kstate, prevkc, prevks;
     int i;
     SDL_keysym keysym;
 
-    SDL_memset (gem_currentkeyboard, 0, sizeof (gem_currentkeyboard));
+    SDL_memset(gem_currentkeyboard, 0, sizeof(gem_currentkeyboard));
     prevkc = prevks = 0;
 
     for (;;) {
@@ -148,31 +148,31 @@ GEM_PumpEvents (_THIS)
 
         event_mask = MU_MESAG | MU_TIMER | MU_KEYBD;
         if (!GEM_fullscreen && (GEM_handle >= 0)) {
-            wind_get (GEM_handle, WF_WORKXYWH, &x2, &y2, &w2, &h2);
+            wind_get(GEM_handle, WF_WORKXYWH, &x2, &y2, &w2, &h2);
             event_mask |= MU_M1;
-            if ((SDL_GetAppState () & SDL_APPMOUSEFOCUS)) {
+            if ((SDL_GetAppState() & SDL_APPMOUSEFOCUS)) {
                 mouse_event = MO_LEAVE;
             } else {
                 mouse_event = MO_ENTER;
             }
         }
 
-        resultat = evnt_multi (event_mask,
-                               0, 0, 0,
-                               mouse_event, x2, y2, w2, h2,
-                               0, 0, 0, 0, 0,
-                               buffer,
-                               10,
-                               &dummy, &dummy, &dummy, &kstate, &kc, &dummy);
+        resultat = evnt_multi(event_mask,
+                              0, 0, 0,
+                              mouse_event, x2, y2, w2, h2,
+                              0, 0, 0, 0, 0,
+                              buffer,
+                              10,
+                              &dummy, &dummy, &dummy, &kstate, &kc, &dummy);
 
         /* Message event ? */
         if (resultat & MU_MESAG)
-            quit = do_messages (this, buffer);
+            quit = do_messages(this, buffer);
 
         /* Keyboard event ? */
         if (resultat & MU_KEYBD) {
             if ((prevkc != kc) || (prevks != kstate)) {
-                do_keyboard (kc, kstate);
+                do_keyboard(kc, kstate);
             } else {
                 /* Avoid looping, if repeating same key */
                 break;
@@ -182,10 +182,10 @@ GEM_PumpEvents (_THIS)
         /* Mouse entering/leaving window */
         if (resultat & MU_M1) {
             if (this->input_grab == SDL_GRAB_OFF) {
-                if (SDL_GetAppState () & SDL_APPMOUSEFOCUS) {
-                    SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+                if (SDL_GetAppState() & SDL_APPMOUSEFOCUS) {
+                    SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
                 } else {
-                    SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+                    SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
                 }
             }
         }
@@ -196,46 +196,46 @@ GEM_PumpEvents (_THIS)
     }
 
     /* Update mouse */
-    graf_mkstate (&mousex, &mousey, &mouseb, &kstate);
-    do_mouse (this, mousex, mousey, mouseb, kstate);
+    graf_mkstate(&mousex, &mousey, &mouseb, &kstate);
+    do_mouse(this, mousex, mousey, mouseb, kstate);
 
     /* Now generate keyboard events */
     for (i = 0; i < ATARIBIOS_MAXKEYS; i++) {
         /* Key pressed ? */
         if (gem_currentkeyboard[i] && !gem_previouskeyboard[i])
-            SDL_PrivateKeyboard (SDL_PRESSED,
-                                 TranslateKey (i, gem_currentascii[i],
-                                               &keysym, SDL_TRUE));
+            SDL_PrivateKeyboard(SDL_PRESSED,
+                                TranslateKey(i, gem_currentascii[i],
+                                             &keysym, SDL_TRUE));
 
         /* Key unpressed ? */
         if (gem_previouskeyboard[i] && !gem_currentkeyboard[i])
-            SDL_PrivateKeyboard (SDL_RELEASED,
-                                 TranslateKey (i, gem_currentascii[i],
-                                               &keysym, SDL_FALSE));
+            SDL_PrivateKeyboard(SDL_RELEASED,
+                                TranslateKey(i, gem_currentascii[i],
+                                             &keysym, SDL_FALSE));
     }
 
-    SDL_memcpy (gem_previouskeyboard, gem_currentkeyboard,
-                sizeof (gem_previouskeyboard));
+    SDL_memcpy(gem_previouskeyboard, gem_currentkeyboard,
+               sizeof(gem_previouskeyboard));
 
     /* Refresh window name ? */
     if (GEM_refresh_name) {
-        if (SDL_GetAppState () & SDL_APPACTIVE) {
+        if (SDL_GetAppState() & SDL_APPACTIVE) {
             /* Fullscreen/windowed */
             if (GEM_title_name) {
-                wind_set (GEM_handle, WF_NAME,
-                          (short) (((unsigned long) GEM_title_name) >>
-                                   16),
-                          (short) (((unsigned long) GEM_title_name) &
-                                   0xffff), 0, 0);
+                wind_set(GEM_handle, WF_NAME,
+                         (short) (((unsigned long) GEM_title_name) >>
+                                  16),
+                         (short) (((unsigned long) GEM_title_name) &
+                                  0xffff), 0, 0);
             }
         } else {
             /* Iconified */
             if (GEM_icon_name) {
-                wind_set (GEM_handle, WF_NAME,
-                          (short) (((unsigned long) GEM_icon_name) >>
-                                   16),
-                          (short) (((unsigned long) GEM_icon_name) &
-                                   0xffff), 0, 0);
+                wind_set(GEM_handle, WF_NAME,
+                         (short) (((unsigned long) GEM_icon_name) >>
+                                  16),
+                         (short) (((unsigned long) GEM_icon_name) &
+                                  0xffff), 0, 0);
             }
         }
         GEM_refresh_name = SDL_FALSE;
@@ -243,7 +243,7 @@ GEM_PumpEvents (_THIS)
 }
 
 static int
-do_messages (_THIS, short *message)
+do_messages(_THIS, short *message)
 {
     int quit, posted;
     short x2, y2, w2, h2;
@@ -252,75 +252,75 @@ do_messages (_THIS, short *message)
     switch (message[0]) {
     case WM_CLOSED:
     case AP_TERM:
-        posted = SDL_PrivateQuit ();
+        posted = SDL_PrivateQuit();
         quit = 1;
         break;
     case WM_MOVED:
-        wind_set (message[3], WF_CURRXYWH, message[4], message[5],
-                  message[6], message[7]);
+        wind_set(message[3], WF_CURRXYWH, message[4], message[5],
+                 message[6], message[7]);
         break;
     case WM_TOPPED:
-        wind_set (message[3], WF_TOP, message[4], 0, 0, 0);
+        wind_set(message[3], WF_TOP, message[4], 0, 0, 0);
         /* Continue with TOP event processing */
     case WM_ONTOP:
-        SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+        SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
         if (VDI_setpalette) {
-            VDI_setpalette (this, VDI_curpalette);
+            VDI_setpalette(this, VDI_curpalette);
         }
         break;
     case WM_REDRAW:
         if (!GEM_lock_redraw) {
-            GEM_wind_redraw (this, message[3], &message[4]);
+            GEM_wind_redraw(this, message[3], &message[4]);
         }
         break;
     case WM_ICONIFY:
     case WM_ALLICONIFY:
-        wind_set (message[3], WF_ICONIFY, message[4], message[5],
-                  message[6], message[7]);
+        wind_set(message[3], WF_ICONIFY, message[4], message[5],
+                 message[6], message[7]);
         /* If we're active, make ourselves inactive */
-        if (SDL_GetAppState () & SDL_APPACTIVE) {
+        if (SDL_GetAppState() & SDL_APPACTIVE) {
             /* Send an internal deactivate event */
-            SDL_PrivateAppActive (0, SDL_APPACTIVE);
+            SDL_PrivateAppActive(0, SDL_APPACTIVE);
         }
         /* Update window title */
         if (GEM_refresh_name && GEM_icon_name) {
-            wind_set (GEM_handle, WF_NAME,
-                      (short) (((unsigned long) GEM_icon_name) >> 16),
-                      (short) (((unsigned long) GEM_icon_name) & 0xffff),
-                      0, 0);
+            wind_set(GEM_handle, WF_NAME,
+                     (short) (((unsigned long) GEM_icon_name) >> 16),
+                     (short) (((unsigned long) GEM_icon_name) & 0xffff),
+                     0, 0);
             GEM_refresh_name = SDL_FALSE;
         }
         break;
     case WM_UNICONIFY:
-        wind_set (message[3], WF_UNICONIFY, message[4], message[5],
-                  message[6], message[7]);
+        wind_set(message[3], WF_UNICONIFY, message[4], message[5],
+                 message[6], message[7]);
         /* If we're not active, make ourselves active */
-        if (!(SDL_GetAppState () & SDL_APPACTIVE)) {
+        if (!(SDL_GetAppState() & SDL_APPACTIVE)) {
             /* Send an internal activate event */
-            SDL_PrivateAppActive (1, SDL_APPACTIVE);
+            SDL_PrivateAppActive(1, SDL_APPACTIVE);
         }
         if (GEM_refresh_name && GEM_title_name) {
-            wind_set (GEM_handle, WF_NAME,
-                      (short) (((unsigned long) GEM_title_name) >> 16),
-                      (short) (((unsigned long) GEM_title_name) & 0xffff),
-                      0, 0);
+            wind_set(GEM_handle, WF_NAME,
+                     (short) (((unsigned long) GEM_title_name) >> 16),
+                     (short) (((unsigned long) GEM_title_name) & 0xffff),
+                     0, 0);
             GEM_refresh_name = SDL_FALSE;
         }
         break;
     case WM_SIZED:
-        wind_set (message[3], WF_CURRXYWH, message[4], message[5],
-                  message[6], message[7]);
-        wind_get (message[3], WF_WORKXYWH, &x2, &y2, &w2, &h2);
+        wind_set(message[3], WF_CURRXYWH, message[4], message[5],
+                 message[6], message[7]);
+        wind_get(message[3], WF_WORKXYWH, &x2, &y2, &w2, &h2);
         GEM_win_fulled = SDL_FALSE;     /* Cancel maximized flag */
         GEM_lock_redraw = SDL_TRUE;     /* Prevent redraw till buffers resized */
-        SDL_PrivateResize (w2, h2);
+        SDL_PrivateResize(w2, h2);
         break;
     case WM_FULLED:
         {
             short x, y, w, h;
 
             if (GEM_win_fulled) {
-                wind_get (message[3], WF_PREVXYWH, &x, &y, &w, &h);
+                wind_get(message[3], WF_PREVXYWH, &x, &y, &w, &h);
                 GEM_win_fulled = SDL_FALSE;
             } else {
                 x = GEM_desk_x;
@@ -329,19 +329,19 @@ do_messages (_THIS, short *message)
                 h = GEM_desk_h;
                 GEM_win_fulled = SDL_TRUE;
             }
-            wind_set (message[3], WF_CURRXYWH, x, y, w, h);
-            wind_get (message[3], WF_WORKXYWH, &x2, &y2, &w2, &h2);
+            wind_set(message[3], WF_CURRXYWH, x, y, w, h);
+            wind_get(message[3], WF_WORKXYWH, &x2, &y2, &w2, &h2);
             GEM_lock_redraw = SDL_TRUE; /* Prevent redraw till buffers resized */
-            SDL_PrivateResize (w2, h2);
+            SDL_PrivateResize(w2, h2);
         }
         break;
     case WM_BOTTOMED:
-        wind_set (message[3], WF_BOTTOM, 0, 0, 0, 0);
+        wind_set(message[3], WF_BOTTOM, 0, 0, 0, 0);
         /* Continue with BOTTOM event processing */
     case WM_UNTOPPED:
-        SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+        SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
         if (VDI_setpalette) {
-            VDI_setpalette (this, VDI_oldpalette);
+            VDI_setpalette(this, VDI_oldpalette);
         }
         break;
     }
@@ -350,7 +350,7 @@ do_messages (_THIS, short *message)
 }
 
 static void
-do_keyboard (short kc, short ks)
+do_keyboard(short kc, short ks)
 {
     int scancode, asciicode;
 
@@ -374,13 +374,13 @@ do_keyboard (short kc, short ks)
 }
 
 static void
-do_mouse (_THIS, short mx, short my, short mb, short ks)
+do_mouse(_THIS, short mx, short my, short mb, short ks)
 {
     static short prevmousex = 0, prevmousey = 0, prevmouseb = 0;
     short x2, y2, w2, h2;
 
     /* Don't return mouse events if out of window */
-    if ((SDL_GetAppState () & SDL_APPMOUSEFOCUS) == 0) {
+    if ((SDL_GetAppState() & SDL_APPMOUSEFOCUS) == 0) {
         return;
     }
 
@@ -389,7 +389,7 @@ do_mouse (_THIS, short mx, short my, short mb, short ks)
     w2 = VDI_w;
     h2 = VDI_h;
     if ((!GEM_fullscreen) && (GEM_handle >= 0)) {
-        wind_get (GEM_handle, WF_WORKXYWH, &x2, &y2, &w2, &h2);
+        wind_get(GEM_handle, WF_WORKXYWH, &x2, &y2, &w2, &h2);
 
         /* Do not generate mouse button event if out of window working area */
         if ((mx < x2) || (mx >= x2 + w2) || (my < y2) || (my >= y2 + h2)) {
@@ -400,9 +400,9 @@ do_mouse (_THIS, short mx, short my, short mb, short ks)
     /* Mouse motion ? */
     if (GEM_mouse_relative) {
         if (GEM_usedevmouse) {
-            SDL_AtariDevMouse_PostMouseEvents (this, SDL_FALSE);
+            SDL_AtariDevMouse_PostMouseEvents(this, SDL_FALSE);
         } else {
-            SDL_AtariXbios_PostMouseEvents (this, SDL_FALSE);
+            SDL_AtariXbios_PostMouseEvents(this, SDL_FALSE);
         }
     } else {
         if ((prevmousex != mx) || (prevmousey != my)) {
@@ -420,7 +420,7 @@ do_mouse (_THIS, short mx, short my, short mb, short ks)
             if (posy > h2)
                 posy = h2 - 1;
 
-            SDL_PrivateMouseMotion (0, 0, posx, posy);
+            SDL_PrivateMouseMotion(0, 0, posx, posy);
         }
         prevmousex = mx;
         prevmousey = my;
@@ -437,10 +437,10 @@ do_mouse (_THIS, short mx, short my, short mb, short ks)
             prevbutton = prevmouseb & (1 << i);
 
             if (curbutton && !prevbutton) {
-                SDL_PrivateMouseButton (SDL_PRESSED, i + 1, 0, 0);
+                SDL_PrivateMouseButton(SDL_PRESSED, i + 1, 0, 0);
             }
             if (!curbutton && prevbutton) {
-                SDL_PrivateMouseButton (SDL_RELEASED, i + 1, 0, 0);
+                SDL_PrivateMouseButton(SDL_RELEASED, i + 1, 0, 0);
             }
         }
         prevmouseb = mb;

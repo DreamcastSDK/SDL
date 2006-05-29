@@ -136,22 +136,22 @@ extern SDL_bool SDL_MintAudio_thread_finished;
 extern long SDL_MintAudio_thread_pid;
 
 /* Functions */
-void SDL_MintAudio_Callback (void);
-void SDL_MintAudio_AddFrequency (_THIS, Uint32 frequency, Uint32 clock,
-                                 Uint32 prediv, int gpio_bits);
-int SDL_MintAudio_SearchFrequency (_THIS, int desired_freq);
+void SDL_MintAudio_Callback(void);
+void SDL_MintAudio_AddFrequency(_THIS, Uint32 frequency, Uint32 clock,
+                                Uint32 prediv, int gpio_bits);
+int SDL_MintAudio_SearchFrequency(_THIS, int desired_freq);
 
 /* MiNT thread functions */
-int SDL_MintAudio_Thread (long param);
-void SDL_MintAudio_WaitThread (void);
+int SDL_MintAudio_Thread(long param);
+void SDL_MintAudio_WaitThread(void);
 
 /* ASM interrupt functions */
-void SDL_MintAudio_GsxbInterrupt (void);
-void SDL_MintAudio_EmptyGsxbInterrupt (void);
-void SDL_MintAudio_XbiosInterruptMeasureClock (void);
-void SDL_MintAudio_XbiosInterrupt (void);
-void SDL_MintAudio_Dma8Interrupt (void);
-void SDL_MintAudio_StfaInterrupt (void);
+void SDL_MintAudio_GsxbInterrupt(void);
+void SDL_MintAudio_EmptyGsxbInterrupt(void);
+void SDL_MintAudio_XbiosInterruptMeasureClock(void);
+void SDL_MintAudio_XbiosInterrupt(void);
+void SDL_MintAudio_Dma8Interrupt(void);
+void SDL_MintAudio_StfaInterrupt(void);
 
 #endif /* _SDL_mintaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */

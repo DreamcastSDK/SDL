@@ -42,7 +42,7 @@ extern "C"
 
 extern "C"
 {
-    extern void EPOC_InitOSKeymap (_THIS);
-    extern void EPOC_PumpEvents (_THIS);
+    extern void EPOC_InitOSKeymap(_THIS);
+    extern void EPOC_PumpEvents(_THIS);
 };
 /* vi: set ts=4 sw=4 expandtab: */

@@ -34,15 +34,15 @@
 #include "SDL_stdinc.h"
 #include "SDL_riscosvideo.h"
 
-extern void WIMP_ReadModeInfo (_THIS);
+extern void WIMP_ReadModeInfo(_THIS);
 
-void WIMP_PaletteChanged (_THIS);
+void WIMP_PaletteChanged(_THIS);
 
 
 /* Create sprite buffer for screen */
 
 unsigned char *
-WIMP_CreateBuffer (int width, int height, int bpp)
+WIMP_CreateBuffer(int width, int height, int bpp)
 {
     int size;
     char sprite_name[12] = "display";
@@ -75,7 +75,7 @@ WIMP_CreateBuffer (int width, int height, int bpp)
     }
     size = bytesPerRow * height;
 
-    buffer = SDL_malloc ((size_t) size + offsetToSpriteData);
+    buffer = SDL_malloc((size_t) size + offsetToSpriteData);
     if (!buffer)
         return NULL;
 
@@ -86,7 +86,7 @@ WIMP_CreateBuffer (int width, int height, int bpp)
 
     regs.r[0] = 256 + 9;
     regs.r[1] = (unsigned int) buffer;
-    _kernel_swi (OS_SpriteOp, &regs, &regs);
+    _kernel_swi(OS_SpriteOp, &regs, &regs);
 
     regs.r[0] = 256 + 15;
     regs.r[1] = (unsigned int) buffer;
@@ -103,7 +103,7 @@ WIMP_CreateBuffer (int width, int height, int bpp)
             |(90 << 1)          /* Horizontal dpi */
             |1;                 /* Marker to distinguish between mode selectors and sprite modes */
     }
-    if (_kernel_swi (OS_SpriteOp, &regs, &regs) == NULL) {
+    if (_kernel_swi(OS_SpriteOp, &regs, &regs) == NULL) {
         if (bpp == 8) {
             /* Modify sprite to take into account 256 colour palette */
             int *sprite = (int *) (buffer + 16);
@@ -130,7 +130,7 @@ WIMP_CreateBuffer (int width, int height, int bpp)
 */
         }
     } else {
-        SDL_free (buffer);
+        SDL_free(buffer);
         buffer = NULL;
     }
 
@@ -141,7 +141,7 @@ WIMP_CreateBuffer (int width, int height, int bpp)
 /* Setup translation buffers for the sprite plotting */
 
 void
-WIMP_SetupPlotInfo (_THIS)
+WIMP_SetupPlotInfo(_THIS)
 {
     _kernel_swi_regs regs;
     int *sprite = ((int *) this->hidden->bank[1]) + 4;
@@ -156,23 +156,23 @@ WIMP_SetupPlotInfo (_THIS)
     regs.r[7] = 0;
 
     if (this->hidden->pixtrans)
-        SDL_free (this->hidden->pixtrans);
+        SDL_free(this->hidden->pixtrans);
     this->hidden->pixtrans = 0;
 
     /* Get the size required for the buffer */
-    _kernel_swi (ColourTrans_GenerateTable, &regs, &regs);
+    _kernel_swi(ColourTrans_GenerateTable, &regs, &regs);
     if (regs.r[4]) {
-        this->hidden->pixtrans = SDL_malloc (regs.r[4]);
+        this->hidden->pixtrans = SDL_malloc(regs.r[4]);
 
         regs.r[4] = (unsigned int) this->hidden->pixtrans;
         /* Actually read the buffer */
-        _kernel_swi (ColourTrans_GenerateTable, &regs, &regs);
+        _kernel_swi(ColourTrans_GenerateTable, &regs, &regs);
     }
 }
 
 /* Plot the sprite in the given context */
 void
-WIMP_PlotSprite (_THIS, int x, int y)
+WIMP_PlotSprite(_THIS, int x, int y)
 {
     _kernel_swi_regs regs;
     _kernel_oserror *err;
@@ -186,11 +186,11 @@ WIMP_PlotSprite (_THIS, int x, int y)
     regs.r[6] = 0;              /* No scale factors i.e. 1:1 */
     regs.r[7] = (int) this->hidden->pixtrans;
 
-    if ((err = _kernel_swi (OS_SpriteOp, &regs, &regs)) != 0) {
+    if ((err = _kernel_swi(OS_SpriteOp, &regs, &regs)) != 0) {
         int *p = (int *) this->hidden->pixtrans;
-        printf ("OS_SpriteOp failed \n%s\n", err->errmess);
-        printf ("pixtrans %d\n", (int) this->hidden->pixtrans);
-        printf ("%x %x %x\n", p[0], p[1], p[2]);
+        printf("OS_SpriteOp failed \n%s\n", err->errmess);
+        printf("pixtrans %d\n", (int) this->hidden->pixtrans);
+        printf("%x %x %x\n", p[0], p[1], p[2]);
     }
 }
 
@@ -199,16 +199,16 @@ WIMP_PlotSprite (_THIS, int x, int y)
    of windows and the sprites they plot */
 
 void
-WIMP_ModeChanged (_THIS)
+WIMP_ModeChanged(_THIS)
 {
     int oldXeig = this->hidden->xeig;
     int oldYeig = this->hidden->yeig;
 
-    WIMP_ReadModeInfo (this);
+    WIMP_ReadModeInfo(this);
 
     if (oldXeig == this->hidden->xeig && oldYeig == this->hidden->yeig) {
         /* Only need to update the palette */
-        WIMP_PaletteChanged (this);
+        WIMP_PaletteChanged(this);
     } else {
         _kernel_swi_regs regs;
         int window_state[9];
@@ -217,12 +217,12 @@ WIMP_ModeChanged (_THIS)
         int newWidth, newHeight;
 
         /* Need to resize windows and update the palette */
-        WIMP_SetupPlotInfo (this);
+        WIMP_SetupPlotInfo(this);
 
 
         window_state[0] = this->hidden->window_handle;
         regs.r[1] = (unsigned int) window_state;
-        _kernel_swi (Wimp_GetWindowState, &regs, &regs);
+        _kernel_swi(Wimp_GetWindowState, &regs, &regs);
 
         currWidth = window_state[3] - window_state[1];
         currHeight = window_state[4] - window_state[2];
@@ -246,7 +246,7 @@ WIMP_ModeChanged (_THIS)
 
         regs.r[0] = this->hidden->window_handle;
         regs.r[1] = (int) extent;
-        _kernel_swi (Wimp_SetExtent, &regs, &regs);
+        _kernel_swi(Wimp_SetExtent, &regs, &regs);
 
         /*TODO: May need to set flag to resize window on next open */
     }
@@ -255,9 +255,9 @@ WIMP_ModeChanged (_THIS)
 /* Palette has changed so update palettes used for windows sprites */
 
 void
-WIMP_PaletteChanged (_THIS)
+WIMP_PaletteChanged(_THIS)
 {
-    WIMP_SetupPlotInfo (this);
+    WIMP_SetupPlotInfo(this);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

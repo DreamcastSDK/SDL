@@ -35,17 +35,17 @@
 
 /* Initialization/Cleanup routines */
 #if !SDL_JOYSTICK_DISABLED
-extern int SDL_JoystickInit (void);
-extern void SDL_JoystickQuit (void);
+extern int SDL_JoystickInit(void);
+extern void SDL_JoystickQuit(void);
 #endif
 #if !SDL_CDROM_DISABLED
-extern int SDL_CDROMInit (void);
-extern void SDL_CDROMQuit (void);
+extern int SDL_CDROMInit(void);
+extern void SDL_CDROMQuit(void);
 #endif
 #if !SDL_TIMERS_DISABLED
-extern void SDL_StartTicks (void);
-extern int SDL_TimerInit (void);
-extern void SDL_TimerQuit (void);
+extern void SDL_StartTicks(void);
+extern int SDL_TimerInit(void);
+extern void SDL_TimerQuit(void);
 #endif
 
 /* The initialized subsystems */
@@ -57,20 +57,20 @@ int surfaces_allocated = 0;
 #endif
 
 int
-SDL_InitSubSystem (Uint32 flags)
+SDL_InitSubSystem(Uint32 flags)
 {
 #if !SDL_VIDEO_DISABLED
     /* Initialize the video/event subsystem */
     if ((flags & SDL_INIT_VIDEO) && !(SDL_initialized & SDL_INIT_VIDEO)) {
-        if (SDL_VideoInit (SDL_getenv ("SDL_VIDEODRIVER"),
-                           (flags & SDL_INIT_EVENTTHREAD)) < 0) {
+        if (SDL_VideoInit(SDL_getenv("SDL_VIDEODRIVER"),
+                          (flags & SDL_INIT_EVENTTHREAD)) < 0) {
             return (-1);
         }
         SDL_initialized |= SDL_INIT_VIDEO;
     }
 #else
     if (flags & SDL_INIT_VIDEO) {
-        SDL_SetError ("SDL not built with video support");
+        SDL_SetError("SDL not built with video support");
         return (-1);
     }
 #endif
@@ -78,14 +78,14 @@ SDL_InitSubSystem (Uint32 flags)
 #if !SDL_AUDIO_DISABLED
     /* Initialize the audio subsystem */
     if ((flags & SDL_INIT_AUDIO) && !(SDL_initialized & SDL_INIT_AUDIO)) {
-        if (SDL_AudioInit (SDL_getenv ("SDL_AUDIODRIVER")) < 0) {
+        if (SDL_AudioInit(SDL_getenv("SDL_AUDIODRIVER")) < 0) {
             return (-1);
         }
         SDL_initialized |= SDL_INIT_AUDIO;
     }
 #else
     if (flags & SDL_INIT_AUDIO) {
-        SDL_SetError ("SDL not built with audio support");
+        SDL_SetError("SDL not built with audio support");
         return (-1);
     }
 #endif
@@ -93,18 +93,18 @@ SDL_InitSubSystem (Uint32 flags)
 #if !SDL_TIMERS_DISABLED
     /* Initialize the timer subsystem */
     if (!ticks_started) {
-        SDL_StartTicks ();
+        SDL_StartTicks();
         ticks_started = 1;
     }
     if ((flags & SDL_INIT_TIMER) && !(SDL_initialized & SDL_INIT_TIMER)) {
-        if (SDL_TimerInit () < 0) {
+        if (SDL_TimerInit() < 0) {
             return (-1);
         }
         SDL_initialized |= SDL_INIT_TIMER;
     }
 #else
     if (flags & SDL_INIT_TIMER) {
-        SDL_SetError ("SDL not built with timer support");
+        SDL_SetError("SDL not built with timer support");
         return (-1);
     }
 #endif
@@ -112,14 +112,14 @@ SDL_InitSubSystem (Uint32 flags)
 #if !SDL_JOYSTICK_DISABLED
     /* Initialize the joystick subsystem */
     if ((flags & SDL_INIT_JOYSTICK) && !(SDL_initialized & SDL_INIT_JOYSTICK)) {
-        if (SDL_JoystickInit () < 0) {
+        if (SDL_JoystickInit() < 0) {
             return (-1);
         }
         SDL_initialized |= SDL_INIT_JOYSTICK;
     }
 #else
     if (flags & SDL_INIT_JOYSTICK) {
-        SDL_SetError ("SDL not built with joystick support");
+        SDL_SetError("SDL not built with joystick support");
         return (-1);
     }
 #endif
@@ -127,14 +127,14 @@ SDL_InitSubSystem (Uint32 flags)
 #if !SDL_CDROM_DISABLED
     /* Initialize the CD-ROM subsystem */
     if ((flags & SDL_INIT_CDROM) && !(SDL_initialized & SDL_INIT_CDROM)) {
-        if (SDL_CDROMInit () < 0) {
+        if (SDL_CDROMInit() < 0) {
             return (-1);
         }
         SDL_initialized |= SDL_INIT_CDROM;
     }
 #else
     if (flags & SDL_INIT_CDROM) {
-        SDL_SetError ("SDL not built with cdrom support");
+        SDL_SetError("SDL not built with cdrom support");
         return (-1);
     }
 #endif
@@ -142,67 +142,67 @@ SDL_InitSubSystem (Uint32 flags)
 }
 
 int
-SDL_Init (Uint32 flags)
+SDL_Init(Uint32 flags)
 {
 #if !SDL_THREADS_DISABLED && SDL_THREAD_PTH
-    if (!pth_init ()) {
+    if (!pth_init()) {
         return -1;
     }
 #endif
 
     /* Clear the error message */
-    SDL_ClearError ();
+    SDL_ClearError();
 
     /* Initialize the desired subsystems */
-    if (SDL_InitSubSystem (flags) < 0) {
+    if (SDL_InitSubSystem(flags) < 0) {
         return (-1);
     }
 
     /* Everything is initialized */
     if (!(flags & SDL_INIT_NOPARACHUTE)) {
-        SDL_InstallParachute ();
+        SDL_InstallParachute();
     }
     return (0);
 }
 
 void
-SDL_QuitSubSystem (Uint32 flags)
+SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
 #if !SDL_CDROM_DISABLED
     if ((flags & SDL_initialized & SDL_INIT_CDROM)) {
-        SDL_CDROMQuit ();
+        SDL_CDROMQuit();
         SDL_initialized &= ~SDL_INIT_CDROM;
     }
 #endif
 #if !SDL_JOYSTICK_DISABLED
     if ((flags & SDL_initialized & SDL_INIT_JOYSTICK)) {
-        SDL_JoystickQuit ();
+        SDL_JoystickQuit();
         SDL_initialized &= ~SDL_INIT_JOYSTICK;
     }
 #endif
 #if !SDL_TIMERS_DISABLED
     if ((flags & SDL_initialized & SDL_INIT_TIMER)) {
-        SDL_TimerQuit ();
+        SDL_TimerQuit();
         SDL_initialized &= ~SDL_INIT_TIMER;
     }
 #endif
 #if !SDL_AUDIO_DISABLED
     if ((flags & SDL_initialized & SDL_INIT_AUDIO)) {
-        SDL_AudioQuit ();
+        SDL_AudioQuit();
         SDL_initialized &= ~SDL_INIT_AUDIO;
     }
 #endif
 #if !SDL_VIDEO_DISABLED
     if ((flags & SDL_initialized & SDL_INIT_VIDEO)) {
-        SDL_VideoQuit ();
+        SDL_VideoQuit();
         SDL_initialized &= ~SDL_INIT_VIDEO;
     }
 #endif
 }
 
 Uint32
-SDL_WasInit (Uint32 flags)
+SDL_WasInit(Uint32 flags)
 {
     if (!flags) {
         flags = SDL_INIT_EVERYTHING;
@@ -211,50 +211,50 @@ SDL_WasInit (Uint32 flags)
 }
 
 void
-SDL_Quit (void)
+SDL_Quit(void)
 {
     /* Quit all subsystems */
 #ifdef DEBUG_BUILD
-    printf ("[SDL_Quit] : Enter! Calling QuitSubSystem()\n");
-    fflush (stdout);
+    printf("[SDL_Quit] : Enter! Calling QuitSubSystem()\n");
+    fflush(stdout);
 #endif
-    SDL_QuitSubSystem (SDL_INIT_EVERYTHING);
+    SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
 #ifdef CHECK_LEAKS
 #ifdef DEBUG_BUILD
-    printf ("[SDL_Quit] : CHECK_LEAKS\n");
-    fflush (stdout);
+    printf("[SDL_Quit] : CHECK_LEAKS\n");
+    fflush(stdout);
 #endif
 
     /* Print the number of surfaces not freed */
     if (surfaces_allocated != 0) {
-        fprintf (stderr, "SDL Warning: %d SDL surfaces extant\n",
-                 surfaces_allocated);
+        fprintf(stderr, "SDL Warning: %d SDL surfaces extant\n",
+                surfaces_allocated);
     }
 #endif
 #ifdef DEBUG_BUILD
-    printf ("[SDL_Quit] : SDL_UninstallParachute()\n");
-    fflush (stdout);
+    printf("[SDL_Quit] : SDL_UninstallParachute()\n");
+    fflush(stdout);
 #endif
 
     /* Uninstall any parachute signal handlers */
-    SDL_UninstallParachute ();
+    SDL_UninstallParachute();
 
 #if !SDL_THREADS_DISABLED && SDL_THREAD_PTH
-    pth_kill ();
+    pth_kill();
 #endif
 #ifdef DEBUG_BUILD
-    printf ("[SDL_Quit] : Returning!\n");
-    fflush (stdout);
+    printf("[SDL_Quit] : Returning!\n");
+    fflush(stdout);
 #endif
 
 }
 
 /* Get the library version number */
 void
-SDL_GetVersion (SDL_version * ver)
+SDL_GetVersion(SDL_version * ver)
 {
-    SDL_VERSION (ver);
+    SDL_VERSION(ver);
 }
 
 #if defined(__OS2__)
@@ -267,9 +267,9 @@ SDL_GetVersion (SDL_version * ver)
 
 /* Exception handler to prevent the Audio thread hanging, making a zombie process! */
 ULONG _System
-SDL_Main_ExceptionHandler (PEXCEPTIONREPORTRECORD pERepRec,
-                           PEXCEPTIONREGISTRATIONRECORD pERegRec,
-                           PCONTEXTRECORD pCtxRec, PVOID p)
+SDL_Main_ExceptionHandler(PEXCEPTIONREPORTRECORD pERepRec,
+                          PEXCEPTIONREGISTRATIONRECORD pERegRec,
+                          PCONTEXTRECORD pCtxRec, PVOID p)
 {
     if (pERepRec->fHandlerFlags & EH_EXIT_UNWIND)
         return XCPT_CONTINUE_SEARCH;
@@ -288,7 +288,7 @@ SDL_Main_ExceptionHandler (PEXCEPTIONREPORTRECORD pERepRec,
             printf
                 ("[SDL_Main_ExceptionHandler] : Calling SDL_CloseAudio()!\n");
 #endif
-            SDL_CloseAudio ();
+            SDL_CloseAudio();
         }
     }
     return (XCPT_CONTINUE_SEARCH);
@@ -300,26 +300,26 @@ EXCEPTIONREGISTRATIONRECORD SDL_Main_xcpthand =
 
 /* The main DLL entry for DLL Initialization and Uninitialization: */
 unsigned _System
-LibMain (unsigned hmod, unsigned termination)
+LibMain(unsigned hmod, unsigned termination)
 {
     if (termination) {
 #ifdef DEBUG_BUILD
 /*    printf("[SDL DLL Unintialization] : Removing exception handler\n"); */
 #endif
-        DosUnsetExceptionHandler (&SDL_Main_xcpthand);
+        DosUnsetExceptionHandler(&SDL_Main_xcpthand);
         return 1;
     } else {
 #ifdef DEBUG_BUILD
         /* Make stdout and stderr unbuffered! */
-        setbuf (stdout, NULL);
-        setbuf (stderr, NULL);
+        setbuf(stdout, NULL);
+        setbuf(stderr, NULL);
 #endif
         /* Fire up exception handler */
 #ifdef DEBUG_BUILD
 /*    printf("[SDL DLL Initialization] : Setting exception handler\n"); */
 #endif
         /* Set exception handler */
-        DosSetExceptionHandler (&SDL_Main_xcpthand);
+        DosSetExceptionHandler(&SDL_Main_xcpthand);
 
         return 1;
     }
@@ -334,8 +334,8 @@ LibMain (unsigned hmod, unsigned termination)
 #include <windows.h>
 
 BOOL APIENTRY
-_DllMainCRTStartup (HANDLE hModule,
-                    DWORD ul_reason_for_call, LPVOID lpReserved)
+_DllMainCRTStartup(HANDLE hModule,
+                   DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:

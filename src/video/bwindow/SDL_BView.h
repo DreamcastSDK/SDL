@@ -34,25 +34,25 @@ extern "C"
 class SDL_BView:public BView
 {
   public:
-    SDL_BView (BRect frame):BView (frame, "SDL View", B_FOLLOW_ALL_SIDES,
-                                   (B_WILL_DRAW | B_FRAME_EVENTS))
+    SDL_BView(BRect frame):BView(frame, "SDL View", B_FOLLOW_ALL_SIDES,
+                                 (B_WILL_DRAW | B_FRAME_EVENTS))
     {
         image = NULL;
         xoff = yoff = 0;
-        SetViewColor (0, 0, 0, 0);
-        SetHighColor (0, 0, 0, 0);
+        SetViewColor(0, 0, 0, 0);
+        SetHighColor(0, 0, 0, 0);
     }
-    virtual ~ SDL_BView ()
+    virtual ~ SDL_BView()
     {
-        SetBitmap (NULL);
+        SetBitmap(NULL);
     }
     /* Set drawing offsets for fullscreen mode */
-    virtual void SetXYOffset (int x, int y)
+    virtual void SetXYOffset(int x, int y)
     {
         xoff = x;
         yoff = y;
     }
-    virtual void GetXYOffset (int &x, int &y)
+    virtual void GetXYOffset(int &x, int &y)
     {
         x = xoff;
         y = yoff;
@@ -60,30 +60,30 @@ class SDL_BView:public BView
     /* The view changed size. If it means we're in fullscreen, we
      * draw a nice black box in the entire view to get black borders.
      */
-    virtual void FrameResized (float width, float height)
+    virtual void FrameResized(float width, float height)
     {
         BRect bounds;
         bounds.top = bounds.left = 0;
         bounds.right = width;
         bounds.bottom = height;
         /* Fill the entire view with black */
-        FillRect (bounds, B_SOLID_HIGH);
+        FillRect(bounds, B_SOLID_HIGH);
         /* And if there's an image, redraw it. */
         if (image) {
-            bounds = image->Bounds ();
-            Draw (bounds);
+            bounds = image->Bounds();
+            Draw(bounds);
         }
     }
 
     /* Drawing portion of this complete breakfast. :) */
-    virtual void SetBitmap (BBitmap * bitmap)
+    virtual void SetBitmap(BBitmap * bitmap)
     {
         if (image) {
             delete image;
         }
         image = bitmap;
     }
-    virtual void Draw (BRect updateRect)
+    virtual void Draw(BRect updateRect)
     {
         if (image) {
             if (xoff || yoff) {
@@ -92,13 +92,13 @@ class SDL_BView:public BView
                 dest.left = updateRect.left + xoff;
                 dest.bottom = updateRect.bottom + yoff;
                 dest.right = updateRect.right + xoff;
-                DrawBitmap (image, updateRect, dest);
+                DrawBitmap(image, updateRect, dest);
             } else {
-                DrawBitmap (image, updateRect, updateRect);
+                DrawBitmap(image, updateRect, updateRect);
             }
         }
     }
-    virtual void DrawAsync (BRect updateRect)
+    virtual void DrawAsync(BRect updateRect)
     {
         if (xoff || yoff) {
             BRect dest;
@@ -106,9 +106,9 @@ class SDL_BView:public BView
             dest.left = updateRect.left + xoff;
             dest.bottom = updateRect.bottom + yoff;
             dest.right = updateRect.right + xoff;;
-            DrawBitmapAsync (image, updateRect, dest);
+            DrawBitmapAsync(image, updateRect, dest);
         } else {
-            DrawBitmapAsync (image, updateRect, updateRect);
+            DrawBitmapAsync(image, updateRect, updateRect);
         }
     }
 

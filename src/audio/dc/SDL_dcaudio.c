@@ -35,46 +35,46 @@
 #include <dc/spu.h>
 
 /* Audio driver functions */
-static int DCAUD_OpenAudio (_THIS, SDL_AudioSpec * spec);
-static void DCAUD_WaitAudio (_THIS);
-static void DCAUD_PlayAudio (_THIS);
-static Uint8 *DCAUD_GetAudioBuf (_THIS);
-static void DCAUD_CloseAudio (_THIS);
+static int DCAUD_OpenAudio(_THIS, SDL_AudioSpec * spec);
+static void DCAUD_WaitAudio(_THIS);
+static void DCAUD_PlayAudio(_THIS);
+static Uint8 *DCAUD_GetAudioBuf(_THIS);
+static void DCAUD_CloseAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 static int
-DCAUD_Available (void)
+DCAUD_Available(void)
 {
     return 1;
 }
 
 static void
-DCAUD_DeleteDevice (SDL_AudioDevice * device)
+DCAUD_DeleteDevice(SDL_AudioDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_AudioDevice *
-DCAUD_CreateDevice (int devindex)
+DCAUD_CreateDevice(int devindex)
 {
     SDL_AudioDevice *this;
 
     /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc (sizeof (SDL_AudioDevice));
+    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
     if (this) {
-        SDL_memset (this, 0, (sizeof *this));
+        SDL_memset(this, 0, (sizeof *this));
         this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc ((sizeof *this->hidden));
+            SDL_malloc((sizeof *this->hidden));
     }
     if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (this) {
-            SDL_free (this);
+            SDL_free(this);
         }
         return (0);
     }
-    SDL_memset (this->hidden, 0, (sizeof *this->hidden));
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
     /* Set the function pointers */
     this->OpenAudio = DCAUD_OpenAudio;
@@ -85,7 +85,7 @@ DCAUD_CreateDevice (int devindex)
 
     this->free = DCAUD_DeleteDevice;
 
-    spu_init ();
+    spu_init();
 
     return this;
 }
@@ -97,12 +97,12 @@ AudioBootStrap DCAUD_bootstrap = {
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-DCAUD_WaitAudio (_THIS)
+DCAUD_WaitAudio(_THIS)
 {
     if (this->hidden->playing) {
         /* wait */
-        while (aica_get_pos (0) / this->spec.samples == this->hidden->nextbuf) {
-            thd_pass ();
+        while (aica_get_pos(0) / this->spec.samples == this->hidden->nextbuf) {
+            thd_pass();
         }
     }
 }
@@ -110,7 +110,7 @@ DCAUD_WaitAudio (_THIS)
 #define	SPU_RAM_BASE	0xa0800000
 
 static void
-spu_memload_stereo8 (int leftpos, int rightpos, void *src0, size_t size)
+spu_memload_stereo8(int leftpos, int rightpos, void *src0, size_t size)
 {
     uint8 *src = src0;
     uint32 *left = (uint32 *) (leftpos + SPU_RAM_BASE);
@@ -126,14 +126,14 @@ spu_memload_stereo8 (int leftpos, int rightpos, void *src0, size_t size)
         rval |= (*src++) << 16;
         lval |= (*src++) << 24;
         rval |= (*src++) << 24;
-        g2_write_32 (left++, lval);
-        g2_write_32 (right++, rval);
-        g2_fifo_wait ();
+        g2_write_32(left++, lval);
+        g2_write_32(right++, rval);
+        g2_fifo_wait();
     }
 }
 
 static void
-spu_memload_stereo16 (int leftpos, int rightpos, void *src0, size_t size)
+spu_memload_stereo16(int leftpos, int rightpos, void *src0, size_t size)
 {
     uint16 *src = src0;
     uint32 *left = (uint32 *) (leftpos + SPU_RAM_BASE);
@@ -145,22 +145,22 @@ spu_memload_stereo16 (int leftpos, int rightpos, void *src0, size_t size)
         rval = *src++;
         lval |= (*src++) << 16;
         rval |= (*src++) << 16;
-        g2_write_32 (left++, lval);
-        g2_write_32 (right++, rval);
-        g2_fifo_wait ();
+        g2_write_32(left++, lval);
+        g2_write_32(right++, rval);
+        g2_fifo_wait();
     }
 }
 
 static void
-DCAUD_PlayAudio (_THIS)
+DCAUD_PlayAudio(_THIS)
 {
     SDL_AudioSpec *spec = &this->spec;
     unsigned int offset;
 
     if (this->hidden->playing) {
         /* wait */
-        while (aica_get_pos (0) / spec->samples == this->hidden->nextbuf) {
-            thd_pass ();
+        while (aica_get_pos(0) / spec->samples == this->hidden->nextbuf) {
+            thd_pass();
         }
     }
 
@@ -168,18 +168,18 @@ DCAUD_PlayAudio (_THIS)
     this->hidden->nextbuf ^= 1;
     /* Write the audio data, checking for EAGAIN on broken audio drivers */
     if (spec->channels == 1) {
-        spu_memload (this->hidden->leftpos + offset, this->hidden->mixbuf,
-                     this->hidden->mixlen);
+        spu_memload(this->hidden->leftpos + offset, this->hidden->mixbuf,
+                    this->hidden->mixlen);
     } else {
         offset /= 2;
         if ((this->spec.format & 255) == 8) {
-            spu_memload_stereo8 (this->hidden->leftpos + offset,
+            spu_memload_stereo8(this->hidden->leftpos + offset,
+                                this->hidden->rightpos + offset,
+                                this->hidden->mixbuf, this->hidden->mixlen);
+        } else {
+            spu_memload_stereo16(this->hidden->leftpos + offset,
                                  this->hidden->rightpos + offset,
                                  this->hidden->mixbuf, this->hidden->mixlen);
-        } else {
-            spu_memload_stereo16 (this->hidden->leftpos + offset,
-                                  this->hidden->rightpos + offset,
-                                  this->hidden->mixbuf, this->hidden->mixlen);
         }
     }
 
@@ -188,37 +188,37 @@ DCAUD_PlayAudio (_THIS)
         this->hidden->playing = 1;
         mode = (spec->format == AUDIO_S8) ? SM_8BIT : SM_16BIT;
         if (spec->channels == 1) {
-            aica_play (0, mode, this->hidden->leftpos, 0,
-                       spec->samples * 2, spec->freq, 255, 128, 1);
+            aica_play(0, mode, this->hidden->leftpos, 0,
+                      spec->samples * 2, spec->freq, 255, 128, 1);
         } else {
-            aica_play (0, mode, this->hidden->leftpos, 0,
-                       spec->samples * 2, spec->freq, 255, 0, 1);
-            aica_play (1, mode, this->hidden->rightpos, 0,
-                       spec->samples * 2, spec->freq, 255, 255, 1);
+            aica_play(0, mode, this->hidden->leftpos, 0,
+                      spec->samples * 2, spec->freq, 255, 0, 1);
+            aica_play(1, mode, this->hidden->rightpos, 0,
+                      spec->samples * 2, spec->freq, 255, 255, 1);
         }
     }
 }
 
 static Uint8 *
-DCAUD_GetAudioBuf (_THIS)
+DCAUD_GetAudioBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 static void
-DCAUD_CloseAudio (_THIS)
+DCAUD_CloseAudio(_THIS)
 {
-    aica_stop (0);
+    aica_stop(0);
     if (this->spec.channels == 2)
-        aica_stop (1);
+        aica_stop(1);
     if (this->hidden->mixbuf != NULL) {
-        SDL_FreeAudioMem (this->hidden->mixbuf);
+        SDL_FreeAudioMem(this->hidden->mixbuf);
         this->hidden->mixbuf = NULL;
     }
 }
 
 static int
-DCAUD_OpenAudio (_THIS, SDL_AudioSpec * spec)
+DCAUD_OpenAudio(_THIS, SDL_AudioSpec * spec)
 {
     switch (spec->format & 0xff) {
     case 8:
@@ -228,20 +228,20 @@ DCAUD_OpenAudio (_THIS, SDL_AudioSpec * spec)
         spec->format = AUDIO_S16LSB;
         break;
     default:
-        SDL_SetError ("Unsupported audio format");
+        SDL_SetError("Unsupported audio format");
         return (-1);
     }
 
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec (spec);
+    SDL_CalculateAudioSpec(spec);
 
     /* Allocate mixing buffer */
     this->hidden->mixlen = spec->size;
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem (this->hidden->mixlen);
+    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         return (-1);
     }
-    SDL_memset (this->hidden->mixbuf, spec->silence, spec->size);
+    SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
     this->hidden->leftpos = 0x11000;
     this->hidden->rightpos = 0x11000 + spec->size;
     this->hidden->playing = 0;

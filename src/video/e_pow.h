@@ -98,10 +98,10 @@ static double
 
 #ifdef __STDC__
 double
-__ieee754_pow (double x, double y)
+__ieee754_pow(double x, double y)
 #else
 double
-__ieee754_pow (x, y)
+__ieee754_pow(x, y)
      double x, y;
 #endif
 {
@@ -111,8 +111,8 @@ __ieee754_pow (x, y)
     int32_t hx, hy, ix, iy;
     u_int32_t lx, ly;
 
-    EXTRACT_WORDS (hx, lx, x);
-    EXTRACT_WORDS (hy, ly, y);
+    EXTRACT_WORDS(hx, lx, x);
+    EXTRACT_WORDS(hy, ly, y);
     ix = hx & 0x7fffffff;
     iy = hy & 0x7fffffff;
 
@@ -168,7 +168,7 @@ __ieee754_pow (x, y)
             return x * x;       /* y is  2 */
         if (hy == 0x3fe00000) { /* y is  0.5 */
             if (hx >= 0)        /* x >= +0 */
-                return __ieee754_sqrt (x);
+                return __ieee754_sqrt(x);
         }
     }
 
@@ -213,7 +213,7 @@ __ieee754_pow (x, y)
         u = ivln2_h * t;        /* ivln2_h has 21 sig. bits */
         v = t * ivln2_l - w * ivln2;
         t1 = u + v;
-        SET_LOW_WORD (t1, 0);
+        SET_LOW_WORD(t1, 0);
         t2 = v - (t1 - u);
     } else {
         double s2, s_h, s_l, t_h, t_l;
@@ -222,7 +222,7 @@ __ieee754_pow (x, y)
         if (ix < 0x00100000) {
             ax *= two53;
             n -= 53;
-            GET_HIGH_WORD (ix, ax);
+            GET_HIGH_WORD(ix, ax);
         }
         n += ((ix) >> 20) - 0x3ff;
         j = ix & 0x000fffff;
@@ -237,18 +237,17 @@ __ieee754_pow (x, y)
             n += 1;
             ix -= 0x00100000;
         }
-        SET_HIGH_WORD (ax, ix);
+        SET_HIGH_WORD(ax, ix);
 
         /* compute s = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
         u = ax - bp[k];         /* bp[0]=1.0, bp[1]=1.5 */
         v = one / (ax + bp[k]);
         s = u * v;
         s_h = s;
-        SET_LOW_WORD (s_h, 0);
+        SET_LOW_WORD(s_h, 0);
         /* t_h=ax+bp[k] High */
         t_h = zero;
-        SET_HIGH_WORD (t_h,
-                       ((ix >> 1) | 0x20000000) + 0x00080000 + (k << 18));
+        SET_HIGH_WORD(t_h, ((ix >> 1) | 0x20000000) + 0x00080000 + (k << 18));
         t_l = ax - (t_h - bp[k]);
         s_l = v * ((u - s_h * t_h) - s_h * t_l);
         /* compute log(ax) */
@@ -259,21 +258,21 @@ __ieee754_pow (x, y)
         r += s_l * (s_h + s);
         s2 = s_h * s_h;
         t_h = 3.0 + s2 + r;
-        SET_LOW_WORD (t_h, 0);
+        SET_LOW_WORD(t_h, 0);
         t_l = r - ((t_h - 3.0) - s2);
         /* u+v = s*(1+...) */
         u = s_h * t_h;
         v = s_l * t_h + t_l * s;
         /* 2/(3log2)*(s+...) */
         p_h = u + v;
-        SET_LOW_WORD (p_h, 0);
+        SET_LOW_WORD(p_h, 0);
         p_l = v - (p_h - u);
         z_h = cp_h * p_h;       /* cp_h+cp_l = 2/(3*log2) */
         z_l = cp_l * p_h + p_l * cp + dp_l[k];
         /* log2(ax) = (s+..)*2/(3*log2) = n + dp_h + z_h + z_l */
         t = (double) n;
         t1 = (((z_h + z_l) + dp_h[k]) + t);
-        SET_LOW_WORD (t1, 0);
+        SET_LOW_WORD(t1, 0);
         t2 = z_l - (((t1 - t) - dp_h[k]) - z_h);
     }
 
@@ -283,11 +282,11 @@ __ieee754_pow (x, y)
 
     /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
     y1 = y;
-    SET_LOW_WORD (y1, 0);
+    SET_LOW_WORD(y1, 0);
     p_l = (y - y1) * t1 + y * t2;
     p_h = y1 * t1;
     z = p_l + p_h;
-    EXTRACT_WORDS (j, i, z);
+    EXTRACT_WORDS(j, i, z);
     if (j >= 0x40900000) {      /* z >= 1024 */
         if (((j - 0x40900000) | i) != 0)        /* if z > 1024 */
             return s * huge * huge;     /* overflow */
@@ -313,14 +312,14 @@ __ieee754_pow (x, y)
         n = j + (0x00100000 >> (k + 1));
         k = ((n & 0x7fffffff) >> 20) - 0x3ff;   /* new k for n */
         t = zero;
-        SET_HIGH_WORD (t, n & ~(0x000fffff >> k));
+        SET_HIGH_WORD(t, n & ~(0x000fffff >> k));
         n = ((n & 0x000fffff) | 0x00100000) >> (20 - k);
         if (j < 0)
             n = -n;
         p_h -= t;
     }
     t = p_l + p_h;
-    SET_LOW_WORD (t, 0);
+    SET_LOW_WORD(t, 0);
     u = t * lg2_h;
     v = (p_l - (t - p_h)) * lg2 + t * lg2_l;
     z = u + v;
@@ -329,12 +328,12 @@ __ieee754_pow (x, y)
     t1 = z - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5))));
     r = (z * t1) / (t1 - two) - (w + z * w);
     z = one - (r - z);
-    GET_HIGH_WORD (j, z);
+    GET_HIGH_WORD(j, z);
     j += (n << 20);
     if ((j >> 20) <= 0)
-        z = SDL_NAME (scalbn) (z, n);   /* subnormal output */
+        z = SDL_NAME(scalbn) (z, n);    /* subnormal output */
     else
-        SET_HIGH_WORD (z, j);
+        SET_HIGH_WORD(z, j);
     return s * z;
 }
 

@@ -55,12 +55,12 @@ static volatile SDL_bool list_changed = SDL_FALSE;
    This should not be called while the timer subsystem is running.
 */
 int
-SDL_SetTimerThreaded (int value)
+SDL_SetTimerThreaded(int value)
 {
     int retval;
 
     if (SDL_timer_started) {
-        SDL_SetError ("Timer already initialized");
+        SDL_SetError("Timer already initialized");
         retval = -1;
     } else {
         retval = 0;
@@ -70,19 +70,19 @@ SDL_SetTimerThreaded (int value)
 }
 
 int
-SDL_TimerInit (void)
+SDL_TimerInit(void)
 {
     int retval;
 
     retval = 0;
     if (SDL_timer_started) {
-        SDL_TimerQuit ();
+        SDL_TimerQuit();
     }
     if (!SDL_timer_threaded) {
-        retval = SDL_SYS_TimerInit ();
+        retval = SDL_SYS_TimerInit();
     }
     if (SDL_timer_threaded) {
-        SDL_timer_mutex = SDL_CreateMutex ();
+        SDL_timer_mutex = SDL_CreateMutex();
     }
     if (retval == 0) {
         SDL_timer_started = 1;
@@ -91,14 +91,14 @@ SDL_TimerInit (void)
 }
 
 void
-SDL_TimerQuit (void)
+SDL_TimerQuit(void)
 {
-    SDL_SetTimer (0, NULL);
+    SDL_SetTimer(0, NULL);
     if (SDL_timer_threaded < 2) {
-        SDL_SYS_TimerQuit ();
+        SDL_SYS_TimerQuit();
     }
     if (SDL_timer_threaded) {
-        SDL_DestroyMutex (SDL_timer_mutex);
+        SDL_DestroyMutex(SDL_timer_mutex);
         SDL_timer_mutex = NULL;
     }
     SDL_timer_started = 0;
@@ -106,15 +106,15 @@ SDL_TimerQuit (void)
 }
 
 void
-SDL_ThreadedTimerCheck (void)
+SDL_ThreadedTimerCheck(void)
 {
     Uint32 now, ms;
     SDL_TimerID t, prev, next;
     SDL_bool removed;
 
-    SDL_mutexP (SDL_timer_mutex);
+    SDL_mutexP(SDL_timer_mutex);
     list_changed = SDL_FALSE;
-    now = SDL_GetTicks ();
+    now = SDL_GetTicks();
     for (prev = NULL, t = SDL_timers; t; t = next) {
         removed = SDL_FALSE;
         ms = t->interval - SDL_TIMESLICE;
@@ -128,12 +128,12 @@ SDL_ThreadedTimerCheck (void)
                 t->last_alarm = now;
             }
 #ifdef DEBUG_TIMERS
-            printf ("Executing timer %p (thread = %d)\n", t, SDL_ThreadID ());
+            printf("Executing timer %p (thread = %d)\n", t, SDL_ThreadID());
 #endif
             timer = *t;
-            SDL_mutexV (SDL_timer_mutex);
-            ms = timer.cb (timer.interval, timer.param);
-            SDL_mutexP (SDL_timer_mutex);
+            SDL_mutexV(SDL_timer_mutex);
+            ms = timer.cb(timer.interval, timer.param);
+            SDL_mutexP(SDL_timer_mutex);
             if (list_changed) {
                 /* Abort, list of timers modified */
                 /* FIXME: what if ms was changed? */
@@ -141,18 +141,18 @@ SDL_ThreadedTimerCheck (void)
             }
             if (ms != t->interval) {
                 if (ms) {
-                    t->interval = ROUND_RESOLUTION (ms);
+                    t->interval = ROUND_RESOLUTION(ms);
                 } else {
                     /* Remove timer from the list */
 #ifdef DEBUG_TIMERS
-                    printf ("SDL: Removing timer %p\n", t);
+                    printf("SDL: Removing timer %p\n", t);
 #endif
                     if (prev) {
                         prev->next = next;
                     } else {
                         SDL_timers = next;
                     }
-                    SDL_free (t);
+                    SDL_free(t);
                     --SDL_timer_running;
                     removed = SDL_TRUE;
                 }
@@ -163,62 +163,62 @@ SDL_ThreadedTimerCheck (void)
             prev = t;
         }
     }
-    SDL_mutexV (SDL_timer_mutex);
+    SDL_mutexV(SDL_timer_mutex);
 }
 
 static SDL_TimerID
-SDL_AddTimerInternal (Uint32 interval, SDL_NewTimerCallback callback,
-                      void *param)
+SDL_AddTimerInternal(Uint32 interval, SDL_NewTimerCallback callback,
+                     void *param)
 {
     SDL_TimerID t;
-    t = (SDL_TimerID) SDL_malloc (sizeof (struct _SDL_TimerID));
+    t = (SDL_TimerID) SDL_malloc(sizeof(struct _SDL_TimerID));
     if (t) {
-        t->interval = ROUND_RESOLUTION (interval);
+        t->interval = ROUND_RESOLUTION(interval);
         t->cb = callback;
         t->param = param;
-        t->last_alarm = SDL_GetTicks ();
+        t->last_alarm = SDL_GetTicks();
         t->next = SDL_timers;
         SDL_timers = t;
         ++SDL_timer_running;
         list_changed = SDL_TRUE;
     }
 #ifdef DEBUG_TIMERS
-    printf ("SDL_AddTimer(%d) = %08x num_timers = %d\n", interval, (Uint32) t,
-            SDL_timer_running);
+    printf("SDL_AddTimer(%d) = %08x num_timers = %d\n", interval, (Uint32) t,
+           SDL_timer_running);
 #endif
     return t;
 }
 
 SDL_TimerID
-SDL_AddTimer (Uint32 interval, SDL_NewTimerCallback callback, void *param)
+SDL_AddTimer(Uint32 interval, SDL_NewTimerCallback callback, void *param)
 {
     SDL_TimerID t;
     if (!SDL_timer_mutex) {
         if (SDL_timer_started) {
-            SDL_SetError ("This platform doesn't support multiple timers");
+            SDL_SetError("This platform doesn't support multiple timers");
         } else {
-            SDL_SetError ("You must call SDL_Init(SDL_INIT_TIMER) first");
+            SDL_SetError("You must call SDL_Init(SDL_INIT_TIMER) first");
         }
         return NULL;
     }
     if (!SDL_timer_threaded) {
-        SDL_SetError ("Multiple timers require threaded events!");
+        SDL_SetError("Multiple timers require threaded events!");
         return NULL;
     }
-    SDL_mutexP (SDL_timer_mutex);
-    t = SDL_AddTimerInternal (interval, callback, param);
-    SDL_mutexV (SDL_timer_mutex);
+    SDL_mutexP(SDL_timer_mutex);
+    t = SDL_AddTimerInternal(interval, callback, param);
+    SDL_mutexV(SDL_timer_mutex);
     return t;
 }
 
 SDL_bool
-SDL_RemoveTimer (SDL_TimerID id)
+SDL_RemoveTimer(SDL_TimerID id)
 {
     SDL_TimerID t, prev = NULL;
     SDL_bool removed;
 
     removed = SDL_FALSE;
-    SDL_mutexP (SDL_timer_mutex);
+    SDL_mutexP(SDL_timer_mutex);
     /* Look for id in the linked list of timers */
     for (t = SDL_timers; t; prev = t, t = t->next) {
         if (t == id) {
@@ -227,7 +227,7 @@ SDL_RemoveTimer (SDL_TimerID id)
             } else {
                 SDL_timers = t->next;
             }
-            SDL_free (t);
+            SDL_free(t);
             --SDL_timer_running;
             removed = SDL_TRUE;
             list_changed = SDL_TRUE;
@@ -235,45 +235,45 @@ SDL_RemoveTimer (SDL_TimerID id)
         }
     }
 #ifdef DEBUG_TIMERS
-    printf ("SDL_RemoveTimer(%08x) = %d num_timers = %d thread = %d\n",
-            (Uint32) id, removed, SDL_timer_running, SDL_ThreadID ());
+    printf("SDL_RemoveTimer(%08x) = %d num_timers = %d thread = %d\n",
+           (Uint32) id, removed, SDL_timer_running, SDL_ThreadID());
 #endif
-    SDL_mutexV (SDL_timer_mutex);
+    SDL_mutexV(SDL_timer_mutex);
     return removed;
 }
 
 /* Old style callback functions are wrapped through this */
 static Uint32 SDLCALL
-callback_wrapper (Uint32 ms, void *param)
+callback_wrapper(Uint32 ms, void *param)
 {
     SDL_TimerCallback func = (SDL_TimerCallback) param;
     return (*func) (ms);
 }
 
 int
-SDL_SetTimer (Uint32 ms, SDL_TimerCallback callback)
+SDL_SetTimer(Uint32 ms, SDL_TimerCallback callback)
 {
     int retval;
 
 #ifdef DEBUG_TIMERS
-    printf ("SDL_SetTimer(%d)\n", ms);
+    printf("SDL_SetTimer(%d)\n", ms);
 #endif
     retval = 0;
 
     if (SDL_timer_threaded) {
-        SDL_mutexP (SDL_timer_mutex);
+        SDL_mutexP(SDL_timer_mutex);
     }
     if (SDL_timer_running) {    /* Stop any currently running timer */
         if (SDL_timer_threaded) {
             while (SDL_timers) {
                 SDL_TimerID freeme = SDL_timers;
                 SDL_timers = SDL_timers->next;
-                SDL_free (freeme);
+                SDL_free(freeme);
             }
             SDL_timer_running = 0;
             list_changed = SDL_TRUE;
         } else {
-            SDL_SYS_StopTimer ();
+            SDL_SYS_StopTimer();
             SDL_timer_running = 0;
         }
     }
@@ -287,11 +287,11 @@ SDL_SetTimer (Uint32 ms, SDL_TimerCallback callback)
             SDL_timer_running = 1;
             SDL_alarm_interval = ms;
             SDL_alarm_callback = callback;
-            retval = SDL_SYS_StartTimer ();
+            retval = SDL_SYS_StartTimer();
         }
     }
     if (SDL_timer_threaded) {
-        SDL_mutexV (SDL_timer_mutex);
+        SDL_mutexV(SDL_timer_mutex);
     }
 
     return retval;

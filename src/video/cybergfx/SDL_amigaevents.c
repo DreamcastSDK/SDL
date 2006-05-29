@@ -37,7 +37,7 @@
 
 /* The translation tables from an Amiga keysym to a SDL keysym */
 static SDLKey MISC_keymap[256];
-SDL_keysym *amiga_TranslateKey (int code, SDL_keysym * keysym);
+SDL_keysym *amiga_TranslateKey(int code, SDL_keysym * keysym);
 struct IOStdReq *ConReq = NULL;
 struct MsgPort *ConPort = NULL;
 
@@ -51,7 +51,7 @@ struct MsgPort *ConPort = NULL;
 #if 0
 
 static inline int
-amiga_WarpedMotion (_THIS, struct IntuiMessage *m)
+amiga_WarpedMotion(_THIS, struct IntuiMessage *m)
 {
     int w, h, i;
     int deltax, deltay;
@@ -62,33 +62,33 @@ amiga_WarpedMotion (_THIS, struct IntuiMessage *m)
     deltax = xevent->xmotion.x - mouse_last.x;
     deltay = xevent->xmotion.y - mouse_last.y;
 #ifdef DEBUG_MOTION
-    printf ("Warped mouse motion: %d,%d\n", deltax, deltay);
+    printf("Warped mouse motion: %d,%d\n", deltax, deltay);
 #endif
     mouse_last.x = xevent->xmotion.x;
     mouse_last.y = xevent->xmotion.y;
-    posted = SDL_PrivateMouseMotion (0, 1, deltax, deltay);
+    posted = SDL_PrivateMouseMotion(0, 1, deltax, deltay);
 
     if ((xevent->xmotion.x < MOUSE_FUDGE_FACTOR) ||
         (xevent->xmotion.x > (w - MOUSE_FUDGE_FACTOR)) ||
         (xevent->xmotion.y < MOUSE_FUDGE_FACTOR) ||
         (xevent->xmotion.y > (h - MOUSE_FUDGE_FACTOR))) {
         /* Get the events that have accumulated */
-        while (XCheckTypedEvent (SDL_Display, MotionNotify, xevent)) {
+        while (XCheckTypedEvent(SDL_Display, MotionNotify, xevent)) {
             deltax = xevent->xmotion.x - mouse_last.x;
             deltay = xevent->xmotion.y - mouse_last.y;
 #ifdef DEBUG_MOTION
-            printf ("Extra mouse motion: %d,%d\n", deltax, deltay);
+            printf("Extra mouse motion: %d,%d\n", deltax, deltay);
 #endif
             mouse_last.x = xevent->xmotion.x;
             mouse_last.y = xevent->xmotion.y;
-            posted += SDL_PrivateMouseMotion (0, 1, deltax, deltay);
+            posted += SDL_PrivateMouseMotion(0, 1, deltax, deltay);
         }
         mouse_last.x = w / 2;
         mouse_last.y = h / 2;
-        XWarpPointer (SDL_Display, None, SDL_Window, 0, 0, 0, 0,
-                      mouse_last.x, mouse_last.y);
+        XWarpPointer(SDL_Display, None, SDL_Window, 0, 0, 0, 0,
+                     mouse_last.x, mouse_last.y);
         for (i = 0; i < 10; ++i) {
-            XMaskEvent (SDL_Display, PointerMotionMask, xevent);
+            XMaskEvent(SDL_Display, PointerMotionMask, xevent);
             if ((xevent->xmotion.x >
                  (mouse_last.x - MOUSE_FUDGE_FACTOR)) &&
                 (xevent->xmotion.x <
@@ -99,13 +99,13 @@ amiga_WarpedMotion (_THIS, struct IntuiMessage *m)
                 break;
             }
 #ifdef DEBUG_XEVENTS
-            printf ("Lost mouse motion: %d,%d\n", xevent->xmotion.x,
-                    xevent->xmotion.y);
+            printf("Lost mouse motion: %d,%d\n", xevent->xmotion.x,
+                   xevent->xmotion.y);
 #endif
         }
 #ifdef DEBUG_XEVENTS
         if (i == 10) {
-            printf ("Warning: didn't detect mouse warp motion\n");
+            printf("Warning: didn't detect mouse warp motion\n");
         }
 #endif
     }
@@ -115,7 +115,7 @@ amiga_WarpedMotion (_THIS, struct IntuiMessage *m)
 #endif
 
 static int
-amiga_GetButton (int code)
+amiga_GetButton(int code)
 {
     switch (code) {
     case IECODE_MBUTTON:
@@ -128,7 +128,7 @@ amiga_GetButton (int code)
 }
 
 static int
-amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
+amiga_DispatchEvent(_THIS, struct IntuiMessage *msg)
 {
     int class = msg->Class, code = msg->Code;
     int posted;
@@ -137,40 +137,40 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
     switch (class) {
         /* Gaining mouse coverage? */
     case IDCMP_ACTIVEWINDOW:
-        posted = SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+        posted = SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
         break;
 
         /* Losing mouse coverage? */
     case IDCMP_INACTIVEWINDOW:
-        posted = SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+        posted = SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
         break;
 #if 0
         /* Gaining input focus? */
     case IDCMP_ACTIVEWINDOW:
-        posted = SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+        posted = SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
 
         /* Queue entry into fullscreen mode */
         switch_waiting = 0x01 | SDL_FULLSCREEN;
-        switch_time = SDL_GetTicks () + 1500;
+        switch_time = SDL_GetTicks() + 1500;
         break;
 
         /* Losing input focus? */
     case IDCMP_INACTIVEWINDOW:
-        posted = SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+        posted = SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
 
         /* Queue leaving fullscreen mode */
         switch_waiting = 0x01;
-        switch_time = SDL_GetTicks () + 200;
+        switch_time = SDL_GetTicks() + 200;
         break;
 #endif
         /* Mouse motion? */
     case IDCMP_MOUSEMOVE:
         if (SDL_VideoSurface) {
-            posted = SDL_PrivateMouseMotion (0, 0,
-                                             msg->MouseX -
-                                             SDL_Window->BorderLeft,
-                                             msg->MouseY -
-                                             SDL_Window->BorderTop);
+            posted = SDL_PrivateMouseMotion(0, 0,
+                                            msg->MouseX -
+                                            SDL_Window->BorderLeft,
+                                            msg->MouseY -
+                                            SDL_Window->BorderTop);
         }
         break;
 
@@ -178,14 +178,14 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
     case IDCMP_MOUSEBUTTONS:
 
         if (!(code & IECODE_UP_PREFIX)) {
-            posted = SDL_PrivateMouseButton (SDL_PRESSED,
-                                             amiga_GetButton (code), 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_PRESSED,
+                                            amiga_GetButton(code), 0, 0);
         }
         /* Mouse button release? */
         else {
             code &= ~IECODE_UP_PREFIX;
-            posted = SDL_PrivateMouseButton (SDL_RELEASED,
-                                             amiga_GetButton (code), 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_RELEASED,
+                                            amiga_GetButton(code), 0, 0);
         }
         break;
 
@@ -195,8 +195,8 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
 
         if (!(code & IECODE_UP_PREFIX)) {
             SDL_keysym keysym;
-            posted = SDL_PrivateKeyboard (SDL_PRESSED,
-                                          amiga_TranslateKey (code, &keysym));
+            posted = SDL_PrivateKeyboard(SDL_PRESSED,
+                                         amiga_TranslateKey(code, &keysym));
         } else {
             /* Key release? */
 
@@ -206,8 +206,8 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
             /* Check to see if this is a repeated key */
 /*			if ( ! X11_KeyRepeat(SDL_Display, &xevent) )  */
 
-            posted = SDL_PrivateKeyboard (SDL_RELEASED,
-                                          amiga_TranslateKey (code, &keysym));
+            posted = SDL_PrivateKeyboard(SDL_RELEASED,
+                                         amiga_TranslateKey(code, &keysym));
         }
         break;
         /* Have we been iconified? */
@@ -215,10 +215,10 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
     case UnmapNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("UnmapNotify!\n");
+            printf("UnmapNotify!\n");
 #endif
             posted =
-                SDL_PrivateAppActive (0, SDL_APPACTIVE | SDL_APPINPUTFOCUS);
+                SDL_PrivateAppActive(0, SDL_APPACTIVE | SDL_APPINPUTFOCUS);
         }
         break;
 
@@ -227,41 +227,41 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
     case MapNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("MapNotify!\n");
+            printf("MapNotify!\n");
 #endif
 
-            posted = SDL_PrivateAppActive (1, SDL_APPACTIVE);
+            posted = SDL_PrivateAppActive(1, SDL_APPACTIVE);
 
             if (SDL_VideoSurface &&
                 (SDL_VideoSurface->flags & SDL_FULLSCREEN)) {
-                CGX_EnterFullScreen (this);
+                CGX_EnterFullScreen(this);
             } else {
-                X11_GrabInputNoLock (this, this->input_grab);
+                X11_GrabInputNoLock(this, this->input_grab);
             }
             if (SDL_VideoSurface) {
-                CGX_RefreshDisplay (this);
+                CGX_RefreshDisplay(this);
             }
         }
         break;
     case Expose:
         if (SDL_VideoSurface && (xevent.xexpose.count == 0)) {
-            CGX_RefreshDisplay (this);
+            CGX_RefreshDisplay(this);
         }
         break;
 #endif
 
         /* Have we been resized? */
     case IDCMP_NEWSIZE:
-        SDL_PrivateResize (SDL_Window->Width - SDL_Window->BorderLeft -
-                           SDL_Window->BorderRight,
-                           SDL_Window->Height - SDL_Window->BorderTop -
-                           SDL_Window->BorderBottom);
+        SDL_PrivateResize(SDL_Window->Width - SDL_Window->BorderLeft -
+                          SDL_Window->BorderRight,
+                          SDL_Window->Height - SDL_Window->BorderTop -
+                          SDL_Window->BorderBottom);
 
         break;
 
         /* Have we been requested to quit? */
     case IDCMP_CLOSEWINDOW:
-        posted = SDL_PrivateQuit ();
+        posted = SDL_PrivateQuit();
         break;
 
         /* Do we need to refresh ourselves? */
@@ -272,43 +272,43 @@ amiga_DispatchEvent (_THIS, struct IntuiMessage *msg)
             if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
                 SDL_SysWMmsg wmmsg;
 
-                SDL_VERSION (&wmmsg.version);
+                SDL_VERSION(&wmmsg.version);
 #if 0
                 wmmsg.subsystem = SDL_SYSWM_CGX;
                 wmmsg.event.xevent = xevent;
 #endif
-                posted = SDL_PrivateSysWMEvent (&wmmsg);
+                posted = SDL_PrivateSysWMEvent(&wmmsg);
             }
         }
         break;
     }
-    ReplyMsg ((struct Message *) msg);
+    ReplyMsg((struct Message *) msg);
 
 
     return (posted);
 }
 
 void
-amiga_PumpEvents (_THIS)
+amiga_PumpEvents(_THIS)
 {
     int pending;
     struct IntuiMessage *m;
 
     /* Keep processing pending events */
     pending = 0;
-    while (m = (struct IntuiMessage *) GetMsg (SDL_Window->UserPort)) {
-        amiga_DispatchEvent (this, m);
+    while (m = (struct IntuiMessage *) GetMsg(SDL_Window->UserPort)) {
+        amiga_DispatchEvent(this, m);
         ++pending;
     }
 }
 
 void
-amiga_InitKeymap (void)
+amiga_InitKeymap(void)
 {
     int i;
 
     /* Map the miscellaneous keys */
-    for (i = 0; i < SDL_arraysize (MISC_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(MISC_keymap); ++i)
         MISC_keymap[i] = SDLK_UNKNOWN;
 
     /* These X keysyms have 0xFF as the high byte */
@@ -430,7 +430,7 @@ amiga_InitKeymap (void)
 }
 
 SDL_keysym *
-amiga_TranslateKey (int code, SDL_keysym * keysym)
+amiga_TranslateKey(int code, SDL_keysym * keysym)
 {
 #ifdef STORMC4_WOS
     static struct Library *KeymapBase = NULL;   /* Linking failed in WOS version if ConsoleDevice was used */
@@ -443,7 +443,7 @@ amiga_TranslateKey (int code, SDL_keysym * keysym)
     keysym->sym = MISC_keymap[code];
 
 #ifdef DEBUG_KEYS
-    fprintf (stderr, "Translating key 0x%.4x (%d)\n", xsym, xkey->keycode);
+    fprintf(stderr, "Translating key 0x%.4x (%d)\n", xsym, xkey->keycode);
 #endif
     /* Get the translated SDL virtual keysym */
     if (keysym->sym == SDLK_UNKNOWN) {
@@ -454,21 +454,21 @@ amiga_TranslateKey (int code, SDL_keysym * keysym)
 #endif
         {
 #ifdef STORMC4_WOS
-            KeymapBase = OpenLibrary ("keymap.library", 0L);
+            KeymapBase = OpenLibrary("keymap.library", 0L);
 #else
-            if (ConPort = CreateMsgPort ()) {
+            if (ConPort = CreateMsgPort()) {
                 if (ConReq =
-                    CreateIORequest (ConPort, sizeof (struct IOStdReq))) {
+                    CreateIORequest(ConPort, sizeof(struct IOStdReq))) {
                     if (!OpenDevice
                         ("console.device", -1,
                          (struct IORequest *) ConReq, 0))
                         ConsoleDevice = (struct Library *) ConReq->io_Device;
                     else {
-                        DeleteIORequest (ConReq);
+                        DeleteIORequest(ConReq);
                         ConReq = NULL;
                     }
                 } else {
-                    DeleteMsgPort (ConPort);
+                    DeleteMsgPort(ConPort);
                     ConPort = NULL;
                 }
             }
@@ -495,17 +495,16 @@ amiga_TranslateKey (int code, SDL_keysym * keysym)
                 event.ie_Prev2DownCode = event.ie_Prev2DownQual = 0;
 
 #ifdef STORMC4_WOS
-            if ((actual = MapRawKey (&event, buffer, 5, NULL)) >= 0)
+            if ((actual = MapRawKey(&event, buffer, 5, NULL)) >= 0)
 #else
-            if ((actual = RawKeyConvert (&event, buffer, 5, NULL)) >= 0)
+            if ((actual = RawKeyConvert(&event, buffer, 5, NULL)) >= 0)
 #endif
             {
                 if (actual > 1) {
-                    D (bug ("Warning (%ld) character conversion!\n", actual));
+                    D(bug("Warning (%ld) character conversion!\n", actual));
                 } else if (actual == 1) {
                     keysym->sym = *buffer;
-                    D (bug
-                       ("Converted rawcode %ld to <%lc>\n", code, *buffer));
+                    D(bug("Converted rawcode %ld to <%lc>\n", code, *buffer));
 // Bufferizzo x le successive chiamate!
                     MISC_keymap[code] = *buffer;
                 }
@@ -522,8 +521,8 @@ amiga_TranslateKey (int code, SDL_keysym * keysym)
         static XComposeStatus state;
         /* Until we handle the IM protocol, use XLookupString() */
         unsigned char keybuf[32];
-        if (XLookupString (xkey, (char *) keybuf, sizeof (keybuf),
-                           NULL, &state)) {
+        if (XLookupString(xkey, (char *) keybuf, sizeof(keybuf),
+                          NULL, &state)) {
             keysym->unicode = keybuf[0];
         }
 #endif
@@ -532,9 +531,9 @@ amiga_TranslateKey (int code, SDL_keysym * keysym)
 }
 
 void
-amiga_InitOSKeymap (_THIS)
+amiga_InitOSKeymap(_THIS)
 {
-    amiga_InitKeymap ();
+    amiga_InitKeymap();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

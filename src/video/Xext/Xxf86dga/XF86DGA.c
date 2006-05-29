@@ -65,8 +65,8 @@ Copyright (c) 1995,1996  The XFree86 Project, Inc
 #include "../extensions/Xext.h"
 #include "../extensions/extutil.h"
 
-extern XExtDisplayInfo *SDL_NAME (xdga_find_display) (Display *);
-extern char *SDL_NAME (xdga_extension_name);
+extern XExtDisplayInfo *SDL_NAME(xdga_find_display) (Display *);
+extern char *SDL_NAME(xdga_extension_name);
 
 #define XF86DGACheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, SDL_NAME(xdga_extension_name), val)
@@ -77,37 +77,37 @@ extern char *SDL_NAME (xdga_extension_name);
  *                                                                           *
  *****************************************************************************/
 
-Bool SDL_NAME (XF86DGAQueryExtension) (Display * dpy,
-                                       int *event_basep, int *error_basep)
+Bool SDL_NAME(XF86DGAQueryExtension) (Display * dpy,
+                                      int *event_basep, int *error_basep)
 {
-    return SDL_NAME (XDGAQueryExtension) (dpy, event_basep, error_basep);
+    return SDL_NAME(XDGAQueryExtension) (dpy, event_basep, error_basep);
 }
 
-Bool SDL_NAME (XF86DGAQueryVersion) (Display * dpy,
-                                     int *majorVersion, int *minorVersion)
+Bool SDL_NAME(XF86DGAQueryVersion) (Display * dpy,
+                                    int *majorVersion, int *minorVersion)
 {
-    return SDL_NAME (XDGAQueryVersion) (dpy, majorVersion, minorVersion);
+    return SDL_NAME(XDGAQueryVersion) (dpy, majorVersion, minorVersion);
 }
 
-Bool SDL_NAME (XF86DGAGetVideoLL) (Display * dpy,
-                                   int screen,
-                                   int *offset,
-                                   int *width, int *bank_size, int *ram_size)
+Bool SDL_NAME(XF86DGAGetVideoLL) (Display * dpy,
+                                  int screen,
+                                  int *offset,
+                                  int *width, int *bank_size, int *ram_size)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAGetVideoLLReply rep;
     xXF86DGAGetVideoLLReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAGetVideoLL, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAGetVideoLL, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAGetVideoLL;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
@@ -116,192 +116,191 @@ Bool SDL_NAME (XF86DGAGetVideoLL) (Display * dpy,
     *bank_size = rep.bank_size;
     *ram_size = rep.ram_size;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 
-Bool SDL_NAME (XF86DGADirectVideoLL) (Display * dpy, int screen, int enable)
+Bool SDL_NAME(XF86DGADirectVideoLL) (Display * dpy, int screen, int enable)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGADirectVideoReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGADirectVideo, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGADirectVideo, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGADirectVideo;
     req->screen = screen;
     req->enable = enable;
-    UnlockDisplay (dpy);
-    SyncHandle ();
-    XSync (dpy, False);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy, False);
     return True;
 }
 
-Bool SDL_NAME (XF86DGAGetViewPortSize) (Display * dpy,
-                                        int screen, int *width, int *height)
+Bool SDL_NAME(XF86DGAGetViewPortSize) (Display * dpy,
+                                       int screen, int *width, int *height)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAGetViewPortSizeReply rep;
     xXF86DGAGetViewPortSizeReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAGetViewPortSize, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAGetViewPortSize, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAGetViewPortSize;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
     *width = rep.width;
     *height = rep.height;
 
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 
-Bool SDL_NAME (XF86DGASetViewPort) (Display * dpy, int screen, int x, int y)
+Bool SDL_NAME(XF86DGASetViewPort) (Display * dpy, int screen, int x, int y)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGASetViewPortReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGASetViewPort, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGASetViewPort, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGASetViewPort;
     req->screen = screen;
     req->x = x;
     req->y = y;
-    UnlockDisplay (dpy);
-    SyncHandle ();
-    XSync (dpy, False);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy, False);
     return True;
 }
 
 
-Bool SDL_NAME (XF86DGAGetVidPage) (Display * dpy, int screen, int *vpage)
+Bool SDL_NAME(XF86DGAGetVidPage) (Display * dpy, int screen, int *vpage)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAGetVidPageReply rep;
     xXF86DGAGetVidPageReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAGetVidPage, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAGetVidPage, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAGetVidPage;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
 
     *vpage = rep.vpage;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
 
-Bool SDL_NAME (XF86DGASetVidPage) (Display * dpy, int screen, int vpage)
+Bool SDL_NAME(XF86DGASetVidPage) (Display * dpy, int screen, int vpage)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGASetVidPageReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGASetVidPage, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGASetVidPage, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGASetVidPage;
     req->screen = screen;
     req->vpage = vpage;
-    UnlockDisplay (dpy);
-    SyncHandle ();
-    XSync (dpy, False);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy, False);
     return True;
 }
 
-Bool SDL_NAME (XF86DGAInstallColormap) (Display * dpy,
-                                        int screen, Colormap cmap)
+Bool SDL_NAME(XF86DGAInstallColormap) (Display * dpy,
+                                       int screen, Colormap cmap)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAInstallColormapReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAInstallColormap, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAInstallColormap, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAInstallColormap;
     req->screen = screen;
     req->id = cmap;
-    UnlockDisplay (dpy);
-    SyncHandle ();
-    XSync (dpy, False);
+    UnlockDisplay(dpy);
+    SyncHandle();
+    XSync(dpy, False);
     return True;
 }
 
-Bool SDL_NAME (XF86DGAQueryDirectVideo) (Display * dpy,
-                                         int screen, int *flags)
+Bool SDL_NAME(XF86DGAQueryDirectVideo) (Display * dpy, int screen, int *flags)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAQueryDirectVideoReply rep;
     xXF86DGAQueryDirectVideoReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAQueryDirectVideo, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAQueryDirectVideo, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAQueryDirectVideo;
     req->screen = screen;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
     *flags = rep.flags;
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }
 
-Bool SDL_NAME (XF86DGAViewPortChanged) (Display * dpy, int screen, int n)
+Bool SDL_NAME(XF86DGAViewPortChanged) (Display * dpy, int screen, int n)
 {
-    XExtDisplayInfo *info = SDL_NAME (xdga_find_display) (dpy);
+    XExtDisplayInfo *info = SDL_NAME(xdga_find_display) (dpy);
     xXF86DGAViewPortChangedReply rep;
     xXF86DGAViewPortChangedReq *req;
 
-    XF86DGACheckExtension (dpy, info, False);
+    XF86DGACheckExtension(dpy, info, False);
 
-    LockDisplay (dpy);
-    GetReq (XF86DGAViewPortChanged, req);
+    LockDisplay(dpy);
+    GetReq(XF86DGAViewPortChanged, req);
     req->reqType = info->codes->major_opcode;
     req->dgaReqType = X_XF86DGAViewPortChanged;
     req->screen = screen;
     req->n = n;
-    if (!_XReply (dpy, (xReply *) & rep, 0, xFalse)) {
-        UnlockDisplay (dpy);
-        SyncHandle ();
+    if (!_XReply(dpy, (xReply *) & rep, 0, xFalse)) {
+        UnlockDisplay(dpy);
+        SyncHandle();
         return False;
     }
-    UnlockDisplay (dpy);
-    SyncHandle ();
+    UnlockDisplay(dpy);
+    SyncHandle();
     return rep.result;
 }
 
@@ -373,41 +372,41 @@ static MapPtr *mapList = NULL;
 static ScrPtr *scrList = NULL;
 
 static MapPtr
-AddMap (void)
+AddMap(void)
 {
     MapPtr *old;
 
     old = mapList;
-    mapList = realloc (mapList, sizeof (MapPtr) * (numMaps + 1));
+    mapList = realloc(mapList, sizeof(MapPtr) * (numMaps + 1));
     if (!mapList) {
         mapList = old;
         return NULL;
     }
-    mapList[numMaps] = malloc (sizeof (MapRec));
+    mapList[numMaps] = malloc(sizeof(MapRec));
     if (!mapList[numMaps])
         return NULL;
     return mapList[numMaps++];
 }
 
 static ScrPtr
-AddScr (void)
+AddScr(void)
 {
     ScrPtr *old;
 
     old = scrList;
-    scrList = realloc (scrList, sizeof (ScrPtr) * (numScrs + 1));
+    scrList = realloc(scrList, sizeof(ScrPtr) * (numScrs + 1));
     if (!scrList) {
         scrList = old;
         return NULL;
     }
-    scrList[numScrs] = malloc (sizeof (ScrRec));
+    scrList[numScrs] = malloc(sizeof(ScrRec));
     if (!scrList[numScrs])
         return NULL;
     return scrList[numScrs++];
 }
 
 static MapPtr
-FindMap (unsigned long address, unsigned long size)
+FindMap(unsigned long address, unsigned long size)
 {
     int i;
 
@@ -419,7 +418,7 @@ FindMap (unsigned long address, unsigned long size)
 }
 
 static ScrPtr
-FindScr (Display * display, int screen)
+FindScr(Display * display, int screen)
 {
     int i;
 
@@ -431,7 +430,7 @@ FindScr (Display * display, int screen)
 }
 
 static void *
-MapPhysAddress (unsigned long address, unsigned long size)
+MapPhysAddress(unsigned long address, unsigned long size)
 {
     unsigned long offset, delta;
     int pagesize = -1;
@@ -445,20 +444,20 @@ MapPhysAddress (unsigned long address, unsigned long size)
     HFILE hfd;
 #endif
 
-    if ((mp = FindMap (address, size))) {
+    if ((mp = FindMap(address, size))) {
         mp->refcount++;
         return (void *) ((unsigned long) mp->vaddr + mp->delta);
     }
 #if defined(_SC_PAGESIZE) && defined(HAS_SC_PAGESIZE)
-    pagesize = sysconf (_SC_PAGESIZE);
+    pagesize = sysconf(_SC_PAGESIZE);
 #endif
 #ifdef _SC_PAGE_SIZE
     if (pagesize == -1)
-        pagesize = sysconf (_SC_PAGE_SIZE);
+        pagesize = sysconf(_SC_PAGE_SIZE);
 #endif
 #ifdef HAS_GETPAGESIZE
     if (pagesize == -1)
-        pagesize = getpagesize ();
+        pagesize = getpagesize();
 #endif
 #ifdef PAGE_SIZE
     if (pagesize == -1)
@@ -472,7 +471,7 @@ MapPhysAddress (unsigned long address, unsigned long size)
 
 #if defined(ISC) && defined(HAS_SVR3_MMAP)
     if (mapFd < 0) {
-        if ((mapFd = open ("/dev/mmap", O_RDWR)) < 0)
+        if ((mapFd = open("/dev/mmap", O_RDWR)) < 0)
             return NULL;
     }
     mloc.vaddr = (char *) 0;
@@ -480,7 +479,7 @@ MapPhysAddress (unsigned long address, unsigned long size)
     mloc.length = size + delta;
     mloc.ioflg = 1;
 
-    if ((vaddr = (void *) ioctl (mapFd, MAP, &mloc)) == (void *) -1)
+    if ((vaddr = (void *) ioctl(mapFd, MAP, &mloc)) == (void *) -1)
         return NULL;
 #elif defined (__EMX__)
     /*
@@ -489,8 +488,8 @@ MapPhysAddress (unsigned long address, unsigned long size)
      * of memory handles. Some umap/close mechanism should be provided
      */
 
-    rc = DosOpen ("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
-                  OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2) NULL);
+    rc = DosOpen("/dev/pmap$", &hfd, &action, 0, FILE_NORMAL, FILE_OPEN,
+                 OPEN_ACCESS_READWRITE | OPEN_SHARE_DENYNONE, (PEAOP2) NULL);
     if (rc != 0)
         return NULL;
     {
@@ -509,9 +508,9 @@ MapPhysAddress (unsigned long address, unsigned long size)
 
         pmap.a.phys = offset;
         pmap.size = size + delta;
-        rc = DosDevIOCtl (hfd, XFREE86_PMAP, PMAP_MAP,
-                          (PULONG) & pmap, sizeof (pmap), &plen,
-                          (PULONG) & dmap, sizeof (dmap), &dlen);
+        rc = DosDevIOCtl(hfd, XFREE86_PMAP, PMAP_MAP,
+                         (PULONG) & pmap, sizeof(pmap), &plen,
+                         (PULONG) & dmap, sizeof(dmap), &dlen);
         if (rc == 0) {
             vaddr = dmap.a.user;
         }
@@ -519,24 +518,24 @@ MapPhysAddress (unsigned long address, unsigned long size)
     if (rc != 0)
         return NULL;
 #elif defined (Lynx)
-    vaddr = (void *) smem_create ("XF86DGA", (char *) offset,
-                                  size + delta, SM_READ | SM_WRITE);
+    vaddr = (void *) smem_create("XF86DGA", (char *) offset,
+                                 size + delta, SM_READ | SM_WRITE);
 #else
 #ifndef MAP_FILE
 #define MAP_FILE 0
 #endif
     if (mapFd < 0) {
-        if ((mapFd = open (DEV_MEM, O_RDWR)) < 0)
+        if ((mapFd = open(DEV_MEM, O_RDWR)) < 0)
             return NULL;
     }
-    vaddr = (void *) mmap (NULL, size + delta, PROT_READ | PROT_WRITE,
-                           MAP_FILE | MAP_SHARED, mapFd, (off_t) offset);
+    vaddr = (void *) mmap(NULL, size + delta, PROT_READ | PROT_WRITE,
+                          MAP_FILE | MAP_SHARED, mapFd, (off_t) offset);
     if (vaddr == (void *) -1)
         return NULL;
 #endif
 
     if (!vaddr) {
-        if (!(mp = AddMap ()))
+        if (!(mp = AddMap()))
             return NULL;
         mp->physaddr = address;
         mp->size = size;
@@ -554,125 +553,124 @@ MapPhysAddress (unsigned long address, unsigned long size)
  * should restore text mode.
  */
 
-int SDL_NAME (XF86DGAForkApp) (int screen)
+int SDL_NAME(XF86DGAForkApp) (int screen)
 {
     pid_t pid;
     int status;
     int i;
 
     /* fork the app, parent hangs around to clean up */
-    if ((pid = fork ()) > 0) {
+    if ((pid = fork()) > 0) {
         ScrPtr sp;
 
-        waitpid (pid, &status, 0);
+        waitpid(pid, &status, 0);
         for (i = 0; i < numScrs; i++) {
             sp = scrList[i];
-            SDL_NAME (XF86DGADirectVideoLL) (sp->display, sp->screen, 0);
-            XSync (sp->display, False);
+            SDL_NAME(XF86DGADirectVideoLL) (sp->display, sp->screen, 0);
+            XSync(sp->display, False);
         }
-        if (WIFEXITED (status))
-            _exit (0);
+        if (WIFEXITED(status))
+            _exit(0);
         else
-            _exit (-1);
+            _exit(-1);
     }
     return pid;
 }
 
 
-Bool SDL_NAME (XF86DGADirectVideo) (Display * dis, int screen, int enable)
+Bool SDL_NAME(XF86DGADirectVideo) (Display * dis, int screen, int enable)
 {
     ScrPtr sp;
     MapPtr mp = NULL;
 
-    if ((sp = FindScr (dis, screen)))
+    if ((sp = FindScr(dis, screen)))
         mp = sp->map;
 
     if (enable & XF86DGADirectGraphics) {
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
 	&& !defined(__EMX__)
         if (mp && mp->vaddr)
-            mprotect (mp->vaddr, mp->size + mp->delta,
-                      PROT_READ | PROT_WRITE);
+            mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ | PROT_WRITE);
 #endif
     } else {
 #if !defined(ISC) && !defined(HAS_SVR3_MMAP) && !defined(Lynx) \
 	&& !defined(__EMX__)
         if (mp && mp->vaddr)
-            mprotect (mp->vaddr, mp->size + mp->delta, PROT_READ);
+            mprotect(mp->vaddr, mp->size + mp->delta, PROT_READ);
 #elif defined(Lynx)
         /* XXX this doesn't allow enable after disable */
-        smem_create (NULL, mp->vaddr, mp->size + mp->delta, SM_DETACH);
-        smem_remove ("XF86DGA");
+        smem_create(NULL, mp->vaddr, mp->size + mp->delta, SM_DETACH);
+        smem_remove("XF86DGA");
 #endif
     }
 
-    SDL_NAME (XF86DGADirectVideoLL) (dis, screen, enable);
+    SDL_NAME(XF86DGADirectVideoLL) (dis, screen, enable);
     return 1;
 }
 
 
 static void
-XF86cleanup (int sig)
+XF86cleanup(int sig)
 {
     ScrPtr sp;
     int i;
     static char beenhere = 0;
 
     if (beenhere)
-        _exit (3);
+        _exit(3);
     beenhere = 1;
 
     for (i = 0; i < numScrs; i++) {
         sp = scrList[i];
-        SDL_NAME (XF86DGADirectVideo) (sp->display, sp->screen, 0);
-        XSync (sp->display, False);
+        SDL_NAME(XF86DGADirectVideo) (sp->display, sp->screen, 0);
+        XSync(sp->display, False);
     }
-    _exit (3);
+    _exit(3);
 }
 
 Bool
-SDL_NAME (XF86DGAGetVideo) (Display * dis,
-                            int screen,
-                            char **addr, int *width, int *bank, int *ram)
+SDL_NAME(XF86DGAGetVideo) (Display * dis,
+                           int screen,
+                           char **addr, int *width, int *bank, int *ram)
 {
     /*unsigned long */ int offset;
     static int beenHere = 0;
     ScrPtr sp;
     MapPtr mp;
 
-    if (!(sp = FindScr (dis, screen))) {
-        if (!(sp = AddScr ())) {
-            fprintf (stderr, "XF86DGAGetVideo: malloc failure\n");
-            exit (-2);
+    if (!(sp = FindScr(dis, screen))) {
+        if (!(sp = AddScr())) {
+            fprintf(stderr, "XF86DGAGetVideo: malloc failure\n");
+            exit(-2);
         }
         sp->display = dis;
         sp->screen = screen;
         sp->map = NULL;
     }
 
-    SDL_NAME (XF86DGAGetVideoLL) (dis, screen, &offset, width, bank, ram);
+    SDL_NAME(XF86DGAGetVideoLL) (dis, screen, &offset, width, bank, ram);
 
-    *addr = MapPhysAddress (offset, *bank);
+    *addr = MapPhysAddress(offset, *bank);
     if (*addr == NULL) {
-        fprintf (stderr,
-                 "XF86DGAGetVideo: failed to map video memory (%s)\n",
-                 strerror (errno));
-        exit (-2);
+        fprintf(stderr,
+                "XF86DGAGetVideo: failed to map video memory (%s)\n",
+                strerror(errno));
+        exit(-2);
     }
 
-    if ((mp = FindMap (offset, *bank)))
+    if ((mp = FindMap(offset, *bank)))
         sp->map = mp;
 
     if (!beenHere) {
         beenHere = 1;
-        atexit ((void (*)(void)) XF86cleanup);
+        atexit((void (*)(void)) XF86cleanup);
         /* one shot XF86cleanup attempts */
-        signal (SIGSEGV, XF86cleanup);
+        signal(SIGSEGV, XF86cleanup);
 #ifdef SIGBUS
-        signal (SIGBUS, XF86cleanup);
+        signal(SIGBUS, XF86cleanup);
 #endif
-        signal (SIGHUP, XF86cleanup);
-        signal (SIGFPE, XF86cleanup);
+        signal(SIGHUP, XF86cleanup);
+        signal(SIGFPE, XF86cleanup);
     }
 
     return 1;

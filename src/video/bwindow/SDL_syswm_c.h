@@ -26,7 +26,7 @@
 
 
 /* Functions to be exported */
-extern void BE_SetWMCaption (_THIS, const char *title, const char *icon);
-extern int BE_IconifyWindow (_THIS);
-extern int BE_GetWMInfo (_THIS, SDL_SysWMinfo * info);
+extern void BE_SetWMCaption(_THIS, const char *title, const char *icon);
+extern int BE_IconifyWindow(_THIS);
+extern int BE_GetWMInfo(_THIS, SDL_SysWMinfo * info);
 /* vi: set ts=4 sw=4 expandtab: */

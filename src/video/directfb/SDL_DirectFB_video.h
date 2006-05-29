@@ -57,7 +57,7 @@ struct SDL_PrivateVideoData
 
 #define HIDDEN (this->hidden)
 
-void SetDirectFBerror (const char *function, DFBResult code);
+void SetDirectFBerror(const char *function, DFBResult code);
 
 #endif /* _SDL_DirectFB_video_h */
 /* vi: set ts=4 sw=4 expandtab: */

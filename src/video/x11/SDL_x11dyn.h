@@ -59,18 +59,18 @@ extern "C"
 #endif
 
 /* evil function signatures... */
-    typedef Bool (*SDL_X11_XESetWireToEventRetType) (Display *, XEvent *,
-                                                     xEvent *);
+    typedef Bool(*SDL_X11_XESetWireToEventRetType) (Display *, XEvent *,
+                                                    xEvent *);
     typedef int (*SDL_X11_XSynchronizeRetType) (Display *);
-    typedef Status (*SDL_X11_XESetEventToWireRetType) (Display *, XEvent *,
-                                                       xEvent *);
+    typedef Status(*SDL_X11_XESetEventToWireRetType) (Display *, XEvent *,
+                                                      xEvent *);
 
-    int SDL_X11_LoadSymbols (void);
-    void SDL_X11_UnloadSymbols (void);
+    int SDL_X11_LoadSymbols(void);
+    void SDL_X11_UnloadSymbols(void);
 
 /* That's really annoying...make this a function pointer no matter what. */
 #ifdef X_HAVE_UTF8_STRING
-    extern XIC (*pXCreateIC) (XIM, ...);
+    extern XIC(*pXCreateIC) (XIM, ...);
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */

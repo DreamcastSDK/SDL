@@ -41,21 +41,20 @@
 #include <aalib.h>
 
 /* Initialization/Query functions */
-static int AA_VideoInit (_THIS, SDL_PixelFormat * vformat);
-static SDL_Rect **AA_ListModes (_THIS, SDL_PixelFormat * format,
-                                Uint32 flags);
-static SDL_Surface *AA_SetVideoMode (_THIS, SDL_Surface * current, int width,
-                                     int height, int bpp, Uint32 flags);
-static int AA_SetColors (_THIS, int firstcolor, int ncolors,
-                         SDL_Color * colors);
-static void AA_VideoQuit (_THIS);
+static int AA_VideoInit(_THIS, SDL_PixelFormat * vformat);
+static SDL_Rect **AA_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags);
+static SDL_Surface *AA_SetVideoMode(_THIS, SDL_Surface * current, int width,
+                                    int height, int bpp, Uint32 flags);
+static int AA_SetColors(_THIS, int firstcolor, int ncolors,
+                        SDL_Color * colors);
+static void AA_VideoQuit(_THIS);
 
 /* Hardware surface functions */
-static int AA_AllocHWSurface (_THIS, SDL_Surface * surface);
-static int AA_LockHWSurface (_THIS, SDL_Surface * surface);
-static int AA_FlipHWSurface (_THIS, SDL_Surface * surface);
-static void AA_UnlockHWSurface (_THIS, SDL_Surface * surface);
-static void AA_FreeHWSurface (_THIS, SDL_Surface * surface);
+static int AA_AllocHWSurface(_THIS, SDL_Surface * surface);
+static int AA_LockHWSurface(_THIS, SDL_Surface * surface);
+static int AA_FlipHWSurface(_THIS, SDL_Surface * surface);
+static void AA_UnlockHWSurface(_THIS, SDL_Surface * surface);
+static void AA_FreeHWSurface(_THIS, SDL_Surface * surface);
 
 /* Cache the VideoDevice struct */
 static struct SDL_VideoDevice *local_this;
@@ -63,38 +62,38 @@ static struct SDL_VideoDevice *local_this;
 /* AAlib driver bootstrap functions */
 
 static int
-AA_Available (void)
+AA_Available(void)
 {
     return 1;                   /* Always available ! */
 }
 
 static void
-AA_DeleteDevice (SDL_VideoDevice * device)
+AA_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free (device->hidden);
-    SDL_free (device);
+    SDL_free(device->hidden);
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
-AA_CreateDevice (int devindex)
+AA_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc (sizeof (SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset (device, 0, (sizeof *device));
+        SDL_memset(device, 0, (sizeof *device));
         device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc ((sizeof *device->hidden));
+            SDL_malloc((sizeof *device->hidden));
     }
     if ((device == NULL) || (device->hidden == NULL)) {
-        SDL_OutOfMemory ();
+        SDL_OutOfMemory();
         if (device) {
-            SDL_free (device);
+            SDL_free(device);
         }
         return (0);
     }
-    SDL_memset (device->hidden, 0, (sizeof *device->hidden));
+    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = AA_VideoInit;
@@ -131,17 +130,17 @@ VideoBootStrap AALIB_bootstrap = {
     AA_Available, AA_CreateDevice
 };
 
-static void AA_ResizeHandler (aa_context *);
+static void AA_ResizeHandler(aa_context *);
 
 int
-AA_VideoInit (_THIS, SDL_PixelFormat * vformat)
+AA_VideoInit(_THIS, SDL_PixelFormat * vformat)
 {
     int keyboard;
     int i;
 
     /* Initialize all variables that we clean on shutdown */
     for (i = 0; i < SDL_NUMMODES; ++i) {
-        SDL_modelist[i] = SDL_malloc (sizeof (SDL_Rect));
+        SDL_modelist[i] = SDL_malloc(sizeof(SDL_Rect));
         SDL_modelist[i]->x = SDL_modelist[i]->y = 0;
     }
     /* Modes sorted largest to smallest */
@@ -161,35 +160,35 @@ AA_VideoInit (_THIS, SDL_PixelFormat * vformat)
 
     /* Initialize the library */
 
-    AA_mutex = SDL_CreateMutex ();
+    AA_mutex = SDL_CreateMutex();
 
-    aa_parseoptions (NULL, NULL, NULL, NULL);
+    aa_parseoptions(NULL, NULL, NULL, NULL);
 
-    AA_context = aa_autoinit (&aa_defparams);
+    AA_context = aa_autoinit(&aa_defparams);
     if (!AA_context) {
-        SDL_SetError ("Unable to initialize AAlib");
+        SDL_SetError("Unable to initialize AAlib");
         return (-1);
     }
 
     /* Enable mouse and keyboard support */
 
-    if (!aa_autoinitkbd (AA_context, AA_SENDRELEASE)) {
-        SDL_SetError ("Unable to initialize AAlib keyboard");
+    if (!aa_autoinitkbd(AA_context, AA_SENDRELEASE)) {
+        SDL_SetError("Unable to initialize AAlib keyboard");
         return (-1);
     }
-    if (!aa_autoinitmouse (AA_context, AA_SENDRELEASE)) {
-        fprintf (stderr, "Warning: Unable to initialize AAlib mouse");
+    if (!aa_autoinitmouse(AA_context, AA_SENDRELEASE)) {
+        fprintf(stderr, "Warning: Unable to initialize AAlib mouse");
     }
-    AA_rparams = aa_getrenderparams ();
+    AA_rparams = aa_getrenderparams();
 
     local_this = this;
 
-    aa_resizehandler (AA_context, AA_ResizeHandler);
+    aa_resizehandler(AA_context, AA_ResizeHandler);
 
-    fprintf (stderr, "Using AAlib driver: %s (%s)\n",
-             AA_context->driver->name, AA_context->driver->shortname);
+    fprintf(stderr, "Using AAlib driver: %s (%s)\n",
+            AA_context->driver->name, AA_context->driver->shortname);
 
-    AA_in_x11 = (SDL_strcmp (AA_context->driver->shortname, "X11") == 0);
+    AA_in_x11 = (SDL_strcmp(AA_context->driver->shortname, "X11") == 0);
     /* Determine the screen depth (use default 8-bit depth) */
     vformat->BitsPerPixel = 8;
     vformat->BytesPerPixel = 1;
@@ -199,7 +198,7 @@ AA_VideoInit (_THIS, SDL_PixelFormat * vformat)
 }
 
 SDL_Rect **
-AA_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
+AA_ListModes(_THIS, SDL_PixelFormat * format, Uint32 flags)
 {
     if (format->BitsPerPixel != 8)
         return NULL;
@@ -216,8 +215,8 @@ AA_ListModes (_THIS, SDL_PixelFormat * format, Uint32 flags)
    resolution by scaling down manually each frame
 */
 static void
-fastscale (register char *b1, register char *b2, int x1, int x2, int y1,
-           int y2)
+fastscale(register char *b1, register char *b2, int x1, int x2, int y1,
+          int y2)
 {
     register int ex, spx = 0, ddx, ddx1;
     int ddy1, ddy, spy = 0, ey;
@@ -257,32 +256,32 @@ fastscale (register char *b1, register char *b2, int x1, int x2, int y1,
 }
 
 /* Various screen update functions available */
-static void AA_DirectUpdate (_THIS, int numrects, SDL_Rect * rects);
+static void AA_DirectUpdate(_THIS, int numrects, SDL_Rect * rects);
 
 SDL_Surface *
-AA_SetVideoMode (_THIS, SDL_Surface * current,
-                 int width, int height, int bpp, Uint32 flags)
+AA_SetVideoMode(_THIS, SDL_Surface * current,
+                int width, int height, int bpp, Uint32 flags)
 {
     int mode;
 
     if (AA_buffer) {
-        SDL_free (AA_buffer);
+        SDL_free(AA_buffer);
     }
 
-    AA_buffer = SDL_malloc (width * height);
+    AA_buffer = SDL_malloc(width * height);
     if (!AA_buffer) {
-        SDL_SetError ("Couldn't allocate buffer for requested mode");
+        SDL_SetError("Couldn't allocate buffer for requested mode");
         return (NULL);
     }
 
 /* 	printf("Setting mode %dx%d\n", width, height); */
 
-    SDL_memset (aa_image (AA_context), 0,
-                aa_imgwidth (AA_context) * aa_imgheight (AA_context));
-    SDL_memset (AA_buffer, 0, width * height);
+    SDL_memset(aa_image(AA_context), 0,
+               aa_imgwidth(AA_context) * aa_imgheight(AA_context));
+    SDL_memset(AA_buffer, 0, width * height);
 
     /* Allocate the new pixel format for the screen */
-    if (!SDL_ReallocFormat (current, 8, 0, 0, 0, 0)) {
+    if (!SDL_ReallocFormat(current, 8, 0, 0, 0, 0)) {
         return (NULL);
     }
 
@@ -293,8 +292,8 @@ AA_SetVideoMode (_THIS, SDL_Surface * current,
     current->pitch = current->w;
     current->pixels = AA_buffer;
 
-    AA_x_ratio = ((double) aa_imgwidth (AA_context)) / ((double) width);
-    AA_y_ratio = ((double) aa_imgheight (AA_context)) / ((double) height);
+    AA_x_ratio = ((double) aa_imgwidth(AA_context)) / ((double) width);
+    AA_y_ratio = ((double) aa_imgheight(AA_context)) / ((double) height);
 
     /* Set the blit function */
     this->UpdateRects = AA_DirectUpdate;
@@ -304,95 +303,95 @@ AA_SetVideoMode (_THIS, SDL_Surface * current,
 }
 
 static void
-AA_ResizeHandler (aa_context * context)
+AA_ResizeHandler(aa_context * context)
 {
-    aa_resize (context);
+    aa_resize(context);
     local_this->hidden->x_ratio =
-        ((double) aa_imgwidth (context)) / ((double) local_this->screen->w);
+        ((double) aa_imgwidth(context)) / ((double) local_this->screen->w);
     local_this->hidden->y_ratio =
-        ((double) aa_imgheight (context)) / ((double) local_this->screen->h);
+        ((double) aa_imgheight(context)) / ((double) local_this->screen->h);
 
-    fastscale (local_this->hidden->buffer, aa_image (context),
-               local_this->hidden->w, aa_imgwidth (context),
-               local_this->hidden->h, aa_imgheight (context));
-    aa_renderpalette (context, local_this->hidden->palette,
-                      local_this->hidden->rparams, 0, 0,
-                      aa_scrwidth (context), aa_scrheight (context));
-    aa_flush (context);
+    fastscale(local_this->hidden->buffer, aa_image(context),
+              local_this->hidden->w, aa_imgwidth(context),
+              local_this->hidden->h, aa_imgheight(context));
+    aa_renderpalette(context, local_this->hidden->palette,
+                     local_this->hidden->rparams, 0, 0,
+                     aa_scrwidth(context), aa_scrheight(context));
+    aa_flush(context);
 }
 
 /* We don't actually allow hardware surfaces other than the main one */
 static int
-AA_AllocHWSurface (_THIS, SDL_Surface * surface)
+AA_AllocHWSurface(_THIS, SDL_Surface * surface)
 {
     return (-1);
 }
 static void
-AA_FreeHWSurface (_THIS, SDL_Surface * surface)
+AA_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* We need to wait for vertical retrace on page flipped displays */
 static int
-AA_LockHWSurface (_THIS, SDL_Surface * surface)
+AA_LockHWSurface(_THIS, SDL_Surface * surface)
 {
     /* TODO ? */
     return (0);
 }
 static void
-AA_UnlockHWSurface (_THIS, SDL_Surface * surface)
+AA_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {
     return;
 }
 
 /* FIXME: How is this done with AAlib? */
 static int
-AA_FlipHWSurface (_THIS, SDL_Surface * surface)
+AA_FlipHWSurface(_THIS, SDL_Surface * surface)
 {
-    SDL_mutexP (AA_mutex);
-    aa_flush (AA_context);
-    SDL_mutexV (AA_mutex);
+    SDL_mutexP(AA_mutex);
+    aa_flush(AA_context);
+    SDL_mutexV(AA_mutex);
     return (0);
 }
 
 static void
-AA_DirectUpdate (_THIS, int numrects, SDL_Rect * rects)
+AA_DirectUpdate(_THIS, int numrects, SDL_Rect * rects)
 {
     int i;
     SDL_Rect *rect;
 
-    fastscale (AA_buffer, aa_image (AA_context), AA_w,
-               aa_imgwidth (AA_context), AA_h, aa_imgheight (AA_context));
+    fastscale(AA_buffer, aa_image(AA_context), AA_w,
+              aa_imgwidth(AA_context), AA_h, aa_imgheight(AA_context));
 #if 1
-    aa_renderpalette (AA_context, AA_palette, AA_rparams, 0, 0,
-                      aa_scrwidth (AA_context), aa_scrheight (AA_context));
+    aa_renderpalette(AA_context, AA_palette, AA_rparams, 0, 0,
+                     aa_scrwidth(AA_context), aa_scrheight(AA_context));
 #else
     /* Render only the rectangles in the list */
-    printf ("Update rects : ");
+    printf("Update rects : ");
     for (i = 0; i < numrects; ++i) {
         rect = &rects[i];
-        printf ("(%d,%d-%d,%d)", rect->x, rect->y, rect->w, rect->h);
-        aa_renderpalette (AA_context, AA_palette, AA_rparams,
-                          rect->x * AA_x_ratio, rect->y * AA_y_ratio,
-                          rect->w * AA_x_ratio, rect->h * AA_y_ratio);
+        printf("(%d,%d-%d,%d)", rect->x, rect->y, rect->w, rect->h);
+        aa_renderpalette(AA_context, AA_palette, AA_rparams,
+                         rect->x * AA_x_ratio, rect->y * AA_y_ratio,
+                         rect->w * AA_x_ratio, rect->h * AA_y_ratio);
     }
-    printf ("\n");
+    printf("\n");
 #endif
-    SDL_mutexP (AA_mutex);
-    aa_flush (AA_context);
-    SDL_mutexV (AA_mutex);
+    SDL_mutexP(AA_mutex);
+    aa_flush(AA_context);
+    SDL_mutexV(AA_mutex);
     return;
 }
 
 int
-AA_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
+AA_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color * colors)
 {
     int i;
 
     for (i = 0; i < ncolors; i++) {
-        aa_setpalette (AA_palette, firstcolor + i,
-                       colors[i].r >> 2, colors[i].g >> 2, colors[i].b >> 2);
+        aa_setpalette(AA_palette, firstcolor + i,
+                      colors[i].r >> 2, colors[i].g >> 2, colors[i].b >> 2);
     }
     return (1);
 }
@@ -401,24 +400,24 @@ AA_SetColors (_THIS, int firstcolor, int ncolors, SDL_Color * colors)
    another SDL video routine -- notably UpdateRects.
 */
 void
-AA_VideoQuit (_THIS)
+AA_VideoQuit(_THIS)
 {
     int i;
 
-    aa_uninitkbd (AA_context);
-    aa_uninitmouse (AA_context);
+    aa_uninitkbd(AA_context);
+    aa_uninitmouse(AA_context);
 
     /* Free video mode lists */
     for (i = 0; i < SDL_NUMMODES; ++i) {
         if (SDL_modelist[i] != NULL) {
-            SDL_free (SDL_modelist[i]);
+            SDL_free(SDL_modelist[i]);
             SDL_modelist[i] = NULL;
         }
     }
 
-    aa_close (AA_context);
+    aa_close(AA_context);
 
-    SDL_DestroyMutex (AA_mutex);
+    SDL_DestroyMutex(AA_mutex);
 
     this->screen->pixels = NULL;
 }

@@ -67,32 +67,32 @@ static SDL_CD *theCDROM;
 
 #pragma mark -- Prototypes --
 
-static OSStatus CheckInit ();
+static OSStatus CheckInit();
 
-static void FilePlayNotificationHandler (void *inRefCon, OSStatus inStatus);
+static void FilePlayNotificationHandler(void *inRefCon, OSStatus inStatus);
 
-static int RunCallBackThread (void *inRefCon);
+static int RunCallBackThread(void *inRefCon);
 
 
 #pragma mark -- Public Functions --
 
 void
-Lock ()
+Lock()
 {
     if (!apiMutex) {
-        apiMutex = SDL_CreateMutex ();
+        apiMutex = SDL_CreateMutex();
     }
-    SDL_mutexP (apiMutex);
+    SDL_mutexP(apiMutex);
 }
 
 void
-Unlock ()
+Unlock()
 {
-    SDL_mutexV (apiMutex);
+    SDL_mutexV(apiMutex);
 }
 
 int
-DetectAudioCDVolumes (FSVolumeRefNum * volumes, int numVolumes)
+DetectAudioCDVolumes(FSVolumeRefNum * volumes, int numVolumes)
 {
     int volumeIndex;
     int cdVolumeCount = 0;
@@ -102,12 +102,12 @@ DetectAudioCDVolumes (FSVolumeRefNum * volumes, int numVolumes)
         FSVolumeRefNum actualVolume;
         FSVolumeInfo volumeInfo;
 
-        memset (&volumeInfo, 0, sizeof (volumeInfo));
+        memset(&volumeInfo, 0, sizeof(volumeInfo));
 
-        result = FSGetVolumeInfo (kFSInvalidVolumeRefNum,
-                                  volumeIndex,
-                                  &actualVolume,
-                                  kFSVolInfoFSInfo, &volumeInfo, NULL, NULL);
+        result = FSGetVolumeInfo(kFSInvalidVolumeRefNum,
+                                 volumeIndex,
+                                 &actualVolume,
+                                 kFSVolInfoFSInfo, &volumeInfo, NULL, NULL);
 
         if (result == noErr) {
             if (volumeInfo.filesystemID == kAudioCDFilesystemID) {      /* It's an audio CD */
@@ -126,7 +126,7 @@ DetectAudioCDVolumes (FSVolumeRefNum * volumes, int numVolumes)
 }
 
 int
-ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
+ReadTOCData(FSVolumeRefNum theVolume, SDL_CD * theCD)
 {
     HFSUniStr255 dataForkName;
     OSStatus theErr;
@@ -149,7 +149,7 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
     fsRefPB.ioDirID = 0;
     fsRefPB.newRef = &tocPlistFSRef;
 
-    theErr = PBMakeFSRefSync (&fsRefPB);
+    theErr = PBMakeFSRefSync(&fsRefPB);
     if (theErr != noErr) {
         error = "PBMakeFSRefSync";
         goto bail;
@@ -157,51 +157,50 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
 
     /* Load and parse the TOC XML data */
 
-    theErr = FSGetDataForkName (&dataForkName);
+    theErr = FSGetDataForkName(&dataForkName);
     if (theErr != noErr) {
         error = "FSGetDataForkName";
         goto bail;
     }
 
     theErr =
-        FSOpenFork (&tocPlistFSRef, dataForkName.length, dataForkName.unicode,
-                    fsRdPerm, &forkRefNum);
+        FSOpenFork(&tocPlistFSRef, dataForkName.length, dataForkName.unicode,
+                   fsRdPerm, &forkRefNum);
     if (theErr != noErr) {
         error = "FSOpenFork";
         goto bail;
     }
 
-    theErr = FSGetForkSize (forkRefNum, &forkSize);
+    theErr = FSGetForkSize(forkRefNum, &forkSize);
     if (theErr != noErr) {
         error = "FSGetForkSize";
         goto bail;
     }
 
     /* Allocate some memory for the XML data */
-    forkData = NewPtr (forkSize);
+    forkData = NewPtr(forkSize);
     if (forkData == NULL) {
         error = "NewPtr";
         goto bail;
     }
 
-    theErr = FSReadFork (forkRefNum, fsFromStart, 0 /* offset location */ ,
-                         forkSize, forkData, &actualRead);
+    theErr = FSReadFork(forkRefNum, fsFromStart, 0 /* offset location */ ,
+                        forkSize, forkData, &actualRead);
     if (theErr != noErr) {
         error = "FSReadFork";
         goto bail;
     }
 
-    dataRef =
-        CFDataCreate (kCFAllocatorDefault, (UInt8 *) forkData, forkSize);
+    dataRef = CFDataCreate(kCFAllocatorDefault, (UInt8 *) forkData, forkSize);
     if (dataRef == 0) {
         error = "CFDataCreate";
         goto bail;
     }
 
-    propertyListRef = CFPropertyListCreateFromXMLData (kCFAllocatorDefault,
-                                                       dataRef,
-                                                       kCFPropertyListImmutable,
-                                                       NULL);
+    propertyListRef = CFPropertyListCreateFromXMLData(kCFAllocatorDefault,
+                                                      dataRef,
+                                                      kCFPropertyListImmutable,
+                                                      NULL);
     if (propertyListRef == NULL) {
         error = "CFPropertyListCreateFromXMLData";
         goto bail;
@@ -210,7 +209,7 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
     /* Now we got the Property List in memory. Parse it. */
 
     /* First, make sure the root item is a CFDictionary. If not, release and bail. */
-    if (CFGetTypeID (propertyListRef) == CFDictionaryGetTypeID ()) {
+    if (CFGetTypeID(propertyListRef) == CFDictionaryGetTypeID()) {
         CFDictionaryRef dictRef = (CFDictionaryRef) propertyListRef;
 
         CFDataRef theRawTOCDataRef;
@@ -220,16 +219,16 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
 
         /* This is how we get the Raw TOC Data */
         theRawTOCDataRef =
-            (CFDataRef) CFDictionaryGetValue (dictRef,
-                                              CFSTR (kRawTOCDataString));
+            (CFDataRef) CFDictionaryGetValue(dictRef,
+                                             CFSTR(kRawTOCDataString));
 
         /* Get the session array info. */
         theSessionArrayRef =
-            (CFArrayRef) CFDictionaryGetValue (dictRef,
-                                               CFSTR (kSessionsString));
+            (CFArrayRef) CFDictionaryGetValue(dictRef,
+                                              CFSTR(kSessionsString));
 
         /* Find out how many sessions there are. */
-        numSessions = CFArrayGetCount (theSessionArrayRef);
+        numSessions = CFArrayGetCount(theSessionArrayRef);
 
         /* Initialize the total number of tracks to 0 */
         theCD->numtracks = 0;
@@ -244,17 +243,17 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
             UInt32 value = 0;
 
             theSessionDict = (CFDictionaryRef)
-                CFArrayGetValueAtIndex (theSessionArrayRef, index);
+                CFArrayGetValueAtIndex(theSessionArrayRef, index);
             leadoutBlock =
-                (CFNumberRef) CFDictionaryGetValue (theSessionDict,
-                                                    CFSTR
-                                                    (kLeadoutBlockString));
+                (CFNumberRef) CFDictionaryGetValue(theSessionDict,
+                                                   CFSTR
+                                                   (kLeadoutBlockString));
 
             trackArray =
-                (CFArrayRef) CFDictionaryGetValue (theSessionDict,
-                                                   CFSTR (kTrackArrayString));
+                (CFArrayRef) CFDictionaryGetValue(theSessionDict,
+                                                  CFSTR(kTrackArrayString));
 
-            numTracks = CFArrayGetCount (trackArray);
+            numTracks = CFArrayGetCount(trackArray);
 
             for (trackIndex = 0; trackIndex < numTracks; trackIndex++) {
 
@@ -266,32 +265,32 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
                 UInt32 value;
 
                 theTrackDict = (CFDictionaryRef)
-                    CFArrayGetValueAtIndex (trackArray, trackIndex);
+                    CFArrayGetValueAtIndex(trackArray, trackIndex);
 
                 trackNumber =
-                    (CFNumberRef) CFDictionaryGetValue (theTrackDict,
-                                                        CFSTR
-                                                        (kPointKeyString));
+                    (CFNumberRef) CFDictionaryGetValue(theTrackDict,
+                                                       CFSTR
+                                                       (kPointKeyString));
                 sessionNumber =
-                    (CFNumberRef) CFDictionaryGetValue (theTrackDict,
-                                                        CFSTR
-                                                        (kSessionNumberKeyString));
+                    (CFNumberRef) CFDictionaryGetValue(theTrackDict,
+                                                       CFSTR
+                                                       (kSessionNumberKeyString));
                 startBlock =
-                    (CFNumberRef) CFDictionaryGetValue (theTrackDict,
-                                                        CFSTR
-                                                        (kStartBlockKeyString));
+                    (CFNumberRef) CFDictionaryGetValue(theTrackDict,
+                                                       CFSTR
+                                                       (kStartBlockKeyString));
                 isDataTrack =
-                    (CFBooleanRef) CFDictionaryGetValue (theTrackDict,
-                                                         CFSTR
-                                                         (kDataKeyString));
+                    (CFBooleanRef) CFDictionaryGetValue(theTrackDict,
+                                                        CFSTR
+                                                        (kDataKeyString));
 
                 /* Fill in the SDL_CD struct */
                 int idx = theCD->numtracks++;
 
-                CFNumberGetValue (trackNumber, kCFNumberSInt32Type, &value);
+                CFNumberGetValue(trackNumber, kCFNumberSInt32Type, &value);
                 theCD->track[idx].id = value;
 
-                CFNumberGetValue (startBlock, kCFNumberSInt32Type, &value);
+                CFNumberGetValue(startBlock, kCFNumberSInt32Type, &value);
                 theCD->track[idx].offset = value;
 
                 theCD->track[idx].type =
@@ -307,7 +306,7 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
             }
 
             /* Compute the length of the last track */
-            CFNumberGetValue (leadoutBlock, kCFNumberSInt32Type, &value);
+            CFNumberGetValue(leadoutBlock, kCFNumberSInt32Type, &value);
 
             theCD->track[theCD->numtracks - 1].length =
                 value - theCD->track[theCD->numtracks - 1].offset;
@@ -321,24 +320,24 @@ ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD)
     theErr = 0;
     goto cleanup;
   bail:
-    SDL_SetError ("ReadTOCData: %s returned %d", error, theErr);
+    SDL_SetError("ReadTOCData: %s returned %d", error, theErr);
     theErr = -1;
   cleanup:
 
     if (propertyListRef != NULL)
-        CFRelease (propertyListRef);
+        CFRelease(propertyListRef);
     if (dataRef != NULL)
-        CFRelease (dataRef);
+        CFRelease(dataRef);
     if (forkData != NULL)
-        DisposePtr (forkData);
+        DisposePtr(forkData);
 
-    FSCloseFork (forkRefNum);
+    FSCloseFork(forkRefNum);
 
     return theErr;
 }
 
 int
-ListTrackFiles (FSVolumeRefNum theVolume, FSRef * trackFiles, int numTracks)
+ListTrackFiles(FSVolumeRefNum theVolume, FSRef * trackFiles, int numTracks)
 {
     OSStatus result = -1;
     FSIterator iterator;
@@ -347,113 +346,112 @@ ListTrackFiles (FSVolumeRefNum theVolume, FSRef * trackFiles, int numTracks)
     FSRef ref;
     HFSUniStr255 nameStr;
 
-    result = FSGetVolumeInfo (theVolume,
-                              0,
-                              NULL,
-                              kFSVolInfoFSInfo, NULL, NULL, &rootDirectory);
+    result = FSGetVolumeInfo(theVolume,
+                             0,
+                             NULL,
+                             kFSVolInfoFSInfo, NULL, NULL, &rootDirectory);
 
     if (result != noErr) {
-        SDL_SetError ("ListTrackFiles: FSGetVolumeInfo returned %d", result);
+        SDL_SetError("ListTrackFiles: FSGetVolumeInfo returned %d", result);
         return result;
     }
 
-    result = FSOpenIterator (&rootDirectory, kFSIterateFlat, &iterator);
+    result = FSOpenIterator(&rootDirectory, kFSIterateFlat, &iterator);
     if (result == noErr) {
         do {
-            result = FSGetCatalogInfoBulk (iterator, 1, &actualObjects,
-                                           NULL, kFSCatInfoNone, NULL,
-                                           &ref, NULL, &nameStr);
+            result = FSGetCatalogInfoBulk(iterator, 1, &actualObjects,
+                                          NULL, kFSCatInfoNone, NULL,
+                                          &ref, NULL, &nameStr);
             if (result == noErr) {
 
                 CFStringRef name;
                 name =
-                    CFStringCreateWithCharacters (NULL, nameStr.unicode,
-                                                  nameStr.length);
+                    CFStringCreateWithCharacters(NULL, nameStr.unicode,
+                                                 nameStr.length);
 
                 /* Look for .aiff extension */
-                if (CFStringHasSuffix (name, CFSTR (".aiff")) ||
-                    CFStringHasSuffix (name, CFSTR (".cdda"))) {
+                if (CFStringHasSuffix(name, CFSTR(".aiff")) ||
+                    CFStringHasSuffix(name, CFSTR(".cdda"))) {
 
                     /* Extract the track id from the filename */
                     int trackID = 0, i = 0;
-                    while (i < nameStr.length
-                           && !isdigit (nameStr.unicode[i])) {
+                    while (i < nameStr.length && !isdigit(nameStr.unicode[i])) {
                         ++i;
                     }
-                    while (i < nameStr.length && isdigit (nameStr.unicode[i])) {
+                    while (i < nameStr.length && isdigit(nameStr.unicode[i])) {
                         trackID = 10 * trackID + (nameStr.unicode[i] - '0');
                         ++i;
                     }
 
 #if DEBUG_CDROM
-                    printf ("Found AIFF for track %d: '%s'\n",
-                            trackID, CFStringGetCStringPtr (name,
-                                                            CFStringGetSystemEncoding
-                                                            ()));
+                    printf("Found AIFF for track %d: '%s'\n",
+                           trackID, CFStringGetCStringPtr(name,
+                                                          CFStringGetSystemEncoding
+                                                          ()));
 #endif
 
                     /* Track ID's start at 1, but we want to start at 0 */
                     trackID--;
 
-                    assert (0 <= trackID && trackID <= SDL_MAX_TRACKS);
+                    assert(0 <= trackID && trackID <= SDL_MAX_TRACKS);
 
                     if (trackID < numTracks)
-                        memcpy (&trackFiles[trackID], &ref, sizeof (FSRef));
+                        memcpy(&trackFiles[trackID], &ref, sizeof(FSRef));
                 }
-                CFRelease (name);
+                CFRelease(name);
             }
         }
         while (noErr == result);
-        FSCloseIterator (iterator);
+        FSCloseIterator(iterator);
     }
 
     return 0;
 }
 
 int
-LoadFile (const FSRef * ref, int startFrame, int stopFrame)
+LoadFile(const FSRef * ref, int startFrame, int stopFrame)
 {
     int error = -1;
 
-    if (CheckInit () < 0)
+    if (CheckInit() < 0)
         goto bail;
 
     /* release any currently playing file */
-    if (ReleaseFile () < 0)
+    if (ReleaseFile() < 0)
         goto bail;
 
 #if DEBUG_CDROM
-    printf ("LoadFile: %d %d\n", startFrame, stopFrame);
+    printf("LoadFile: %d %d\n", startFrame, stopFrame);
 #endif
 
     /*try { */
 
     /* create a new player, and attach to the audio unit */
 
-    thePlayer = new_AudioFilePlayer (ref);
+    thePlayer = new_AudioFilePlayer(ref);
     if (thePlayer == NULL) {
-        SDL_SetError ("LoadFile: Could not create player");
+        SDL_SetError("LoadFile: Could not create player");
         return -3;              /*throw (-3); */
     }
 
-    if (!thePlayer->SetDestination (thePlayer, &theUnit))
+    if (!thePlayer->SetDestination(thePlayer, &theUnit))
         goto bail;
 
     if (startFrame >= 0)
-        thePlayer->SetStartFrame (thePlayer, startFrame);
+        thePlayer->SetStartFrame(thePlayer, startFrame);
 
     if (stopFrame >= 0 && stopFrame > startFrame)
-        thePlayer->SetStopFrame (thePlayer, stopFrame);
+        thePlayer->SetStopFrame(thePlayer, stopFrame);
 
     /* we set the notifier later */
     /*thePlayer->SetNotifier(thePlayer, FilePlayNotificationHandler, NULL); */
 
-    if (!thePlayer->Connect (thePlayer))
+    if (!thePlayer->Connect(thePlayer))
         goto bail;
 
 #if DEBUG_CDROM
-    thePlayer->Print (thePlayer);
-    fflush (stdout);
+    thePlayer->Print(thePlayer);
+    fflush(stdout);
 #endif
     /*}
        catch (...)
@@ -468,7 +466,7 @@ LoadFile (const FSRef * ref, int startFrame, int stopFrame)
 }
 
 int
-ReleaseFile ()
+ReleaseFile()
 {
     int error = -1;
 
@@ -476,9 +474,9 @@ ReleaseFile ()
     /*try { */
     if (thePlayer != NULL) {
 
-        thePlayer->Disconnect (thePlayer);
+        thePlayer->Disconnect(thePlayer);
 
-        delete_AudioFilePlayer (thePlayer);
+        delete_AudioFilePlayer(thePlayer);
 
         thePlayer = NULL;
     }
@@ -495,17 +493,17 @@ ReleaseFile ()
 }
 
 int
-PlayFile ()
+PlayFile()
 {
     OSStatus result = -1;
 
-    if (CheckInit () < 0)
+    if (CheckInit() < 0)
         goto bail;
 
     /*try { */
 
     // start processing of the audio unit
-    result = AudioOutputUnitStart (theUnit);
+    result = AudioOutputUnitStart(theUnit);
     if (result)
         goto bail;              //THROW_RESULT("PlayFile: AudioOutputUnitStart")
 
@@ -522,17 +520,17 @@ PlayFile ()
 }
 
 int
-PauseFile ()
+PauseFile()
 {
     OSStatus result = -1;
 
-    if (CheckInit () < 0)
+    if (CheckInit() < 0)
         goto bail;
 
     /*try { */
 
     /* stop processing the audio unit */
-    result = AudioOutputUnitStop (theUnit);
+    result = AudioOutputUnitStop(theUnit);
     if (result)
         goto bail;              /*THROW_RESULT("PauseFile: AudioOutputUnitStop") */
     /*}
@@ -547,24 +545,24 @@ PauseFile ()
 }
 
 void
-SetCompletionProc (CDPlayerCompletionProc proc, SDL_CD * cdrom)
+SetCompletionProc(CDPlayerCompletionProc proc, SDL_CD * cdrom)
 {
-    assert (thePlayer != NULL);
+    assert(thePlayer != NULL);
 
     theCDROM = cdrom;
     completionProc = proc;
-    thePlayer->SetNotifier (thePlayer, FilePlayNotificationHandler, cdrom);
+    thePlayer->SetNotifier(thePlayer, FilePlayNotificationHandler, cdrom);
 }
 
 int
-GetCurrentFrame ()
+GetCurrentFrame()
 {
     int frame;
 
     if (thePlayer == NULL)
         frame = 0;
     else
-        frame = thePlayer->GetCurrentFrame (thePlayer);
+        frame = thePlayer->GetCurrentFrame(thePlayer);
 
     return frame;
 }
@@ -573,7 +571,7 @@ GetCurrentFrame ()
 #pragma mark -- Private Functions --
 
 static OSStatus
-CheckInit ()
+CheckInit()
 {
     if (playBackWasInit)
         return 0;
@@ -581,10 +579,10 @@ CheckInit ()
     OSStatus result = noErr;
 
     /* Create the callback semaphore */
-    callbackSem = SDL_CreateSemaphore (0);
+    callbackSem = SDL_CreateSemaphore(0);
 
     /* Start callback thread */
-    SDL_CreateThread (RunCallBackThread, NULL);
+    SDL_CreateThread(RunCallBackThread, NULL);
 
     {                           /*try { */
         ComponentDescription desc;
@@ -595,19 +593,19 @@ CheckInit ()
         desc.componentFlags = 0;
         desc.componentFlagsMask = 0;
 
-        Component comp = FindNextComponent (NULL, &desc);
+        Component comp = FindNextComponent(NULL, &desc);
         if (comp == NULL) {
-            SDL_SetError ("CheckInit: FindNextComponent returned NULL");
+            SDL_SetError("CheckInit: FindNextComponent returned NULL");
             if (result)
                 return -1;      //throw(internalComponentErr);
         }
 
-        result = OpenAComponent (comp, &theUnit);
+        result = OpenAComponent(comp, &theUnit);
         if (result)
             return -1;          //THROW_RESULT("CheckInit: OpenAComponent")
 
         // you need to initialize the output unit before you set it as a destination
-        result = AudioUnitInitialize (theUnit);
+        result = AudioUnitInitialize(theUnit);
         if (result)
             return -1;          //THROW_RESULT("CheckInit: AudioUnitInitialize")
 
@@ -623,46 +621,46 @@ CheckInit ()
 }
 
 static void
-FilePlayNotificationHandler (void *inRefCon, OSStatus inStatus)
+FilePlayNotificationHandler(void *inRefCon, OSStatus inStatus)
 {
     if (inStatus == kAudioFilePlay_FileIsFinished) {
 
         /* notify non-CA thread to perform the callback */
-        SDL_SemPost (callbackSem);
+        SDL_SemPost(callbackSem);
 
     } else if (inStatus == kAudioFilePlayErr_FilePlayUnderrun) {
 
-        SDL_SetError ("CDPlayer Notification: buffer underrun");
+        SDL_SetError("CDPlayer Notification: buffer underrun");
     } else if (inStatus == kAudioFilePlay_PlayerIsUninitialized) {
 
-        SDL_SetError ("CDPlayer Notification: player is uninitialized");
+        SDL_SetError("CDPlayer Notification: player is uninitialized");
     } else {
 
-        SDL_SetError ("CDPlayer Notification: unknown error %ld", inStatus);
+        SDL_SetError("CDPlayer Notification: unknown error %ld", inStatus);
     }
 }
 
 static int
-RunCallBackThread (void *param)
+RunCallBackThread(void *param)
 {
     for (;;) {
 
-        SDL_SemWait (callbackSem);
+        SDL_SemWait(callbackSem);
 
         if (completionProc && theCDROM) {
 #if DEBUG_CDROM
-            printf ("callback!\n");
+            printf("callback!\n");
 #endif
             (*completionProc) (theCDROM);
         } else {
 #if DEBUG_CDROM
-            printf ("callback?\n");
+            printf("callback?\n");
 #endif
         }
     }
 
 #if DEBUG_CDROM
-    printf ("thread dying now...\n");
+    printf("thread dying now...\n");
 #endif
 
     return 0;

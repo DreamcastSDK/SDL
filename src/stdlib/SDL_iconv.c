@@ -31,11 +31,11 @@
 #include <errno.h>
 
 size_t
-SDL_iconv (SDL_iconv_t cd,
-           char **inbuf, size_t * inbytesleft,
-           char **outbuf, size_t * outbytesleft)
+SDL_iconv(SDL_iconv_t cd,
+          char **inbuf, size_t * inbytesleft,
+          char **outbuf, size_t * outbytesleft)
 {
-    size_t retCode = iconv (cd, inbuf, inbytesleft, outbuf, outbytesleft);
+    size_t retCode = iconv(cd, inbuf, inbytesleft, outbuf, outbytesleft);
     if (retCode == (size_t) - 1) {
         switch (errno) {
         case E2BIG:
@@ -121,20 +121,20 @@ static struct
 "UCS-4", ENCODING_UCS4},};
 
 SDL_iconv_t
-SDL_iconv_open (const char *tocode, const char *fromcode)
+SDL_iconv_open(const char *tocode, const char *fromcode)
 {
     int src_fmt = ENCODING_UNKNOWN;
     int dst_fmt = ENCODING_UNKNOWN;
     int i;
 
-    for (i = 0; i < SDL_arraysize (encodings); ++i) {
-        if (SDL_strcasecmp (fromcode, encodings[i].name) == 0) {
+    for (i = 0; i < SDL_arraysize(encodings); ++i) {
+        if (SDL_strcasecmp(fromcode, encodings[i].name) == 0) {
             src_fmt = encodings[i].format;
             if (dst_fmt != ENCODING_UNKNOWN) {
                 break;
             }
         }
-        if (SDL_strcasecmp (tocode, encodings[i].name) == 0) {
+        if (SDL_strcasecmp(tocode, encodings[i].name) == 0) {
             dst_fmt = encodings[i].format;
             if (src_fmt != ENCODING_UNKNOWN) {
                 break;
@@ -142,7 +142,7 @@ SDL_iconv_open (const char *tocode, const char *fromcode)
         }
     }
     if (src_fmt != ENCODING_UNKNOWN && dst_fmt != ENCODING_UNKNOWN) {
-        SDL_iconv_t cd = (SDL_iconv_t) SDL_malloc (sizeof (*cd));
+        SDL_iconv_t cd = (SDL_iconv_t) SDL_malloc(sizeof(*cd));
         if (cd) {
             cd->src_fmt = src_fmt;
             cd->dst_fmt = dst_fmt;
@@ -153,9 +153,9 @@ SDL_iconv_open (const char *tocode, const char *fromcode)
 }
 
 size_t
-SDL_iconv (SDL_iconv_t cd,
-           char **inbuf, size_t * inbytesleft,
-           char **outbuf, size_t * outbytesleft)
+SDL_iconv(SDL_iconv_t cd,
+          char **inbuf, size_t * inbytesleft,
+          char **outbuf, size_t * outbytesleft)
 {
     /* For simplicity, we'll convert everything to and from UCS-4 */
     char *src, *dst;
@@ -744,10 +744,10 @@ SDL_iconv (SDL_iconv_t cd,
 }
 
 int
-SDL_iconv_close (SDL_iconv_t cd)
+SDL_iconv_close(SDL_iconv_t cd)
 {
     if (cd && cd != (SDL_iconv_t) - 1) {
-        SDL_free (cd);
+        SDL_free(cd);
     }
     return 0;
 }
@@ -755,8 +755,8 @@ SDL_iconv_close (SDL_iconv_t cd)
 #endif /* !HAVE_ICONV */
 
 char *
-SDL_iconv_string (const char *tocode, const char *fromcode, char *inbuf,
-                  size_t inbytesleft)
+SDL_iconv_string(const char *tocode, const char *fromcode, char *inbuf,
+                 size_t inbytesleft)
 {
     SDL_iconv_t cd;
     char *string;
@@ -765,37 +765,36 @@ SDL_iconv_string (const char *tocode, const char *fromcode, char *inbuf,
     size_t outbytesleft;
     size_t retCode = 0;
 
-    cd = SDL_iconv_open (tocode, fromcode);
+    cd = SDL_iconv_open(tocode, fromcode);
     if (cd == (SDL_iconv_t) - 1) {
         return NULL;
     }
 
     stringsize = inbytesleft > 4 ? inbytesleft : 4;
-    string = SDL_malloc (stringsize);
+    string = SDL_malloc(stringsize);
     if (!string) {
-        SDL_iconv_close (cd);
+        SDL_iconv_close(cd);
         return NULL;
     }
     outbuf = string;
     outbytesleft = stringsize;
-    SDL_memset (outbuf, 0, 4);
+    SDL_memset(outbuf, 0, 4);
 
     while (inbytesleft > 0) {
-        retCode =
-            SDL_iconv (cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
+        retCode = SDL_iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
         switch (retCode) {
         case SDL_ICONV_E2BIG:
             {
                 char *oldstring = string;
                 stringsize *= 2;
-                string = SDL_realloc (string, stringsize);
+                string = SDL_realloc(string, stringsize);
                 if (!string) {
-                    SDL_iconv_close (cd);
+                    SDL_iconv_close(cd);
                     return NULL;
                 }
                 outbuf = string + (outbuf - oldstring);
                 outbytesleft = stringsize - (outbuf - string);
-                SDL_memset (outbuf, 0, 4);
+                SDL_memset(outbuf, 0, 4);
             }
             break;
         case SDL_ICONV_EILSEQ:
@@ -810,7 +809,7 @@ SDL_iconv_string (const char *tocode, const char *fromcode, char *inbuf,
             break;
         }
     }
-    SDL_iconv_close (cd);
+    SDL_iconv_close(cd);
 
     return string;
 }

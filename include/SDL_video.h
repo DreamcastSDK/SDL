@@ -285,7 +285,7 @@ typedef enum
  *
  * \sa SDL_GetVideoDriver()
  */
-extern DECLSPEC int SDLCALL SDL_GetNumVideoDrivers (void);
+extern DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
 
 /**
  * \fn const char *SDL_GetVideoDriver(int index)
@@ -297,7 +297,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoDrivers (void);
  *
  * \sa SDL_GetNumVideoDrivers()
  */
-extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver (int index);
+extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver(int index);
 
 /**
  * \fn int SDL_VideoInit(const char *driver_name, Uint32 flags)
@@ -315,8 +315,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetVideoDriver (int index);
  *
  * \sa SDL_VideoQuit()
  */
-extern DECLSPEC int SDLCALL SDL_VideoInit (const char *driver_name,
-                                           Uint32 flags);
+extern DECLSPEC int SDLCALL SDL_VideoInit(const char *driver_name,
+                                          Uint32 flags);
 
 /**
  * \fn void SDL_VideoQuit(void)
@@ -327,7 +327,7 @@ extern DECLSPEC int SDLCALL SDL_VideoInit (const char *driver_name,
  *
  * \sa SDL_VideoInit()
  */
-extern DECLSPEC void SDLCALL SDL_VideoQuit (void);
+extern DECLSPEC void SDLCALL SDL_VideoQuit(void);
 
 /**
  * \fn const char *SDL_GetCurrentVideoDriver(void)
@@ -340,7 +340,7 @@ extern DECLSPEC void SDLCALL SDL_VideoQuit (void);
  * \sa SDL_GetNumVideoDrivers()
  * \sa SDL_GetVideoDriver()
  */
-extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver (void);
+extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
  * \fn const SDL_VideoInfo *SDL_GetVideoInfo(void)
@@ -350,7 +350,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver (void);
  * \return A read-only pointer to information about the video hardware,
  *         or NULL if no video driver has been initialized.
  */
-extern DECLSPEC const SDL_VideoInfo *SDLCALL SDL_GetVideoInfo (void);
+extern DECLSPEC const SDL_VideoInfo *SDLCALL SDL_GetVideoInfo(void);
 
 /**
  * \fn int SDL_GetNumVideoDisplays(void)
@@ -359,7 +359,7 @@ extern DECLSPEC const SDL_VideoInfo *SDLCALL SDL_GetVideoInfo (void);
  *
  * \sa SDL_SelectVideoDisplay()
  */
-extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays (void);
+extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays(void);
 
 /**
  * \fn int SDL_SelectVideoDisplay(int index)
@@ -370,7 +370,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays (void);
  *
  * \sa SDL_GetNumVideoDisplays()
  */
-extern DECLSPEC int SDLCALL SDL_SelectVideoDisplay (int index);
+extern DECLSPEC int SDLCALL SDL_SelectVideoDisplay(int index);
 
 /**
  * \fn int SDL_GetNumDisplayModes(void)
@@ -379,7 +379,7 @@ extern DECLSPEC int SDLCALL SDL_SelectVideoDisplay (int index);
  *
  * \sa SDL_GetDisplayMode()
  */
-extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes (void);
+extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes(void);
 
 /**
  * \fn const SDL_DisplayMode *SDL_GetDisplayMode(int index)
@@ -394,7 +394,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumDisplayModes (void);
  *
  * \sa SDL_GetNumDisplayModes()
  */
-extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDisplayMode (int index);
+extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDisplayMode(int index);
 
 /**
  * \fn const SDL_DisplayMode *SDL_GetDesktopDisplayMode(void)
@@ -402,7 +402,7 @@ extern DECLSPEC const SDL_DisplayMode *SDLCALL SDL_GetDisplayMode (int index);
  * \brief Retrieve information about the desktop display mode for the current display.
  */
 extern DECLSPEC const SDL_DisplayMode *SDLCALL
-SDL_GetDesktopDisplayMode (void);
+SDL_GetDesktopDisplayMode(void);
 
 /**
  * \fn const SDL_DisplayMode *SDL_GetCurrentDisplayMode(void)
@@ -410,7 +410,7 @@ SDL_GetDesktopDisplayMode (void);
  * \brief Retrieve information about the current display mode.
  */
 extern DECLSPEC const SDL_DisplayMode *SDLCALL
-SDL_GetCurrentDisplayMode (void);
+SDL_GetCurrentDisplayMode(void);
 
 /**
  * \fn SDL_DisplayMode *SDL_GetClosestDisplayMode(const SDL_DisplayMode *mode, SDL_DisplayMode *closest)
@@ -427,12 +427,11 @@ SDL_GetCurrentDisplayMode (void);
  * \sa SDL_GetNumDisplayModes()
  * \sa SDL_GetDisplayMode()
  */
-extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode (const
-                                                                    SDL_DisplayMode
-                                                                    * mode,
-                                                                    SDL_DisplayMode
-                                                                    *
-                                                                    closest);
+extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(const
+                                                                   SDL_DisplayMode
+                                                                   * mode,
+                                                                   SDL_DisplayMode
+                                                                   * closest);
 
 /**
  * \fn int SDL_SetDisplayMode(const SDL_DisplayMode *mode)
@@ -443,7 +442,7 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode (const
  *
  * \return 0 on success, or -1 if setting the display mode failed.
  */
-extern DECLSPEC int SDLCALL SDL_SetDisplayMode (const SDL_DisplayMode * mode);
+extern DECLSPEC int SDLCALL SDL_SetDisplayMode(const SDL_DisplayMode * mode);
 
 /**
  * \fn SDL_WindowID SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
@@ -463,9 +462,9 @@ extern DECLSPEC int SDLCALL SDL_SetDisplayMode (const SDL_DisplayMode * mode);
  *
  * \sa SDL_DestroyWindow()
  */
-extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindow (const char *title,
-                                                       int x, int y, int w,
-                                                       int h, Uint32 flags);
+extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindow(const char *title,
+                                                      int x, int y, int w,
+                                                      int h, Uint32 flags);
 
 /**
  * \fn SDL_WindowID SDL_CreateWindowFrom(void *data)
@@ -480,14 +479,14 @@ extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindow (const char *title,
  *
  * \sa SDL_DestroyWindow()
  */
-extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindowFrom (void *data);
+extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindowFrom(void *data);
 
 /**
  * \fn Uint32 SDL_GetWindowFlags(SDL_WindowID windowID)
  *
  * \brief Get the window flags.
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags (SDL_WindowID windowID);
+extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_SetWindowTitle(SDL_WindowID windowID, const char *title)
@@ -496,8 +495,8 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowFlags (SDL_WindowID windowID);
  *
  * \sa SDL_GetWindowTitle()
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowTitle (SDL_WindowID windowID,
-                                                 const char *title);
+extern DECLSPEC void SDLCALL SDL_SetWindowTitle(SDL_WindowID windowID,
+                                                const char *title);
 
 /**
  * \fn const char *SDL_GetWindowTitle(SDL_WindowID windowID)
@@ -506,8 +505,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowTitle (SDL_WindowID windowID,
  *
  * \sa SDL_SetWindowTitle()
  */
-extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle (SDL_WindowID
-                                                        windowID);
+extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_SetWindowIcon(SDL_Surface *icon)
@@ -518,7 +516,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetWindowTitle (SDL_WindowID
  *
  * FIXME: The icon needs to be set before the window is first shown.  Should some icon representation be part of the window creation data?
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowIcon (SDL_Surface * icon);
+extern DECLSPEC void SDLCALL SDL_SetWindowIcon(SDL_Surface * icon);
 
 /**
  * \fn void SDL_SetWindowData(SDL_WindowID windowID, void *userdata)
@@ -527,8 +525,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowIcon (SDL_Surface * icon);
  *
  * \sa SDL_GetWindowData()
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowData (SDL_WindowID windowID,
-                                                void *userdata);
+extern DECLSPEC void SDLCALL SDL_SetWindowData(SDL_WindowID windowID,
+                                               void *userdata);
 
 /**
  * \fn void *SDL_GetWindowData(SDL_WindowID windowID)
@@ -537,7 +535,7 @@ extern DECLSPEC void SDLCALL SDL_SetWindowData (SDL_WindowID windowID,
  *
  * \sa SDL_SetWindowData()
  */
-extern DECLSPEC void *SDLCALL SDL_GetWindowData (SDL_WindowID windowID);
+extern DECLSPEC void *SDLCALL SDL_GetWindowData(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_SetWindowPosition(SDL_WindowID windowID, int x, int y)
@@ -546,8 +544,8 @@ extern DECLSPEC void *SDLCALL SDL_GetWindowData (SDL_WindowID windowID);
  *
  * \sa SDL_GetWindowPosition()
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowPosition (SDL_WindowID windowID,
-                                                    int x, int y);
+extern DECLSPEC void SDLCALL SDL_SetWindowPosition(SDL_WindowID windowID,
+                                                   int x, int y);
 
 /**
  * \fn void SDL_GetWindowPosition(SDL_WindowID windowID, int *x, int *y)
@@ -556,8 +554,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowPosition (SDL_WindowID windowID,
  *
  * \sa SDL_SetWindowPosition()
  */
-extern DECLSPEC void SDLCALL SDL_GetWindowPosition (SDL_WindowID windowID,
-                                                    int *x, int *y);
+extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_WindowID windowID,
+                                                   int *x, int *y);
 
 /**
  * \fn void SDL_SetWindowSize(SDL_WindowID windowID, int w, int w)
@@ -569,8 +567,8 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition (SDL_WindowID windowID,
  *
  * \sa SDL_GetWindowSize()
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowSize (SDL_WindowID windowID, int w,
-                                                int h);
+extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_WindowID windowID, int w,
+                                               int h);
 
 /**
  * \fn void SDL_GetWindowSize(SDL_WindowID windowID, int *w, int *w)
@@ -579,8 +577,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize (SDL_WindowID windowID, int w,
  *
  * \sa SDL_SetWindowSize()
  */
-extern DECLSPEC void SDLCALL SDL_GetWindowSize (SDL_WindowID windowID, int *w,
-                                                int *h);
+extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_WindowID windowID, int *w,
+                                               int *h);
 
 /**
  * \fn void SDL_ShowWindow(SDL_WindowID windowID)
@@ -589,7 +587,7 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSize (SDL_WindowID windowID, int *w,
  *
  * \sa SDL_HideWindow()
  */
-extern DECLSPEC void SDLCALL SDL_ShowWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_ShowWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_HideWindow(SDL_WindowID windowID)
@@ -598,14 +596,14 @@ extern DECLSPEC void SDLCALL SDL_ShowWindow (SDL_WindowID windowID);
  *
  * \sa SDL_ShowWindow()
  */
-extern DECLSPEC void SDLCALL SDL_HideWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_HideWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_RaiseWindow(SDL_WindowID windowID)
  *
  * \brief Raise the window so it's above other windows.
  */
-extern DECLSPEC void SDLCALL SDL_RaiseWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_RaiseWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_MaximizeWindow(SDL_WindowID windowID)
@@ -614,7 +612,7 @@ extern DECLSPEC void SDLCALL SDL_RaiseWindow (SDL_WindowID windowID);
  *
  * \sa SDL_RestoreWindow()
  */
-extern DECLSPEC void SDLCALL SDL_MaximizeWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_MaximizeWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_MinimizeWindow(SDL_WindowID windowID)
@@ -623,7 +621,7 @@ extern DECLSPEC void SDLCALL SDL_MaximizeWindow (SDL_WindowID windowID);
  *
  * \sa SDL_RestoreWindow()
  */
-extern DECLSPEC void SDLCALL SDL_MinimizeWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_MinimizeWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_RestoreWindow(SDL_WindowID windowID)
@@ -633,7 +631,7 @@ extern DECLSPEC void SDLCALL SDL_MinimizeWindow (SDL_WindowID windowID);
  * \sa SDL_MaximizeWindow()
  * \sa SDL_MinimizeWindow()
  */
-extern DECLSPEC void SDLCALL SDL_RestoreWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_SetWindowGrab(SDL_WindowID windowID, int mode)
@@ -645,8 +643,8 @@ extern DECLSPEC void SDLCALL SDL_RestoreWindow (SDL_WindowID windowID);
  * \sa SDL_GrabMode
  * \sa SDL_GetWindowGrab()
  */
-extern DECLSPEC void SDLCALL SDL_SetWindowGrab (SDL_WindowID windowID,
-                                                int mode);
+extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_WindowID windowID,
+                                               int mode);
 
 /**
  * \fn int SDL_GetWindowGrab(SDL_WindowID windowID)
@@ -658,24 +656,24 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab (SDL_WindowID windowID,
  * \sa SDL_GrabMode
  * \sa SDL_SetWindowGrab()
  */
-extern DECLSPEC int SDLCALL SDL_GetWindowGrab (SDL_WindowID windowID);
+extern DECLSPEC int SDLCALL SDL_GetWindowGrab(SDL_WindowID windowID);
 
 /**
  * \fn void SDL_DestroyWindow(SDL_WindowID windowID)
  *
  * \brief Destroy a window.
  */
-extern DECLSPEC void SDLCALL SDL_DestroyWindow (SDL_WindowID windowID);
+extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_WindowID windowID);
 
 /**
  * \fn SDL_Surface *SDL_CreateWindowSurface (SDL_WindowID windowID, Uint32 format, Uint32 flags)
  *
  * \brief Create an SDL_Surface representing the drawing area of the window.
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateWindowSurface (SDL_WindowID
-                                                              windowID,
-                                                              Uint32 format,
-                                                              Uint32 flags);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateWindowSurface(SDL_WindowID
+                                                             windowID,
+                                                             Uint32 format,
+                                                             Uint32 flags);
 
 /*
  * Makes sure the given list of rectangles is updated on the given screen.
@@ -698,7 +696,7 @@ extern DECLSPEC void SDLCALL SDL_UpdateRect
  * setting the video mode for this function to perform hardware flipping.
  * This function returns 0 if successful, or -1 if there was an error.
  */
-extern DECLSPEC int SDLCALL SDL_Flip (SDL_Surface * screen);
+extern DECLSPEC int SDLCALL SDL_Flip(SDL_Surface * screen);
 
 /*
  * Set the gamma correction for each of the color channels.
@@ -708,7 +706,7 @@ extern DECLSPEC int SDLCALL SDL_Flip (SDL_Surface * screen);
  * be emulated using gamma ramps, if available.  If successful, this
  * function returns 0, otherwise it returns -1.
  */
-extern DECLSPEC int SDLCALL SDL_SetGamma (float red, float green, float blue);
+extern DECLSPEC int SDLCALL SDL_SetGamma(float red, float green, float blue);
 
 /*
  * Set the gamma translation table for the red, green, and blue channels
@@ -722,9 +720,9 @@ extern DECLSPEC int SDLCALL SDL_SetGamma (float red, float green, float blue);
  * hardware does not support gamma translation, or otherwise fails,
  * this function will return -1.
  */
-extern DECLSPEC int SDLCALL SDL_SetGammaRamp (const Uint16 * red,
-                                              const Uint16 * green,
-                                              const Uint16 * blue);
+extern DECLSPEC int SDLCALL SDL_SetGammaRamp(const Uint16 * red,
+                                             const Uint16 * green,
+                                             const Uint16 * blue);
 
 /*
  * Retrieve the current values of the gamma translation tables.
@@ -735,8 +733,8 @@ extern DECLSPEC int SDLCALL SDL_SetGammaRamp (const Uint16 * red,
  * hardware does not support gamma translation, or otherwise fails,
  * this function will return -1.
  */
-extern DECLSPEC int SDLCALL SDL_GetGammaRamp (Uint16 * red, Uint16 * green,
-                                              Uint16 * blue);
+extern DECLSPEC int SDLCALL SDL_GetGammaRamp(Uint16 * red, Uint16 * green,
+                                             Uint16 * blue);
 
 /*
  * Sets a portion of the colormap for the given 8-bit surface.  If 'surface'
@@ -753,9 +751,9 @@ extern DECLSPEC int SDLCALL SDL_GetGammaRamp (Uint16 * red, Uint16 * green,
  * you desire, even if the window colormap has to be warped or run under
  * emulation.
  */
-extern DECLSPEC int SDLCALL SDL_SetColors (SDL_Surface * surface,
-                                           SDL_Color * colors, int firstcolor,
-                                           int ncolors);
+extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
+                                          SDL_Color * colors, int firstcolor,
+                                          int ncolors);
 
 /*
  * Maps an RGB triple to an opaque pixel value for a given pixel format
@@ -766,22 +764,22 @@ extern DECLSPEC Uint32 SDLCALL SDL_MapRGB
 /*
  * Maps an RGBA quadruple to a pixel value for a given pixel format
  */
-extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA (SDL_PixelFormat * format,
-                                            Uint8 r, Uint8 g, Uint8 b,
-                                            Uint8 a);
+extern DECLSPEC Uint32 SDLCALL SDL_MapRGBA(SDL_PixelFormat * format,
+                                           Uint8 r, Uint8 g, Uint8 b,
+                                           Uint8 a);
 
 /*
  * Maps a pixel value into the RGB components for a given pixel format
  */
-extern DECLSPEC void SDLCALL SDL_GetRGB (Uint32 pixel, SDL_PixelFormat * fmt,
-                                         Uint8 * r, Uint8 * g, Uint8 * b);
+extern DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, SDL_PixelFormat * fmt,
+                                        Uint8 * r, Uint8 * g, Uint8 * b);
 
 /*
  * Maps a pixel value into the RGBA components for a given pixel format
  */
-extern DECLSPEC void SDLCALL SDL_GetRGBA (Uint32 pixel, SDL_PixelFormat * fmt,
-                                          Uint8 * r, Uint8 * g, Uint8 * b,
-                                          Uint8 * a);
+extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, SDL_PixelFormat * fmt,
+                                         Uint8 * r, Uint8 * g, Uint8 * b,
+                                         Uint8 * a);
 
 /*
  * Allocate and free an RGB surface (must be called after SDL_SetVideoMode)
@@ -821,16 +819,16 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA (Uint32 pixel, SDL_PixelFormat * fmt,
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
     (Uint32 flags, int width, int height, int depth,
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom (void *pixels,
-                                                               int width,
-                                                               int height,
-                                                               int depth,
-                                                               int pitch,
-                                                               Uint32 Rmask,
-                                                               Uint32 Gmask,
-                                                               Uint32 Bmask,
-                                                               Uint32 Amask);
-extern DECLSPEC void SDLCALL SDL_FreeSurface (SDL_Surface * surface);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
+                                                              int width,
+                                                              int height,
+                                                              int depth,
+                                                              int pitch,
+                                                              Uint32 Rmask,
+                                                              Uint32 Gmask,
+                                                              Uint32 Bmask,
+                                                              Uint32 Amask);
+extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
 
 /*
  * SDL_LockSurface() sets up a surface for directly accessing the pixels.
@@ -850,8 +848,8 @@ extern DECLSPEC void SDLCALL SDL_FreeSurface (SDL_Surface * surface);
  *
  * SDL_LockSurface() returns 0, or -1 if the surface couldn't be locked.
  */
-extern DECLSPEC int SDLCALL SDL_LockSurface (SDL_Surface * surface);
-extern DECLSPEC void SDLCALL SDL_UnlockSurface (SDL_Surface * surface);
+extern DECLSPEC int SDLCALL SDL_LockSurface(SDL_Surface * surface);
+extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
 
 /*
  * Load a surface from a seekable SDL data source (memory or file.)
@@ -859,8 +857,8 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface (SDL_Surface * surface);
  * Returns the new surface, or NULL if there was an error.
  * The new surface should be freed with SDL_FreeSurface().
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW (SDL_RWops * src,
-                                                     int freesrc);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops * src,
+                                                    int freesrc);
 
 /* Convenience macro -- load a surface from a file */
 #define SDL_LoadBMP(file)	SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1)
@@ -904,8 +902,8 @@ extern DECLSPEC int SDLCALL SDL_SetColorKey
  *
  * The 'alpha' parameter is ignored for surfaces that have an alpha channel.
  */
-extern DECLSPEC int SDLCALL SDL_SetAlpha (SDL_Surface * surface, Uint32 flag,
-                                          Uint8 alpha);
+extern DECLSPEC int SDLCALL SDL_SetAlpha(SDL_Surface * surface, Uint32 flag,
+                                         Uint8 alpha);
 
 /*
  * Sets the clipping rectangle for the destination surface in a blit.
@@ -919,16 +917,16 @@ extern DECLSPEC int SDLCALL SDL_SetAlpha (SDL_Surface * surface, Uint32 flag,
  * Note that blits are automatically clipped to the edges of the source
  * and destination surfaces.
  */
-extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect (SDL_Surface * surface,
-                                                  const SDL_Rect * rect);
+extern DECLSPEC SDL_bool SDLCALL SDL_SetClipRect(SDL_Surface * surface,
+                                                 const SDL_Rect * rect);
 
 /*
  * Gets the clipping rectangle for the destination surface in a blit.
  * 'rect' must be a pointer to a valid rectangle which will be filled
  * with the correct values.
  */
-extern DECLSPEC void SDLCALL SDL_GetClipRect (SDL_Surface * surface,
-                                              SDL_Rect * rect);
+extern DECLSPEC void SDLCALL SDL_GetClipRect(SDL_Surface * surface,
+                                             SDL_Rect * rect);
 
 /*
  * Creates a new surface of the specified format, and then copies and maps 
@@ -1052,8 +1050,7 @@ extern DECLSPEC int SDLCALL SDL_FillRect
  *
  * If the conversion fails or runs out of memory, it returns NULL
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormat (SDL_Surface *
-                                                        surface);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormat(SDL_Surface * surface);
 
 /* 
  * This function takes a surface and copies it to a new surface of the
@@ -1067,8 +1064,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormat (SDL_Surface *
  *
  * If the conversion fails or runs out of memory, it returns NULL
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormatAlpha (SDL_Surface *
-                                                             surface);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormatAlpha(SDL_Surface *
+                                                            surface);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -1080,15 +1077,15 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormatAlpha (SDL_Surface *
    the contents of the display surface underneath the area where the overlay
    is shown is undefined - it may be overwritten with the converted YUV data.
 */
-extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay (int width,
-                                                           int height,
-                                                           Uint32 format,
-                                                           SDL_Surface *
-                                                           display);
+extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay(int width,
+                                                          int height,
+                                                          Uint32 format,
+                                                          SDL_Surface *
+                                                          display);
 
 /* Lock an overlay for direct access, and unlock it when you are done */
-extern DECLSPEC int SDLCALL SDL_LockYUVOverlay (SDL_Overlay * overlay);
-extern DECLSPEC void SDLCALL SDL_UnlockYUVOverlay (SDL_Overlay * overlay);
+extern DECLSPEC int SDLCALL SDL_LockYUVOverlay(SDL_Overlay * overlay);
+extern DECLSPEC void SDLCALL SDL_UnlockYUVOverlay(SDL_Overlay * overlay);
 
 /* Blit a video overlay to the display surface.
    The contents of the video surface underneath the blit destination are
@@ -1096,11 +1093,11 @@ extern DECLSPEC void SDLCALL SDL_UnlockYUVOverlay (SDL_Overlay * overlay);
    The width and height of the destination rectangle may be different from
    that of the overlay, but currently only 2x scaling is supported.
 */
-extern DECLSPEC int SDLCALL SDL_DisplayYUVOverlay (SDL_Overlay * overlay,
-                                                   SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_DisplayYUVOverlay(SDL_Overlay * overlay,
+                                                  SDL_Rect * dstrect);
 
 /* Free a video overlay */
-extern DECLSPEC void SDLCALL SDL_FreeYUVOverlay (SDL_Overlay * overlay);
+extern DECLSPEC void SDLCALL SDL_FreeYUVOverlay(SDL_Overlay * overlay);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -1113,17 +1110,17 @@ extern DECLSPEC void SDLCALL SDL_FreeYUVOverlay (SDL_Overlay * overlay);
  * If you do this, you need to retrieve all of the GL functions used in
  * your program from the dynamic library using SDL_GL_GetProcAddress().
  */
-extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary (const char *path);
+extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
 
 /*
  * Get the address of a GL function
  */
-extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress (const char *proc);
+extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
 
 /*
  * Set an attribute of the OpenGL subsystem before window creation.
  */
-extern DECLSPEC int SDLCALL SDL_GL_SetAttribute (SDL_GLattr attr, int value);
+extern DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
 
 /*
  * Get an attribute of the OpenGL subsystem from the windowing
@@ -1134,18 +1131,18 @@ extern DECLSPEC int SDLCALL SDL_GL_SetAttribute (SDL_GLattr attr, int value);
  * Developers should track the values they pass into SDL_GL_SetAttribute
  * themselves if they want to retrieve these values.
  */
-extern DECLSPEC int SDLCALL SDL_GL_GetAttribute (SDL_GLattr attr, int *value);
+extern DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
 
 /*
  * Swap the OpenGL buffers, if double-buffering is supported.
  */
-extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers (void);
+extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers(void);
 
 /* Not in public API at the moment - do not use! */
-extern DECLSPEC int SDLCALL SDL_SoftStretch (SDL_Surface * src,
-                                             SDL_Rect * srcrect,
-                                             SDL_Surface * dst,
-                                             SDL_Rect * dstrect);
+extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
+                                            SDL_Rect * srcrect,
+                                            SDL_Surface * dst,
+                                            SDL_Rect * dstrect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

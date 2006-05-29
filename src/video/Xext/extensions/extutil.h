@@ -110,18 +110,18 @@ typedef struct _XExtensionHooks
                              XExtCodes *        /* codes */
 #endif
         );
-      Bool (*wire_to_event) (
+      Bool(*wire_to_event) (
 #if NeedNestedPrototypes
-                                Display * /* display */ ,
-                                XEvent * /* re */ ,
-                                xEvent *        /* event */
+                               Display * /* display */ ,
+                               XEvent * /* re */ ,
+                               xEvent * /* event */
 #endif
         );
-      Status (*event_to_wire) (
+      Status(*event_to_wire) (
 #if NeedNestedPrototypes
-                                  Display * /* display */ ,
-                                  XEvent * /* re */ ,
-                                  xEvent *      /* event */
+                                 Display * /* display */ ,
+                                 XEvent * /* re */ ,
+                                 xEvent *       /* event */
 #endif
         );
     int (*error) (
@@ -143,36 +143,36 @@ typedef struct _XExtensionHooks
         );
 } XExtensionHooks;
 
-extern XExtensionInfo *XextCreateExtension (
+extern XExtensionInfo *XextCreateExtension(
 #if NeedFunctionPrototypes
-                                               void
+                                              void
 #endif
     );
-extern void XextDestroyExtension (
+extern void XextDestroyExtension(
 #if NeedFunctionPrototypes
-                                     XExtensionInfo *   /* info */
+                                    XExtensionInfo *    /* info */
 #endif
     );
-extern XExtDisplayInfo *XextAddDisplay (
+extern XExtDisplayInfo *XextAddDisplay(
+#if NeedFunctionPrototypes
+                                          XExtensionInfo * /* extinfo */ ,
+                                          Display * /* dpy */ ,
+                                          char * /* ext_name */ ,
+                                          XExtensionHooks * /* hooks */ ,
+                                          int /* nevents */ ,
+                                          XPointer      /* data */
+#endif
+    );
+extern int XextRemoveDisplay(
+#if NeedFunctionPrototypes
+                                XExtensionInfo * /* extinfo */ ,
+                                Display *       /* dpy */
+#endif
+    );
+extern XExtDisplayInfo *XextFindDisplay(
 #if NeedFunctionPrototypes
                                            XExtensionInfo * /* extinfo */ ,
-                                           Display * /* dpy */ ,
-                                           char * /* ext_name */ ,
-                                           XExtensionHooks * /* hooks */ ,
-                                           int /* nevents */ ,
-                                           XPointer     /* data */
-#endif
-    );
-extern int XextRemoveDisplay (
-#if NeedFunctionPrototypes
-                                 XExtensionInfo * /* extinfo */ ,
-                                 Display *      /* dpy */
-#endif
-    );
-extern XExtDisplayInfo *XextFindDisplay (
-#if NeedFunctionPrototypes
-                                            XExtensionInfo * /* extinfo */ ,
-                                            Display *   /* dpy */
+                                           Display *    /* dpy */
 #endif
     );
 

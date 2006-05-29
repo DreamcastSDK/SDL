@@ -41,28 +41,28 @@ extern "C"
 
     typedef void (*CDPlayerCompletionProc) (SDL_CD * cdrom);
 
-    void Lock ();
+    void Lock();
 
-    void Unlock ();
+    void Unlock();
 
-    int LoadFile (const FSRef * ref, int startFrame, int endFrame);     /* pass -1 to do nothing */
+    int LoadFile(const FSRef * ref, int startFrame, int endFrame);      /* pass -1 to do nothing */
 
-    int ReleaseFile ();
+    int ReleaseFile();
 
-    int PlayFile ();
+    int PlayFile();
 
-    int PauseFile ();
+    int PauseFile();
 
-    void SetCompletionProc (CDPlayerCompletionProc proc, SDL_CD * cdrom);
+    void SetCompletionProc(CDPlayerCompletionProc proc, SDL_CD * cdrom);
 
-    int ReadTOCData (FSVolumeRefNum theVolume, SDL_CD * theCD);
+    int ReadTOCData(FSVolumeRefNum theVolume, SDL_CD * theCD);
 
-    int ListTrackFiles (FSVolumeRefNum theVolume, FSRef * trackFiles,
-                        int numTracks);
+    int ListTrackFiles(FSVolumeRefNum theVolume, FSRef * trackFiles,
+                       int numTracks);
 
-    int DetectAudioCDVolumes (FSVolumeRefNum * volumes, int numVolumes);
+    int DetectAudioCDVolumes(FSVolumeRefNum * volumes, int numVolumes);
 
-    int GetCurrentFrame ();
+    int GetCurrentFrame();
 
 #ifdef __cplusplus
 };

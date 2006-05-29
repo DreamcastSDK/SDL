@@ -82,21 +82,21 @@ typedef unsigned long (__cdecl * pfnSDL_CurrentBeginThread) (void *, unsigned,
                                                              *threadID);
 typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #else
-typedef uintptr_t (__cdecl * pfnSDL_CurrentBeginThread) (void *, unsigned,
-                                                         unsigned (__stdcall *
-                                                                   func) (void
-                                                                          *),
-                                                         void *arg, unsigned,
-                                                         unsigned *threadID);
+typedef uintptr_t(__cdecl * pfnSDL_CurrentBeginThread) (void *, unsigned,
+                                                        unsigned (__stdcall *
+                                                                  func) (void
+                                                                         *),
+                                                        void *arg, unsigned,
+                                                        unsigned *threadID);
 typedef void (__cdecl * pfnSDL_CurrentEndThread) (unsigned code);
 #endif
 
-extern DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread (int (*fn) (void *),
-                                                      void *data,
-                                                      pfnSDL_CurrentBeginThread
-                                                      pfnBeginThread,
-                                                      pfnSDL_CurrentEndThread
-                                                      pfnEndThread);
+extern DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread(int (*fn) (void *),
+                                                     void *data,
+                                                     pfnSDL_CurrentBeginThread
+                                                     pfnBeginThread,
+                                                     pfnSDL_CurrentEndThread
+                                                     pfnEndThread);
 
 #ifdef __OS2__
 #define SDL_CreateThread(fn, data) SDL_CreateThread(fn, data, _beginthread, _endthread)
@@ -107,26 +107,25 @@ extern DECLSPEC SDL_Thread *SDLCALL SDL_CreateThread (int (*fn) (void *),
 #endif
 #else
 extern DECLSPEC SDL_Thread *SDLCALL
-SDL_CreateThread (int (SDLCALL * fn) (void *), void *data);
+SDL_CreateThread(int (SDLCALL * fn) (void *), void *data);
 #endif
 
 /* Get the 32-bit thread identifier for the current thread */
-extern DECLSPEC Uint32 SDLCALL SDL_ThreadID (void);
+extern DECLSPEC Uint32 SDLCALL SDL_ThreadID(void);
 
 /* Get the 32-bit thread identifier for the specified thread,
    equivalent to SDL_ThreadID() if the specified thread is NULL.
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetThreadID (SDL_Thread * thread);
+extern DECLSPEC Uint32 SDLCALL SDL_GetThreadID(SDL_Thread * thread);
 
 /* Wait for a thread to finish.
    The return code for the thread function is placed in the area
    pointed to by 'status', if 'status' is not NULL.
  */
-extern DECLSPEC void SDLCALL SDL_WaitThread (SDL_Thread * thread,
-                                             int *status);
+extern DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread * thread, int *status);
 
 /* Forcefully kill a thread without worrying about its state */
-extern DECLSPEC void SDLCALL SDL_KillThread (SDL_Thread * thread);
+extern DECLSPEC void SDLCALL SDL_KillThread(SDL_Thread * thread);
 
 
 /* Ends C function definitions when using C++ */

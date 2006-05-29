@@ -40,10 +40,10 @@ struct SDL_PrivateVideoData
 
 extern ggi_visual_t VIS;        /* FIXME: use the private data struct */
 
-extern int SDL_OpenKeyboard (void);
-extern void SDL_CloseKeyboard (void);
-extern int SDL_OpenMouse (void);
-extern void SDL_CloseMouse (void);
+extern int SDL_OpenKeyboard(void);
+extern void SDL_CloseKeyboard(void);
+extern int SDL_OpenMouse(void);
+extern void SDL_CloseMouse(void);
 
 #endif /* _SDL_ggivideo_h */
 /* vi: set ts=4 sw=4 expandtab: */

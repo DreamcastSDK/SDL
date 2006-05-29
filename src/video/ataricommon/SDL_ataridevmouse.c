@@ -45,7 +45,7 @@ static int mouseb, prev_mouseb;
 /* Functions */
 
 int
-SDL_AtariDevMouse_Open (void)
+SDL_AtariDevMouse_Open(void)
 {
     int r;
     const char *mousedev;
@@ -57,14 +57,14 @@ SDL_AtariDevMouse_Open (void)
     return 0;
 
     /* First, try SDL_MOUSEDEV device */
-    mousedev = SDL_getenv ("SDL_MOUSEDEV");
+    mousedev = SDL_getenv("SDL_MOUSEDEV");
     if (!mousedev) {
-        handle = open (mousedev, 0);
+        handle = open(mousedev, 0);
     }
 
     /* Failed, try default device */
     if (handle < 0) {
-        handle = open (DEVICE_NAME, 0);
+        handle = open(DEVICE_NAME, 0);
     }
 
     if (handle < 0) {
@@ -73,18 +73,18 @@ SDL_AtariDevMouse_Open (void)
     }
 
     /* Set non blocking mode */
-    r = fcntl (handle, F_GETFL, 0);
+    r = fcntl(handle, F_GETFL, 0);
     if (r < 0) {
-        close (handle);
+        close(handle);
         handle = -1;
         return 0;
     }
 
     r |= O_NDELAY;
 
-    r = fcntl (handle, F_SETFL, r);
+    r = fcntl(handle, F_SETFL, r);
     if (r < 0) {
-        close (handle);
+        close(handle);
         handle = -1;
         return 0;
     }
@@ -94,16 +94,16 @@ SDL_AtariDevMouse_Open (void)
 }
 
 void
-SDL_AtariDevMouse_Close (void)
+SDL_AtariDevMouse_Close(void)
 {
     if (handle > 0) {
-        close (handle);
+        close(handle);
         handle = -1;
     }
 }
 
 static int
-atari_GetButton (int button)
+atari_GetButton(int button)
 {
     switch (button) {
     case 0:
@@ -118,7 +118,7 @@ atari_GetButton (int button)
 }
 
 void
-SDL_AtariDevMouse_PostMouseEvents (_THIS, SDL_bool buttonEvents)
+SDL_AtariDevMouse_PostMouseEvents(_THIS, SDL_bool buttonEvents)
 {
     unsigned char buffer[3];
     int mousex, mousey;
@@ -128,7 +128,7 @@ SDL_AtariDevMouse_PostMouseEvents (_THIS, SDL_bool buttonEvents)
     }
 
     mousex = mousey = 0;
-    while (read (handle, buffer, sizeof (buffer)) == sizeof (buffer)) {
+    while (read(handle, buffer, sizeof(buffer)) == sizeof(buffer)) {
         mouseb = buffer[0] & 7;
         mousex += (char) buffer[1];
         mousey += (char) buffer[2];
@@ -144,12 +144,12 @@ SDL_AtariDevMouse_PostMouseEvents (_THIS, SDL_bool buttonEvents)
                 prevbutton = prev_mouseb & (1 << i);
 
                 if (curbutton && !prevbutton) {
-                    SDL_PrivateMouseButton (SDL_RELEASED,
-                                            atari_GetButton (i), 0, 0);
+                    SDL_PrivateMouseButton(SDL_RELEASED,
+                                           atari_GetButton(i), 0, 0);
                 }
                 if (!curbutton && prevbutton) {
-                    SDL_PrivateMouseButton (SDL_PRESSED,
-                                            atari_GetButton (i), 0, 0);
+                    SDL_PrivateMouseButton(SDL_PRESSED,
+                                           atari_GetButton(i), 0, 0);
                 }
             }
 
@@ -159,7 +159,7 @@ SDL_AtariDevMouse_PostMouseEvents (_THIS, SDL_bool buttonEvents)
 
     /* Mouse motion event */
     if (mousex || mousey) {
-        SDL_PrivateMouseMotion (0, 1, mousex, -mousey);
+        SDL_PrivateMouseMotion(0, 1, mousex, -mousey);
     }
 }
 

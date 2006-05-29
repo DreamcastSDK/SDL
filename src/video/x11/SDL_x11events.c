@@ -55,12 +55,12 @@
 /* The translation tables from an X11 keysym to a SDL keysym */
 static SDLKey ODD_keymap[256];
 static SDLKey MISC_keymap[256];
-SDLKey X11_TranslateKeycode (Display * display, KeyCode kc);
+SDLKey X11_TranslateKeycode(Display * display, KeyCode kc);
 
 
 #ifdef X_HAVE_UTF8_STRING
 Uint32
-Utf8ToUcs4 (const Uint8 * utf8)
+Utf8ToUcs4(const Uint8 * utf8)
 {
     Uint32 c;
     int i = 1;
@@ -184,19 +184,19 @@ Utf8ToUcs4 (const Uint8 * utf8)
    (idea shamelessly lifted from GII -- thanks guys! :)
  */
 static int
-X11_KeyRepeat (Display * display, XEvent * event)
+X11_KeyRepeat(Display * display, XEvent * event)
 {
     XEvent peekevent;
     int repeated;
 
     repeated = 0;
-    if (XPending (display)) {
-        XPeekEvent (display, &peekevent);
+    if (XPending(display)) {
+        XPeekEvent(display, &peekevent);
         if ((peekevent.type == KeyPress) &&
             (peekevent.xkey.keycode == event->xkey.keycode) &&
             ((peekevent.xkey.time - event->xkey.time) < 2)) {
             repeated = 1;
-            XNextEvent (display, &peekevent);
+            XNextEvent(display, &peekevent);
         }
     }
     return (repeated);
@@ -210,7 +210,7 @@ X11_KeyRepeat (Display * display, XEvent * event)
 #define MOUSE_FUDGE_FACTOR	8
 
 static __inline__ int
-X11_WarpedMotion (_THIS, XEvent * xevent)
+X11_WarpedMotion(_THIS, XEvent * xevent)
 {
     int w, h, i;
     int deltax, deltay;
@@ -221,33 +221,33 @@ X11_WarpedMotion (_THIS, XEvent * xevent)
     deltax = xevent->xmotion.x - mouse_last.x;
     deltay = xevent->xmotion.y - mouse_last.y;
 #ifdef DEBUG_MOTION
-    printf ("Warped mouse motion: %d,%d\n", deltax, deltay);
+    printf("Warped mouse motion: %d,%d\n", deltax, deltay);
 #endif
     mouse_last.x = xevent->xmotion.x;
     mouse_last.y = xevent->xmotion.y;
-    posted = SDL_PrivateMouseMotion (0, 1, deltax, deltay);
+    posted = SDL_PrivateMouseMotion(0, 1, deltax, deltay);
 
     if ((xevent->xmotion.x < MOUSE_FUDGE_FACTOR) ||
         (xevent->xmotion.x > (w - MOUSE_FUDGE_FACTOR)) ||
         (xevent->xmotion.y < MOUSE_FUDGE_FACTOR) ||
         (xevent->xmotion.y > (h - MOUSE_FUDGE_FACTOR))) {
         /* Get the events that have accumulated */
-        while (XCheckTypedEvent (SDL_Display, MotionNotify, xevent)) {
+        while (XCheckTypedEvent(SDL_Display, MotionNotify, xevent)) {
             deltax = xevent->xmotion.x - mouse_last.x;
             deltay = xevent->xmotion.y - mouse_last.y;
 #ifdef DEBUG_MOTION
-            printf ("Extra mouse motion: %d,%d\n", deltax, deltay);
+            printf("Extra mouse motion: %d,%d\n", deltax, deltay);
 #endif
             mouse_last.x = xevent->xmotion.x;
             mouse_last.y = xevent->xmotion.y;
-            posted += SDL_PrivateMouseMotion (0, 1, deltax, deltay);
+            posted += SDL_PrivateMouseMotion(0, 1, deltax, deltay);
         }
         mouse_last.x = w / 2;
         mouse_last.y = h / 2;
-        XWarpPointer (SDL_Display, None, SDL_Window, 0, 0, 0, 0,
-                      mouse_last.x, mouse_last.y);
+        XWarpPointer(SDL_Display, None, SDL_Window, 0, 0, 0, 0,
+                     mouse_last.x, mouse_last.y);
         for (i = 0; i < 10; ++i) {
-            XMaskEvent (SDL_Display, PointerMotionMask, xevent);
+            XMaskEvent(SDL_Display, PointerMotionMask, xevent);
             if ((xevent->xmotion.x >
                  (mouse_last.x - MOUSE_FUDGE_FACTOR)) &&
                 (xevent->xmotion.x <
@@ -258,13 +258,13 @@ X11_WarpedMotion (_THIS, XEvent * xevent)
                 break;
             }
 #ifdef DEBUG_XEVENTS
-            printf ("Lost mouse motion: %d,%d\n", xevent->xmotion.x,
-                    xevent->xmotion.y);
+            printf("Lost mouse motion: %d,%d\n", xevent->xmotion.x,
+                   xevent->xmotion.y);
 #endif
         }
 #ifdef DEBUG_XEVENTS
         if (i == 10) {
-            printf ("Warning: didn't detect mouse warp motion\n");
+            printf("Warning: didn't detect mouse warp motion\n");
         }
 #endif
     }
@@ -272,13 +272,13 @@ X11_WarpedMotion (_THIS, XEvent * xevent)
 }
 
 static int
-X11_DispatchEvent (_THIS)
+X11_DispatchEvent(_THIS)
 {
     int posted;
     XEvent xevent;
 
-    SDL_memset (&xevent, '\0', sizeof (XEvent));        /* valgrind fix. --ryan. */
-    XNextEvent (SDL_Display, &xevent);
+    SDL_memset(&xevent, '\0', sizeof(XEvent));  /* valgrind fix. --ryan. */
+    XNextEvent(SDL_Display, &xevent);
 
     posted = 0;
     switch (xevent.type) {
@@ -287,21 +287,21 @@ X11_DispatchEvent (_THIS)
     case EnterNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("EnterNotify! (%d,%d)\n", xevent.xcrossing.x,
-                    xevent.xcrossing.y);
+            printf("EnterNotify! (%d,%d)\n", xevent.xcrossing.x,
+                   xevent.xcrossing.y);
             if (xevent.xcrossing.mode == NotifyGrab)
-                printf ("Mode: NotifyGrab\n");
+                printf("Mode: NotifyGrab\n");
             if (xevent.xcrossing.mode == NotifyUngrab)
-                printf ("Mode: NotifyUngrab\n");
+                printf("Mode: NotifyUngrab\n");
 #endif
             if ((xevent.xcrossing.mode != NotifyGrab) &&
                 (xevent.xcrossing.mode != NotifyUngrab)) {
                 if (SDL_CurrentWindow.input_grab == SDL_GRAB_OFF) {
-                    posted = SDL_PrivateAppActive (1, SDL_APPMOUSEFOCUS);
+                    posted = SDL_PrivateAppActive(1, SDL_APPMOUSEFOCUS);
                 }
-                posted = SDL_PrivateMouseMotion (0, 0,
-                                                 xevent.xcrossing.x,
-                                                 xevent.xcrossing.y);
+                posted = SDL_PrivateMouseMotion(0, 0,
+                                                xevent.xcrossing.x,
+                                                xevent.xcrossing.y);
             }
         }
         break;
@@ -310,22 +310,22 @@ X11_DispatchEvent (_THIS)
     case LeaveNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("LeaveNotify! (%d,%d)\n", xevent.xcrossing.x,
-                    xevent.xcrossing.y);
+            printf("LeaveNotify! (%d,%d)\n", xevent.xcrossing.x,
+                   xevent.xcrossing.y);
             if (xevent.xcrossing.mode == NotifyGrab)
-                printf ("Mode: NotifyGrab\n");
+                printf("Mode: NotifyGrab\n");
             if (xevent.xcrossing.mode == NotifyUngrab)
-                printf ("Mode: NotifyUngrab\n");
+                printf("Mode: NotifyUngrab\n");
 #endif
             if ((xevent.xcrossing.mode != NotifyGrab) &&
                 (xevent.xcrossing.mode != NotifyUngrab) &&
                 (xevent.xcrossing.detail != NotifyInferior)) {
                 if (SDL_CurrentWindow.input_grab == SDL_GRAB_OFF) {
-                    posted = SDL_PrivateAppActive (0, SDL_APPMOUSEFOCUS);
+                    posted = SDL_PrivateAppActive(0, SDL_APPMOUSEFOCUS);
                 } else {
-                    posted = SDL_PrivateMouseMotion (0, 0,
-                                                     xevent.xcrossing.x,
-                                                     xevent.xcrossing.y);
+                    posted = SDL_PrivateMouseMotion(0, 0,
+                                                    xevent.xcrossing.x,
+                                                    xevent.xcrossing.y);
                 }
             }
         }
@@ -335,18 +335,18 @@ X11_DispatchEvent (_THIS)
     case FocusIn:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("FocusIn!\n");
+            printf("FocusIn!\n");
 #endif
-            posted = SDL_PrivateAppActive (1, SDL_APPINPUTFOCUS);
+            posted = SDL_PrivateAppActive(1, SDL_APPINPUTFOCUS);
 
 #ifdef X_HAVE_UTF8_STRING
             if (SDL_IC != NULL) {
-                XSetICFocus (SDL_IC);
+                XSetICFocus(SDL_IC);
             }
 #endif
             /* Queue entry into fullscreen mode */
             switch_waiting = 0x01 | SDL_FULLSCREEN;
-            switch_time = SDL_GetTicks () + 1500;
+            switch_time = SDL_GetTicks() + 1500;
         }
         break;
 
@@ -354,18 +354,18 @@ X11_DispatchEvent (_THIS)
     case FocusOut:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("FocusOut!\n");
+            printf("FocusOut!\n");
 #endif
-            posted = SDL_PrivateAppActive (0, SDL_APPINPUTFOCUS);
+            posted = SDL_PrivateAppActive(0, SDL_APPINPUTFOCUS);
 
 #ifdef X_HAVE_UTF8_STRING
             if (SDL_IC != NULL) {
-                XUnsetICFocus (SDL_IC);
+                XUnsetICFocus(SDL_IC);
             }
 #endif
             /* Queue leaving fullscreen mode */
             switch_waiting = 0x01;
-            switch_time = SDL_GetTicks () + 200;
+            switch_time = SDL_GetTicks() + 200;
         }
         break;
 
@@ -373,9 +373,9 @@ X11_DispatchEvent (_THIS)
     case KeymapNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("KeymapNotify!\n");
+            printf("KeymapNotify!\n");
 #endif
-            X11_SetKeyboardState (SDL_Display, xevent.xkeymap.key_vector);
+            X11_SetKeyboardState(SDL_Display, xevent.xkeymap.key_vector);
         }
         break;
 
@@ -386,26 +386,26 @@ X11_DispatchEvent (_THIS)
                 if (mouse_relative) {
                     if (using_dga & DGA_MOUSE) {
 #ifdef DEBUG_MOTION
-                        printf ("DGA motion: %d,%d\n",
-                                xevent.xmotion.x_root, xevent.xmotion.y_root);
+                        printf("DGA motion: %d,%d\n",
+                               xevent.xmotion.x_root, xevent.xmotion.y_root);
 #endif
-                        posted = SDL_PrivateMouseMotion (0, 1,
-                                                         xevent.
-                                                         xmotion.
-                                                         x_root,
-                                                         xevent.
-                                                         xmotion.y_root);
+                        posted = SDL_PrivateMouseMotion(0, 1,
+                                                        xevent.
+                                                        xmotion.
+                                                        x_root,
+                                                        xevent.
+                                                        xmotion.y_root);
                     } else {
-                        posted = X11_WarpedMotion (_this, &xevent);
+                        posted = X11_WarpedMotion(_this, &xevent);
                     }
                 } else {
 #ifdef DEBUG_MOTION
-                    printf ("X11 motion: %d,%d\n", xevent.xmotion.x,
-                            xevent.xmotion.y);
+                    printf("X11 motion: %d,%d\n", xevent.xmotion.x,
+                           xevent.xmotion.y);
 #endif
-                    posted = SDL_PrivateMouseMotion (0, 0,
-                                                     xevent.xmotion.x,
-                                                     xevent.xmotion.y);
+                    posted = SDL_PrivateMouseMotion(0, 0,
+                                                    xevent.xmotion.x,
+                                                    xevent.xmotion.y);
                 }
             }
         }
@@ -414,16 +414,16 @@ X11_DispatchEvent (_THIS)
         /* Mouse button press? */
     case ButtonPress:
         {
-            posted = SDL_PrivateMouseButton (SDL_PRESSED,
-                                             xevent.xbutton.button, 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_PRESSED,
+                                            xevent.xbutton.button, 0, 0);
         }
         break;
 
         /* Mouse button release? */
     case ButtonRelease:
         {
-            posted = SDL_PrivateMouseButton (SDL_RELEASED,
-                                             xevent.xbutton.button, 0, 0);
+            posted = SDL_PrivateMouseButton(SDL_RELEASED,
+                                            xevent.xbutton.button, 0, 0);
         }
         break;
 
@@ -435,12 +435,12 @@ X11_DispatchEvent (_THIS)
             KeyCode keycode = xevent.xkey.keycode;
 
 #ifdef DEBUG_XEVENTS
-            printf ("KeyPress (X11 keycode = 0x%X)\n", xevent.xkey.keycode);
+            printf("KeyPress (X11 keycode = 0x%X)\n", xevent.xkey.keycode);
 #endif
             /* Get the translated SDL virtual keysym */
             if (keycode) {
                 keysym.scancode = keycode;
-                keysym.sym = X11_TranslateKeycode (SDL_Display, keycode);
+                keysym.sym = X11_TranslateKeycode(SDL_Display, keycode);
                 keysym.mod = KMOD_NONE;
                 keysym.unicode = 0;
             } else {
@@ -449,13 +449,13 @@ X11_DispatchEvent (_THIS)
 
             /* If we're not doing translation, we're done! */
             if (!SDL_TranslateUNICODE) {
-                posted = SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+                posted = SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
                 break;
             }
 
-            if (XFilterEvent (&xevent, None)) {
+            if (XFilterEvent(&xevent, None)) {
                 if (xevent.xkey.keycode) {
-                    posted = SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+                    posted = SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
                 } else {
                     /* Save event to be associated with IM text
                        In 1.3 we'll have a text event instead.. */
@@ -470,10 +470,9 @@ X11_DispatchEvent (_THIS)
                 static Status state;
                 /* A UTF-8 character can be at most 6 bytes */
                 char keybuf[6];
-                if (Xutf8LookupString (SDL_IC, &xevent.xkey,
-                                       keybuf, sizeof (keybuf),
-                                       NULL, &state)) {
-                    keysym.unicode = Utf8ToUcs4 ((Uint8 *) keybuf);
+                if (Xutf8LookupString(SDL_IC, &xevent.xkey,
+                                      keybuf, sizeof(keybuf), NULL, &state)) {
+                    keysym.unicode = Utf8ToUcs4((Uint8 *) keybuf);
                 }
             } else
 #endif
@@ -481,8 +480,8 @@ X11_DispatchEvent (_THIS)
                 static XComposeStatus state;
                 char keybuf[32];
 
-                if (XLookupString (&xevent.xkey,
-                                   keybuf, sizeof (keybuf), NULL, &state)) {
+                if (XLookupString(&xevent.xkey,
+                                  keybuf, sizeof(keybuf), NULL, &state)) {
                     /*
                      * FIXME: XLookupString() may yield more than one
                      * character, so we need a mechanism to allow for
@@ -492,7 +491,7 @@ X11_DispatchEvent (_THIS)
                     keysym.unicode = (Uint8) keybuf[0];
                 }
             }
-            posted = SDL_PrivateKeyboard (SDL_PRESSED, &keysym);
+            posted = SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
         }
         break;
 
@@ -503,20 +502,20 @@ X11_DispatchEvent (_THIS)
             KeyCode keycode = xevent.xkey.keycode;
 
 #ifdef DEBUG_XEVENTS
-            printf ("KeyRelease (X11 keycode = 0x%X)\n", xevent.xkey.keycode);
+            printf("KeyRelease (X11 keycode = 0x%X)\n", xevent.xkey.keycode);
 #endif
             /* Check to see if this is a repeated key */
-            if (X11_KeyRepeat (SDL_Display, &xevent)) {
+            if (X11_KeyRepeat(SDL_Display, &xevent)) {
                 break;
             }
 
             /* Get the translated SDL virtual keysym */
             keysym.scancode = keycode;
-            keysym.sym = X11_TranslateKeycode (SDL_Display, keycode);
+            keysym.sym = X11_TranslateKeycode(SDL_Display, keycode);
             keysym.mod = KMOD_NONE;
             keysym.unicode = 0;
 
-            posted = SDL_PrivateKeyboard (SDL_RELEASED, &keysym);
+            posted = SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
         }
         break;
 
@@ -524,17 +523,17 @@ X11_DispatchEvent (_THIS)
     case UnmapNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("UnmapNotify!\n");
+            printf("UnmapNotify!\n");
 #endif
             /* If we're active, make ourselves inactive */
-            if (SDL_GetAppState () & SDL_APPACTIVE) {
+            if (SDL_GetAppState() & SDL_APPACTIVE) {
                 /* Swap out the gamma before we go inactive */
-                X11_SwapVidModeGamma (_this);
+                X11_SwapVidModeGamma(_this);
 
                 /* Send an internal deactivate event */
-                posted = SDL_PrivateAppActive (0,
-                                               SDL_APPACTIVE |
-                                               SDL_APPINPUTFOCUS);
+                posted = SDL_PrivateAppActive(0,
+                                              SDL_APPACTIVE |
+                                              SDL_APPINPUTFOCUS);
             }
         }
         break;
@@ -543,27 +542,27 @@ X11_DispatchEvent (_THIS)
     case MapNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("MapNotify!\n");
+            printf("MapNotify!\n");
 #endif
             /* If we're not active, make ourselves active */
-            if (!(SDL_GetAppState () & SDL_APPACTIVE)) {
+            if (!(SDL_GetAppState() & SDL_APPACTIVE)) {
                 /* Send an internal activate event */
-                posted = SDL_PrivateAppActive (1, SDL_APPACTIVE);
+                posted = SDL_PrivateAppActive(1, SDL_APPACTIVE);
 
                 /* Now that we're active, swap the gamma back */
-                X11_SwapVidModeGamma (_this);
+                X11_SwapVidModeGamma(_this);
             }
 
             if (SDL_VideoSurface &&
                 (SDL_VideoSurface->flags & SDL_FULLSCREEN)) {
-                X11_EnterFullScreen (_this);
+                X11_EnterFullScreen(_this);
             } else {
-                X11_GrabInputNoLock (_this, SDL_CurrentWindow.input_grab);
+                X11_GrabInputNoLock(_this, SDL_CurrentWindow.input_grab);
             }
-            X11_CheckMouseModeNoLock (_this);
+            X11_CheckMouseModeNoLock(_this);
 
             if (SDL_VideoSurface) {
-                X11_RefreshDisplay (_this);
+                X11_RefreshDisplay(_this);
             }
         }
         break;
@@ -572,8 +571,8 @@ X11_DispatchEvent (_THIS)
     case ConfigureNotify:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("ConfigureNotify! (resize: %dx%d)\n",
-                    xevent.xconfigure.width, xevent.xconfigure.height);
+            printf("ConfigureNotify! (resize: %dx%d)\n",
+                   xevent.xconfigure.width, xevent.xconfigure.height);
 #endif
             if (SDL_VideoSurface) {
                 if ((xevent.xconfigure.width != SDL_VideoSurface->w) ||
@@ -581,13 +580,13 @@ X11_DispatchEvent (_THIS)
                     /* FIXME: Find a better fix for the bug with KDE 1.2 */
                     if (!((xevent.xconfigure.width == 32) &&
                           (xevent.xconfigure.height == 32))) {
-                        SDL_PrivateResize (xevent.xconfigure.width,
-                                           xevent.xconfigure.height);
+                        SDL_PrivateResize(xevent.xconfigure.width,
+                                          xevent.xconfigure.height);
                     }
                 } else {
                     /* OpenGL windows need to know about the change */
                     if (SDL_VideoSurface->flags & SDL_INTERNALOPENGL) {
-                        SDL_PrivateExpose ();
+                        SDL_PrivateExpose();
                     }
                 }
             }
@@ -599,14 +598,14 @@ X11_DispatchEvent (_THIS)
         {
             if ((xevent.xclient.format == 32) &&
                 (xevent.xclient.data.l[0] == WM_DELETE_WINDOW)) {
-                posted = SDL_PrivateQuit ();
+                posted = SDL_PrivateQuit();
             } else if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
                 SDL_SysWMmsg wmmsg;
 
-                SDL_VERSION (&wmmsg.version);
+                SDL_VERSION(&wmmsg.version);
                 wmmsg.subsystem = SDL_SYSWM_X11;
                 wmmsg.event.xevent = xevent;
-                posted = SDL_PrivateSysWMEvent (&wmmsg);
+                posted = SDL_PrivateSysWMEvent(&wmmsg);
             }
         }
         break;
@@ -615,10 +614,10 @@ X11_DispatchEvent (_THIS)
     case Expose:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("Expose (count = %d)\n", xevent.xexpose.count);
+            printf("Expose (count = %d)\n", xevent.xexpose.count);
 #endif
             if (SDL_VideoSurface && (xevent.xexpose.count == 0)) {
-                X11_RefreshDisplay (_this);
+                X11_RefreshDisplay(_this);
             }
         }
         break;
@@ -626,16 +625,16 @@ X11_DispatchEvent (_THIS)
     default:
         {
 #ifdef DEBUG_XEVENTS
-            printf ("Unhandled event %d\n", xevent.type);
+            printf("Unhandled event %d\n", xevent.type);
 #endif
             /* Only post the event if we're watching for it */
             if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
                 SDL_SysWMmsg wmmsg;
 
-                SDL_VERSION (&wmmsg.version);
+                SDL_VERSION(&wmmsg.version);
                 wmmsg.subsystem = SDL_SYSWM_X11;
                 wmmsg.event.xevent = xevent;
-                posted = SDL_PrivateSysWMEvent (&wmmsg);
+                posted = SDL_PrivateSysWMEvent(&wmmsg);
             }
         }
         break;
@@ -645,11 +644,11 @@ X11_DispatchEvent (_THIS)
 
 /* Ack!  XPending() actually performs a blocking read if no events available */
 int
-X11_Pending (Display * display)
+X11_Pending(Display * display)
 {
     /* Flush the display connection and look to see if events are queued */
-    XFlush (display);
-    if (XEventsQueued (display, QueuedAlready)) {
+    XFlush(display);
+    if (XEventsQueued(display, QueuedAlready)) {
         return (1);
     }
 
@@ -659,11 +658,11 @@ X11_Pending (Display * display)
         int x11_fd;
         fd_set fdset;
 
-        x11_fd = ConnectionNumber (display);
-        FD_ZERO (&fdset);
-        FD_SET (x11_fd, &fdset);
-        if (select (x11_fd + 1, &fdset, NULL, NULL, &zero_time) == 1) {
-            return (XPending (display));
+        x11_fd = ConnectionNumber(display);
+        FD_ZERO(&fdset);
+        FD_SET(x11_fd, &fdset);
+        if (select(x11_fd + 1, &fdset, NULL, NULL, &zero_time) == 1) {
+            return (XPending(display));
         }
     }
 
@@ -672,20 +671,20 @@ X11_Pending (Display * display)
 }
 
 void
-X11_PumpEvents (_THIS)
+X11_PumpEvents(_THIS)
 {
     int pending;
 
     /* Keep processing pending events */
     pending = 0;
-    while (X11_Pending (SDL_Display)) {
-        X11_DispatchEvent (_this);
+    while (X11_Pending(SDL_Display)) {
+        X11_DispatchEvent(_this);
         ++pending;
     }
     if (switch_waiting) {
         Uint32 now;
 
-        now = SDL_GetTicks ();
+        now = SDL_GetTicks();
         if (pending || !SDL_VideoSurface) {
             /* Try again later... */
             if (switch_waiting & SDL_FULLSCREEN) {
@@ -700,29 +699,29 @@ X11_PumpEvents (_THIS)
             switch_waiting = 0;
             if (SDL_VideoSurface->flags & SDL_FULLSCREEN) {
                 if (go_fullscreen) {
-                    X11_EnterFullScreen (_this);
+                    X11_EnterFullScreen(_this);
                 } else {
-                    X11_LeaveFullScreen (_this);
+                    X11_LeaveFullScreen(_this);
                 }
             }
             /* Handle focus in/out when grabbed */
             if (go_fullscreen) {
-                X11_GrabInputNoLock (_this, SDL_CurrentWindow.input_grab);
+                X11_GrabInputNoLock(_this, SDL_CurrentWindow.input_grab);
             } else {
-                X11_GrabInputNoLock (_this, SDL_GRAB_OFF);
+                X11_GrabInputNoLock(_this, SDL_GRAB_OFF);
             }
-            X11_CheckMouseModeNoLock (_this);
+            X11_CheckMouseModeNoLock(_this);
         }
     }
 }
 
 void
-X11_InitKeymap (void)
+X11_InitKeymap(void)
 {
     int i;
 
     /* Odd keys used in international keyboards */
-    for (i = 0; i < SDL_arraysize (ODD_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(ODD_keymap); ++i)
         ODD_keymap[i] = SDLK_UNKNOWN;
 
     /* Some of these might be mappable to an existing SDLK_ code */
@@ -758,7 +757,7 @@ X11_InitKeymap (void)
 #endif
 
     /* Map the miscellaneous keys */
-    for (i = 0; i < SDL_arraysize (MISC_keymap); ++i)
+    for (i = 0; i < SDL_arraysize(MISC_keymap); ++i)
         MISC_keymap[i] = SDLK_UNKNOWN;
 
     /* These X keysyms have 0xFF as the high byte */
@@ -851,14 +850,14 @@ X11_InitKeymap (void)
 
 /* Get the translated SDL virtual keysym */
 SDLKey
-X11_TranslateKeycode (Display * display, KeyCode kc)
+X11_TranslateKeycode(Display * display, KeyCode kc)
 {
     KeySym xsym;
     SDLKey key;
 
-    xsym = XKeycodeToKeysym (display, kc, 0);
+    xsym = XKeycodeToKeysym(display, kc, 0);
 #ifdef DEBUG_KEYS
-    fprintf (stderr, "Translating key code %d -> 0x%.4x\n", kc, xsym);
+    fprintf(stderr, "Translating key code %d -> 0x%.4x\n", kc, xsym);
 #endif
     key = SDLK_UNKNOWN;
     if (xsym) {
@@ -934,7 +933,7 @@ static unsigned meta_l_mask, meta_r_mask, alt_l_mask, alt_r_mask;
 static unsigned num_mask, mode_switch_mask;
 
 static void
-get_modifier_masks (Display * display)
+get_modifier_masks(Display * display)
 {
     static unsigned got_masks;
     int i, j;
@@ -944,12 +943,12 @@ get_modifier_masks (Display * display)
     if (got_masks)
         return;
 
-    xmods = XGetModifierMapping (display);
+    xmods = XGetModifierMapping(display);
     n = xmods->max_keypermod;
     for (i = 3; i < 8; i++) {
         for (j = 0; j < n; j++) {
             KeyCode kc = xmods->modifiermap[i * n + j];
-            KeySym ks = XKeycodeToKeysym (display, kc, 0);
+            KeySym ks = XKeycodeToKeysym(display, kc, 0);
             unsigned mask = 1 << i;
             switch (ks) {
             case XK_Num_Lock:
@@ -973,7 +972,7 @@ get_modifier_masks (Display * display)
             }
         }
     }
-    XFreeModifiermap (xmods);
+    XFreeModifiermap(xmods);
     got_masks = 1;
 }
 
@@ -989,9 +988,9 @@ get_modifier_masks (Display * display)
  * state has been irrevocably lost.
  */
 Uint16
-X11_KeyToUnicode (SDLKey keysym, SDLMod modifiers)
+X11_KeyToUnicode(SDLKey keysym, SDLMod modifiers)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice ();
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     char keybuf[32];
     int i;
     KeySym xsym = 0;
@@ -1002,7 +1001,7 @@ X11_KeyToUnicode (SDLKey keysym, SDLMod modifiers)
         return 0;
     }
 
-    SDL_memset (&xkey, 0, sizeof (xkey));
+    SDL_memset(&xkey, 0, sizeof(xkey));
     xkey.display = SDL_Display;
 
     xsym = keysym;              /* last resort if not found */
@@ -1016,9 +1015,9 @@ X11_KeyToUnicode (SDLKey keysym, SDLMod modifiers)
         }
     }
 
-    xkey.keycode = XKeysymToKeycode (xkey.display, xsym);
+    xkey.keycode = XKeysymToKeycode(xkey.display, xsym);
 
-    get_modifier_masks (SDL_Display);
+    get_modifier_masks(SDL_Display);
     if (modifiers & KMOD_SHIFT)
         xkey.state |= ShiftMask;
     if (modifiers & KMOD_CAPS)
@@ -1039,7 +1038,7 @@ X11_KeyToUnicode (SDLKey keysym, SDLMod modifiers)
         xkey.state |= num_mask;
 
     unicode = 0;
-    if (XLookupString (&xkey, keybuf, sizeof (keybuf), NULL, NULL))
+    if (XLookupString(&xkey, keybuf, sizeof(keybuf), NULL, NULL))
         unicode = (unsigned char) keybuf[0];
     return (unicode);
 }
@@ -1051,11 +1050,11 @@ X11_KeyToUnicode (SDLKey keysym, SDLMod modifiers)
  * key_vec is a bit vector of keycodes (256 bits)
  */
 void
-X11_SetKeyboardState (Display * display, const char *key_vec)
+X11_SetKeyboardState(Display * display, const char *key_vec)
 {
     char keys_return[32];
     int i;
-    Uint8 *kstate = SDL_GetKeyState (NULL);
+    Uint8 *kstate = SDL_GetKeyState(NULL);
     SDLMod modstate;
     Window junk_window;
     int x, y;
@@ -1063,15 +1062,15 @@ X11_SetKeyboardState (Display * display, const char *key_vec)
 
     /* The first time the window is mapped, we initialize key state */
     if (!key_vec) {
-        XQueryKeymap (display, keys_return);
+        XQueryKeymap(display, keys_return);
         key_vec = keys_return;
     }
 
     /* Get the keyboard modifier state */
     modstate = 0;
-    get_modifier_masks (display);
-    if (XQueryPointer (display, DefaultRootWindow (display),
-                       &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
+    get_modifier_masks(display);
+    if (XQueryPointer(display, DefaultRootWindow(display),
+                      &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
         if (mask & LockMask) {
             modstate |= KMOD_CAPS;
         }
@@ -1084,7 +1083,7 @@ X11_SetKeyboardState (Display * display, const char *key_vec)
     }
 
     /* Zero the new keyboard state and generate it */
-    SDL_memset (kstate, 0, SDLK_LAST);
+    SDL_memset(kstate, 0, SDLK_LAST);
     /*
      * An obvious optimisation is to check entire longwords at a time in
      * both loops, but we can't be sure the arrays are aligned so it's not
@@ -1098,7 +1097,7 @@ X11_SetKeyboardState (Display * display, const char *key_vec)
             if (key_vec[i] & (1 << j)) {
                 SDLKey key;
                 KeyCode kc = (i << 3 | j);
-                key = X11_TranslateKeycode (display, kc);
+                key = X11_TranslateKeycode(display, kc);
                 if (key == SDLK_UNKNOWN) {
                     continue;
                 }
@@ -1148,28 +1147,28 @@ X11_SetKeyboardState (Display * display, const char *key_vec)
     }
 
     /* Set the final modifier state */
-    SDL_SetModState (modstate);
+    SDL_SetModState(modstate);
 }
 
 void
-X11_InitOSKeymap (_THIS)
+X11_InitOSKeymap(_THIS)
 {
-    X11_InitKeymap ();
+    X11_InitKeymap();
 }
 
 void
-X11_SaveScreenSaver (Display * display, int *saved_timeout, BOOL * dpms)
+X11_SaveScreenSaver(Display * display, int *saved_timeout, BOOL * dpms)
 {
     int timeout, interval, prefer_blank, allow_exp;
-    XGetScreenSaver (display, &timeout, &interval, &prefer_blank, &allow_exp);
+    XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
     *saved_timeout = timeout;
 
 #if SDL_VIDEO_DRIVER_X11_DPMS
     if (SDL_X11_HAVE_DPMS) {
         int dummy;
-        if (DPMSQueryExtension (display, &dummy, &dummy)) {
+        if (DPMSQueryExtension(display, &dummy, &dummy)) {
             CARD16 state;
-            DPMSInfo (display, &state, dpms);
+            DPMSInfo(display, &state, dpms);
         }
     }
 #else
@@ -1178,37 +1177,37 @@ X11_SaveScreenSaver (Display * display, int *saved_timeout, BOOL * dpms)
 }
 
 void
-X11_DisableScreenSaver (Display * display)
+X11_DisableScreenSaver(Display * display)
 {
     int timeout, interval, prefer_blank, allow_exp;
-    XGetScreenSaver (display, &timeout, &interval, &prefer_blank, &allow_exp);
+    XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
     timeout = 0;
-    XSetScreenSaver (display, timeout, interval, prefer_blank, allow_exp);
+    XSetScreenSaver(display, timeout, interval, prefer_blank, allow_exp);
 
 #if SDL_VIDEO_DRIVER_X11_DPMS
     if (SDL_X11_HAVE_DPMS) {
         int dummy;
-        if (DPMSQueryExtension (display, &dummy, &dummy)) {
-            DPMSDisable (display);
+        if (DPMSQueryExtension(display, &dummy, &dummy)) {
+            DPMSDisable(display);
         }
     }
 #endif /* SDL_VIDEO_DRIVER_X11_DPMS */
 }
 
 void
-X11_RestoreScreenSaver (Display * display, int saved_timeout, BOOL dpms)
+X11_RestoreScreenSaver(Display * display, int saved_timeout, BOOL dpms)
 {
     int timeout, interval, prefer_blank, allow_exp;
-    XGetScreenSaver (display, &timeout, &interval, &prefer_blank, &allow_exp);
+    XGetScreenSaver(display, &timeout, &interval, &prefer_blank, &allow_exp);
     timeout = saved_timeout;
-    XSetScreenSaver (display, timeout, interval, prefer_blank, allow_exp);
+    XSetScreenSaver(display, timeout, interval, prefer_blank, allow_exp);
 
 #if SDL_VIDEO_DRIVER_X11_DPMS
     if (SDL_X11_HAVE_DPMS) {
         int dummy;
-        if (DPMSQueryExtension (display, &dummy, &dummy)) {
+        if (DPMSQueryExtension(display, &dummy, &dummy)) {
             if (dpms) {
-                DPMSEnable (display);
+                DPMSEnable(display);
             }
         }
     }
