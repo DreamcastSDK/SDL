@@ -231,7 +231,7 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
     }
     _this = video;
     _this->name = bootstrap[i]->name;
-    _this->next_window_id = 1;
+    _this->next_object_id = 1;
 
 
     /* Set some very sane GL defaults */
@@ -268,16 +268,6 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
         return (-1);
     }
 
-    /* Temporarily here for backwards compatibility */
-    {
-        int bpp;
-        Uint32 Rmask, Gmask, Bmask, Amask;
-
-        SDL_PixelFormatEnumToMasks(SDL_GetDesktopDisplayMode()->format, &bpp,
-                                   &Rmask, &Gmask, &Bmask, &Amask);
-        _this->info.vfmt = SDL_AllocFormat(bpp, Rmask, Gmask, Bmask, Amask);
-    }
-
     /* Sort the video modes */
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_qsort(_this->displays[i].display_modes,
@@ -311,15 +301,6 @@ SDL_GetVideoDevice()
     return _this;
 }
 
-const SDL_VideoInfo *
-SDL_GetVideoInfo(void)
-{
-    if (!_this) {
-        return NULL;
-    }
-    return &_this->info;
-}
-
 void
 SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
 {
@@ -330,7 +311,6 @@ SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
         display.desktop_mode = *desktop_mode;
     }
     display.current_mode = display.desktop_mode;
-    display.max_windows = 1;
 
     SDL_AddVideoDisplay(&display);
 }
@@ -378,14 +358,15 @@ SDL_SelectVideoDisplay(int index)
 }
 
 void
-SDL_AddDisplayMode(int display, const SDL_DisplayMode * mode)
+SDL_AddDisplayMode(int displayIndex, const SDL_DisplayMode * mode)
 {
+    SDL_VideoDisplay *display = &_this->displays[displayIndex];
     SDL_DisplayMode *modes;
     int i, nmodes;
 
     /* Make sure we don't already have the mode in the list */
-    modes = SDL_CurrentDisplay.display_modes;
-    nmodes = SDL_CurrentDisplay.num_display_modes;
+    modes = display->display_modes;
+    nmodes = display->num_display_modes;
     for (i = 0; i < nmodes; ++i) {
         if (SDL_memcmp(mode, &modes[i], sizeof(*mode)) == 0) {
             return;
@@ -395,9 +376,9 @@ SDL_AddDisplayMode(int display, const SDL_DisplayMode * mode)
     /* Go ahead and add the new mode */
     modes = SDL_realloc(modes, (nmodes + 1) * sizeof(*mode));
     if (modes) {
-        SDL_CurrentDisplay.display_modes = modes;
+        display->display_modes = modes;
         modes[nmodes] = *mode;
-        SDL_CurrentDisplay.num_display_modes++;
+        display->num_display_modes++;
     }
 }
 
@@ -415,7 +396,7 @@ SDL_GetDisplayMode(int index)
 {
     if (index < 0 || index >= SDL_GetNumDisplayModes()) {
         SDL_SetError("index must be in the range of 0 - %d",
-                     SDL_GetNumDisplayModes());
+                     SDL_GetNumDisplayModes() - 1);
         return NULL;
     }
     return &SDL_CurrentDisplay.display_modes[index];
@@ -568,19 +549,6 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         return 0;
     }
 
-    /* Free any previous window surfaces */
-    for (i = 0; i < display->num_windows; ++i) {
-        SDL_Window *window = &display->windows[i];
-        if (window->shadow) {
-            SDL_FreeSurface(window->shadow);
-            window->shadow = NULL;
-        }
-        if (window->surface) {
-            SDL_FreeSurface(window->surface);
-            window->surface = NULL;
-        }
-    }
-
     return _this->SetDisplayMode(_this, &display_mode);
 }
 
@@ -605,7 +573,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
 
     SDL_zero(window);
-    window.id = _this->next_window_id++;
+    window.id = _this->next_object_id++;
     window.title = title ? SDL_strdup(title) : NULL;
     window.x = x;
     window.y = y;
@@ -653,7 +621,7 @@ SDL_CreateWindowFrom(void *data)
     }
 
     SDL_zero(window);
-    window.id = _this->next_window_id++;
+    window.id = _this->next_object_id++;
 
     if (!_this->CreateWindowFrom ||
         _this->CreateWindowFrom(_this, &window, data) < 0) {
@@ -700,28 +668,6 @@ SDL_GetWindowFromID(SDL_WindowID windowID)
     }
     return NULL;
 }
-
-SDL_Window *
-SDL_GetWindowFromSurface(SDL_Surface * surface)
-{
-    int i, j;
-
-    if (!_this || !surface) {
-        return NULL;
-    }
-
-    for (i = 0; i < _this->num_displays; ++i) {
-        SDL_VideoDisplay *display = &_this->displays[i];
-        for (j = 0; j < display->num_windows; ++j) {
-            SDL_Window *window = &display->windows[j];
-            if (surface == window->surface || surface == window->shadow) {
-                return window;
-            }
-        }
-    }
-    return NULL;
-}
-
 
 Uint32
 SDL_GetWindowFlags(SDL_WindowID windowID)
@@ -998,11 +944,8 @@ SDL_DestroyWindow(SDL_WindowID windowID)
                 window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
                 _this->SetWindowGrab(_this, window);
             }
-            if (window->shadow) {
-                SDL_FreeSurface(window->shadow);
-            }
-            if (window->surface) {
-                SDL_FreeSurface(window->surface);
+            if (window->renderer) {
+                SDL_DestroyRenderer(window->id);
             }
             if (_this->DestroyWindow) {
                 _this->DestroyWindow(_this, window);
@@ -1024,371 +967,569 @@ SDL_DestroyWindow(SDL_WindowID windowID)
     }
 }
 
-SDL_Surface *
-SDL_CreateWindowSurface(SDL_WindowID windowID, Uint32 format, Uint32 flags)
+void
+SDL_AddRenderDriver(int displayIndex, const SDL_RenderDriver * driver)
+{
+    SDL_VideoDisplay *display = &_this->displays[displayIndex];
+    SDL_RenderDriver *render_drivers;
+
+    render_drivers =
+        SDL_realloc(display->render_drivers,
+                    (display->num_render_drivers +
+                     1) * sizeof(*render_drivers));
+    if (render_drivers) {
+        render_drivers[display->num_render_drivers] = *driver;
+        display->render_drivers = render_drivers;
+        display->num_render_drivers++;
+    }
+}
+
+int
+SDL_GetNumRenderers(void)
+{
+    if (_this) {
+        return SDL_CurrentDisplay.num_render_drivers;
+    }
+    return 0;
+}
+
+int
+SDL_GetRendererInfo(int index, SDL_RendererInfo * info)
+{
+    if (index < 0 || index >= SDL_GetNumRenderers()) {
+        SDL_SetError("index must be in the range of 0 - %d",
+                     SDL_GetNumRenderers() - 1);
+        return -1;
+    }
+    *info = SDL_CurrentDisplay.render_drivers[index].info;
+    return 0;
+}
+
+int
+SDL_CreateRenderer(SDL_WindowID windowID, int index, Uint32 flags)
 {
     SDL_Window *window = SDL_GetWindowFromID(windowID);
-    Uint32 black;
-    SDL_Surface *surface;
 
     if (!window) {
-        return NULL;
+        return 0;
     }
 
-    if (!_this->CreateWindowSurface) {
-        return NULL;
-    }
-
-    if (!window->surface) {
-        _this->CreateWindowSurface(_this, window, flags);
-        if (!window->surface) {
-            return NULL;
-        }
-        window->surface->flags |= SDL_SCREEN_SURFACE;
-
-        /* If we have a palettized surface, create a default palette */
-        if (window->surface->format->palette) {
-            SDL_Color colors[256];
-            SDL_PixelFormat *vf = window->surface->format;
-            SDL_DitherColors(colors, vf->BitsPerPixel);
-            SDL_SetColors(window->surface, colors, 0, vf->palette->ncolors);
-        }
-    }
-    surface = window->surface;
-
-    if (window->shadow) {
-        SDL_FreeSurface(window->shadow);
-        window->shadow = NULL;
-    }
-
-    /* Create a shadow surface if necessary */
-    if ((!(flags & SDL_ANYFORMAT)
-         && (format != SDL_GetCurrentDisplayMode()->format))
-        || ((flags & SDL_HWPALETTE)
-            && !(window->surface->flags & SDL_HWPALETTE))) {
-        int bpp;
-        Uint32 Rmask, Gmask, Bmask, Amask;
-
-        SDL_PixelFormatEnumToMasks(format, &bpp, &Amask, &Gmask, &Bmask,
-                                   &Amask);
-        window->shadow =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, surface->w, surface->h, bpp,
-                                 Rmask, Gmask, Bmask, Amask);
-        if (window->shadow == NULL) {
-            return NULL;
-        }
-        window->shadow->flags |= SDL_SHADOW_SURFACE;
-
-        surface = window->shadow;
-
-        /* 8-bit shadow surfaces report that they have exclusive palette */
-        if (surface->format->palette) {
-            surface->flags |= SDL_HWPALETTE;
-            if (format == SDL_GetCurrentDisplayMode()->format) {
-                SDL_memcpy(surface->format->palette->colors,
-                           window->surface->format->palette->colors,
-                           window->surface->format->palette->ncolors *
-                           sizeof(SDL_Color));
-            } else {
-                SDL_DitherColors(surface->format->palette->colors, bpp);
+    if (index < 0) {
+        int n = SDL_GetNumRenderers();
+        for (index = 0; index < n; ++index) {
+            if ((SDL_CurrentDisplay.render_drivers[index].info.
+                 flags & flags) == flags) {
+                break;
             }
         }
-    }
-
-    /* Clear the surface for display */
-    {
-        Uint32 black = SDL_MapRGB(surface->format, 0, 0, 0);
-        SDL_FillRect(surface, NULL, black);
-        if (surface->flags & SDL_DOUBLEBUF) {
-            SDL_Flip(surface);
-            SDL_FillRect(surface, NULL, black);
-        }
-        SDL_Flip(surface);
-    }
-
-    return surface;
-}
-
-/* 
- * Convert a surface into the video pixel format.
- */
-SDL_Surface *
-SDL_DisplayFormat(SDL_Surface * surface)
-{
-    Uint32 flags;
-
-    if (!SDL_PublicSurface) {
-        SDL_SetError("No video mode has been set");
-        return (NULL);
-    }
-    /* Set the flags appropriate for copying to display surface */
-    if (((SDL_PublicSurface->flags & SDL_HWSURFACE) == SDL_HWSURFACE)
-        && _this->info.blit_hw)
-        flags = SDL_HWSURFACE;
-    else
-        flags = SDL_SWSURFACE;
-#ifdef AUTORLE_DISPLAYFORMAT
-    flags |= (surface->flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA));
-    flags |= SDL_RLEACCELOK;
-#else
-    flags |=
-        surface->flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA | SDL_RLEACCELOK);
-#endif
-    return (SDL_ConvertSurface(surface, SDL_PublicSurface->format, flags));
-}
-
-/*
- * Convert a surface into a format that's suitable for blitting to
- * the screen, but including an alpha channel.
- */
-SDL_Surface *
-SDL_DisplayFormatAlpha(SDL_Surface * surface)
-{
-    SDL_PixelFormat *vf;
-    SDL_PixelFormat *format;
-    SDL_Surface *converted;
-    Uint32 flags;
-    /* default to ARGB8888 */
-    Uint32 amask = 0xff000000;
-    Uint32 rmask = 0x00ff0000;
-    Uint32 gmask = 0x0000ff00;
-    Uint32 bmask = 0x000000ff;
-
-    if (!SDL_PublicSurface) {
-        SDL_SetError("No video mode has been set");
-        return (NULL);
-    }
-    vf = SDL_PublicSurface->format;
-
-    switch (vf->BytesPerPixel) {
-    case 2:
-        /* For XGY5[56]5, use, AXGY8888, where {X, Y} = {R, B}.
-           For anything else (like ARGB4444) it doesn't matter
-           since we have no special code for it anyway */
-        if ((vf->Rmask == 0x1f) &&
-            (vf->Bmask == 0xf800 || vf->Bmask == 0x7c00)) {
-            rmask = 0xff;
-            bmask = 0xff0000;
-        }
-        break;
-
-    case 3:
-    case 4:
-        /* Keep the video format, as long as the high 8 bits are
-           unused or alpha */
-        if ((vf->Rmask == 0xff) && (vf->Bmask == 0xff0000)) {
-            rmask = 0xff;
-            bmask = 0xff0000;
-        }
-        break;
-
-    default:
-        /* We have no other optimised formats right now. When/if a new
-           optimised alpha format is written, add the converter here */
-        break;
-    }
-    format = SDL_AllocFormat(32, rmask, gmask, bmask, amask);
-    flags = SDL_PublicSurface->flags & SDL_HWSURFACE;
-    flags |= surface->flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
-    converted = SDL_ConvertSurface(surface, format, flags);
-    SDL_FreeFormat(format);
-    return (converted);
-}
-
-/*
- * Update a specific portion of the physical screen
- */
-void
-SDL_UpdateRect(SDL_Surface * screen, Sint32 x, Sint32 y, Uint32 w, Uint32 h)
-{
-    if (screen) {
-        SDL_Rect rect;
-
-        /* Perform some checking */
-        if (w == 0)
-            w = screen->w;
-        if (h == 0)
-            h = screen->h;
-        if ((int) (x + w) > screen->w)
-            return;
-        if ((int) (y + h) > screen->h)
-            return;
-
-        /* Fill the rectangle */
-        rect.x = (Sint16) x;
-        rect.y = (Sint16) y;
-        rect.w = (Uint16) w;
-        rect.h = (Uint16) h;
-        SDL_UpdateRects(screen, 1, &rect);
-    }
-}
-void
-SDL_UpdateRects(SDL_Surface * screen, int numrects, SDL_Rect * rects)
-{
-    int i;
-    SDL_Window *window;
-
-    /* Find the window corresponding to this surface */
-    window = SDL_GetWindowFromSurface(screen);
-    if (!window) {
-        SDL_SetError("Couldn't find window associated with surface");
-        return;
-    }
-
-    if (screen->flags & SDL_SHADOW_SURFACE) {
-        if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
-            SDL_LockCursor();
-            SDL_DrawCursor(screen);
-            for (i = 0; i < numrects; ++i) {
-                SDL_LowerBlit(screen, &rects[i], window->surface, &rects[i]);
-            }
-            SDL_EraseCursor(screen);
-            SDL_UnlockCursor();
-        } else {
-            for (i = 0; i < numrects; ++i) {
-                SDL_LowerBlit(screen, &rects[i], window->surface, &rects[i]);
-            }
-        }
-
-        /* Fall through to video surface update */
-        screen = window->surface;
-    }
-    if ((screen->flags & SDL_SCREEN_SURFACE) && _this->UpdateWindowSurface) {
-        /* Update the video surface */
-        if (screen->offset) {
-            int offset_y = screen->offset / screen->pitch;
-            int offset_x = screen->offset % screen->pitch;
-            for (i = 0; i < numrects; ++i) {
-                rects[i].x += offset_x;
-                rects[i].y += offset_y;
-            }
-            _this->UpdateWindowSurface(_this, window, numrects, rects);
-            for (i = 0; i < numrects; ++i) {
-                rects[i].x -= offset_x;
-                rects[i].y -= offset_y;
-            }
-        } else {
-            _this->UpdateWindowSurface(_this, window, numrects, rects);
+        if (index == n) {
+            SDL_SetError("Couldn't find matching render driver");
+            return -1;
         }
     }
+
+    if (index >= SDL_GetNumRenderers()) {
+        SDL_SetError("index must be -1 or in the range of 0 - %d",
+                     SDL_GetNumRenderers() - 1);
+        return -1;
+    }
+
+    /* Free any existing renderer */
+    SDL_DestroyRenderer(windowID);
+
+    /* Create a new renderer instance */
+    window->renderer =
+        SDL_CurrentDisplay.render_drivers[index].CreateRenderer(window,
+                                                                flags);
+    if (!window->renderer) {
+        return -1;
+    }
+    SDL_CurrentDisplay.current_renderer = window->renderer;
+
+    return 0;
 }
 
-/*
- * Performs hardware double buffering, if possible, or a full update if not.
- */
 int
-SDL_Flip(SDL_Surface * screen)
+SDL_SelectRenderer(SDL_WindowID windowID)
 {
-    SDL_Window *window;
+    SDL_Window *window = SDL_GetWindowFromID(windowID);
 
-    /* Find the window corresponding to this surface */
-    window = SDL_GetWindowFromSurface(screen);
-    if (!window) {
-        SDL_SetError("Couldn't find window associated with surface");
-        return;
+    if (!window || !window->renderer) {
+        return -1;
+    }
+    SDL_CurrentDisplay.current_renderer = window->renderer;
+    return 0;
+}
+
+SDL_TextureID
+SDL_CreateTexture(Uint32 format, int access, int w, int h)
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *texture;
+
+    if (!_this) {
+        return 0;
     }
 
-    /* Copy the shadow surface to the video surface */
-    if (screen->flags & SDL_SHADOW_SURFACE) {
-        SDL_Rect rect;
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->CreateTexture) {
+        return 0;
+    }
 
-        rect.x = 0;
-        rect.y = 0;
-        rect.w = screen->w;
-        rect.h = screen->h;
-        if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
-            SDL_LockCursor();
-            SDL_DrawCursor(screen);
-            SDL_LowerBlit(screen, &rect, window->surface, &rect);
-            SDL_EraseCursor(screen);
-            SDL_UnlockCursor();
-        } else {
-            SDL_LowerBlit(screen, &rect, window->surface, &rect);
+    texture = (SDL_Texture *) SDL_malloc(sizeof(*texture));
+    if (!texture) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+
+    SDL_zerop(texture);
+    texture->id = _this->next_object_id++;
+    texture->format = format;
+    texture->access = access;
+    texture->w = w;
+    texture->h = h;
+    texture->renderer = renderer;
+
+    if (renderer->CreateTexture(texture) < 0) {
+        SDL_free(texture);
+        return 0;
+    }
+}
+
+SDL_TextureID
+SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
+{
+    SDL_TextureID textureID;
+    Uint32 surface_flags = surface->flags;
+    SDL_PixelFormat *fmt = surface->format;
+    Uint32 colorkey;
+    Uint8 alpha;
+    SDL_Rect bounds;
+    SDL_Surface dst;
+    int bpp;
+    Uint32 Rmask, Gmask, Bmask, Amask;
+
+    if (!surface) {
+        SDL_SetError("SDL_CreateTextureFromSurface() passed NULL surface");
+        return 0;
+    }
+
+    if (format) {
+        if (!SDL_PixelFormatEnumToMasks
+            (format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
+            SDL_SetError("Unknown pixel format");
+            return 0;
         }
-
-        /* Fall through to video surface update */
-        screen = window->surface;
-    }
-    if (screen->flags & SDL_DOUBLEBUF) {
-        _this->FlipWindowSurface(_this, window);
     } else {
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
-    }
-    return (0);
-}
-
-int
-SDL_SetColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
-              int ncolors)
-{
-    SDL_Window *window = NULL;
-    SDL_Palette *pal;
-    int gotall;
-    int palsize;
-
-    /* Verify the parameters */
-    pal = screen->format->palette;
-    if (!pal) {
-        return 0;               /* not a palettized surface */
-    }
-    gotall = 1;
-    palsize = 1 << screen->format->BitsPerPixel;
-    if (ncolors > (palsize - firstcolor)) {
-        ncolors = (palsize - firstcolor);
-        gotall = 0;
-    }
-
-    if (colors != (pal->colors + firstcolor)) {
-        SDL_memcpy(pal->colors + firstcolor, colors,
-                   ncolors * sizeof(*colors));
-    }
-    SDL_FormatChanged(screen);
-
-    if (screen->flags & (SDL_SHADOW_SURFACE | SDL_SCREEN_SURFACE)) {
-        window = SDL_GetWindowFromSurface(screen);
-        if (!window) {
+        bpp = fmt->BitsPerPixel;
+        Rmask = fmt->Rmask;
+        Gmask = fmt->Gmask;
+        Bmask = fmt->Bmask;
+        Amask = fmt->Amask;
+        format = SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
+        if (!format) {
+            SDL_SetError("Unknown pixel format");
             return 0;
         }
     }
 
-    if (screen->flags & SDL_SHADOW_SURFACE) {
-        SDL_Palette *vidpal;
+    textureID = SDL_CreateTexture(format, access, surface->w, surface->h);
+    if (!textureID) {
+        return 0;
+    }
 
-        vidpal = window->surface->format->palette;
-        if (vidpal && vidpal->ncolors == pal->ncolors) {
-            /* This is a shadow surface, and the physical
-             * framebuffer is also indexed. Propagate the
-             * changes to its logical palette so that
-             * updates are always identity blits
-             */
-            SDL_memcpy(vidpal->colors + firstcolor, colors,
-                       ncolors * sizeof(*colors));
-        }
-        if (window->surface->flags & SDL_HWPALETTE) {
-            /* Set the physical palette */
-            screen = window->surface;
-        } else {
-            SDL_UpdateRect(screen, 0, 0, 0, 0);
+    /* Set up a destination surface for the texture update */
+    SDL_zero(dst);
+    dst.format = SDL_AllocFormat(bpp, Rmask, Gmask, Bmask, Amask);
+    if (!dst.format) {
+        SDL_DestroyTexture(textureID);
+        return 0;
+    }
+    dst.w = surface->w;
+    dst.h = surface->h;
+    if (SDL_LockTexture(textureID, NULL, 1, &dst.pixels, &dst.pitch) == 0) {
+        dst.flags |= SDL_PREALLOC;
+    } else {
+        dst.pitch = SDL_CalculatePitch(&dst);
+        dst.pixels = SDL_malloc(dst.h * dst.pitch);
+        if (!dst.pixels) {
+            SDL_DestroyTexture(textureID);
+            SDL_FreeFormat(dst.format);
+            SDL_OutOfMemory();
+            return 0;
         }
     }
 
-    if (screen->flags & SDL_SCREEN_SURFACE) {
-        if (_this->SetWindowColors) {
-            gotall =
-                _this->SetWindowColors(_this, window, firstcolor, ncolors,
-                                       colors);
-            if (!gotall) {
-                /* The video flags shouldn't have SDL_HWPALETTE, and
-                   the video driver is responsible for copying back the
-                   correct colors into the video surface palette.
-                 */
-                ;
+    /* Copy the palette if any */
+    if (fmt->palette && dst.format->palette) {
+        SDL_SetTexturePalette(textureID, fmt->palette->colors, 0,
+                              fmt->palette->ncolors);
+
+        SDL_memcpy(dst.format->palette->colors,
+                   fmt->palette->colors,
+                   fmt->palette->ncolors * sizeof(SDL_Color));
+        dst.format->palette->ncolors = fmt->palette->ncolors;
+    }
+
+    /* Make the texture transparent if the surface has colorkey */
+    if (surface_flags & SDL_SRCCOLORKEY) {
+        int row;
+        int length = dst.w * dst.format->BytesPerPixel;
+        Uint8 *p = (Uint8 *) dst.pixels;
+        for (row = 0; row < dst.h; ++row) {
+            SDL_memset(p, 0, length);
+            p += dst.pitch;
+        }
+    }
+
+    /* Copy over the alpha channel */
+    if (surface_flags & SDL_SRCALPHA) {
+        if (fmt->Amask) {
+            surface->flags &= ~SDL_SRCALPHA;
+        } else {
+            /* FIXME: Need to make sure the texture has an alpha channel
+             *        and copy 'alpha' into the texture alpha channel.
+             */
+            alpha = surface->format->alpha;
+            SDL_SetAlpha(surface, 0, 0);
+        }
+    }
+
+    /* Copy over the image data */
+    bounds.x = 0;
+    bounds.y = 0;
+    bounds.w = surface->w;
+    bounds.h = surface->h;
+    SDL_LowerBlit(surface, &bounds, &dst, &bounds);
+
+    /* Clean up the original surface */
+    if ((surface_flags & SDL_SRCCOLORKEY) == SDL_SRCCOLORKEY) {
+        Uint32 cflags = surface_flags & (SDL_SRCCOLORKEY | SDL_RLEACCELOK);
+        SDL_SetColorKey(surface, cflags, colorkey);
+    }
+    if ((surface_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
+        Uint32 aflags = surface_flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
+        if (fmt->Amask) {
+            surface->flags |= SDL_SRCALPHA;
+        } else {
+            SDL_SetAlpha(surface, aflags, alpha);
+        }
+    }
+
+    /* Update the texture */
+    if (dst.flags & SDL_PREALLOC) {
+        SDL_UnlockTexture(textureID);
+    } else {
+        SDL_UpdateTexture(textureID, NULL, dst.pixels, dst.pitch);
+        SDL_free(dst.pixels);
+    }
+    SDL_FreeFormat(dst.format);
+
+    return textureID;
+}
+
+static __inline__ SDL_Texture *
+SDL_GetTextureFromID(SDL_TextureID textureID)
+{
+    int hash;
+    SDL_Texture *texture;
+
+    if (!_this) {
+        return NULL;
+    }
+
+    hash = (textureID % SDL_arraysize(SDL_CurrentDisplay.textures));
+    for (texture = SDL_CurrentDisplay.textures[hash]; texture;
+         texture = texture->next) {
+        if (texture->id == textureID) {
+            return texture;
+        }
+    }
+    return NULL;
+}
+
+int
+SDL_QueryTexture(SDL_TextureID textureID, Uint32 * format, int *access,
+                 int *w, int *h)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+
+    if (!texture) {
+        return -1;
+    }
+
+    if (format) {
+        *format = texture->format;
+    }
+    if (access) {
+        *access = texture->access;
+    }
+    if (w) {
+        *w = texture->w;
+    }
+    if (h) {
+        *h = texture->h;
+    }
+    return 0;
+}
+
+int
+SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect * rect,
+                  const void *pixels, int pitch)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return -1;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->UpdateTexture) {
+        return -1;
+    }
+    return renderer->UpdateTexture(texture, rect, pixels, pitch);
+}
+
+int
+SDL_LockTexture(SDL_TextureID textureID, SDL_Rect * rect, int markDirty,
+                void **pixels, int *pitch)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return -1;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->LockTexture) {
+        return -1;
+    }
+    return renderer->LockTexture(texture, rect, markDirty, pixels, pitch);
+}
+
+void
+SDL_UnlockTexture(SDL_TextureID textureID)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->UnlockTexture) {
+        return;
+    }
+    return renderer->UnlockTexture(texture);
+}
+
+void
+SDL_DirtyTexture(SDL_TextureID textureID, int numrects, SDL_Rect * rects)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->DirtyTexture) {
+        return;
+    }
+    renderer->DirtyTexture(texture, numrects, rects);
+}
+
+void
+SDL_SelectRenderTexture(SDL_TextureID textureID)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture || texture->access != SDL_TextureAccess_Render) {
+        return;
+    }
+    renderer = texture->renderer;
+    if (!renderer->SelectRenderTexture) {
+        return;
+    }
+    renderer->SelectRenderTexture(texture);
+}
+
+int
+SDL_RenderFill(SDL_Rect * rect, Uint32 color)
+{
+    SDL_Renderer *renderer;
+
+    if (!_this) {
+        return -1;
+    }
+
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->RenderFill) {
+        return -1;
+    }
+
+    renderer->RenderFill(rect, color);
+}
+
+int
+SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect * srcrect,
+               SDL_Rect * dstrect, int blendMode, int scaleMode)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture || texture->renderer != SDL_CurrentDisplay.current_renderer) {
+        return;
+    }
+
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->RenderCopy) {
+        return -1;
+    }
+
+    return renderer->RenderCopy(texture, srcrect, dstrect, blendMode,
+                                scaleMode);
+}
+
+int
+SDL_RenderReadPixels(SDL_Rect * rect, void *pixels, int pitch)
+{
+    SDL_Renderer *renderer;
+
+    if (!_this) {
+        return -1;
+    }
+
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->RenderReadPixels) {
+        return -1;
+    }
+
+    return renderer->RenderReadPixels(rect, pixels, pitch);
+}
+
+int
+SDL_RenderWritePixels(SDL_Rect * rect, const void *pixels, int pitch)
+{
+    SDL_Renderer *renderer;
+
+    if (!_this) {
+        return -1;
+    }
+
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->RenderWritePixels) {
+        return -1;
+    }
+
+    return renderer->RenderWritePixels(rect, pixels, pitch);
+}
+
+void
+SDL_RenderPresent(void)
+{
+    SDL_Renderer *renderer;
+
+    if (!_this) {
+        return;
+    }
+
+    renderer = SDL_CurrentDisplay.current_renderer;
+    if (!renderer || !renderer->RenderPresent) {
+        return;
+    }
+
+    renderer->RenderPresent();
+}
+
+void
+SDL_DestroyTexture(SDL_TextureID textureID)
+{
+    int hash;
+    SDL_Texture *prev, *texture;
+    SDL_Renderer *renderer;
+
+    if (!_this) {
+        return;
+    }
+
+    /* Look up the texture in the hash table */
+    hash = (textureID % SDL_arraysize(SDL_CurrentDisplay.textures));
+    prev = NULL;
+    for (texture = SDL_CurrentDisplay.textures[hash]; texture;
+         prev = texture, texture = texture->next) {
+        if (texture->id == textureID) {
+            break;
+        }
+    }
+    if (!texture) {
+        return;
+    }
+
+    /* Unlink the texture from the list */
+    if (prev) {
+        prev->next = texture->next;
+    } else {
+        SDL_CurrentDisplay.textures[hash] = texture->next;
+    }
+
+    /* Free the texture */
+    renderer = texture->renderer;
+    renderer->DestroyTexture(texture);
+    SDL_free(texture);
+}
+
+void
+SDL_DestroyRenderer(SDL_WindowID windowID)
+{
+    SDL_Window *window = SDL_GetWindowFromID(windowID);
+    SDL_Renderer *renderer;
+    int i;
+
+    if (!window) {
+        return;
+    }
+
+    renderer = window->renderer;
+    if (!renderer) {
+        return;
+    }
+
+    /* Free existing textures for this renderer */
+    for (i = 0; i < SDL_arraysize(SDL_CurrentDisplay.textures); ++i) {
+        SDL_Texture *texture;
+        SDL_Texture *prev = NULL;
+        SDL_Texture *next;
+        for (texture = SDL_CurrentDisplay.textures[i]; texture;
+             texture = next) {
+            next = texture->next;
+            if (texture->renderer == renderer) {
+                if (prev) {
+                    prev->next = next;
+                } else {
+                    SDL_CurrentDisplay.textures[i] = next;
+                }
+                renderer->DestroyTexture(texture);
+                SDL_free(texture);
+            } else {
+                prev = texture;
             }
         }
-        SDL_CursorPaletteChanged();
     }
 
-    return gotall;
+    /* Free the renderer instance */
+    renderer->DestroyRenderer(renderer);
+
+    /* Clear references */
+    window->renderer = NULL;
+    if (SDL_CurrentDisplay.current_renderer == renderer) {
+        SDL_CurrentDisplay.current_renderer = NULL;
+    }
 }
 
 void
@@ -1416,12 +1557,12 @@ SDL_VideoQuit(void)
             SDL_free(display->windows);
             display->windows = NULL;
         }
+        SDL_free(display->info.vfmt);
     }
     _this->VideoQuit(_this);
     if (_this->displays) {
         SDL_free(_this->displays);
     }
-    SDL_free(_this->info.vfmt);
     _this->free(_this);
     _this = NULL;
 }
@@ -1549,11 +1690,8 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 void
 SDL_GL_SwapBuffers(void)
 {
-    if (SDL_VideoSurface->flags & SDL_INTERNALOPENGL) {
-        _this->GL_SwapBuffers(_this);
-    } else {
-        SDL_SetError("OpenGL video mode has not been set");
-    }
+    // FIXME: Track the current window context - do we provide N contexts, and match them to M windows, or is there a one-to-one mapping?
+    _this->GL_SwapBuffers(_this);
 }
 
 #if 0                           // FIXME

@@ -21,15 +21,28 @@
 */
 #include "SDL_config.h"
 
-/* Useful variables and functions from SDL_cursor.c */
-#include "SDL_mouse.h"
+#ifndef _SDL_mouse_c_h
+#define _SDL_mouse_c_h
 
-extern int SDL_CursorInit(void);
-extern void SDL_CursorQuit(void);
+typedef struct
+{
+    SDL_WindowID focus;
+    int x;
+    int y;
+    int xdelta;
+    int ydelta;
+    Uint8 buttonstate;
+} SDL_Mouse;
 
-/* State definitions for the SDL cursor */
-#define CURSOR_VISIBLE	0x01
+extern int SDL_MouseInit(void);
+extern int SDL_AddMouse(SDL_WindowID focus, int x, int y, Uint8 buttonstate);
+extern SDL_Mouse *SDL_GetMouse(int index);
+extern int SDL_SendMouseMotion(int index, SDL_WindowID windowID, int relative,
+                               int x, int y);
+extern int SDL_SendMouseButton(int index, SDL_WindowID windowID, Uint8 state,
+                               Uint8 button);
+extern void SDL_MouseQuit(void);
 
-extern volatile int SDL_cursorstate;
+#endif /* _SDL_mouse_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

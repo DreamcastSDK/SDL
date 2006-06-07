@@ -203,9 +203,9 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     }
 
     /* Create a compatible surface, note that the colors are RGB ordered */
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
-                                   biWidth, biHeight, biBitCount, Rmask,
-                                   Gmask, Bmask, 0);
+    surface =
+        SDL_CreateRGBSurface(0, biWidth, biHeight, biBitCount, Rmask, Gmask,
+                             Bmask, 0);
     if (surface == NULL) {
         was_error = 1;
         goto done;
@@ -386,8 +386,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
             SDL_Rect bounds;
 
             /* Convert to 24 bits per pixel */
-            surface = SDL_CreateRGBSurface(SDL_SWSURFACE,
-                                           saveme->w, saveme->h, 24,
+            surface = SDL_CreateRGBSurface(0, saveme->w, saveme->h, 24,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                                            0x00FF0000, 0x0000FF00, 0x000000FF,
 #else

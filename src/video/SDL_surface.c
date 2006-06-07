@@ -43,35 +43,12 @@ SDL_CreateRGBSurface(Uint32 flags,
     SDL_Surface *screen;
     SDL_Surface *surface;
 
+    /* FIXME!! */
     /* Make sure the size requested doesn't overflow our datatypes */
     /* Next time I write a library like SDL, I'll use int for size. :) */
     if (width >= 16384 || height >= 65536) {
         SDL_SetError("Width or height is too large");
         return (NULL);
-    }
-
-    /* Check to see if we desire the surface in video memory */
-    if (_this) {
-        screen = SDL_PublicSurface;
-    } else {
-        screen = NULL;
-    }
-    if (screen && ((screen->flags & SDL_HWSURFACE) == SDL_HWSURFACE)) {
-        if ((flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA)) != 0) {
-            flags |= SDL_HWSURFACE;
-        }
-        if ((flags & SDL_SRCCOLORKEY) == SDL_SRCCOLORKEY) {
-            if (!_this->info.blit_hw_CC) {
-                flags &= ~SDL_HWSURFACE;
-            }
-        }
-        if ((flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
-            if (!_this->info.blit_hw_A) {
-                flags &= ~SDL_HWSURFACE;
-            }
-        }
-    } else {
-        flags &= ~SDL_HWSURFACE;
     }
 
     /* Allocate the surface */
@@ -80,22 +57,7 @@ SDL_CreateRGBSurface(Uint32 flags,
         SDL_OutOfMemory();
         return (NULL);
     }
-    surface->flags = SDL_SWSURFACE;
-    if ((flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
-        if ((Amask) && (_this->displayformatalphapixel)) {
-            depth = _this->displayformatalphapixel->BitsPerPixel;
-            Rmask = _this->displayformatalphapixel->Rmask;
-            Gmask = _this->displayformatalphapixel->Gmask;
-            Bmask = _this->displayformatalphapixel->Bmask;
-            Amask = _this->displayformatalphapixel->Amask;
-        } else {
-            depth = screen->format->BitsPerPixel;
-            Rmask = screen->format->Rmask;
-            Gmask = screen->format->Gmask;
-            Bmask = screen->format->Bmask;
-            Amask = screen->format->Amask;
-        }
-    }
+    surface->flags = 0;
     surface->format = SDL_AllocFormat(depth, Rmask, Gmask, Bmask, Amask);
     if (surface->format == NULL) {
         SDL_free(surface);
@@ -108,27 +70,22 @@ SDL_CreateRGBSurface(Uint32 flags,
     surface->h = height;
     surface->pitch = SDL_CalculatePitch(surface);
     surface->pixels = NULL;
-    surface->offset = 0;
     surface->hwdata = NULL;
     surface->locked = 0;
     surface->map = NULL;
-    surface->unused1 = 0;
     SDL_SetClipRect(surface, NULL);
     SDL_FormatChanged(surface);
 
     /* Get the pixels */
-    if (((flags & SDL_HWSURFACE) == SDL_SWSURFACE) ||
-        (_this->AllocHWSurface(_this, surface) < 0)) {
-        if (surface->w && surface->h) {
-            surface->pixels = SDL_malloc(surface->h * surface->pitch);
-            if (surface->pixels == NULL) {
-                SDL_FreeSurface(surface);
-                SDL_OutOfMemory();
-                return (NULL);
-            }
-            /* This is important for bitmaps */
-            SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
+    if (surface->w && surface->h) {
+        surface->pixels = SDL_malloc(surface->h * surface->pitch);
+        if (surface->pixels == NULL) {
+            SDL_FreeSurface(surface);
+            SDL_OutOfMemory();
+            return NULL;
         }
+        /* This is important for bitmaps */
+        SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
     }
 
     /* Allocate an empty mapping */
@@ -167,7 +124,72 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
         surface->pitch = pitch;
         SDL_SetClipRect(surface, NULL);
     }
-    return (surface);
+    return surface;
+}
+
+SDL_Surface *
+SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
+{
+    SDL_Surface *surface;
+    Uint32 format;
+    int w, h;
+    int bpp;
+    Uint32 Rmask, Gmask, Bmask, Amask;
+
+    if (SDL_QueryTexture(textureID, &format, NULL, &w, &h) < 0) {
+        return NULL;
+    }
+
+    if (!SDL_PixelFormatEnumToMasks
+        (format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
+        SDL_SetError("Unknown texture format");
+        return NULL;
+    }
+
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 0, 0, bpp,
+                                   Rmask, Gmask, Bmask, Amask);
+    if (surface != NULL) {
+        surface->flags |= (SDL_HWSURFACE | SDL_PREALLOC);
+        surface->w = width;
+        surface->h = height;
+        SDL_SetClipRect(surface, NULL);
+    }
+    return surface;
+}
+
+/*
+ * Set the palette in a blittable surface
+ */
+int
+SDL_SetColors(SDL_Surface * surface, SDL_Color * colors, int firstcolor,
+              int ncolors)
+{
+    SDL_Palette *pal;
+    int gotall;
+    int palsize;
+
+    /* Verify the parameters */
+    pal = surface->format->palette;
+    if (!pal) {
+        return 0;               /* not a palettized surface */
+    }
+    gotall = 1;
+    palsize = 1 << surface->format->BitsPerPixel;
+    if (ncolors > (palsize - firstcolor)) {
+        ncolors = (palsize - firstcolor);
+        gotall = 0;
+    }
+
+    if (colors != (pal->colors + firstcolor)) {
+        SDL_memcpy(pal->colors + firstcolor, colors,
+                   ncolors * sizeof(*colors));
+    }
+    SDL_FormatChanged(surface);
+
+    if (surface->flags & (SDL_SHADOW_SURFACE | SDL_SCREEN_SURFACE)) {
+        gotall &= SDL_SetScreenColors(surface, colors, firstcolor, ncolors);
+    }
+    return gotall;
 }
 
 /*

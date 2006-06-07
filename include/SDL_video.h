@@ -46,110 +46,16 @@ extern "C" {
 #define SDL_ALPHA_OPAQUE 255
 #define SDL_ALPHA_TRANSPARENT 0
 
-/* Useful data types */
+/**
+ * \struct SDL_Rect
+ *
+ * \brief A rectangle, with the origin at the upper left.
+ */
 typedef struct SDL_Rect
 {
     Sint16 x, y;
     Uint16 w, h;
 } SDL_Rect;
-
-/* This structure should be treated as read-only, except for 'pixels',
-   which, if not NULL, contains the raw pixel data for the surface.
-*/
-typedef struct SDL_Surface
-{
-    Uint32 flags;               /* Read-only */
-    SDL_PixelFormat *format;    /* Read-only */
-    int w, h;                   /* Read-only */
-    Uint16 pitch;               /* Read-only */
-    void *pixels;               /* Read-write */
-    int offset;                 /* Private */
-
-    /* Hardware-specific surface info */
-    struct private_hwdata *hwdata;
-
-    /* clipping information */
-    SDL_Rect clip_rect;         /* Read-only */
-    Uint32 unused1;             /* for binary compatibility */
-
-    /* Allow recursive locks */
-    Uint32 locked;              /* Private */
-
-    /* info for fast blit mapping to other surfaces */
-    struct SDL_BlitMap *map;    /* Private */
-
-    /* format version, bumped at every change to invalidate blit maps */
-    unsigned int format_version;        /* Private */
-
-    /* Reference count -- used when freeing surface */
-    int refcount;               /* Read-mostly */
-} SDL_Surface;
-
-/* The most common video overlay formats.
-   For an explanation of these pixel formats, see:
-	http://www.webartz.com/fourcc/indexyuv.htm
-
-   For information on the relationship between color spaces, see:
-   http://www.neuro.sfc.keio.ac.jp/~aly/polygon/info/color-space-faq.html
- */
-#define SDL_YV12_OVERLAY  0x32315659    /* Planar mode: Y + V + U  (3 planes) */
-#define SDL_IYUV_OVERLAY  0x56555949    /* Planar mode: Y + U + V  (3 planes) */
-#define SDL_YUY2_OVERLAY  0x32595559    /* Packed mode: Y0+U0+Y1+V0 (1 plane) */
-#define SDL_UYVY_OVERLAY  0x59565955    /* Packed mode: U0+Y0+V0+Y1 (1 plane) */
-#define SDL_YVYU_OVERLAY  0x55595659    /* Packed mode: Y0+V0+Y1+U0 (1 plane) */
-
-/* The YUV hardware video overlay */
-typedef struct SDL_Overlay
-{
-    Uint32 format;              /* Read-only */
-    int w, h;                   /* Read-only */
-    int planes;                 /* Read-only */
-    Uint16 *pitches;            /* Read-only */
-    Uint8 **pixels;             /* Read-write */
-
-    /* Hardware-specific surface info */
-    struct private_yuvhwfuncs *hwfuncs;
-    struct private_yuvhwdata *hwdata;
-
-    /* Special flags */
-    Uint32 hw_overlay:1;        /* Flag: This overlay hardware accelerated? */
-    Uint32 UnusedBits:31;
-} SDL_Overlay;
-
-/* Evaluates to true if the surface needs to be locked before access */
-#define SDL_MUSTLOCK(surface)	\
-  (surface->offset ||		\
-  ((surface->flags & (SDL_HWSURFACE|SDL_RLEACCEL)) != 0))
-
-/* typedef for private surface blitting functions */
-typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
-                         struct SDL_Surface * dst, SDL_Rect * dstrect);
-
-
-/**
- * \struct SDL_VideoInfo
- *
- * \brief Useful for determining the video hardware capabilities
- */
-typedef struct SDL_VideoInfo
-{
-    Uint32 hw_available:1;  /**< Flag: Can you create hardware surfaces? */
-    Uint32 wm_available:1;  /**< Flag: Can you talk to a window manager? */
-    Uint32 UnusedBits1:6;
-    Uint32 UnusedBits2:1;
-    Uint32 blit_hw:1;       /**< Flag: Accelerated blits HW --> HW */
-    Uint32 blit_hw_CC:1;    /**< Flag: Accelerated blits with Colorkey */
-    Uint32 blit_hw_A:1;     /**< Flag: Accelerated blits with Alpha */
-    Uint32 blit_sw:1;       /**< Flag: Accelerated blits SW --> HW */
-    Uint32 blit_sw_CC:1;    /**< Flag: Accelerated blits with Colorkey */
-    Uint32 blit_sw_A:1;     /**< Flag: Accelerated blits with Alpha */
-    Uint32 blit_fill:1;     /**< Flag: Accelerated color fill */
-    Uint32 UnusedBits3:16;
-    Uint32 video_mem;           /* The total amount of video memory (in K) */
-
-    /* Here for backwards compatibility */
-    SDL_PixelFormat *vfmt;
-} SDL_VideoInfo;
 
 /**
  * \struct SDL_DisplayMode
@@ -204,6 +110,8 @@ typedef Uint32 SDL_WindowID;
  * \enum SDL_WindowFlags
  *
  * \brief The flags on a window
+ *
+ * \sa SDL_GetWindowFlags()
  */
 typedef enum
 {
@@ -241,6 +149,163 @@ typedef enum
 } SDL_WindowEventID;
 
 /**
+ * \enum SDL_RendererFlags
+ *
+ * \brief Flags used when initializing a render manager.
+ */
+typedef enum
+{
+    SDL_Renderer_PresentDiscard = 0x00000001,   /**< Present leaves the contents of the backbuffer undefined */
+    SDL_Renderer_PresentCopy = 0x00000002,      /**< Present uses a copy from back buffer to the front buffer */
+    SDL_Renderer_PresentFlip2 = 0x00000004,     /**< Present uses a flip, swapping back buffer and front buffer */
+    SDL_Renderer_PresentFlip3 = 0x00000008,     /**< Present uses a flip, rotating between two back buffers and a front buffer */
+    SDL_Renderer_PresentVSync = 0x00000010,     /**< Present is synchronized with the refresh rate */
+    SDL_Renderer_RenderTarget = 0x00000020,     /**< The renderer can create texture render targets */
+    SDL_Renderer_Accelerated = 0x00000040,      /**< The renderer uses hardware acceleration */
+    SDL_Renderer_Minimal = 0x00000080,          /**< The renderer only supports the read/write pixel and present functions */
+} SDL_RendererFlags;
+
+/**
+ * \struct SDL_RendererInfo
+ *
+ * \brief Information on the capabilities of a render manager.
+ */
+typedef struct SDL_RendererInfo
+{
+    const char *name;           /**< The name of the renderer */
+    Uint32 flags;               /**< Supported SDL_RendererFlags */
+    Uint32 blend_modes;         /**< A mask of supported blend modes */
+    Uint32 scale_modes;         /**< A mask of supported scale modes */
+    Uint32 num_texture_formats; /**< The number of available texture formats */
+    Uint32 texture_formats[32]; /**< The available texture formats */
+    int max_texture_width;      /**< The maximimum texture width */
+    int max_texture_height;     /**< The maximimum texture height */
+} SDL_RendererInfo;
+
+/**
+ * \enum SDL_TextureAccess
+ *
+ * \brief The access pattern allowed for a texture
+ */
+typedef enum
+{
+    SDL_TextureAccess_Render,   /**< Unlockable video memory, rendering allowed */
+    SDL_TextureAccess_Remote,   /**< Unlockable video memory */
+    SDL_TextureAccess_Local,    /**< Lockable system memory */
+} SDL_TextureAccess;
+
+/**
+ * \enum SDL_TextureBlendMode
+ *
+ * \brief The blend mode used in SDL_RenderCopy()
+ */
+typedef enum
+{
+    SDL_TextureBlendMode_None,  /**< No blending */
+    SDL_TextureBlendMode_Mask,  /**< dst = A ? src : dst (alpha is mask) */
+    SDL_TextureBlendMode_Blend, /**< dst = (src * A) + (dst * (1-A)) */
+    SDL_TextureBlendMode_Add,   /**< dst = (src * A) + dst */
+    SDL_TextureBlendMode_Mod,   /**< dst = src * dst */
+} SDL_TextureBlendMode;
+
+/**
+ * \enum SDL_TextureScaleMode
+ *
+ * \brief The scale mode used in SDL_RenderCopy()
+ */
+typedef enum
+{
+    SDL_TextureScaleMode_None,  /**< No scaling, rectangles must match dimensions */
+    SDL_TextureScaleMode_Fast,  /**< Point sampling or equivalent algorithm */
+    SDL_TextureScaleMode_Slow,  /**< Linear filtering or equivalent algorithm */
+    SDL_TextureScaleMode_Best,  /**< Bicubic filtering or equivalent algorithm */
+} SDL_TextureScaleMode;
+
+/**
+ * \typedef SDL_TextureID
+ *
+ * \brief An efficient driver-specific representation of pixel data
+ */
+typedef Uint32 SDL_TextureID;
+
+
+/* These are the currently supported flags for the SDL_surface */
+/* Used internally (read-only) */
+#define SDL_HWSURFACE       0x00000001  /* Surface represents a texture */
+#define SDL_PREALLOC        0x00000002  /* Surface uses preallocated memory */
+#define SDL_SRCALPHA        0x00000004  /* Blit uses source alpha blending */
+#define SDL_SRCCOLORKEY     0x00000008  /* Blit uses a source color key */
+#define SDL_RLEACCELOK      0x00000010  /* Private flag */
+#define SDL_RLEACCEL        0x00000020  /* Surface is RLE encoded */
+
+/* Evaluates to true if the surface needs to be locked before access */
+#define SDL_MUSTLOCK(S)	(((S)->flags & (SDL_HWSURFACE|SDL_RLEACCEL)) != 0)
+
+/* This structure should be treated as read-only, except for 'pixels',
+   which, if not NULL, contains the raw pixel data for the surface.
+*/
+typedef struct SDL_Surface
+{
+    Uint32 flags;               /* Read-only */
+    SDL_PixelFormat *format;    /* Read-only */
+    int w, h;                   /* Read-only */
+    int pitch;                  /* Read-only */
+    void *pixels;               /* Read-write */
+
+    /* information needed for surfaces requiring locks */
+    int locked;
+    void *lock_data;
+
+    /* clipping information */
+    SDL_Rect clip_rect;         /* Read-only */
+
+    /* info for fast blit mapping to other surfaces */
+    struct SDL_BlitMap *map;    /* Private */
+
+    /* format version, bumped at every change to invalidate blit maps */
+    unsigned int format_version;        /* Private */
+
+    /* Reference count -- used when freeing surface */
+    int refcount;               /* Read-mostly */
+} SDL_Surface;
+
+/* typedef for private surface blitting functions */
+typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
+                         struct SDL_Surface * dst, SDL_Rect * dstrect);
+
+
+/* The most common video overlay formats.
+   For an explanation of these pixel formats, see:
+   http://www.webartz.com/fourcc/indexyuv.htm
+
+   For information on the relationship between color spaces, see:
+   http://www.neuro.sfc.keio.ac.jp/~aly/polygon/info/color-space-faq.html
+ */
+#define SDL_YV12_OVERLAY  0x32315659    /* Planar mode: Y + V + U  (3 planes) */
+#define SDL_IYUV_OVERLAY  0x56555949    /* Planar mode: Y + U + V  (3 planes) */
+#define SDL_YUY2_OVERLAY  0x32595559    /* Packed mode: Y0+U0+Y1+V0 (1 plane) */
+#define SDL_UYVY_OVERLAY  0x59565955    /* Packed mode: U0+Y0+V0+Y1 (1 plane) */
+#define SDL_YVYU_OVERLAY  0x55595659    /* Packed mode: Y0+V0+Y1+U0 (1 plane) */
+
+/* The YUV hardware video overlay */
+typedef struct SDL_Overlay
+{
+    Uint32 format;              /* Read-only */
+    int w, h;                   /* Read-only */
+    int planes;                 /* Read-only */
+    Uint16 *pitches;            /* Read-only */
+    Uint8 **pixels;             /* Read-write */
+
+    /* Hardware-specific surface info */
+    struct private_yuvhwfuncs *hwfuncs;
+    struct private_yuvhwdata *hwdata;
+
+    /* Special flags */
+    Uint32 hw_overlay:1;        /* Flag: This overlay hardware accelerated? */
+    Uint32 UnusedBits:31;
+} SDL_Overlay;
+
+/**
  * \enum SDL_GLattr
  *
  * \brief OpenGL configuration attributes
@@ -266,22 +331,6 @@ typedef enum
     SDL_GL_SWAP_CONTROL
 } SDL_GLattr;
 
-/* These are the currently supported flags for the SDL_surface */
-#define SDL_SWSURFACE	0x00000000      /* Surface is in system memory */
-#define SDL_HWSURFACE	0x00000001      /* Surface is in video memory */
-/* Available for SDL_CreateWindowSurface() */
-#define SDL_ANYFORMAT	0x10000000      /* Allow any video depth/pixel-format */
-#define SDL_HWPALETTE	0x20000000      /* Surface has exclusive palette */
-#define SDL_DOUBLEBUF	0x40000000      /* Set up double-buffered surface */
-/* Used internally (read-only) */
-#define SDL_HWACCEL	0x00000100      /* Blit uses hardware acceleration */
-#define SDL_SRCCOLORKEY	0x00001000      /* Blit uses a source color key */
-#define SDL_RLEACCELOK	0x00002000      /* Private flag */
-#define SDL_RLEACCEL	0x00004000      /* Surface is RLE encoded */
-#define SDL_SRCALPHA	0x00010000      /* Blit uses source alpha blending */
-#define SDL_PREALLOC	0x00100000      /* Surface uses preallocated memory */
-#define SDL_SCREEN_SURFACE 0x01000000   /* Surface is a window screen surface */
-#define SDL_SHADOW_SURFACE 0x02000000   /* Surface is a window shadow surface */
 
 /* Function prototypes */
 
@@ -350,16 +399,6 @@ extern DECLSPEC void SDLCALL SDL_VideoQuit(void);
 extern DECLSPEC const char *SDLCALL SDL_GetCurrentVideoDriver(void);
 
 /**
- * \fn const SDL_VideoInfo *SDL_GetVideoInfo(void)
- *
- * \brief Returns information about the currently initialized video driver.
- *
- * \return A read-only pointer to information about the video hardware,
- *         or NULL if no video driver has been initialized.
- */
-extern DECLSPEC const SDL_VideoInfo *SDLCALL SDL_GetVideoInfo(void);
-
-/**
  * \fn int SDL_GetNumVideoDisplays(void)
  *
  * \brief Returns the number of available video displays.
@@ -372,6 +411,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumVideoDisplays(void);
  * \fn int SDL_SelectVideoDisplay(int index)
  *
  * \brief Set the index of the currently selected display.
+ *
+ * \return The index of the currently selected display.
  *
  * \note You can query the currently selected display by passing an index of -1.
  *
@@ -450,6 +491,16 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(const
  * \return 0 on success, or -1 if setting the display mode failed.
  */
 extern DECLSPEC int SDLCALL SDL_SetDisplayMode(const SDL_DisplayMode * mode);
+
+/**
+ * \fn int SDL_SetDisplayColormap(SDL_Color *colors, int firstcolor, int ncolors)
+ *
+ * \brief Set the colormap for indexed display modes.
+ *
+ * \return 0 on success, or -1 if not all the colors could be set.
+ */
+extern DECLSPEC int SDLCALL SDL_SetDisplayColors(SDL_Color * colors,
+                                                 int firstcolor, int ncolors);
 
 /**
  * \fn SDL_WindowID SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
@@ -673,37 +724,294 @@ extern DECLSPEC int SDLCALL SDL_GetWindowGrab(SDL_WindowID windowID);
 extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_WindowID windowID);
 
 /**
- * \fn SDL_Surface *SDL_CreateWindowSurface (SDL_WindowID windowID, Uint32 format, Uint32 flags)
+ * \fn int SDL_GetNumRenderers(void)
  *
- * \brief Create an SDL_Surface representing the drawing area of the window.
+ * \brief Get the number of render managers on the current display.
+ *
+ * A render manager is a set of code that handles rendering and texture
+ * management on a particular display.  Normally there is only one, but
+ * some drivers may have several available with different capabilities.
+ *
+ * \sa SDL_GetRendererInfo()
+ * \sa SDL_CreateRenderer()
  */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateWindowSurface(SDL_WindowID
-                                                             windowID,
-                                                             Uint32 format,
-                                                             Uint32 flags);
+extern DECLSPEC int SDLCALL SDL_GetNumRenderers(void);
 
-/*
- * Makes sure the given list of rectangles is updated on the given screen.
- * If 'x', 'y', 'w' and 'h' are all 0, SDL_UpdateRect will update the entire
- * screen.
- * These functions should not be called while 'screen' is locked.
+/**
+ * \fn SDL_RendererInfo *SDL_GetRendererInfo(int index)
+ *
+ * \brief Get information about a specific render manager on the current
+ *        display.
+ *
+ * \sa SDL_CreateRenderer()
  */
-extern DECLSPEC void SDLCALL SDL_UpdateRects
-    (SDL_Surface * screen, int numrects, SDL_Rect * rects);
-extern DECLSPEC void SDLCALL SDL_UpdateRect
-    (SDL_Surface * screen, Sint32 x, Sint32 y, Uint32 w, Uint32 h);
+extern DECLSPEC int SDLCALL SDL_GetRendererInfo(int index,
+                                                SDL_RendererInfo * info);
 
-/*
- * On hardware that supports double-buffering, this function sets up a flip
- * and returns.  The hardware will wait for vertical retrace, and then swap
- * video buffers before the next video surface blit or lock will return.
- * On hardware that doesn not support double-buffering, this is equivalent
- * to calling SDL_UpdateRect(screen, 0, 0, 0, 0);
- * The SDL_DOUBLEBUF flag must have been passed to SDL_SetVideoMode() when
- * setting the video mode for this function to perform hardware flipping.
- * This function returns 0 if successful, or -1 if there was an error.
+/**
+ * \fn int SDL_CreateRenderer(SDL_WindowID window, int index, Uint32 flags)
+ *
+ * \brief Create and make active a 2D rendering context for a window.
+ *
+ * \param windowID The window used for rendering.
+ * \param index The index of the render manager to initialize, or -1 to initialize the first one supporting the requested flags.
+ * \param flags SDL_RendererFlags
+ *
+ * \return 0 on success, -1 if the flags were not supported, or -2 if
+ *         there isn't enough memory to support the requested flags
+ *
+ * \sa SDL_SelectRenderer()
+ * \sa SDL_DestroyRenderer()
  */
-extern DECLSPEC int SDLCALL SDL_Flip(SDL_Surface * screen);
+extern DECLSPEC int SDLCALL SDL_CreateRenderer(SDL_WindowID windowID,
+                                               int index, Uint32 flags);
+
+/**
+ * \fn int SDL_SelectRenderer(SDL_WindowID windowID)
+ *
+ * \brief Select the rendering context for a particular window.
+ *
+ * \return 0 on success, -1 if the selected window doesn't have a
+ *         rendering context.
+ */
+extern DECLSPEC int SDLCALL SDL_SelectRenderer(SDL_WindowID windowID);
+
+/**
+ * \fn SDL_TextureID SDL_CreateTexture(Uint32 format, int access, int w, int h)
+ *
+ * \brief Create a texture
+ *
+ * \param format The format of the texture
+ * \param access One of the enumerated values in SDL_TextureAccess
+ * \param w The width of the texture in pixels
+ * \param h The height of the texture in pixels
+ *
+ * \return The created texture is returned, or 0 if no render manager was active,  the format was unsupported, or the width or height were out of range.
+ *
+ * \sa SDL_QueryTexture()
+ * \sa SDL_DestroyTexture()
+ */
+extern DECLSPEC SDL_TextureID SDLCALL SDL_CreateTexture(Uint32 format,
+                                                        int access, int w,
+                                                        int h);
+
+/**
+ * \fn SDL_TextureID SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface *surface)
+ *
+ * \brief Create a texture from an existing surface
+ *
+ * \param format The format of the texture, or 0 to pick an appropriate format
+ * \param access One of the enumerated values in SDL_TextureAccess
+ * \param surface The surface containing pixel data used to fill the texture
+ *
+ * \return The created texture is returned, or 0 if no render manager was active,  the format was unsupported, or the surface width or height were out of range.
+ *
+ * \note The surface is not modified or freed by this function.
+ *
+ * \sa SDL_QueryTexture()
+ * \sa SDL_DestroyTexture()
+ */
+extern DECLSPEC SDL_TextureID SDLCALL SDL_CreateTextureFromSurface(Uint32
+                                                                   format,
+                                                                   int access,
+                                                                   SDL_Surface
+                                                                   * surface);
+
+/**
+ * \fn int SDL_QueryTexture(SDL_TextureID textureID, Uint32 *format, int *access, int *w, int *h)
+ *
+ * \brief Query the attributes of a texture
+ *
+ * \param texture A texture to be queried
+ * \param format A pointer filled in with the raw format of the texture.  The actual format may differ, but pixel transfers will use this format.
+ * \param access A pointer filled in with the actual access to the texture.
+ * \param w A pointer filled in with the width of the texture in pixels
+ * \param h A pointer filled in with the height of the texture in pixels
+ *
+ * \return 0 on success, or -1 if the texture is not valid
+ */
+extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_TextureID textureID,
+                                             Uint32 * format, int *access,
+                                             int *w, int *h);
+
+/**
+ * \fn int SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors, int firstcolor, int ncolors)
+ *
+ * \brief Update an indexed texture with a color palette
+ *
+ * \param texture The texture to update
+ * \param colors The array of RGB color data
+ * \param firstcolor The first index to update
+ * \param ncolors The number of palette entries to fill with the color data
+ *
+ * \return 0 on success, or -1 if the texture is not valid or not an indexed texture
+ */
+extern DECLSPEC int SDLCALL SDL_SetTexturePalette(SDL_TextureID textureID,
+                                                  SDL_Color * colors,
+                                                  int firstcolor,
+                                                  int ncolors);
+
+/**
+ * \fn int SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect *rect, const void *pixels, int pitch)
+ *
+ * \brief Update the given texture rectangle with new pixel data.
+ *
+ * \param texture The texture to update
+ * \param rect A pointer to the rectangle of pixels to update, or NULL to update the entire texture.
+ * \param pixels The raw pixel data
+ * \param pitch The number of bytes between rows of pixel data
+ *
+ * \return 0 on success, or -1 if the texture is not valid
+ *
+ * \note This is a very slow function for textures not created with SDL_TextureAccess_Local.
+ */
+extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_TextureID textureID,
+                                              SDL_Rect * rect,
+                                              const void *pixels, int pitch);
+
+/**
+ * \fn void SDL_LockTexture(SDL_TextureID textureID, SDL_Rect *rect, int markDirty, void **pixels, int *pitch)
+ *
+ * \brief Lock a portion of the texture for pixel access.
+ *
+ * \param texture The texture to lock for access, which must have been created with SDL_TextureAccess_Local.
+ * \param rect A pointer to the rectangle to lock for access. If the rect is NULL, the entire texture will be locked.
+ * \param markDirty If this is nonzero, the locked area will be marked dirty when the texture is unlocked.
+ * \param pixels This is filled in with a pointer to the locked pixels, appropriately offset by the locked area.
+ * \param pitch This is filled in with the pitch of the locked pixels.
+ *
+ * \return 0 on success, or -1 if the texture is not valid or was created with SDL_TextureAccess_Remote
+ *
+ * \sa SDL_DirtyTexture()
+ * \sa SDL_UnlockTexture()
+ */
+extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_TextureID textureID,
+                                            SDL_Rect * rect, int markDirty,
+                                            void **pixels, int *pitch);
+
+/**
+ * \fn void SDL_UnlockTexture(SDL_TextureID textureID)
+ *
+ * \brief Unlock a texture, uploading the changes to video memory, if needed.
+ *
+ * \sa SDL_LockTexture()
+ * \sa SDL_DirtyTexture()
+ */
+extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_TextureID textureID);
+
+/**
+ * \fn void SDL_DirtyTexture(SDL_TextureID textureID, int numrects, SDL_Rect * rects)
+ *
+ * \brief Mark the specified rectangles of the texture as dirty.
+ *
+ * \note The texture must have been created with SDL_TextureAccess_Local.
+ *
+ * \sa SDL_LockTexture()
+ * \sa SDL_UnlockTexture()
+ */
+extern DECLSPEC void SDLCALL SDL_DirtyTexture(SDL_TextureID textureID,
+                                              int numrects, SDL_Rect * rects);
+
+/**
+ * \fn void SDL_SelectRenderTexture(SDL_TextureID textureID)
+ *
+ * \brief Select a texture as the rendering target, or 0 to reselect the current window.
+ *
+ * \note The texture must have been created with SDL_TextureAccess_Render.
+ */
+extern DECLSPEC void SDLCALL SDL_SelectRenderTexture(SDL_TextureID textureID);
+
+/**
+ * \fn void SDL_RenderFill(SDL_Rect *rect, Uint32 color)
+ *
+ * \brief Fill the current rendering target with the specified color.
+ *
+ * \param rect A pointer to the destination rectangle, or NULL for the entire rendering target.
+ * \param color An ARGB color value.
+ *
+ * \return 0 on success, or -1 if there is no renderer current
+ */
+extern DECLSPEC int SDLCALL SDL_RenderFill(SDL_Rect * rect, Uint32 color);
+
+/**
+ * \fn int SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect *srcrect, SDL_Rect *dstrect, Uint32 blendMode, Uint32 scaleMode)
+ *
+ * \brief Copy a portion of the texture to the current rendering target.
+ *
+ * \param texture The source texture.
+ * \param srcrect A pointer to the source rectangle, or NULL for the entire texture.
+ * \param dstrect A pointer to the destination rectangle, or NULL for the entire rendering target.
+ * \param blendMode SDL_TextureBlendMode to be used if the source texture has an alpha channel.
+ * \param scaleMode SDL_TextureScaleMode to be used if the source and destination rectangles don't have the same width and height.
+ *
+ * \return 0 on success, or -1 if there is no renderer current, or the driver doesn't support the requested operation.
+ *
+ * \note You can check the video driver info to see what operations are supported.
+ */
+extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_TextureID textureID,
+                                           SDL_Rect * srcrect,
+                                           SDL_Rect * dstrect, int blendMode,
+                                           int scaleMode);
+
+/**
+ * \fn int SDL_RenderReadPixels(SDL_Rect *rect, void *pixels, int pitch)
+ *
+ * \brief Read pixels from the current rendering target.
+ *
+ * \param rect A pointer to the rectangle to read, or NULL for the entire render target
+ * \param pixels A pointer to be filled in with the pixel data
+ * \param pitch The pitch of the pixels parameter
+ *
+ * \return 0 on success, or -1 if pixel reading is not supported.
+ *
+ * \warning This is a very slow operation, and should not be used frequently.
+ */
+extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Rect * rect,
+                                                 void *pixels, int pitch);
+
+/**
+ * \fn int SDL_RenderWritePixels(SDL_Rect *rect, const void *pixels, int pitch)
+ *
+ * \brief Write pixels to the current rendering target.
+ *
+ * \param rect A pointer to the rectangle to write, or NULL for the entire render target
+ * \param pixels A pointer to the pixel data to write
+ * \param pitch The pitch of the pixels parameter
+ *
+ * \return 0 on success, or -1 if pixel writing is not supported.
+ *
+ * \warning This is a very slow operation, and should not be used frequently.
+ */
+extern DECLSPEC int SDLCALL SDL_RenderWritePixels(SDL_Rect * rect,
+                                                  const void *pixels,
+                                                  int pitch);
+
+/**
+ * \fn void SDL_RenderPresent(void)
+ *
+ * \brief Update the screen with rendering performed.
+ */
+extern DECLSPEC void SDLCALL SDL_RenderPresent(void);
+
+/**
+ * \fn void SDL_DestroyTexture(SDL_TextureID textureID);
+ *
+ * \brief Destroy the specified texture.
+ *
+ * \sa SDL_CreateTexture()
+ * \sa SDL_CreateTextureFromSurface()
+ */
+extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_TextureID textureID);
+
+/**
+ * \fn void SDL_DestroyRenderer(SDL_WindowID windowID);
+ *
+ * \brief Destroy the rendering context for a window and free associated
+ *        textures.
+ *
+ * \sa SDL_CreateRenderer()
+ */
+extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_WindowID windowID);
 
 /*
  * Set the gamma correction for each of the color channels.
@@ -796,33 +1104,9 @@ extern DECLSPEC void SDLCALL SDL_GetRGBA(Uint32 pixel, SDL_PixelFormat * fmt,
  * If the function runs out of memory, it will return NULL.
  *
  * The 'flags' tell what kind of surface to create.
- * SDL_SWSURFACE means that the surface should be created in system memory.
- * SDL_HWSURFACE means that the surface should be created in video memory,
- * with the same format as the display surface.  This is useful for surfaces
- * that will not change much, to take advantage of hardware acceleration
- * when being blitted to the display surface.
- * SDL_ASYNCBLIT means that SDL will try to perform asynchronous blits with
- * this surface, but you must always lock it before accessing the pixels.
- * SDL will wait for current blits to finish before returning from the lock.
  * SDL_SRCCOLORKEY indicates that the surface will be used for colorkey blits.
- * If the hardware supports acceleration of colorkey blits between
- * two surfaces in video memory, SDL will try to place the surface in
- * video memory. If this isn't possible or if there is no hardware
- * acceleration available, the surface will be placed in system memory.
- * SDL_SRCALPHA means that the surface will be used for alpha blits and 
- * if the hardware supports hardware acceleration of alpha blits between
- * two surfaces in video memory, to place the surface in video memory
- * if possible, otherwise it will be placed in system memory.
- * If the surface is created in video memory, blits will be _much_ faster,
- * but the surface format must be identical to the video surface format,
- * and the only way to access the pixels member of the surface is to use
- * the SDL_LockSurface() and SDL_UnlockSurface() calls.
- * If the requested surface actually resides in video memory, SDL_HWSURFACE
- * will be set in the flags member of the returned surface.  If for some
- * reason the surface could not be placed in video memory, it will not have
- * the SDL_HWSURFACE flag set, and will be created in system memory instead.
+ * SDL_SRCALPHA means that the surface will be used for alpha blits.
  */
-#define SDL_AllocSurface    SDL_CreateRGBSurface
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
     (Uint32 flags, int width, int height, int depth,
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
@@ -835,6 +1119,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Gmask,
                                                               Uint32 Bmask,
                                                               Uint32 Amask);
+extern DECLSPEC SDL_Surface *SDLCALL
+SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID);
 extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
 
 /*
@@ -846,9 +1132,7 @@ extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
  *
  * Not all surfaces require locking.  If SDL_MUSTLOCK(surface) evaluates
  * to 0, then you can read and write to the surface at any time, and the
- * pixel format of the surface will not change.  In particular, if the
- * SDL_HWSURFACE flag is not given when calling SDL_SetVideoMode(), you
- * will not need to lock the display surface before accessing it.
+ * pixel format of the surface will not change.
  * 
  * No operating system or library calls should be made between lock/unlock
  * pairs, as critical system locks may be held during this time.
@@ -951,6 +1235,18 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_ConvertSurface
     (SDL_Surface * src, SDL_PixelFormat * fmt, Uint32 flags);
 
 /*
+ * This function performs a fast fill of the given rectangle with 'color'
+ * The given rectangle is clipped to the destination surface clip area
+ * and the final fill rectangle is saved in the passed in pointer.
+ * If 'dstrect' is NULL, the whole surface will be filled with 'color'
+ * The color should be a pixel of the format used by the surface, and 
+ * can be generated by the SDL_MapRGB() function.
+ * This function returns 0 on success, or -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_FillRect
+    (SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color);
+
+/*
  * This performs a fast blit from the source surface to the destination
  * surface.  It assumes that the source and destination rectangles are
  * the same size.  If either 'srcrect' or 'dstrect' are NULL, the entire
@@ -1034,45 +1330,16 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
     (SDL_Surface * src, SDL_Rect * srcrect,
      SDL_Surface * dst, SDL_Rect * dstrect);
 
-/*
- * This function performs a fast fill of the given rectangle with 'color'
- * The given rectangle is clipped to the destination surface clip area
- * and the final fill rectangle is saved in the passed in pointer.
- * If 'dstrect' is NULL, the whole surface will be filled with 'color'
- * The color should be a pixel of the format used by the surface, and 
- * can be generated by the SDL_MapRGB() function.
- * This function returns 0 on success, or -1 on error.
+/**
+ * \fn int SDL_SoftStretch(SDL_Surface * src, SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect)
+ *
+ * \brief Perform a fast, low quality, stretch blit between two surfaces of the same pixel format.
+ * \note This function uses a static buffer, and is not thread-safe.
  */
-extern DECLSPEC int SDLCALL SDL_FillRect
-    (SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color);
-
-/* 
- * This function takes a surface and copies it to a new surface of the
- * pixel format and colors of the video framebuffer, suitable for fast
- * blitting onto the display surface.  It calls SDL_ConvertSurface()
- *
- * If you want to take advantage of hardware colorkey or alpha blit
- * acceleration, you should set the colorkey and alpha value before
- * calling this function.
- *
- * If the conversion fails or runs out of memory, it returns NULL
- */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormat(SDL_Surface * surface);
-
-/* 
- * This function takes a surface and copies it to a new surface of the
- * pixel format and colors of the video framebuffer (if possible),
- * suitable for fast alpha blitting onto the display surface.
- * The new surface will always have an alpha channel.
- *
- * If you want to take advantage of hardware colorkey or alpha blit
- * acceleration, you should set the colorkey and alpha value before
- * calling this function.
- *
- * If the conversion fails or runs out of memory, it returns NULL
- */
-extern DECLSPEC SDL_Surface *SDLCALL SDL_DisplayFormatAlpha(SDL_Surface *
-                                                            surface);
+extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
+                                            SDL_Rect * srcrect,
+                                            SDL_Surface * dst,
+                                            SDL_Rect * dstrect);
 
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -1144,12 +1411,6 @@ extern DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
  * Swap the OpenGL buffers, if double-buffering is supported.
  */
 extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers(void);
-
-/* Not in public API at the moment - do not use! */
-extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
-                                            SDL_Rect * srcrect,
-                                            SDL_Surface * dst,
-                                            SDL_Rect * dstrect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

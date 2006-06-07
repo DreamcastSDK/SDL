@@ -42,7 +42,7 @@ extern int SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst);
 extern void SDL_FreeBlitMap(SDL_BlitMap * map);
 
 /* Miscellaneous functions */
-extern Uint16 SDL_CalculatePitch(SDL_Surface * surface);
+extern int SDL_CalculatePitch(SDL_Surface * surface);
 extern void SDL_DitherColors(SDL_Color * colors, int bpp);
 extern Uint8 SDL_FindColor(SDL_Palette * pal, Uint8 r, Uint8 g, Uint8 b);
 extern void SDL_ApplyGamma(Uint16 * gamma, SDL_Color * colors,

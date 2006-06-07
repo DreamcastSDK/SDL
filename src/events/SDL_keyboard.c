@@ -326,7 +326,7 @@ SDL_ResetKeyboard(void)
     for (key = SDLK_FIRST; key < SDLK_LAST; ++key) {
         if (SDL_KeyState[key] == SDL_PRESSED) {
             keysym.sym = key;
-            SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
+            SDL_SendKeyboard(SDL_RELEASED, &keysym);
         }
     }
     SDL_KeyRepeat.timestamp = 0;
@@ -382,7 +382,7 @@ SDL_GetKeyName(SDLKey key)
 
 /* These are global for SDL_eventloop.c */
 int
-SDL_PrivateKeyboard(Uint8 state, SDL_keysym * keysym)
+SDL_SendKeyboard(Uint8 state, SDL_keysym * keysym)
 {
     SDL_Event event;
     int posted, repeatable;

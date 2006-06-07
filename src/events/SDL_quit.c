@@ -39,7 +39,7 @@ SDL_HandleSIG(int sig)
     signal(sig, SDL_HandleSIG);
 
     /* Signal a quit interrupt */
-    SDL_PrivateQuit();
+    SDL_SendQuit();
 }
 #endif /* HAVE_SIGNAL_H */
 
@@ -80,7 +80,7 @@ SDL_QuitQuit(void)
 
 /* This function returns 1 if it's okay to close the application window */
 int
-SDL_PrivateQuit(void)
+SDL_SendQuit(void)
 {
     int posted;
 

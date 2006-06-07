@@ -125,14 +125,6 @@ uninstall-man:
 	    rm -f $(mandir)/man3/$$file; \
 	done
 
-indent:
-	cd $(srcdir) && \
-	find . \( \
-	    -name '*.h' -o \
-	    -name '*.c' -o \
-	    -name '*.cc' \) \
-	    -exec indent {} \;
-
 clean:
 	rm -rf $(objects)
 	if test -f test/Makefile; then (cd test; $(MAKE) $@); fi
@@ -172,6 +164,29 @@ dist $(distfile):
 
 rpm: $(distfile)
 	rpmbuild -ta $?
+
+# Run indent on the source to standardize coding style
+indent:
+	@echo "Running indent... modified files:"
+	@cd $(srcdir) && \
+	find . \( \
+	    -name '*.h' -o \
+	    -name '*.c' -o \
+	    -name '*.cc' \) \
+	    -print | \
+	while read file; do \
+	    indent "$$file" -o "$$file.indent"; \
+	    if cmp "$$file" "$$file.indent" >/dev/null; then \
+	        rm -f "$$file.indent"; \
+	    else \
+	        echo "$$file"; \
+	        mv -f "$$file.indent" "$$file"; \
+	    fi; \
+	done
+
+# Run indent and then commit modified files
+commit: indent
+	svn commit
 
 # Create a SVN snapshot that people can run update on
 snapshot:

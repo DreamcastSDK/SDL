@@ -39,9 +39,71 @@
 
 /* The SDL video driver */
 
-/* Define the SDL window structure, corresponding to toplevel windows */
 typedef struct SDL_Window SDL_Window;
+typedef struct SDL_Texture SDL_Texture;
+typedef struct SDL_Renderer SDL_Renderer;
+typedef struct SDL_RenderDriver SDL_RenderDriver;
+typedef struct SDL_VideoDisplay SDL_VideoDisplay;
+typedef struct SDL_VideoDevice SDL_VideoDevice;
 
+/* Define the SDL texture structure */
+struct SDL_Texture
+{
+    Uint32 id;
+
+    Uint32 format;      /**< The pixel format of the texture */
+    int access;         /**< SDL_TextureAccess */
+    int w;              /**< The width of the texture */
+    int h;              /**< The height of the texture */
+
+    SDL_Renderer *renderer;
+
+    void *driverdata;   /**< Driver specific texture representation */
+
+    SDL_Texture *next;
+};
+
+/* Define the SDL renderer structure */
+struct SDL_Renderer
+{
+    int (*CreateTexture) (SDL_Texture * texture);
+    int (*UpdateTexture) (SDL_Texture * texture, SDL_Rect * rect,
+                          const void *pixels, int pitch);
+    int (*LockTexture) (SDL_Texture * texture, SDL_Rect * rect, int markDirty,
+                        void **pixels, int *pitch);
+    void (*UnlockTexture) (SDL_Texture * texture);
+    void (*DirtyTexture) (SDL_Texture * texture, int numrects,
+                          SDL_Rect * rects);
+    void (*SelectRenderTexture) (SDL_Texture * texture);
+    void (*RenderFill) (SDL_Rect * rect, Uint32 color);
+    int (*RenderCopy) (SDL_Texture * texture, SDL_Rect * srcrect,
+                       SDL_Rect * dstrect, int blendMode, int scaleMode);
+    int (*RenderReadPixels) (SDL_Rect * rect, void *pixels, int pitch);
+    int (*RenderWritePixels) (SDL_Rect * rect, const void *pixels, int pitch);
+    void (*RenderPresent) (void);
+    void (*DestroyTexture) (SDL_Texture * texture);
+
+    void (*DestroyRenderer) (SDL_Renderer * renderer);
+
+    /* The current renderer info */
+    SDL_RendererInfo info;
+
+    /* The window associated with the renderer */
+    SDL_Window *window;
+
+    void *driverdata;
+};
+
+/* Define the SDL render driver structure */
+struct SDL_RenderDriver
+{
+    SDL_Renderer *(*CreateRenderer) (SDL_Window * window, Uint32 flags);
+
+    /* Info about the renderer capabilities */
+    SDL_RendererInfo info;
+};
+
+/* Define the SDL window structure, corresponding to toplevel windows */
 struct SDL_Window
 {
     Uint32 id;
@@ -51,9 +113,9 @@ struct SDL_Window
     int w, h;
     Uint32 flags;
 
-    SDL_Surface *surface;
-    SDL_Surface *shadow;
     Uint16 *gamma;
+
+    SDL_Renderer *renderer;
 
     void *userdata;
     void *driverdata;
@@ -62,21 +124,26 @@ struct SDL_Window
 /* Define the SDL display structure
    This corresponds to physical monitors attached to the system.
  */
-typedef struct SDL_VideoDisplay
+struct SDL_VideoDisplay
 {
     int num_display_modes;
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
     SDL_DisplayMode current_mode;
 
-    int max_windows;
+    int num_render_drivers;
+    SDL_RenderDriver *render_drivers;
+
     int num_windows;
     SDL_Window *windows;
 
-    void *driverdata;
-} SDL_VideoDisplay;
+    SDL_Renderer *current_renderer;
 
-typedef struct SDL_VideoDevice SDL_VideoDevice;
+    /* The hash list of textures */
+    SDL_Texture *textures[64];
+
+    void *driverdata;
+};
 
 /* Define the SDL video driver structure */
 #define _THIS	SDL_VideoDevice *_this
@@ -105,6 +172,13 @@ struct SDL_VideoDevice
      */
     int (*SetDisplayMode) (_THIS, const SDL_DisplayMode * mode);
 
+    /* Sets the color entries { firstcolor .. (firstcolor+ncolors-1) }
+       of the physical palette to those in 'colors'.  The return value
+       is 0 if all entries could be set properly or -1 otherwise.
+     */
+    int (*SetDisplayColors) (_THIS, int firstcolor, int ncolors,
+                             SDL_Color * colors);
+
     /* * * */
     /* Window functions
      */
@@ -121,22 +195,6 @@ struct SDL_VideoDevice
     void (*RestoreWindow) (_THIS, SDL_Window * window);
     void (*SetWindowGrab) (_THIS, SDL_Window * window);
     void (*DestroyWindow) (_THIS, SDL_Window * window);
-
-    void (*CreateWindowSurface) (_THIS, SDL_Window * window, Uint32 flags);
-    void (*UpdateWindowSurface) (_THIS, SDL_Window * window, int numrects,
-                                 SDL_Rect * rects);
-    void (*FlipWindowSurface) (_THIS, SDL_Window * window);
-
-    /* Sets the color entries { firstcolor .. (firstcolor+ncolors-1) }
-       of the physical palette to those in 'colors'. If the device is
-       using a software palette (SDL_HWPALETTE not set), then the
-       changes are reflected in the logical palette of the screen
-       as well.
-       The return value is 1 if all entries could be set properly
-       or 0 otherwise.
-     */
-    int (*SetWindowColors) (_THIS, SDL_Window * window,
-                            int firstcolor, int ncolors, SDL_Color * colors);
 
     /* Get some platform dependent window information */
       SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
@@ -156,9 +214,6 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Hardware acceleration functions */
-
-    /* Information about the video hardware */
-    SDL_VideoInfo info;
 
     /* The pixel format used when SDL_CreateRGBSurface creates SDL_HWSURFACEs with alpha */
     SDL_PixelFormat *displayformatalphapixel;
@@ -242,23 +297,23 @@ struct SDL_VideoDevice
     /* Free a window manager cursor
        This function can be NULL if CreateWMCursor is also NULL.
      */
-    void (*FreeWMCursor) (_THIS, WMcursor * cursor);
+    void (*FreeCursor) (_THIS, SDL_Cursor * cursor);
 
     /* If not NULL, create a black/white window manager cursor */
-    WMcursor *(*CreateWMCursor) (_THIS,
+    SDL_Cursor *(*CreateCursor) (_THIS,
                                  Uint8 * data, Uint8 * mask, int w, int h,
                                  int hot_x, int hot_y);
 
     /* Show the specified cursor, or hide if cursor is NULL */
-    int (*ShowWMCursor) (_THIS, WMcursor * cursor);
+    int (*ShowCursor) (_THIS, SDL_Cursor * cursor);
 
     /* Warp the window manager cursor to (x,y)
        If NULL, a mouse motion event is posted internally.
      */
-    void (*WarpWMCursor) (_THIS, Uint16 x, Uint16 y);
+    void (*WarpCursor) (_THIS, SDL_WindowID windowID, int x, int y);
 
     /* If not NULL, this is called when a mouse motion event occurs */
-    void (*MoveWMCursor) (_THIS, int x, int y);
+    void (*MoveCursor) (_THIS, int x, int y);
 
     /* Determine whether the mouse should be in relative mode or not.
        This function is called when the input grab state or cursor
@@ -283,7 +338,7 @@ struct SDL_VideoDevice
     int num_displays;
     SDL_VideoDisplay *displays;
     int current_display;
-    Uint32 next_window_id;
+    Uint32 next_object_id;
 
     /* Driver information flags */
 
@@ -428,15 +483,14 @@ extern VideoBootStrap glSDL_bootstrap;
 
 #define SDL_CurrentDisplay	(_this->displays[_this->current_display])
 #define SDL_CurrentWindow	(SDL_CurrentDisplay.windows[0])
-#define SDL_VideoSurface	((_this && SDL_CurrentDisplay.num_windows > 0) ? SDL_CurrentWindow.surface : NULL)
-#define SDL_ShadowSurface	((_this && SDL_CurrentDisplay.num_windows > 0) ? SDL_CurrentWindow.shadow : NULL)
-#define SDL_PublicSurface	(SDL_ShadowSurface ? SDL_ShadowSurface : SDL_VideoSurface)
 
 extern SDL_VideoDevice *SDL_GetVideoDevice();
 extern void SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 extern void SDL_AddVideoDisplay(const SDL_VideoDisplay * display);
-extern void SDL_AddDisplayMode(int display, const SDL_DisplayMode * mode);
-extern SDL_Window *SDL_GetWindowFromSurface(SDL_Surface * surface);
+extern void SDL_AddDisplayMode(int displayIndex,
+                               const SDL_DisplayMode * mode);
+extern void SDL_AddRenderDriver(int displayIndex,
+                                const SDL_RenderDriver * driver);
 
 #endif /* _SDL_sysvideo_h */
 

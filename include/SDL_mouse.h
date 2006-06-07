@@ -41,28 +41,53 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
-typedef struct WMcursor WMcursor;       /* Implementation dependent */
-typedef struct SDL_Cursor
-{
-    SDL_Rect area;              /* The area of the mouse cursor */
-    Sint16 hot_x, hot_y;        /* The "tip" of the cursor */
-    Uint8 *data;                /* B/W cursor data */
-    Uint8 *mask;                /* B/W cursor mask */
-    Uint8 *save[2];             /* Place to save cursor area */
-    WMcursor *wm_cursor;        /* Window-manager cursor */
-} SDL_Cursor;
+typedef struct SDL_Cursor SDL_Cursor;   /* Implementation dependent */
 
 /* Function prototypes */
+
+/* \fn int SDL_GetNumMice(void)
+ *
+ * \brief Get the number of mouse input devices available.
+ *
+ * \sa SDL_SelectMouse()
+ */
+extern DECLSPEC int SDLCALL SDL_GetNumMice(void);
+
+/* \fn int SDL_SelectMouse(int index)
+ *
+ * \brief Set the index of the currently selected mouse.
+ *
+ * \return The index of the currently selected mouse.
+ *
+ * \note You can query the currently selected mouse by passing an index of -1.
+ *
+ * \sa SDL_GetNumMice()
+ */
+extern DECLSPEC int SDLCALL SDL_SelectMouse(int index);
+
+/* \fn SDL_WindowID SDL_GetMouseFocusWindow(void)
+ *
+ * \brief Get the window which currently has focus for the currently selected mouse.
+ */
+extern DECLSPEC SDL_WindowID SDLCALL SDL_GetMouseFocusWindow(void);
+
 /*
- * Retrieve the current state of the mouse.
+ * \fn Uint8 SDL_GetMouseState(int *x, int *y)
+ *
+ * \brief Retrieve the current state of the mouse.
+ *
  * The current button state is returned as a button bitmask, which can
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the
- * current mouse cursor position.  You can pass NULL for either x or y.
+ * mouse cursor position relative to the focus window for the currently
+ * selected mouse.  You can pass NULL for either x or y.
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
 
 /*
- * Retrieve the current state of the mouse.
+ * \fn Uint8 SDL_GetRelativeMouseState(int *x, int *y)
+ *
+ * \brief Retrieve the current state of the mouse.
+ *
  * The current button state is returned as a button bitmask, which can
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the
  * mouse deltas since the last call to SDL_GetRelativeMouseState().
@@ -70,9 +95,18 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
 extern DECLSPEC Uint8 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
 
 /*
- * Set the position of the mouse cursor (generates a mouse motion event)
+ * \fn void SDL_WarpMouseInWindow(SDL_WindowID windowID, int x, int y)
+ *
+ * \brief Moves the currently selected mouse to the given position within the window.
+ *
+ * \param windowID The window to move the mouse into, or 0 for the current mouse focus
+ * \param x The x coordinate within the window
+ * \param y The y coordinate within the window
+ *
+ * \note This function generates a mouse motion event
  */
-extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
+extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_WindowID windowID,
+                                                   int x, int y);
 
 /*
  * Create a cursor using the specified data and mask (in MSB format).
