@@ -291,30 +291,6 @@ struct SDL_VideoDevice
     int is_32bit;
 #endif
 
-    /* * * */
-    /* Cursor manager functions */
-
-    /* Free a window manager cursor
-       This function can be NULL if CreateWMCursor is also NULL.
-     */
-    void (*FreeCursor) (_THIS, SDL_Cursor * cursor);
-
-    /* If not NULL, create a black/white window manager cursor */
-    SDL_Cursor *(*CreateCursor) (_THIS,
-                                 Uint8 * data, Uint8 * mask, int w, int h,
-                                 int hot_x, int hot_y);
-
-    /* Show the specified cursor, or hide if cursor is NULL */
-    int (*ShowCursor) (_THIS, SDL_Cursor * cursor);
-
-    /* Warp the window manager cursor to (x,y)
-       If NULL, a mouse motion event is posted internally.
-     */
-    void (*WarpCursor) (_THIS, SDL_WindowID windowID, int x, int y);
-
-    /* If not NULL, this is called when a mouse motion event occurs */
-    void (*MoveCursor) (_THIS, int x, int y);
-
     /* Determine whether the mouse should be in relative mode or not.
        This function is called when the input grab state or cursor
        visibility state changes.

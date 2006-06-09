@@ -57,7 +57,7 @@ extern DECLSPEC int SDLCALL SDL_GetNumMice(void);
  *
  * \brief Set the index of the currently selected mouse.
  *
- * \return The index of the currently selected mouse.
+ * \return The index of the previously selected mouse.
  *
  * \note You can query the currently selected mouse by passing an index of -1.
  *
@@ -109,7 +109,11 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_WindowID windowID,
                                                    int x, int y);
 
 /*
- * Create a cursor using the specified data and mask (in MSB format).
+ * \fn SDL_Cursor *SDL_CreateCursor (const Uint8 * data, const Uint8 * mask, int w, int h, int hot_x, int hot_y)
+ *
+ * \brief Create a cursor for the currently selected mouse, using the
+ *        specified bitmap data and mask (in MSB format).
+ *
  * The cursor width must be a multiple of 8 bits.
  *
  * The cursor is created in black and white according to the following:
@@ -119,34 +123,46 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_WindowID windowID,
  *  0     0       Transparent
  *  1     0       Inverted color if possible, black if not.
  *
- * Cursors created with this function must be freed with SDL_FreeCursor().
+ * \sa SDL_FreeCursor()
  */
-extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor
-    (Uint8 * data, Uint8 * mask, int w, int h, int hot_x, int hot_y);
+extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
+                                                     const Uint8 * mask,
+                                                     int w, int h, int hot_x,
+                                                     int hot_y);
 
 /*
- * Set the currently active cursor to the specified one.
- * If the cursor is currently visible, the change will be immediately 
- * represented on the display.
+ * \fn void SDL_SetCursor(SDL_Cursor * cursor)
+ *
+ * \brief Set the active cursor for the currently selected mouse.
+ *
+ * \note The cursor must have been created for the selected mouse.
  */
 extern DECLSPEC void SDLCALL SDL_SetCursor(SDL_Cursor * cursor);
 
 /*
- * Returns the currently active cursor.
+ * \fn SDL_Cursor *SDL_GetCursor(void)
+ *
+ * \brief Return the active cursor for the currently selected mouse.
  */
 extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor(void);
 
 /*
- * Deallocates a cursor created with SDL_CreateCursor().
+ * \fn void SDL_FreeCursor(SDL_Cursor * cursor)
+ *
+ * \brief Frees a cursor created with SDL_CreateCursor().
+ *
+ * \sa SDL_CreateCursor()
  */
 extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor * cursor);
 
 /*
- * Toggle whether or not the cursor is shown on the screen.
- * The cursor start off displayed, but can be turned off.
- * SDL_ShowCursor() returns 1 if the cursor was being displayed
- * before the call, or 0 if it was not.  You can query the current
- * state by passing a 'toggle' value of -1.
+ * \fn int SDL_ShowCursor(int toggle)
+ *
+ * \brief Toggle whether or not the cursor is shown for the currently selected mouse.
+ *
+ * \param toggle 1 to show the cursor, 0 to hide it, -1 to query the current state.
+ *
+ * \return 1 if the cursor is shown, or 0 if the cursor is hidden.
  */
 extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
 
