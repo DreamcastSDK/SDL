@@ -1192,7 +1192,7 @@ SDL_DisplayYUV_SW(_THIS, SDL_Overlay * overlay, SDL_Rect * src,
     if (stretch) {
         if (!swdata->stretch) {
             display = swdata->display;
-            swdata->stretch = SDL_CreateRGBSurface(SDL_SWSURFACE,
+            swdata->stretch = SDL_CreateRGBSurface(0,
                                                    overlay->w,
                                                    overlay->h,
                                                    display->format->

@@ -59,9 +59,7 @@ typedef struct SDL_BlitMap
     SDL_Surface *dst;
     int identity;
     Uint8 *table;
-    SDL_blit hw_blit;
     SDL_blit sw_blit;
-    struct private_hwaccel *hw_data;
     struct private_swaccel *sw_data;
 
     /* the version count matches the destination; mismatch indicates

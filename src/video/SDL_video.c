@@ -27,7 +27,6 @@
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_pixels_c.h"
-#include "SDL_cursor_c.h"
 #include "../events/SDL_sysevents.h"
 #include "../events/SDL_events_c.h"
 
@@ -280,7 +279,6 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
         SDL_VideoQuit();
         return -1;
     }
-    SDL_CursorInit(flags & SDL_INIT_EVENTTHREAD);
 
     /* We're ready to go! */
     return 0;
@@ -1557,7 +1555,6 @@ SDL_VideoQuit(void)
             SDL_free(display->windows);
             display->windows = NULL;
         }
-        SDL_free(display->info.vfmt);
     }
     _this->VideoQuit(_this);
     if (_this->displays) {

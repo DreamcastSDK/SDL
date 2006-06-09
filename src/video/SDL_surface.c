@@ -22,8 +22,8 @@
 #include "SDL_config.h"
 
 #include "SDL_video.h"
+#include "SDL_compat.h"
 #include "SDL_sysvideo.h"
-#include "SDL_cursor_c.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
@@ -70,7 +70,6 @@ SDL_CreateRGBSurface(Uint32 flags,
     surface->h = height;
     surface->pitch = SDL_CalculatePitch(surface);
     surface->pixels = NULL;
-    surface->hwdata = NULL;
     surface->locked = 0;
     surface->map = NULL;
     SDL_SetClipRect(surface, NULL);
@@ -114,8 +113,8 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
 {
     SDL_Surface *surface;
 
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 0, 0, depth,
-                                   Rmask, Gmask, Bmask, Amask);
+    surface =
+        SDL_CreateRGBSurface(0, 0, 0, depth, Rmask, Gmask, Bmask, Amask);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;
@@ -146,12 +145,12 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
         return NULL;
     }
 
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 0, 0, bpp,
-                                   Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateRGBSurface(0, 0, 0, bpp, Rmask, Gmask, Bmask, Amask);
     if (surface != NULL) {
         surface->flags |= (SDL_HWSURFACE | SDL_PREALLOC);
-        surface->w = width;
-        surface->h = height;
+        surface->w = w;
+        surface->h = h;
+        surface->lock_data = (void *) textureID;
         SDL_SetClipRect(surface, NULL);
     }
     return surface;
@@ -221,16 +220,8 @@ SDL_SetColorKey(SDL_Surface * surface, Uint32 flag, Uint32 key)
     }
 
     if (flag) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
         surface->flags |= SDL_SRCCOLORKEY;
         surface->format->colorkey = key;
-        if ((surface->flags & SDL_HWACCEL) == SDL_HWACCEL) {
-            if ((_this->SetHWColorKey == NULL) ||
-                (_this->SetHWColorKey(_this, surface, key) < 0)) {
-                surface->flags &= ~SDL_HWACCEL;
-            }
-        }
         if (flag & SDL_RLEACCELOK) {
             surface->flags |= SDL_RLEACCELOK;
         } else {
@@ -272,16 +263,8 @@ SDL_SetAlpha(SDL_Surface * surface, Uint32 flag, Uint8 value)
         SDL_UnRLESurface(surface, 1);
 
     if (flag) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
         surface->flags |= SDL_SRCALPHA;
         surface->format->alpha = value;
-        if ((surface->flags & SDL_HWACCEL) == SDL_HWACCEL) {
-            if ((_this->SetHWAlpha == NULL) ||
-                (_this->SetHWAlpha(_this, surface, value) < 0)) {
-                surface->flags &= ~SDL_HWACCEL;
-            }
-        }
         if (flag & SDL_RLEACCELOK) {
             surface->flags |= SDL_RLEACCELOK;
         } else {
@@ -297,10 +280,10 @@ SDL_SetAlpha(SDL_Surface * surface, Uint32 flag, Uint8 value)
      * if just the alpha value was changed. (If either is 255, we still
      * need to invalidate.)
      */
-    if ((surface->flags & SDL_HWACCEL) == SDL_HWACCEL
-        || oldflags != surface->flags
-        || (((oldalpha + 1) ^ (value + 1)) & 0x100))
+    if (oldflags != surface->flags
+        || (((oldalpha + 1) ^ (value + 1)) & 0x100)) {
         SDL_InvalidateMap(surface->map);
+    }
     return (0);
 }
 
@@ -438,8 +421,6 @@ int
 SDL_LowerBlit(SDL_Surface * src, SDL_Rect * srcrect,
               SDL_Surface * dst, SDL_Rect * dstrect)
 {
-    SDL_blit do_blit;
-
     /* Check to make sure the blit mapping is valid */
     if ((src->map->dst != dst) ||
         (src->map->dst->format_version != src->map->format_version)) {
@@ -447,14 +428,7 @@ SDL_LowerBlit(SDL_Surface * src, SDL_Rect * srcrect,
             return (-1);
         }
     }
-
-    /* Figure out which blitter to use */
-    if ((src->flags & SDL_HWACCEL) == SDL_HWACCEL) {
-        do_blit = src->map->hw_blit;
-    } else {
-        do_blit = src->map->sw_blit;
-    }
-    return (do_blit(src, srcrect, dst, dstrect));
+    return (src->map->sw_blit(src, srcrect, dst, dstrect));
 }
 
 
@@ -603,12 +577,6 @@ SDL_FillRect(SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
         dstrect = &dst->clip_rect;
     }
 
-    /* Check for hardware acceleration */
-    if (((dst->flags & SDL_HWSURFACE) == SDL_HWSURFACE) &&
-        _this->info.blit_fill) {
-        return (_this->FillHWRect(_this, dst, dstrect, color));
-    }
-
     /* Perform software fill */
     if (SDL_LockSurface(dst) != 0) {
         return (-1);
@@ -632,7 +600,7 @@ SDL_FillRect(SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
              * causes an alignment exception if the destination is
              * uncachable, so only use it on software surfaces
              */
-            if ((dst->flags & SDL_HWSURFACE) == SDL_HWSURFACE) {
+            if (dst->flags & SDL_HWSURFACE) {
                 if (dstrect->w >= 8) {
                     /*
                      * 64-bit stores are probably most
@@ -752,8 +720,9 @@ SDL_LockSurface(SDL_Surface * surface)
     if (!surface->locked) {
         /* Perform the lock */
         if (surface->flags & SDL_HWSURFACE) {
-            SDL_VideoDevice *_this = SDL_GetVideoDevice();
-            if (_this->LockHWSurface(_this, surface) < 0) {
+            if (SDL_LockTexture
+                ((SDL_TextureID) surface->lock_data, NULL, 1,
+                 &surface->pixels, &surface->pitch) < 0) {
                 return (-1);
             }
         }
@@ -761,8 +730,6 @@ SDL_LockSurface(SDL_Surface * surface)
             SDL_UnRLESurface(surface, 1);
             surface->flags |= SDL_RLEACCEL;     /* save accel'd state */
         }
-        /* This needs to be done here in case pixels changes value */
-        surface->pixels = (Uint8 *) surface->pixels + surface->offset;
     }
 
     /* Increment the surface lock count, for recursive locks */
@@ -783,13 +750,9 @@ SDL_UnlockSurface(SDL_Surface * surface)
         return;
     }
 
-    /* Perform the unlock */
-    surface->pixels = (Uint8 *) surface->pixels - surface->offset;
-
     /* Unlock hardware or accelerated surfaces */
     if (surface->flags & SDL_HWSURFACE) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        _this->UnlockHWSurface(_this, surface);
+        SDL_UnlockTexture((SDL_TextureID) surface->lock_data);
     } else {
         /* Update RLE encoded surface with new data */
         if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
@@ -825,14 +788,6 @@ SDL_ConvertSurface(SDL_Surface * surface,
             SDL_SetError("Empty destination palette");
             return (NULL);
         }
-    }
-
-    /* Only create hw surfaces with alpha channel if hw alpha blits
-       are supported */
-    if (format->Amask != 0 && (flags & SDL_HWSURFACE)) {
-        const SDL_VideoInfo *vi = SDL_GetVideoInfo();
-        if (!vi || !vi->blit_hw_A)
-            flags &= ~SDL_HWSURFACE;
     }
 
     /* Create a new surface with the desired format */
@@ -927,7 +882,7 @@ SDL_FreeSurface(SDL_Surface * surface)
     while (surface->locked > 0) {
         SDL_UnlockSurface(surface);
     }
-    if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
+    if (surface->flags & SDL_RLEACCEL) {
         SDL_UnRLESurface(surface, 0);
     }
     if (surface->format) {
@@ -938,10 +893,11 @@ SDL_FreeSurface(SDL_Surface * surface)
         SDL_FreeBlitMap(surface->map);
         surface->map = NULL;
     }
-    if (surface->hwdata) {
-        SDL_VideoDevice *_this = SDL_GetVideoDevice();
-        _this->FreeHWSurface(_this, surface);
-    }
+    /* Should we destroy the texture too?
+       if (surface->flags & SDL_HWSURFACE) {
+       SDL_DestroyTexture((SDL_TextureID)surface->lock_data);
+       }
+     */
     if (surface->pixels && ((surface->flags & SDL_PREALLOC) != SDL_PREALLOC)) {
         SDL_free(surface->pixels);
     }

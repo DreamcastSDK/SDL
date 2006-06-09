@@ -109,7 +109,7 @@ SDL_SetGamma(float red, float green, float blue)
         CalculateGammaRamp(blue, ramp[2]);
         succeeded = SDL_SetGammaRamp(ramp[0], ramp[1], ramp[2]);
     }
-    if ((succeeded < 0) && _this->SetGamma) {
+    if ((succeeded < 0) && _this && _this->SetGamma) {
         SDL_ClearError();
         succeeded = _this->SetGamma(_this, red, green, blue);
     }
@@ -137,7 +137,7 @@ SDL_GetGamma(float *red, float *green, float *blue)
             CalculateGammaFromRamp(blue, ramp[2]);
         }
     }
-    if ((succeeded < 0) && _this->GetGamma) {
+    if ((succeeded < 0) && _this && _this->GetGamma) {
         SDL_ClearError();
         succeeded = _this->GetGamma(_this, red, green, blue);
     }
@@ -150,13 +150,6 @@ SDL_SetGammaRamp(const Uint16 * red, const Uint16 * green,
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int succeeded;
-    SDL_Surface *screen = SDL_PublicSurface;
-
-    /* Verify the screen parameter */
-    if (!screen) {
-        SDL_SetError("No video mode has been set");
-        return -1;
-    }
 
     /* Lazily allocate the gamma tables */
     if (!SDL_CurrentWindow.gamma) {
@@ -179,7 +172,7 @@ SDL_SetGammaRamp(const Uint16 * red, const Uint16 * green,
 
     /* Try to set the gamma ramp in the driver */
     succeeded = -1;
-    if (_this->SetGammaRamp) {
+    if (_this && _this->SetGammaRamp) {
         succeeded = _this->SetGammaRamp(_this, SDL_CurrentWindow.gamma);
     } else {
         SDL_SetError("Gamma ramp manipulation not supported");
@@ -200,7 +193,7 @@ SDL_GetGammaRamp(Uint16 * red, Uint16 * green, Uint16 * blue)
             SDL_OutOfMemory();
             return -1;
         }
-        if (_this->GetGammaRamp) {
+        if (_this && _this->GetGammaRamp) {
             /* Get the real hardware gamma */
             _this->GetGammaRamp(_this, SDL_CurrentWindow.gamma);
         } else {
