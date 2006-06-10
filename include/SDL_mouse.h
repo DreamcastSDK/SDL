@@ -45,7 +45,8 @@ typedef struct SDL_Cursor SDL_Cursor;   /* Implementation dependent */
 
 /* Function prototypes */
 
-/* \fn int SDL_GetNumMice(void)
+/**
+ * \fn int SDL_GetNumMice(void)
  *
  * \brief Get the number of mouse input devices available.
  *
@@ -53,7 +54,8 @@ typedef struct SDL_Cursor SDL_Cursor;   /* Implementation dependent */
  */
 extern DECLSPEC int SDLCALL SDL_GetNumMice(void);
 
-/* \fn int SDL_SelectMouse(int index)
+/**
+ * \fn int SDL_SelectMouse(int index)
  *
  * \brief Set the index of the currently selected mouse.
  *
@@ -65,13 +67,14 @@ extern DECLSPEC int SDLCALL SDL_GetNumMice(void);
  */
 extern DECLSPEC int SDLCALL SDL_SelectMouse(int index);
 
-/* \fn SDL_WindowID SDL_GetMouseFocusWindow(void)
+/**
+ * \fn SDL_WindowID SDL_GetMouseFocusWindow(void)
  *
  * \brief Get the window which currently has focus for the currently selected mouse.
  */
 extern DECLSPEC SDL_WindowID SDLCALL SDL_GetMouseFocusWindow(void);
 
-/*
+/**
  * \fn Uint8 SDL_GetMouseState(int *x, int *y)
  *
  * \brief Retrieve the current state of the mouse.
@@ -83,7 +86,7 @@ extern DECLSPEC SDL_WindowID SDLCALL SDL_GetMouseFocusWindow(void);
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
 
-/*
+/**
  * \fn Uint8 SDL_GetRelativeMouseState(int *x, int *y)
  *
  * \brief Retrieve the current state of the mouse.
@@ -94,7 +97,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
  */
 extern DECLSPEC Uint8 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
 
-/*
+/**
  * \fn void SDL_WarpMouseInWindow(SDL_WindowID windowID, int x, int y)
  *
  * \brief Moves the currently selected mouse to the given position within the window.
@@ -108,7 +111,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetRelativeMouseState(int *x, int *y);
 extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_WindowID windowID,
                                                    int x, int y);
 
-/*
+/**
  * \fn SDL_Cursor *SDL_CreateCursor (const Uint8 * data, const Uint8 * mask, int w, int h, int hot_x, int hot_y)
  *
  * \brief Create a cursor for the currently selected mouse, using the
@@ -130,7 +133,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
                                                      int w, int h, int hot_x,
                                                      int hot_y);
 
-/*
+/**
  * \fn void SDL_SetCursor(SDL_Cursor * cursor)
  *
  * \brief Set the active cursor for the currently selected mouse.
@@ -139,14 +142,14 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_CreateCursor(const Uint8 * data,
  */
 extern DECLSPEC void SDLCALL SDL_SetCursor(SDL_Cursor * cursor);
 
-/*
+/**
  * \fn SDL_Cursor *SDL_GetCursor(void)
  *
  * \brief Return the active cursor for the currently selected mouse.
  */
 extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor(void);
 
-/*
+/**
  * \fn void SDL_FreeCursor(SDL_Cursor * cursor)
  *
  * \brief Frees a cursor created with SDL_CreateCursor().
@@ -155,7 +158,7 @@ extern DECLSPEC SDL_Cursor *SDLCALL SDL_GetCursor(void);
  */
 extern DECLSPEC void SDLCALL SDL_FreeCursor(SDL_Cursor * cursor);
 
-/*
+/**
  * \fn int SDL_ShowCursor(int toggle)
  *
  * \brief Toggle whether or not the cursor is shown for the currently selected mouse.

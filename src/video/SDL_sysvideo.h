@@ -213,37 +213,6 @@ struct SDL_VideoDevice
     void (*VideoQuit) (_THIS);
 
     /* * * */
-    /* Hardware acceleration functions */
-
-    /* The pixel format used when SDL_CreateRGBSurface creates SDL_HWSURFACEs with alpha */
-    SDL_PixelFormat *displayformatalphapixel;
-
-    /* Allocates a surface in video memory */
-    int (*AllocHWSurface) (_THIS, SDL_Surface * surface);
-
-    /* Sets the hardware accelerated blit function, if any, based
-       on the current flags of the surface (colorkey, alpha, etc.)
-     */
-    int (*CheckHWBlit) (_THIS, SDL_Surface * src, SDL_Surface * dst);
-
-    /* Fills a surface rectangle with the given color */
-    int (*FillHWRect) (_THIS, SDL_Surface * dst, SDL_Rect * rect,
-                       Uint32 color);
-
-    /* Sets video mem colorkey and accelerated blit function */
-    int (*SetHWColorKey) (_THIS, SDL_Surface * surface, Uint32 key);
-
-    /* Sets per surface hardware alpha value */
-    int (*SetHWAlpha) (_THIS, SDL_Surface * surface, Uint8 value);
-
-    /* Returns a readable/writable surface */
-    int (*LockHWSurface) (_THIS, SDL_Surface * surface);
-    void (*UnlockHWSurface) (_THIS, SDL_Surface * surface);
-
-    /* Frees a previously allocated video surface */
-    void (*FreeHWSurface) (_THIS, SDL_Surface * surface);
-
-    /* * * */
     /* Gamma support */
 
     /* Set the gamma correction directly (emulated with gamma ramps) */
@@ -302,9 +271,6 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Event manager functions */
-
-    /* Initialize keyboard mapping for this driver */
-    void (*InitOSKeymap) (_THIS);
 
     /* Handle any queued OS events */
     void (*PumpEvents) (_THIS);
