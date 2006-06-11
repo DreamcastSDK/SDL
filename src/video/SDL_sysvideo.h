@@ -200,13 +200,6 @@ struct SDL_VideoDevice
       SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
                                   SDL_SysWMinfo * info);
 
-    /* Create a YUV video surface (possibly overlay) of the given
-       format.  The hardware should be able to perform at least 2x
-       scaling on display.
-     */
-    SDL_Overlay *(*CreateYUVOverlay) (_THIS, int width, int height,
-                                      Uint32 format, SDL_Surface * display);
-
     /* Reverse the effects VideoInit() -- called if VideoInit() fails
        or if the application is shutting down the video subsystem.
      */

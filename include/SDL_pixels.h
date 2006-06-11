@@ -95,6 +95,9 @@ enum
     SDL_PackedLayout_1010102,
 };
 
+#define SDL_DEFINE_PIXELFOURCC(A, B, C, D) \
+    ((A) | ((B) << 8) | ((C) << 16) | ((D) << 24))
+
 #define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
     ((1 << 31) | ((type) << 24) | ((order) << 20) | ((layout) << 16) | \
      ((bits) << 8) | ((bytes) << 0))
@@ -167,6 +170,12 @@ enum
     SDL_PixelFormat_ARGB2101010 =
         SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
                                SDL_PackedLayout_2101010, 32, 4),
+
+    SDL_PixelFormat_YV12 = SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
+    SDL_PixelFormat_IYUV = SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'),
+    SDL_PixelFormat_YUY2 = SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'),
+    SDL_PixelFormat_UYVY = SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'),
+    SDL_PixelFormat_YVYU = SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'),
 };
 
 typedef struct SDL_Color

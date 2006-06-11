@@ -79,6 +79,37 @@ typedef struct SDL_VideoInfo
     SDL_PixelFormat *vfmt;
 } SDL_VideoInfo;
 
+/* The most common video overlay formats.
+   For an explanation of these pixel formats, see:
+   http://www.webartz.com/fourcc/indexyuv.htm
+
+   For information on the relationship between color spaces, see:
+   http://www.neuro.sfc.keio.ac.jp/~aly/polygon/info/color-space-faq.html
+ */
+#define SDL_YV12_OVERLAY  0x32315659    /* Planar mode: Y + V + U  (3 planes) */
+#define SDL_IYUV_OVERLAY  0x56555949    /* Planar mode: Y + U + V  (3 planes) */
+#define SDL_YUY2_OVERLAY  0x32595559    /* Packed mode: Y0+U0+Y1+V0 (1 plane) */
+#define SDL_UYVY_OVERLAY  0x59565955    /* Packed mode: U0+Y0+V0+Y1 (1 plane) */
+#define SDL_YVYU_OVERLAY  0x55595659    /* Packed mode: Y0+V0+Y1+U0 (1 plane) */
+
+/* The YUV hardware video overlay */
+typedef struct SDL_Overlay
+{
+    Uint32 format;              /* Read-only */
+    int w, h;                   /* Read-only */
+    int planes;                 /* Read-only */
+    Uint16 *pitches;            /* Read-only */
+    Uint8 **pixels;             /* Read-write */
+
+    /* Hardware-specific surface info */
+    struct private_yuvhwfuncs *hwfuncs;
+    struct private_yuvhwdata *hwdata;
+
+    /* Special flags */
+    Uint32 hw_overlay:1;        /* Flag: This overlay hardware accelerated? */
+    Uint32 UnusedBits:31;
+} SDL_Overlay;
+
 typedef enum
 {
     SDL_GRAB_QUERY = -1,
@@ -114,7 +145,6 @@ extern DECLSPEC void SDLCALL SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask);
 extern DECLSPEC int SDLCALL SDL_WM_IconifyWindow(void);
 extern DECLSPEC int SDLCALL SDL_WM_ToggleFullScreen(SDL_Surface * surface);
 extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
-extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
 extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
                                            SDL_Color * colors,
                                            int firstcolor, int ncolors);
@@ -122,6 +152,18 @@ extern DECLSPEC int SDLCALL SDL_SetScreenColors(SDL_Surface * screen,
                                                 SDL_Color * colors,
                                                 int firstcolor, int ncolors);
 extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
+extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
+extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
+extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay(int width,
+                                                          int height,
+                                                          Uint32 format,
+                                                          SDL_Surface *
+                                                          display);
+extern DECLSPEC int SDLCALL SDL_LockYUVOverlay(SDL_Overlay * overlay);
+extern DECLSPEC void SDLCALL SDL_UnlockYUVOverlay(SDL_Overlay * overlay);
+extern DECLSPEC int SDLCALL SDL_DisplayYUVOverlay(SDL_Overlay * overlay,
+                                                  SDL_Rect * dstrect);
+extern DECLSPEC void SDLCALL SDL_FreeYUVOverlay(SDL_Overlay * overlay);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
@@ -134,4 +176,3 @@ extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
 #endif /* _SDL_compat_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);

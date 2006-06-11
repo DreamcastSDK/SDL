@@ -274,37 +274,6 @@ typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
                          struct SDL_Surface * dst, SDL_Rect * dstrect);
 
 
-/* The most common video overlay formats.
-   For an explanation of these pixel formats, see:
-   http://www.webartz.com/fourcc/indexyuv.htm
-
-   For information on the relationship between color spaces, see:
-   http://www.neuro.sfc.keio.ac.jp/~aly/polygon/info/color-space-faq.html
- */
-#define SDL_YV12_OVERLAY  0x32315659    /* Planar mode: Y + V + U  (3 planes) */
-#define SDL_IYUV_OVERLAY  0x56555949    /* Planar mode: Y + U + V  (3 planes) */
-#define SDL_YUY2_OVERLAY  0x32595559    /* Packed mode: Y0+U0+Y1+V0 (1 plane) */
-#define SDL_UYVY_OVERLAY  0x59565955    /* Packed mode: U0+Y0+V0+Y1 (1 plane) */
-#define SDL_YVYU_OVERLAY  0x55595659    /* Packed mode: Y0+V0+Y1+U0 (1 plane) */
-
-/* The YUV hardware video overlay */
-typedef struct SDL_Overlay
-{
-    Uint32 format;              /* Read-only */
-    int w, h;                   /* Read-only */
-    int planes;                 /* Read-only */
-    Uint16 *pitches;            /* Read-only */
-    Uint8 **pixels;             /* Read-write */
-
-    /* Hardware-specific surface info */
-    struct private_yuvhwfuncs *hwfuncs;
-    struct private_yuvhwdata *hwdata;
-
-    /* Special flags */
-    Uint32 hw_overlay:1;        /* Flag: This overlay hardware accelerated? */
-    Uint32 UnusedBits:31;
-} SDL_Overlay;
-
 /**
  * \enum SDL_GLattr
  *
@@ -1340,39 +1309,6 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
                                             SDL_Rect * srcrect,
                                             SDL_Surface * dst,
                                             SDL_Rect * dstrect);
-
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* YUV video surface overlay functions                                       */
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-
-/* This function creates a video output overlay
-   Calling the returned surface an overlay is something of a misnomer because
-   the contents of the display surface underneath the area where the overlay
-   is shown is undefined - it may be overwritten with the converted YUV data.
-*/
-extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay(int width,
-                                                          int height,
-                                                          Uint32 format,
-                                                          SDL_Surface *
-                                                          display);
-
-/* Lock an overlay for direct access, and unlock it when you are done */
-extern DECLSPEC int SDLCALL SDL_LockYUVOverlay(SDL_Overlay * overlay);
-extern DECLSPEC void SDLCALL SDL_UnlockYUVOverlay(SDL_Overlay * overlay);
-
-/* Blit a video overlay to the display surface.
-   The contents of the video surface underneath the blit destination are
-   not defined.  
-   The width and height of the destination rectangle may be different from
-   that of the overlay, but currently only 2x scaling is supported.
-*/
-extern DECLSPEC int SDLCALL SDL_DisplayYUVOverlay(SDL_Overlay * overlay,
-                                                  SDL_Rect * dstrect);
-
-/* Free a video overlay */
-extern DECLSPEC void SDLCALL SDL_FreeYUVOverlay(SDL_Overlay * overlay);
-
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* OpenGL support functions.                                                 */
