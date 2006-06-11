@@ -31,7 +31,9 @@ struct SDL_Keyboard
     /* Free the keyboard when it's time */
     void (*FreeKeyboard) (SDL_Keyboard * keyboard);
 
-    SDLMod modstate;
+    /* Data common to all keyboards */
+    SDL_WindowID focus;
+    Uint16 modstate;
     Uint8 keystate[SDLK_LAST];
 
     struct
@@ -42,11 +44,16 @@ struct SDL_Keyboard
         Uint32 timestamp;       /* the time the first keydown event occurred */
 
         SDL_Event evt;          /* the event we are supposed to repeat */
-    } keyrepeat;
+    } repeat;
 
     void *driverdata;
 };
 
+/* Used by the OS keyboard code to detect whether or not to do UNICODE */
+#ifndef DEFAULT_UNICODE_TRANSLATION
+#define DEFAULT_UNICODE_TRANSLATION 0   /* Default off because of overhead */
+#endif
+extern int SDL_TranslateUNICODE;
 
 /* Initialize the keyboard subsystem */
 extern int SDL_KeyboardInit(void);
@@ -66,8 +73,11 @@ extern void SDL_DelKeyboard(int index);
 extern void SDL_ResetKeyboard(int index);
 
 /* Send a keyboard event for a keyboard at an index */
-extern int SDL_SendKeyboardKey(int index, Uint8 state,
-                               const SDL_keysym * keysym);
+extern int SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
+                               SDL_keysym * keysym);
+
+/* Used by the event loop to queue pending keyboard repeat events */
+extern void SDL_CheckKeyRepeat(void);
 
 /* Shutdown the keyboard subsystem */
 extern void SDL_KeyboardQuit(void);

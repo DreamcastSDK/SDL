@@ -25,7 +25,6 @@
 
 #include "SDL_events.h"
 #include "SDL_events_c.h"
-#include "SDL_mouse_c.h"
 #include "default_cursor.h"
 
 
@@ -333,7 +332,7 @@ SDL_SendMouseButton(int index, SDL_WindowID windowID, Uint8 state,
         event.button.button = button;
         event.button.x = mouse->x;
         event.button.y = mouse->y;
-        event.button.windowID = windowID;
+        event.button.windowID = mouse->focus;
         if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
             posted = 1;
             SDL_PushEvent(&event);

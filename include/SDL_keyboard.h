@@ -49,8 +49,9 @@ extern "C" {
 typedef struct SDL_keysym
 {
     Uint8 scancode;             /**< keyboard specific scancode */
-    SDLKey sym;                 /**< SDL virtual keysym */
-    SDLMod mod;                 /**< current key modifiers */
+    Uint8 padding[3];           /**< alignment padding */
+    Uint16 sym;                 /**< SDL virtual keysym */
+    Uint16 mod;                 /**< current key modifiers */
 } SDL_keysym;
 
 /* Function prototypes */

@@ -24,6 +24,7 @@
 /* Useful functions and variables from SDL_events.c */
 #include "SDL_events.h"
 #include "SDL_mouse_c.h"
+#include "SDL_keyboard_c.h"
 
 /* Start and stop the event processing loop */
 extern int SDL_StartEventLoop(Uint32 flags);
@@ -33,10 +34,6 @@ extern void SDL_QuitInterrupt(void);
 extern void SDL_Lock_EventThread(void);
 extern void SDL_Unlock_EventThread(void);
 extern Uint32 SDL_EventThreadID(void);
-
-extern int SDL_KeyboardInit(void);
-extern int SDL_SendKeyboard(Uint8 state, SDL_keysym * key);
-extern void SDL_KeyboardQuit(void);
 
 extern int SDL_QuitInit(void);
 extern int SDL_SendQuit(void);
@@ -52,14 +49,5 @@ extern SDL_EventFilter SDL_EventOK;
 
 /* The array of event processing states */
 extern Uint8 SDL_ProcessEvents[SDL_NUMEVENTS];
-
-/* Used by the event loop to queue pending keyboard repeat events */
-extern void SDL_CheckKeyRepeat(void);
-
-/* Used by the OS keyboard code to detect whether or not to do UNICODE */
-#ifndef DEFAULT_UNICODE_TRANSLATION
-#define DEFAULT_UNICODE_TRANSLATION 0   /* Default off because of overhead */
-#endif
-extern int SDL_TranslateUNICODE;
 
 /* vi: set ts=4 sw=4 expandtab: */
