@@ -108,6 +108,8 @@ enum
 #define SDL_BITSPERPIXEL(X)	(((X) >> 8) & 0xFF)
 #define SDL_BYTESPERPIXEL(X)	(((X) >> 0) & 0xFF)
 
+#define SDL_ISPIXELFORMAT_FOURCC(format)    (((format) & 0x8000000) != 0)
+
 enum
 {
     SDL_PixelFormat_Unknown,

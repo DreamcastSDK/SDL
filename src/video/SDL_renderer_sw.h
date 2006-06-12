@@ -21,20 +21,8 @@
 */
 #include "SDL_config.h"
 
-/* Being a null driver, there's no event stream. We just define stubs for
-   most of the API. */
+/* SDL surface based renderer implementation */
 
-#include "SDL.h"
-#include "../../events/SDL_sysevents.h"
-#include "../../events/SDL_events_c.h"
-
-#include "SDL_nullvideo.h"
-#include "SDL_nullevents_c.h"
-
-void
-DUMMY_PumpEvents(_THIS)
-{
-    /* do nothing. */
-}
+extern SDL_RenderDriver SDL_SW_RenderDriver;
 
 /* vi: set ts=4 sw=4 expandtab: */

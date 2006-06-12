@@ -27,6 +27,7 @@
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_pixels_c.h"
+#include "SDL_renderer_sw.h"
 #include "../events/SDL_sysevents.h"
 #include "../events/SDL_events_c.h"
 
@@ -272,6 +273,13 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
         SDL_qsort(_this->displays[i].display_modes,
                   _this->displays[i].num_display_modes,
                   sizeof(SDL_DisplayMode), cmpmodes);
+    }
+
+    /* The software renderer is always available */
+    for (i = 0; i < _this->num_displays; ++i) {
+        if (_this->displays[i].num_render_drivers > 0) {
+            SDL_AddRenderDriver(i, &SDL_SW_RenderDriver);
+        }
     }
 
     /* Start the event loop */
@@ -578,6 +586,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window.w = w;
     window.h = h;
     window.flags = (flags & allowed_flags);
+    window.display = &SDL_CurrentDisplay;
 
     if (_this->CreateWindow && _this->CreateWindow(_this, &window) < 0) {
         if (window.title) {
@@ -620,6 +629,7 @@ SDL_CreateWindowFrom(void *data)
 
     SDL_zero(window);
     window.id = _this->next_object_id++;
+    window.display = &SDL_CurrentDisplay;
 
     if (!_this->CreateWindowFrom ||
         _this->CreateWindowFrom(_this, &window, data) < 0) {
@@ -1088,7 +1098,7 @@ SDL_CreateTexture(Uint32 format, int access, int w, int h)
     texture->h = h;
     texture->renderer = renderer;
 
-    if (renderer->CreateTexture(texture) < 0) {
+    if (renderer->CreateTexture(renderer, texture) < 0) {
         SDL_free(texture);
         return 0;
     }
@@ -1286,7 +1296,7 @@ SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect * rect,
     if (!renderer->UpdateTexture) {
         return -1;
     }
-    return renderer->UpdateTexture(texture, rect, pixels, pitch);
+    return renderer->UpdateTexture(renderer, texture, rect, pixels, pitch);
 }
 
 int
@@ -1304,7 +1314,8 @@ SDL_LockTexture(SDL_TextureID textureID, SDL_Rect * rect, int markDirty,
     if (!renderer->LockTexture) {
         return -1;
     }
-    return renderer->LockTexture(texture, rect, markDirty, pixels, pitch);
+    return renderer->LockTexture(renderer, texture, rect, markDirty, pixels,
+                                 pitch);
 }
 
 void
@@ -1321,7 +1332,7 @@ SDL_UnlockTexture(SDL_TextureID textureID)
     if (!renderer->UnlockTexture) {
         return;
     }
-    return renderer->UnlockTexture(texture);
+    return renderer->UnlockTexture(renderer, texture);
 }
 
 void
@@ -1338,7 +1349,7 @@ SDL_DirtyTexture(SDL_TextureID textureID, int numrects, SDL_Rect * rects)
     if (!renderer->DirtyTexture) {
         return;
     }
-    renderer->DirtyTexture(texture, numrects, rects);
+    renderer->DirtyTexture(renderer, texture, numrects, rects);
 }
 
 void
@@ -1354,7 +1365,7 @@ SDL_SelectRenderTexture(SDL_TextureID textureID)
     if (!renderer->SelectRenderTexture) {
         return;
     }
-    renderer->SelectRenderTexture(texture);
+    renderer->SelectRenderTexture(renderer, texture);
 }
 
 int
@@ -1371,7 +1382,7 @@ SDL_RenderFill(SDL_Rect * rect, Uint32 color)
         return -1;
     }
 
-    renderer->RenderFill(rect, color);
+    renderer->RenderFill(renderer, rect, color);
 }
 
 int
@@ -1390,8 +1401,8 @@ SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect * srcrect,
         return -1;
     }
 
-    return renderer->RenderCopy(texture, srcrect, dstrect, blendMode,
-                                scaleMode);
+    return renderer->RenderCopy(renderer, texture, srcrect, dstrect,
+                                blendMode, scaleMode);
 }
 
 int
@@ -1408,7 +1419,7 @@ SDL_RenderReadPixels(SDL_Rect * rect, void *pixels, int pitch)
         return -1;
     }
 
-    return renderer->RenderReadPixels(rect, pixels, pitch);
+    return renderer->RenderReadPixels(renderer, rect, pixels, pitch);
 }
 
 int
@@ -1425,7 +1436,7 @@ SDL_RenderWritePixels(SDL_Rect * rect, const void *pixels, int pitch)
         return -1;
     }
 
-    return renderer->RenderWritePixels(rect, pixels, pitch);
+    return renderer->RenderWritePixels(renderer, rect, pixels, pitch);
 }
 
 void
@@ -1442,7 +1453,7 @@ SDL_RenderPresent(void)
         return;
     }
 
-    renderer->RenderPresent();
+    renderer->RenderPresent(renderer);
 }
 
 void
@@ -1478,7 +1489,7 @@ SDL_DestroyTexture(SDL_TextureID textureID)
 
     /* Free the texture */
     renderer = texture->renderer;
-    renderer->DestroyTexture(texture);
+    renderer->DestroyTexture(renderer, texture);
     SDL_free(texture);
 }
 
@@ -1512,7 +1523,7 @@ SDL_DestroyRenderer(SDL_WindowID windowID)
                 } else {
                     SDL_CurrentDisplay.textures[i] = next;
                 }
-                renderer->DestroyTexture(texture);
+                renderer->DestroyTexture(renderer, texture);
                 SDL_free(texture);
             } else {
                 prev = texture;

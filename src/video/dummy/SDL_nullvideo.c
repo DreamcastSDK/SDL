@@ -101,10 +101,7 @@ DUMMY_CreateDevice(int devindex)
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
     device->SetDisplayMode = DUMMY_SetDisplayMode;
-    device->CreateWindowSurface = DUMMY_CreateWindowSurface;
-    device->UpdateWindowSurface = DUMMY_UpdateWindowSurface;
     device->VideoQuit = DUMMY_VideoQuit;
-    device->InitOSKeymap = DUMMY_InitOSKeymap;
     device->PumpEvents = DUMMY_PumpEvents;
 
     device->free = DUMMY_DeleteDevice;
@@ -139,35 +136,6 @@ DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode)
     return 0;
 }
 
-static void
-DUMMY_CreateWindowSurface(_THIS, SDL_Window * window, Uint32 flags)
-{
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
-
-    SDL_PixelFormatEnumToMasks(SDL_GetCurrentDisplayMode()->format, &bpp,
-                               &Rmask, &Gmask, &Bmask, &Amask);
-    window->surface =
-        SDL_CreateRGBSurface(flags, window->w, window->h, bpp, Rmask, Gmask,
-                             Bmask, Amask);
-}
-
-static void
-DUMMY_UpdateWindowSurface(_THIS, SDL_Window * window, int numrects,
-                          SDL_Rect * rects)
-{
-    static int frame_number;
-    if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_screen-%8.8d.bmp",
-                     ++frame_number);
-        SDL_SaveBMP(window->surface, file);
-    }
-}
-
-/* Note:  If we are terminated, this could be called in the middle of
-   another SDL video routine -- notably UpdateRects.
-*/
 void
 DUMMY_VideoQuit(_THIS)
 {

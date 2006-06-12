@@ -201,11 +201,11 @@ typedef enum
  */
 typedef enum
 {
-    SDL_TextureBlendMode_None,  /**< No blending */
-    SDL_TextureBlendMode_Mask,  /**< dst = A ? src : dst (alpha is mask) */
-    SDL_TextureBlendMode_Blend, /**< dst = (src * A) + (dst * (1-A)) */
-    SDL_TextureBlendMode_Add,   /**< dst = (src * A) + dst */
-    SDL_TextureBlendMode_Mod,   /**< dst = src * dst */
+    SDL_TextureBlendMode_None = 0x00000000,     /**< No blending */
+    SDL_TextureBlendMode_Mask = 0x00000001,     /**< dst = A ? src : dst (alpha is mask) */
+    SDL_TextureBlendMode_Blend = 0x00000002,    /**< dst = (src * A) + (dst * (1-A)) */
+    SDL_TextureBlendMode_Add = 0x00000004,      /**< dst = (src * A) + dst */
+    SDL_TextureBlendMode_Mod = 0x00000008,      /**< dst = src * dst */
 } SDL_TextureBlendMode;
 
 /**
@@ -215,10 +215,10 @@ typedef enum
  */
 typedef enum
 {
-    SDL_TextureScaleMode_None,  /**< No scaling, rectangles must match dimensions */
-    SDL_TextureScaleMode_Fast,  /**< Point sampling or equivalent algorithm */
-    SDL_TextureScaleMode_Slow,  /**< Linear filtering or equivalent algorithm */
-    SDL_TextureScaleMode_Best,  /**< Bicubic filtering or equivalent algorithm */
+    SDL_TextureScaleMode_None = 0x00000000,     /**< No scaling, rectangles must match dimensions */
+    SDL_TextureScaleMode_Fast = 0x00000001,     /**< Point sampling or equivalent algorithm */
+    SDL_TextureScaleMode_Slow = 0x00000002,     /**< Linear filtering or equivalent algorithm */
+    SDL_TextureScaleMode_Best = 0x00000004,     /**< Bicubic filtering or equivalent algorithm */
 } SDL_TextureScaleMode;
 
 /**

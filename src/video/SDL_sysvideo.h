@@ -66,22 +66,28 @@ struct SDL_Texture
 /* Define the SDL renderer structure */
 struct SDL_Renderer
 {
-    int (*CreateTexture) (SDL_Texture * texture);
-    int (*UpdateTexture) (SDL_Texture * texture, SDL_Rect * rect,
-                          const void *pixels, int pitch);
-    int (*LockTexture) (SDL_Texture * texture, SDL_Rect * rect, int markDirty,
-                        void **pixels, int *pitch);
-    void (*UnlockTexture) (SDL_Texture * texture);
-    void (*DirtyTexture) (SDL_Texture * texture, int numrects,
-                          SDL_Rect * rects);
-    void (*SelectRenderTexture) (SDL_Texture * texture);
-    void (*RenderFill) (SDL_Rect * rect, Uint32 color);
-    int (*RenderCopy) (SDL_Texture * texture, SDL_Rect * srcrect,
-                       SDL_Rect * dstrect, int blendMode, int scaleMode);
-    int (*RenderReadPixels) (SDL_Rect * rect, void *pixels, int pitch);
-    int (*RenderWritePixels) (SDL_Rect * rect, const void *pixels, int pitch);
-    void (*RenderPresent) (void);
-    void (*DestroyTexture) (SDL_Texture * texture);
+    int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
+    int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
+                          SDL_Rect * rect, const void *pixels, int pitch);
+    int (*LockTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
+                        SDL_Rect * rect, int markDirty, void **pixels,
+                        int *pitch);
+    void (*UnlockTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
+    void (*DirtyTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
+                          int numrects, SDL_Rect * rects);
+    void (*SelectRenderTexture) (SDL_Renderer * renderer,
+                                 SDL_Texture * texture);
+    void (*RenderFill) (SDL_Renderer * renderer, SDL_Rect * rect,
+                        Uint32 color);
+    int (*RenderCopy) (SDL_Renderer * renderer, SDL_Texture * texture,
+                       SDL_Rect * srcrect, SDL_Rect * dstrect, int blendMode,
+                       int scaleMode);
+    int (*RenderReadPixels) (SDL_Renderer * renderer, SDL_Rect * rect,
+                             void *pixels, int pitch);
+    int (*RenderWritePixels) (SDL_Renderer * renderer, SDL_Rect * rect,
+                              const void *pixels, int pitch);
+    void (*RenderPresent) (SDL_Renderer * renderer);
+    void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
 
     void (*DestroyRenderer) (SDL_Renderer * renderer);
 
@@ -115,6 +121,7 @@ struct SDL_Window
 
     Uint16 *gamma;
 
+    SDL_VideoDisplay *display;
     SDL_Renderer *renderer;
 
     void *userdata;
