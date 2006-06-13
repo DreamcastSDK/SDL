@@ -21,15 +21,8 @@
 */
 #include "SDL_config.h"
 
-#include "SDL_mouse.h"
-#include "../../events/SDL_events_c.h"
+/* SDL surface based renderer implementation */
 
-#include "SDL_nullmouse_c.h"
+extern SDL_RenderDriver SDL_DUMMY_RenderDriver;
 
-
-/* The implementation dependent data for the window manager cursor */
-struct WMcursor
-{
-    int unused;
-};
 /* vi: set ts=4 sw=4 expandtab: */

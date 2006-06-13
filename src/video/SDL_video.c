@@ -307,7 +307,7 @@ SDL_GetVideoDevice()
     return _this;
 }
 
-void
+int
 SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
 {
     SDL_VideoDisplay display;
@@ -318,22 +318,26 @@ SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode)
     }
     display.current_mode = display.desktop_mode;
 
-    SDL_AddVideoDisplay(&display);
+    return SDL_AddVideoDisplay(&display);
 }
 
-void
+int
 SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
 {
     SDL_VideoDisplay *displays;
+    int index = -1;
 
     displays =
         SDL_realloc(_this->displays,
                     (_this->num_displays + 1) * sizeof(*displays));
     if (displays) {
-        displays[_this->num_displays] = *display;
+        index = _this->num_displays++;
+        displays[index] = *display;
         _this->displays = displays;
-        _this->num_displays++;
+    } else {
+        SDL_OutOfMemory();
     }
+    return index;
 }
 
 int

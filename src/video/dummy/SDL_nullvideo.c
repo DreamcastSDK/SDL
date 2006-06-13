@@ -44,7 +44,7 @@
 
 #include "SDL_nullvideo.h"
 #include "SDL_nullevents_c.h"
-#include "SDL_nullmouse_c.h"
+#include "SDL_nullrender_c.h"
 
 #define DUMMYVID_DRIVER_NAME "dummy"
 
@@ -121,6 +121,7 @@ DUMMY_VideoInit(_THIS)
     SDL_DisplayMode mode;
 
     SDL_AddBasicVideoDisplay(NULL);
+    SDL_AddRenderDriver(0, &SDL_DUMMY_RenderDriver);
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
