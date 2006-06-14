@@ -1574,9 +1574,6 @@ SDL_VideoQuit(void)
     /* Halt event processing before doing anything else */
     SDL_StopEventLoop();
 
-    /* Clean up allocated window manager items */
-    SDL_CursorQuit();
-
     /* Clean up the system video */
     for (i = _this->num_displays; i--;) {
         SDL_VideoDisplay *display = &_this->displays[i];

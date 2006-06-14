@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#if 0 /* TODO */
 /* This is the software implementation of the YUV video overlay support */
 
 /* This code was derived from code carrying the following copyright notices:
@@ -1297,5 +1298,6 @@ SDL_FreeYUV_SW(_THIS, SDL_Overlay * overlay)
         SDL_free(swdata);
     }
 }
+#endif /* TODO */
 
 /* vi: set ts=4 sw=4 expandtab: */

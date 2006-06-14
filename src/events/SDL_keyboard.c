@@ -443,7 +443,7 @@ SDL_GetKeyName(SDLKey key)
 {
     const char *keyname;
 
-    if (key < SDL_tablesize(SDL_keynames)) {
+    if (key < SDL_arraysize(SDL_keynames)) {
         keyname = SDL_keynames[key];
     } else {
         keyname = NULL;
