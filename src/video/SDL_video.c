@@ -1029,8 +1029,15 @@ SDL_CreateRenderer(SDL_WindowID windowID, int index, Uint32 flags)
     if (index < 0) {
         int n = SDL_GetNumRenderers();
         for (index = 0; index < n; ++index) {
-            if ((SDL_CurrentDisplay.render_drivers[index].info.
-                 flags & flags) == flags) {
+            SDL_RenderDriver *driver =
+                &SDL_CurrentDisplay.render_drivers[index];
+
+            /* Skip minimal drivers in automatic scans */
+            if (!(flags & SDL_Renderer_Minimal)
+                && (driver->info.flags & SDL_Renderer_Minimal)) {
+                continue;
+            }
+            if ((driver->info.flags & flags) == flags) {
                 break;
             }
         }
@@ -1076,6 +1083,7 @@ SDL_SelectRenderer(SDL_WindowID windowID)
 SDL_TextureID
 SDL_CreateTexture(Uint32 format, int access, int w, int h)
 {
+    int hash;
     SDL_Renderer *renderer;
     SDL_Texture *texture;
 
@@ -1106,6 +1114,12 @@ SDL_CreateTexture(Uint32 format, int access, int w, int h)
         SDL_free(texture);
         return 0;
     }
+
+    hash = (texture->id % SDL_arraysize(SDL_CurrentDisplay.textures));
+    texture->next = SDL_CurrentDisplay.textures[hash];
+    SDL_CurrentDisplay.textures[hash] = texture;
+
+    return texture->id;
 }
 
 SDL_TextureID
@@ -1300,6 +1314,25 @@ SDL_QueryTexturePixels(SDL_TextureID textureID, void **pixels, int *pitch)
         return -1;
     }
     return renderer->QueryTexturePixels(renderer, texture, pixels, pitch);
+}
+
+int
+SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors,
+                      int firstcolor, int ncolors)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return -1;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->SetTexturePalette) {
+        return -1;
+    }
+    return renderer->SetTexturePalette(renderer, texture, colors, firstcolor,
+                                       ncolors);
 }
 
 int

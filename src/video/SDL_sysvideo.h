@@ -69,6 +69,9 @@ struct SDL_Renderer
     int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*QueryTexturePixels) (SDL_Renderer * renderer, SDL_Texture * texture,
                                void **pixels, int *pitch);
+    int (*SetTexturePalette) (SDL_Renderer * renderer, SDL_Texture * texture,
+                              SDL_Color * colors, int firstcolor,
+                              int ncolors);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
                           SDL_Rect * rect, const void *pixels, int pitch);
     int (*LockTexture) (SDL_Renderer * renderer, SDL_Texture * texture,

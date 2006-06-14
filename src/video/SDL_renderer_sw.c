@@ -33,6 +33,9 @@ static int SDL_SW_CreateTexture(SDL_Renderer * renderer,
 static int SDL_SW_QueryTexturePixels(SDL_Renderer * renderer,
                                      SDL_Texture * texture, void **pixels,
                                      int *pitch);
+static int SDL_SW_SetTexturePalette(SDL_Renderer * renderer,
+                                    SDL_Texture * texture, SDL_Color * colors,
+                                    int firstcolor, int ncolors);
 static int SDL_SW_UpdateTexture(SDL_Renderer * renderer,
                                 SDL_Texture * texture, SDL_Rect * rect,
                                 const void *pixels, int pitch);
@@ -130,6 +133,7 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->CreateTexture = SDL_SW_CreateTexture;
     renderer->QueryTexturePixels = SDL_SW_QueryTexturePixels;
+    renderer->SetTexturePalette = SDL_SW_SetTexturePalette;
     renderer->UpdateTexture = SDL_SW_UpdateTexture;
     renderer->LockTexture = SDL_SW_LockTexture;
     renderer->UnlockTexture = SDL_SW_UnlockTexture;
@@ -189,7 +193,7 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
     return renderer;
 }
 
-int
+static int
 SDL_SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface;
@@ -218,7 +222,7 @@ SDL_SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
-int
+static int
 SDL_SW_QueryTexturePixels(SDL_Renderer * renderer, SDL_Texture * texture,
                           void **pixels, int *pitch)
 {
@@ -229,7 +233,17 @@ SDL_SW_QueryTexturePixels(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-int
+static int
+SDL_SW_SetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
+                         SDL_Color * colors, int firstcolor, int ncolors)
+{
+    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+
+    SDL_SetColors(surface, colors, firstcolor, ncolors);
+    return 0;
+}
+
+static int
 SDL_SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                      SDL_Rect * rect, const void *pixels, int pitch)
 {
@@ -251,7 +265,7 @@ SDL_SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-int
+static int
 SDL_SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                    SDL_Rect * rect, int markDirty, void **pixels, int *pitch)
 {
@@ -264,25 +278,25 @@ SDL_SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     return 0;
 }
 
-void
+static void
 SDL_SW_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
 }
 
-void
+static void
 SDL_SW_DirtyTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                     int numrects, SDL_Rect * rects)
 {
 }
 
-void
+static void
 SDL_SW_SelectRenderTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
     data->target = (SDL_Surface *) texture->driverdata;
 }
 
-void
+static void
 SDL_SW_RenderFill(SDL_Renderer * renderer, SDL_Rect * rect, Uint32 color)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
@@ -297,7 +311,7 @@ SDL_SW_RenderFill(SDL_Renderer * renderer, SDL_Rect * rect, Uint32 color)
     SDL_FillRect(data->target, rect, color);
 }
 
-int
+static int
 SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                   SDL_Rect * srcrect, SDL_Rect * dstrect, int blendMode,
                   int scaleMode)
@@ -318,7 +332,7 @@ SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 }
 
-int
+static int
 SDL_SW_RenderReadPixels(SDL_Renderer * renderer, SDL_Rect * rect,
                         void *pixels, int pitch)
 {
@@ -341,7 +355,7 @@ SDL_SW_RenderReadPixels(SDL_Renderer * renderer, SDL_Rect * rect,
     return 0;
 }
 
-int
+static int
 SDL_SW_RenderWritePixels(SDL_Renderer * renderer, SDL_Rect * rect,
                          const void *pixels, int pitch)
 {
@@ -364,7 +378,7 @@ SDL_SW_RenderWritePixels(SDL_Renderer * renderer, SDL_Rect * rect,
     return 0;
 }
 
-void
+static void
 SDL_SW_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
@@ -396,7 +410,7 @@ SDL_SW_RenderPresent(SDL_Renderer * renderer)
     data->current_screen = new_screen;
 }
 
-void
+static void
 SDL_SW_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
@@ -404,7 +418,7 @@ SDL_SW_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     SDL_FreeSurface(surface);
 }
 
-void
+static void
 SDL_SW_DestroyRenderer(SDL_Renderer * renderer)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;

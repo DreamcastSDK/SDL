@@ -21,7 +21,7 @@
 */
 #include "SDL_config.h"
 
-#if 0 /* TODO */
+#if 0                           /* TODO */
 /* This is the software implementation of the YUV video overlay support */
 
 /* This code was derived from code carrying the following copyright notices:

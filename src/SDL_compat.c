@@ -581,6 +581,12 @@ SDL_WM_GrabInput(SDL_GrabMode mode)
     return (SDL_GrabMode) SDL_GetWindowGrab(SDL_VideoWindow);
 }
 
+void
+SDL_WarpMouse(Uint16 x, Uint16 y)
+{
+    SDL_WarpMouseInWindow(SDL_VideoWindow, x, y);
+}
+
 Uint8
 SDL_GetAppState(void)
 {
