@@ -134,6 +134,8 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
     int w, h;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
+    void *pixels;
+    int pitch;
 
     if (SDL_QueryTexture(textureID, &format, NULL, &w, &h) < 0) {
         return NULL;
@@ -145,14 +147,22 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
         return NULL;
     }
 
-    surface = SDL_CreateRGBSurface(0, 0, 0, bpp, Rmask, Gmask, Bmask, Amask);
-    if (surface != NULL) {
-        surface->flags |= (SDL_HWSURFACE | SDL_PREALLOC);
-        surface->w = w;
-        surface->h = h;
-        surface->lock_data = (void *) textureID;
-        SDL_SetClipRect(surface, NULL);
+    if (SDL_QueryTexturePixels(textureID, &pixels, &pitch) == 0) {
+        surface =
+            SDL_CreateRGBSurfaceFrom(pixels, w, h, bpp, pitch, Rmask, Gmask,
+                                     Bmask, Amask);
+    } else {
+        surface =
+            SDL_CreateRGBSurface(0, 0, 0, bpp, Rmask, Gmask, Bmask, Amask);
+        if (surface) {
+            surface->flags |= SDL_HWSURFACE;
+            surface->w = w;
+            surface->h = h;
+            surface->lock_data = (void *) textureID;
+            SDL_SetClipRect(surface, NULL);
+        }
     }
+
     return surface;
 }
 

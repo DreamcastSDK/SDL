@@ -45,7 +45,8 @@ SDL_RenderDriver SDL_DUMMY_RenderDriver = {
     SDL_DUMMY_CreateRenderer,
     {
      "minimal",
-     (SDL_Renderer_Minimal | SDL_Renderer_PresentCopy),
+     (SDL_Renderer_Minimal | SDL_Renderer_PresentDiscard |
+      SDL_Renderer_PresentCopy),
      SDL_TextureBlendMode_None,
      SDL_TextureScaleMode_None,
      0,
@@ -167,7 +168,7 @@ SDL_DUMMY_RenderPresent(SDL_Renderer * renderer)
 
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_screen-%8.8d.bmp",
+        SDL_snprintf(file, sizeof(file), "SDL_frame-%8.8d.bmp",
                      ++frame_number);
         SDL_SaveBMP(surface, file);
     }

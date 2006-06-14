@@ -767,7 +767,7 @@ extern DECLSPEC SDL_TextureID SDLCALL SDL_CreateTexture(Uint32 format,
 /**
  * \fn SDL_TextureID SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface *surface)
  *
- * \brief Create a texture from an existing surface
+ * \brief Create a texture from an existing surface.
  *
  * \param format The format of the texture, or 0 to pick an appropriate format
  * \param access One of the enumerated values in SDL_TextureAccess
@@ -802,6 +802,20 @@ extern DECLSPEC SDL_TextureID SDLCALL SDL_CreateTextureFromSurface(Uint32
 extern DECLSPEC int SDLCALL SDL_QueryTexture(SDL_TextureID textureID,
                                              Uint32 * format, int *access,
                                              int *w, int *h);
+
+/**
+ * \fn int SDL_QueryTexturePixels(SDL_TextureID textureID, void **pixels, int pitch)
+ *
+ * \brief Query the pixels of a texture, if the texture does not need to be locked for pixel access.
+ *
+ * \param texture A texture to be queried, which was created with SDL_TextureAccess_Local
+ * \param pixels A pointer filled with a pointer to the pixels for the texture 
+ * \param pitch A pointer filled in with the pitch of the pixel data
+ *
+ * \return 0 on success, or -1 if the texture is not valid, or must be locked for pixel access.
+ */
+extern DECLSPEC int SDLCALL SDL_QueryTexturePixels(SDL_TextureID textureID,
+                                                   void **pixels, int *pitch);
 
 /**
  * \fn int SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors, int firstcolor, int ncolors)

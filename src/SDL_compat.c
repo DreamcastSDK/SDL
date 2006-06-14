@@ -25,10 +25,14 @@
 
 #include "SDL.h"
 
-#include "video/SDL_sysvideo.h"
+#include "video/SDL_pixels_c.h"
 
 
-static SDL_WindowID window;
+static SDL_WindowID SDL_VideoWindow;
+static SDL_TextureID SDL_VideoTexture;
+static SDL_Surface *SDL_VideoSurface;
+static SDL_Surface *SDL_ShadowSurface;
+static SDL_Surface *SDL_PublicSurface;
 static char *wm_title;
 
 char *
@@ -213,6 +217,7 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     Uint32 window_flags;
     Uint32 desktop_format;
     Uint32 desired_format;
+    Uint32 texture_format;
 
     if (!SDL_GetVideoDevice()) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
@@ -221,7 +226,16 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     }
 
     /* Destroy existing window */
-    SDL_DestroyWindow(window);
+    SDL_PublicSurface = NULL;
+    if (SDL_ShadowSurface) {
+        SDL_FreeSurface(SDL_ShadowSurface);
+        SDL_ShadowSurface = NULL;
+    }
+    if (SDL_VideoSurface) {
+        SDL_FreeSurface(SDL_ShadowSurface);
+        SDL_VideoSurface = NULL;
+    }
+    SDL_DestroyWindow(SDL_VideoWindow);
 
     /* Set up the event filter */
     filter = SDL_GetEventFilter();
@@ -244,8 +258,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     if (flags & SDL_NOFRAME) {
         window_flags |= SDL_WINDOW_BORDERLESS;
     }
-    window = SDL_CreateWindow(wm_title, 0, 0, width, height, window_flags);
-    if (!window) {
+    SDL_VideoWindow =
+        SDL_CreateWindow(wm_title, 0, 0, width, height, window_flags);
+    if (!SDL_VideoWindow) {
         return NULL;
     }
 
@@ -308,101 +323,82 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         return NULL;
     }
 
-    /* Create the display surface */
-    return SDL_CreateWindowSurface(window, desired_format, flags);
-}
-
-SDL_Surface *
-SDL_CreateWindowSurface(SDL_WindowID windowID, Uint32 format, Uint32 flags)
-{
-    SDL_Window *window = SDL_GetWindowFromID(windowID);
-    Uint32 black;
-    SDL_Surface *surface;
-
-    if (!window) {
+    /* Create a renderer for the window */
+    if (SDL_CreateRenderer(SDL_VideoWindow, -1, 0) < 0) {
         return NULL;
     }
 
-    if (!_this->CreateWindowSurface) {
+    /* Create a texture for the screen surface */
+    SDL_VideoTexture =
+        SDL_CreateTexture(desired_format, SDL_TextureAccess_Local, width,
+                          height);
+    if (!SDL_VideoTexture) {
+        SDL_VideoTexture =
+            SDL_CreateTexture(0, SDL_TextureAccess_Local, width, height);
+    }
+    if (!SDL_VideoTexture) {
         return NULL;
     }
 
-    if (!window->surface) {
-        _this->CreateWindowSurface(_this, window, flags);
-        if (!window->surface) {
-            return NULL;
-        }
-        window->surface->flags |= SDL_SCREEN_SURFACE;
-
-        /* If we have a palettized surface, create a default palette */
-        if (window->surface->format->palette) {
-            SDL_Color colors[256];
-            SDL_PixelFormat *vf = window->surface->format;
-            SDL_DitherColors(colors, vf->BitsPerPixel);
-            SDL_SetColors(window->surface, colors, 0, vf->palette->ncolors);
-        }
+    /* Create the screen surface */
+    SDL_VideoSurface = SDL_CreateRGBSurfaceFromTexture(SDL_VideoTexture);
+    if (!SDL_VideoSurface) {
+        return NULL;
     }
-    surface = window->surface;
 
-    if (window->shadow) {
-        SDL_FreeSurface(window->shadow);
-        window->shadow = NULL;
+    /* Set a default screen palette */
+    if (SDL_VideoSurface->format->palette) {
+        SDL_VideoSurface->flags |= SDL_HWPALETTE;
+        SDL_DitherColors(SDL_VideoSurface->format->palette->colors,
+                         SDL_VideoSurface->format->BitsPerPixel);
+        SDL_SetTexturePalette(SDL_VideoTexture,
+                              SDL_VideoSurface->format->palette->colors, 0,
+                              SDL_VideoSurface->format->palette->ncolors);
     }
 
     /* Create a shadow surface if necessary */
-    if ((!(flags & SDL_ANYFORMAT)
-         && (format != SDL_GetCurrentDisplayMode()->format))
-        || ((flags & SDL_HWPALETTE)
-            && !(window->surface->flags & SDL_HWPALETTE))) {
-        int bpp;
-        Uint32 Rmask, Gmask, Bmask, Amask;
-
-        SDL_PixelFormatEnumToMasks(format, &bpp, &Amask, &Gmask, &Bmask,
-                                   &Amask);
-        window->shadow =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, surface->w, surface->h, bpp,
-                                 Rmask, Gmask, Bmask, Amask);
-        if (window->shadow == NULL) {
+    if (((bpp != SDL_VideoSurface->format->BitsPerPixel)
+         && !(flags & SDL_ANYFORMAT))
+        || ((SDL_VideoSurface->flags & SDL_HWSURFACE)
+            && !(flags & SDL_HWSURFACE))) {
+        if ((bpp == SDL_VideoSurface->format->BitsPerPixel)
+            || (flags & SDL_ANYFORMAT)) {
+            SDL_ShadowSurface =
+                SDL_CreateRGBSurface(0, width, height,
+                                     SDL_VideoSurface->format->BitsPerPixel,
+                                     SDL_VideoSurface->format->Rmask,
+                                     SDL_VideoSurface->format->Gmask,
+                                     SDL_VideoSurface->format->Bmask,
+                                     SDL_VideoSurface->format->Amask);
+        } else {
+            SDL_ShadowSurface =
+                SDL_CreateRGBSurface(0, width, height, bpp, 0, 0, 0, 0);
+        }
+        if (!SDL_ShadowSurface) {
             return NULL;
         }
-        window->shadow->flags |= SDL_SHADOW_SURFACE;
 
-        surface = window->shadow;
-
-        /* 8-bit shadow surfaces report that they have exclusive palette */
-        if (surface->format->palette) {
-            surface->flags |= SDL_HWPALETTE;
-            if (format == SDL_GetCurrentDisplayMode()->format) {
-                SDL_memcpy(surface->format->palette->colors,
-                           window->surface->format->palette->colors,
-                           window->surface->format->palette->ncolors *
-                           sizeof(SDL_Color));
-            } else {
-                SDL_DitherColors(surface->format->palette->colors, bpp);
-            }
+        /* 8-bit SDL_ShadowSurface surfaces report that they have exclusive palette */
+        if (SDL_ShadowSurface->format->palette) {
+            SDL_ShadowSurface->flags |= SDL_HWPALETTE;
+            SDL_DitherColors(SDL_ShadowSurface->format->palette->colors,
+                             SDL_ShadowSurface->format->BitsPerPixel);
         }
     }
+    SDL_PublicSurface =
+        (SDL_ShadowSurface ? SDL_ShadowSurface : SDL_VideoSurface);
 
     /* Clear the surface for display */
-    {
-        Uint32 black = SDL_MapRGB(surface->format, 0, 0, 0);
-        SDL_FillRect(surface, NULL, black);
-        if (surface->flags & SDL_DOUBLEBUF) {
-            SDL_Flip(surface);
-            SDL_FillRect(surface, NULL, black);
-        }
-        SDL_Flip(surface);
-    }
+    SDL_FillRect(SDL_PublicSurface, NULL, 0);
 
-    return surface;
+    /* We're finally done! */
+    return SDL_PublicSurface;
 }
 
 SDL_Surface *
 SDL_GetVideoSurface(void)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
-    return SDL_VideoSurface;
+    return SDL_PublicSurface;
 }
 
 SDL_Surface *
@@ -412,14 +408,11 @@ SDL_DisplayFormat(SDL_Surface * surface)
 
     if (!SDL_PublicSurface) {
         SDL_SetError("No video mode has been set");
-        return (NULL);
+        return NULL;
     }
+
     /* Set the flags appropriate for copying to display surface */
-    if (((SDL_PublicSurface->flags & SDL_HWSURFACE) == SDL_HWSURFACE)
-        && _this->info.blit_hw)
-        flags = SDL_HWSURFACE;
-    else
-        flags = SDL_SWSURFACE;
+    flags = SDL_SWSURFACE;
 #ifdef AUTORLE_DISPLAYFORMAT
     flags |= (surface->flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA));
     flags |= SDL_RLEACCELOK;
@@ -427,7 +420,7 @@ SDL_DisplayFormat(SDL_Surface * surface)
     flags |=
         surface->flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA | SDL_RLEACCELOK);
 #endif
-    return (SDL_ConvertSurface(surface, SDL_PublicSurface->format, flags));
+    return SDL_ConvertSurface(surface, SDL_PublicSurface->format, flags);
 }
 
 SDL_Surface *
@@ -445,7 +438,7 @@ SDL_DisplayFormatAlpha(SDL_Surface * surface)
 
     if (!SDL_PublicSurface) {
         SDL_SetError("No video mode has been set");
-        return (NULL);
+        return NULL;
     }
     vf = SDL_PublicSurface->format;
 
@@ -481,7 +474,14 @@ SDL_DisplayFormatAlpha(SDL_Surface * surface)
     flags |= surface->flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
     converted = SDL_ConvertSurface(surface, format, flags);
     SDL_FreeFormat(format);
-    return (converted);
+    return converted;
+}
+
+int
+SDL_Flip(SDL_Surface * screen)
+{
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
+    return 0;
 }
 
 void
@@ -512,92 +512,24 @@ void
 SDL_UpdateRects(SDL_Surface * screen, int numrects, SDL_Rect * rects)
 {
     int i;
-    SDL_Window *window;
 
-    /* Find the window corresponding to this surface */
-    window = SDL_GetWindowFromSurface(screen);
-    if (!window) {
-        SDL_SetError("Couldn't find window associated with surface");
-        return;
-    }
-
-    if (screen->flags & SDL_SHADOW_SURFACE) {
-        if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
-            SDL_LockCursor();
-            SDL_DrawCursor(screen);
-            for (i = 0; i < numrects; ++i) {
-                SDL_LowerBlit(screen, &rects[i], window->surface, &rects[i]);
-            }
-            SDL_EraseCursor(screen);
-            SDL_UnlockCursor();
-        } else {
-            for (i = 0; i < numrects; ++i) {
-                SDL_LowerBlit(screen, &rects[i], window->surface, &rects[i]);
-            }
+    if (screen == SDL_ShadowSurface) {
+        for (i = 0; i < numrects; ++i) {
+            SDL_LowerBlit(SDL_ShadowSurface, &rects[i], SDL_VideoSurface,
+                          &rects[i]);
         }
 
         /* Fall through to video surface update */
-        screen = window->surface;
+        screen = SDL_VideoSurface;
     }
-    if ((screen->flags & SDL_SCREEN_SURFACE) && _this->UpdateWindowSurface) {
-        /* Update the video surface */
-        if (screen->offset) {
-            int offset_y = screen->offset / screen->pitch;
-            int offset_x = screen->offset % screen->pitch;
-            for (i = 0; i < numrects; ++i) {
-                rects[i].x += offset_x;
-                rects[i].y += offset_y;
-            }
-            _this->UpdateWindowSurface(_this, window, numrects, rects);
-            for (i = 0; i < numrects; ++i) {
-                rects[i].x -= offset_x;
-                rects[i].y -= offset_y;
-            }
-        } else {
-            _this->UpdateWindowSurface(_this, window, numrects, rects);
+    if (screen == SDL_VideoSurface) {
+        for (i = 0; i < numrects; ++i) {
+            SDL_RenderCopy(SDL_VideoTexture, &rects[i], &rects[i],
+                           SDL_TextureBlendMode_None,
+                           SDL_TextureScaleMode_None);
         }
+        SDL_RenderPresent();
     }
-}
-
-int
-SDL_Flip(SDL_Surface * screen)
-{
-    SDL_Window *window;
-
-    /* Find the window corresponding to this surface */
-    window = SDL_GetWindowFromSurface(screen);
-    if (!window) {
-        SDL_SetError("Couldn't find window associated with surface");
-        return;
-    }
-
-    /* Copy the shadow surface to the video surface */
-    if (screen->flags & SDL_SHADOW_SURFACE) {
-        SDL_Rect rect;
-
-        rect.x = 0;
-        rect.y = 0;
-        rect.w = screen->w;
-        rect.h = screen->h;
-        if (SHOULD_DRAWCURSOR(SDL_cursorstate)) {
-            SDL_LockCursor();
-            SDL_DrawCursor(screen);
-            SDL_LowerBlit(screen, &rect, window->surface, &rect);
-            SDL_EraseCursor(screen);
-            SDL_UnlockCursor();
-        } else {
-            SDL_LowerBlit(screen, &rect, window->surface, &rect);
-        }
-
-        /* Fall through to video surface update */
-        screen = window->surface;
-    }
-    if (screen->flags & SDL_DOUBLEBUF) {
-        _this->FlipWindowSurface(_this, window);
-    } else {
-        SDL_UpdateRect(screen, 0, 0, 0, 0);
-    }
-    return (0);
 }
 
 void
@@ -608,7 +540,7 @@ SDL_WM_SetCaption(const char *title, const char *icon)
     } else {
         wm_title = SDL_strdup(title);
     }
-    SDL_SetWindowTitle(window, wm_title);
+    SDL_SetWindowTitle(SDL_VideoWindow, wm_title);
 }
 
 void
@@ -631,7 +563,7 @@ SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
 int
 SDL_WM_IconifyWindow(void)
 {
-    SDL_MinimizeWindow(window);
+    SDL_MinimizeWindow(SDL_VideoWindow);
 }
 
 int
@@ -644,9 +576,9 @@ SDL_GrabMode
 SDL_WM_GrabInput(SDL_GrabMode mode)
 {
     if (mode != SDL_GRAB_QUERY) {
-        SDL_SetWindowGrab(window, mode);
+        SDL_SetWindowGrab(SDL_VideoWindow, mode);
     }
-    return (SDL_GrabMode) SDL_GetWindowGrab(window);
+    return (SDL_GrabMode) SDL_GetWindowGrab(SDL_VideoWindow);
 }
 
 Uint8
@@ -655,7 +587,7 @@ SDL_GetAppState(void)
     Uint8 state = 0;
     Uint32 flags = 0;
 
-    flags = SDL_GetWindowFlags(window);
+    flags = SDL_GetWindowFlags(SDL_VideoWindow);
     if ((flags & SDL_WINDOW_SHOWN) && !(flags & SDL_WINDOW_MINIMIZED)) {
         state |= SDL_APPACTIVE;
     }
@@ -687,7 +619,6 @@ int
 SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
                     int ncolors)
 {
-    SDL_Window *window = NULL;
     SDL_Palette *pal;
     int gotall;
     int palsize;
@@ -704,17 +635,10 @@ SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
         gotall = 0;
     }
 
-    if (screen->flags & (SDL_SHADOW_SURFACE | SDL_SCREEN_SURFACE)) {
-        window = SDL_GetWindowFromSurface(screen);
-        if (!window) {
-            return 0;
-        }
-    }
-
-    if (screen->flags & SDL_SHADOW_SURFACE) {
+    if (screen == SDL_ShadowSurface) {
         SDL_Palette *vidpal;
 
-        vidpal = window->surface->format->palette;
+        vidpal = SDL_VideoSurface->format->palette;
         if (vidpal && vidpal->ncolors == pal->ncolors) {
             /* This is a shadow surface, and the physical
              * framebuffer is also indexed. Propagate the
@@ -724,28 +648,18 @@ SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
             SDL_memcpy(vidpal->colors + firstcolor, colors,
                        ncolors * sizeof(*colors));
         }
-        if (window->surface->flags & SDL_HWPALETTE) {
+        if (SDL_VideoSurface->flags & SDL_HWPALETTE) {
             /* Set the physical palette */
-            screen = window->surface;
+            screen = SDL_VideoSurface;
         } else {
             SDL_UpdateRect(screen, 0, 0, 0, 0);
         }
     }
 
-    if (screen->flags & SDL_SCREEN_SURFACE) {
-        if (_this->SetWindowColors) {
-            gotall =
-                _this->SetWindowColors(_this, window, firstcolor, ncolors,
-                                       colors);
-            if (!gotall) {
-                /* The video flags shouldn't have SDL_HWPALETTE, and
-                   the video driver is responsible for copying back the
-                   correct colors into the video surface palette.
-                 */
-                ;
-            }
-        }
-        SDL_CursorPaletteChanged();
+    if (screen == SDL_VideoSurface) {
+        SDL_SetTexturePalette(SDL_VideoTexture,
+                              SDL_VideoSurface->format->palette->colors, 0,
+                              SDL_VideoSurface->format->palette->ncolors);
     }
 
     return gotall;
@@ -754,9 +668,10 @@ SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
 int
 SDL_GetWMInfo(SDL_SysWMinfo * info)
 {
-    return SDL_GetWindowWMInfo(window, info);
+    return SDL_GetWindowWMInfo(SDL_VideoWindow, info);
 }
 
+#if 0
 void
 SDL_MoveCursor(int x, int y)
 {
@@ -1349,5 +1264,6 @@ SDL_FreeYUVOverlay(SDL_Overlay * overlay)
         SDL_free(overlay);
     }
 }
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

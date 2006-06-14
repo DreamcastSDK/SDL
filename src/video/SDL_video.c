@@ -1286,6 +1286,23 @@ SDL_QueryTexture(SDL_TextureID textureID, Uint32 * format, int *access,
 }
 
 int
+SDL_QueryTexturePixels(SDL_TextureID textureID, void **pixels, int *pitch)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return -1;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->QueryTexturePixels) {
+        return -1;
+    }
+    return renderer->QueryTexturePixels(renderer, texture, pixels, pitch);
+}
+
+int
 SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect * rect,
                   const void *pixels, int pitch)
 {
