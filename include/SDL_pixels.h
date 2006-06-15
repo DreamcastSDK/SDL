@@ -108,7 +108,13 @@ enum
 #define SDL_BITSPERPIXEL(X)	(((X) >> 8) & 0xFF)
 #define SDL_BYTESPERPIXEL(X)	(((X) >> 0) & 0xFF)
 
-#define SDL_ISPIXELFORMAT_FOURCC(format)    (((format) & 0x8000000) != 0)
+#define SDL_ISPIXELFORMAT_INDEXED(format)   \
+    ((SDL_PIXELTYPE(format) == SDL_PixelType_Index1) || \
+     (SDL_PIXELTYPE(format) == SDL_PixelType_Index4) || \
+     (SDL_PIXELTYPE(format) == SDL_PixelType_Index8))
+
+#define SDL_ISPIXELFORMAT_FOURCC(format)    \
+    ((format) && !((format) & 0x8000000))
 
 enum
 {

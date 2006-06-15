@@ -51,10 +51,6 @@
 /* Initialization/Query functions */
 static int DUMMY_VideoInit(_THIS);
 static int DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode);
-static void DUMMY_CreateWindowSurface(_THIS, SDL_Window * window,
-                                      Uint32 flags);
-static void DUMMY_UpdateWindowSurface(_THIS, SDL_Window * window,
-                                      int numrects, SDL_Rect * rects);
 static void DUMMY_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */

@@ -559,7 +559,86 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         return 0;
     }
 
+    if (SDL_ISPIXELFORMAT_INDEXED(display_mode.format)) {
+        display->palette.ncolors =
+            (1 << SDL_BITSPERPIXEL(display_mode.format));
+        display->palette.colors =
+            (SDL_Color *) SDL_realloc(display->palette.colors,
+                                      display->palette.ncolors *
+                                      sizeof(*display->palette.colors));
+        if (!display->palette.colors) {
+            SDL_OutOfMemory();
+            return -1;
+        }
+        SDL_memset(display->palette.colors, 0xff,
+                   display->palette.ncolors *
+                   sizeof(*display->palette.colors));
+    } else {
+        if (display->palette.colors) {
+            SDL_free(display->palette.colors);
+        }
+        display->palette.colors = NULL;
+        display->palette.ncolors = 0;
+    }
+
     return _this->SetDisplayMode(_this, &display_mode);
+}
+
+int
+SDL_SetDisplayPalette(const SDL_Color * colors, int firstcolor, int ncolors)
+{
+    SDL_Palette *palette;
+
+    if (!_this) {
+        SDL_SetError("Video subsystem has not been initialized");
+        return -1;
+    }
+
+    palette = &SDL_CurrentDisplay.palette;
+    if (!palette->ncolors) {
+        SDL_SetError("Display mode does not have a palette");
+        return -1;
+    }
+
+    if (firstcolor < 0 || (firstcolor + ncolors) > palette->ncolors) {
+        SDL_SetError("Palette indices are out of range");
+        return -1;
+    }
+
+    SDL_memcpy(&palette->colors[firstcolor], colors,
+               ncolors * sizeof(*colors));
+
+    if (_this->SetDisplayPalette) {
+        return _this->SetDisplayPalette(_this, palette);
+    } else {
+        return 0;
+    }
+}
+
+int
+SDL_GetDisplayPalette(SDL_Color * colors, int firstcolor, int ncolors)
+{
+    SDL_Palette *palette;
+
+    if (!_this) {
+        SDL_SetError("Video subsystem has not been initialized");
+        return -1;
+    }
+
+    palette = &SDL_CurrentDisplay.palette;
+    if (!palette->ncolors) {
+        SDL_SetError("Display mode does not have a palette");
+        return -1;
+    }
+
+    if (firstcolor < 0 || (firstcolor + ncolors) > palette->ncolors) {
+        SDL_SetError("Palette indices are out of range");
+        return -1;
+    }
+
+    SDL_memcpy(colors, &palette->colors[firstcolor],
+               ncolors * sizeof(*colors));
+    return 0;
 }
 
 SDL_WindowID
@@ -620,7 +699,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 }
 
 SDL_WindowID
-SDL_CreateWindowFrom(void *data)
+SDL_CreateWindowFrom(const void *data)
 {
     SDL_Window window;
     int num_windows;
@@ -1317,7 +1396,7 @@ SDL_QueryTexturePixels(SDL_TextureID textureID, void **pixels, int *pitch)
 }
 
 int
-SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors,
+SDL_SetTexturePalette(SDL_TextureID textureID, const SDL_Color * colors,
                       int firstcolor, int ncolors)
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
@@ -1336,7 +1415,26 @@ SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors,
 }
 
 int
-SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect * rect,
+SDL_GetTexturePalette(SDL_TextureID textureID, SDL_Color * colors,
+                      int firstcolor, int ncolors)
+{
+    SDL_Texture *texture = SDL_GetTextureFromID(textureID);
+    SDL_Renderer *renderer;
+
+    if (!texture) {
+        return -1;
+    }
+
+    renderer = texture->renderer;
+    if (!renderer->GetTexturePalette) {
+        return -1;
+    }
+    return renderer->GetTexturePalette(renderer, texture, colors, firstcolor,
+                                       ncolors);
+}
+
+int
+SDL_UpdateTexture(SDL_TextureID textureID, const SDL_Rect * rect,
                   const void *pixels, int pitch)
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
@@ -1354,7 +1452,7 @@ SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect * rect,
 }
 
 int
-SDL_LockTexture(SDL_TextureID textureID, SDL_Rect * rect, int markDirty,
+SDL_LockTexture(SDL_TextureID textureID, const SDL_Rect * rect, int markDirty,
                 void **pixels, int *pitch)
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
@@ -1390,7 +1488,8 @@ SDL_UnlockTexture(SDL_TextureID textureID)
 }
 
 void
-SDL_DirtyTexture(SDL_TextureID textureID, int numrects, SDL_Rect * rects)
+SDL_DirtyTexture(SDL_TextureID textureID, int numrects,
+                 const SDL_Rect * rects)
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
@@ -1423,7 +1522,7 @@ SDL_SelectRenderTexture(SDL_TextureID textureID)
 }
 
 int
-SDL_RenderFill(SDL_Rect * rect, Uint32 color)
+SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
 {
     SDL_Renderer *renderer;
 
@@ -1440,8 +1539,8 @@ SDL_RenderFill(SDL_Rect * rect, Uint32 color)
 }
 
 int
-SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect * srcrect,
-               SDL_Rect * dstrect, int blendMode, int scaleMode)
+SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
+               const SDL_Rect * dstrect, int blendMode, int scaleMode)
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
@@ -1460,7 +1559,7 @@ SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect * srcrect,
 }
 
 int
-SDL_RenderReadPixels(SDL_Rect * rect, void *pixels, int pitch)
+SDL_RenderReadPixels(const SDL_Rect * rect, void *pixels, int pitch)
 {
     SDL_Renderer *renderer;
 
@@ -1477,7 +1576,7 @@ SDL_RenderReadPixels(SDL_Rect * rect, void *pixels, int pitch)
 }
 
 int
-SDL_RenderWritePixels(SDL_Rect * rect, const void *pixels, int pitch)
+SDL_RenderWritePixels(const SDL_Rect * rect, const void *pixels, int pitch)
 {
     SDL_Renderer *renderer;
 
@@ -1616,6 +1715,11 @@ SDL_VideoQuit(void)
         if (display->windows) {
             SDL_free(display->windows);
             display->windows = NULL;
+        }
+        if (display->palette.colors) {
+            SDL_free(display->palette.colors);
+            display->palette.colors = NULL;
+            display->palette.ncolors = 0;
         }
     }
     _this->VideoQuit(_this);

@@ -462,14 +462,26 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(const
 extern DECLSPEC int SDLCALL SDL_SetDisplayMode(const SDL_DisplayMode * mode);
 
 /**
- * \fn int SDL_SetDisplayColormap(SDL_Color *colors, int firstcolor, int ncolors)
+ * \fn int SDL_SetDisplayPalette(const SDL_Color *colors, int firstcolor, int ncolors)
  *
- * \brief Set the colormap for indexed display modes.
+ * \brief Set the palette entries for indexed display modes.
  *
- * \return 0 on success, or -1 if not all the colors could be set.
+ * \return 0 on success, or -1 if the display mode isn't palettized or the colors couldn't be set.
  */
-extern DECLSPEC int SDLCALL SDL_SetDisplayColors(SDL_Color * colors,
-                                                 int firstcolor, int ncolors);
+extern DECLSPEC int SDLCALL SDL_SetDisplayPalette(const SDL_Color * colors,
+                                                  int firstcolor,
+                                                  int ncolors);
+
+/**
+ * \fn int SDL_GetDisplayPalette(SDL_Color *colors, int firstcolor, int ncolors)
+ *
+ * \brief Gets the palette entries for indexed display modes.
+ *
+ * \return 0 on success, or -1 if the display mode isn't palettized
+ */
+extern DECLSPEC int SDLCALL SDL_GetDisplayPalette(SDL_Color * colors,
+                                                  int firstcolor,
+                                                  int ncolors);
 
 /**
  * \fn SDL_WindowID SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
@@ -506,7 +518,7 @@ extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindow(const char *title,
  *
  * \sa SDL_DestroyWindow()
  */
-extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindowFrom(void *data);
+extern DECLSPEC SDL_WindowID SDLCALL SDL_CreateWindowFrom(const void *data);
 
 /**
  * \fn Uint32 SDL_GetWindowFlags(SDL_WindowID windowID)
@@ -818,7 +830,7 @@ extern DECLSPEC int SDLCALL SDL_QueryTexturePixels(SDL_TextureID textureID,
                                                    void **pixels, int *pitch);
 
 /**
- * \fn int SDL_SetTexturePalette(SDL_TextureID textureID, SDL_Color * colors, int firstcolor, int ncolors)
+ * \fn int SDL_SetTexturePalette(SDL_TextureID textureID, const SDL_Color * colors, int firstcolor, int ncolors)
  *
  * \brief Update an indexed texture with a color palette
  *
@@ -830,12 +842,29 @@ extern DECLSPEC int SDLCALL SDL_QueryTexturePixels(SDL_TextureID textureID,
  * \return 0 on success, or -1 if the texture is not valid or not an indexed texture
  */
 extern DECLSPEC int SDLCALL SDL_SetTexturePalette(SDL_TextureID textureID,
+                                                  const SDL_Color * colors,
+                                                  int firstcolor,
+                                                  int ncolors);
+
+/**
+ * \fn int SDL_GetTexturePalette(SDL_TextureID textureID, SDL_Color * colors, int firstcolor, int ncolors)
+ *
+ * \brief Update an indexed texture with a color palette
+ *
+ * \param texture The texture to update
+ * \param colors The array to fill with RGB color data
+ * \param firstcolor The first index to retrieve
+ * \param ncolors The number of palette entries to retrieve
+ *
+ * \return 0 on success, or -1 if the texture is not valid or not an indexed texture
+ */
+extern DECLSPEC int SDLCALL SDL_GetTexturePalette(SDL_TextureID textureID,
                                                   SDL_Color * colors,
                                                   int firstcolor,
                                                   int ncolors);
 
 /**
- * \fn int SDL_UpdateTexture(SDL_TextureID textureID, SDL_Rect *rect, const void *pixels, int pitch)
+ * \fn int SDL_UpdateTexture(SDL_TextureID textureID, const SDL_Rect *rect, const void *pixels, int pitch)
  *
  * \brief Update the given texture rectangle with new pixel data.
  *
@@ -849,11 +878,11 @@ extern DECLSPEC int SDLCALL SDL_SetTexturePalette(SDL_TextureID textureID,
  * \note This is a very slow function for textures not created with SDL_TextureAccess_Local.
  */
 extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_TextureID textureID,
-                                              SDL_Rect * rect,
+                                              const SDL_Rect * rect,
                                               const void *pixels, int pitch);
 
 /**
- * \fn void SDL_LockTexture(SDL_TextureID textureID, SDL_Rect *rect, int markDirty, void **pixels, int *pitch)
+ * \fn void SDL_LockTexture(SDL_TextureID textureID, const SDL_Rect *rect, int markDirty, void **pixels, int *pitch)
  *
  * \brief Lock a portion of the texture for pixel access.
  *
@@ -869,8 +898,9 @@ extern DECLSPEC int SDLCALL SDL_UpdateTexture(SDL_TextureID textureID,
  * \sa SDL_UnlockTexture()
  */
 extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_TextureID textureID,
-                                            SDL_Rect * rect, int markDirty,
-                                            void **pixels, int *pitch);
+                                            const SDL_Rect * rect,
+                                            int markDirty, void **pixels,
+                                            int *pitch);
 
 /**
  * \fn void SDL_UnlockTexture(SDL_TextureID textureID)
@@ -883,7 +913,7 @@ extern DECLSPEC int SDLCALL SDL_LockTexture(SDL_TextureID textureID,
 extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_TextureID textureID);
 
 /**
- * \fn void SDL_DirtyTexture(SDL_TextureID textureID, int numrects, SDL_Rect * rects)
+ * \fn void SDL_DirtyTexture(SDL_TextureID textureID, int numrects, const SDL_Rect * rects)
  *
  * \brief Mark the specified rectangles of the texture as dirty.
  *
@@ -893,7 +923,8 @@ extern DECLSPEC void SDLCALL SDL_UnlockTexture(SDL_TextureID textureID);
  * \sa SDL_UnlockTexture()
  */
 extern DECLSPEC void SDLCALL SDL_DirtyTexture(SDL_TextureID textureID,
-                                              int numrects, SDL_Rect * rects);
+                                              int numrects,
+                                              const SDL_Rect * rects);
 
 /**
  * \fn void SDL_SelectRenderTexture(SDL_TextureID textureID)
@@ -905,7 +936,7 @@ extern DECLSPEC void SDLCALL SDL_DirtyTexture(SDL_TextureID textureID,
 extern DECLSPEC void SDLCALL SDL_SelectRenderTexture(SDL_TextureID textureID);
 
 /**
- * \fn void SDL_RenderFill(SDL_Rect *rect, Uint32 color)
+ * \fn void SDL_RenderFill(const SDL_Rect *rect, Uint32 color)
  *
  * \brief Fill the current rendering target with the specified color.
  *
@@ -914,10 +945,11 @@ extern DECLSPEC void SDLCALL SDL_SelectRenderTexture(SDL_TextureID textureID);
  *
  * \return 0 on success, or -1 if there is no renderer current
  */
-extern DECLSPEC int SDLCALL SDL_RenderFill(SDL_Rect * rect, Uint32 color);
+extern DECLSPEC int SDLCALL SDL_RenderFill(const SDL_Rect * rect,
+                                           Uint32 color);
 
 /**
- * \fn int SDL_RenderCopy(SDL_TextureID textureID, SDL_Rect *srcrect, SDL_Rect *dstrect, Uint32 blendMode, Uint32 scaleMode)
+ * \fn int SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect *srcrect, const SDL_Rect *dstrect, Uint32 blendMode, Uint32 scaleMode)
  *
  * \brief Copy a portion of the texture to the current rendering target.
  *
@@ -932,12 +964,12 @@ extern DECLSPEC int SDLCALL SDL_RenderFill(SDL_Rect * rect, Uint32 color);
  * \note You can check the video driver info to see what operations are supported.
  */
 extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_TextureID textureID,
-                                           SDL_Rect * srcrect,
-                                           SDL_Rect * dstrect, int blendMode,
-                                           int scaleMode);
+                                           const SDL_Rect * srcrect,
+                                           const SDL_Rect * dstrect,
+                                           int blendMode, int scaleMode);
 
 /**
- * \fn int SDL_RenderReadPixels(SDL_Rect *rect, void *pixels, int pitch)
+ * \fn int SDL_RenderReadPixels(const SDL_Rect *rect, void *pixels, int pitch)
  *
  * \brief Read pixels from the current rendering target.
  *
@@ -949,11 +981,11 @@ extern DECLSPEC int SDLCALL SDL_RenderCopy(SDL_TextureID textureID,
  *
  * \warning This is a very slow operation, and should not be used frequently.
  */
-extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Rect * rect,
+extern DECLSPEC int SDLCALL SDL_RenderReadPixels(const SDL_Rect * rect,
                                                  void *pixels, int pitch);
 
 /**
- * \fn int SDL_RenderWritePixels(SDL_Rect *rect, const void *pixels, int pitch)
+ * \fn int SDL_RenderWritePixels(const SDL_Rect *rect, const void *pixels, int pitch)
  *
  * \brief Write pixels to the current rendering target.
  *
@@ -965,7 +997,7 @@ extern DECLSPEC int SDLCALL SDL_RenderReadPixels(SDL_Rect * rect,
  *
  * \warning This is a very slow operation, and should not be used frequently.
  */
-extern DECLSPEC int SDLCALL SDL_RenderWritePixels(SDL_Rect * rect,
+extern DECLSPEC int SDLCALL SDL_RenderWritePixels(const SDL_Rect * rect,
                                                   const void *pixels,
                                                   int pitch);
 

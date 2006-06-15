@@ -70,26 +70,30 @@ struct SDL_Renderer
     int (*QueryTexturePixels) (SDL_Renderer * renderer, SDL_Texture * texture,
                                void **pixels, int *pitch);
     int (*SetTexturePalette) (SDL_Renderer * renderer, SDL_Texture * texture,
+                              const SDL_Color * colors, int firstcolor,
+                              int ncolors);
+    int (*GetTexturePalette) (SDL_Renderer * renderer, SDL_Texture * texture,
                               SDL_Color * colors, int firstcolor,
                               int ncolors);
     int (*UpdateTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
-                          SDL_Rect * rect, const void *pixels, int pitch);
+                          const SDL_Rect * rect, const void *pixels,
+                          int pitch);
     int (*LockTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
-                        SDL_Rect * rect, int markDirty, void **pixels,
+                        const SDL_Rect * rect, int markDirty, void **pixels,
                         int *pitch);
     void (*UnlockTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     void (*DirtyTexture) (SDL_Renderer * renderer, SDL_Texture * texture,
-                          int numrects, SDL_Rect * rects);
+                          int numrects, const SDL_Rect * rects);
     void (*SelectRenderTexture) (SDL_Renderer * renderer,
                                  SDL_Texture * texture);
-    void (*RenderFill) (SDL_Renderer * renderer, SDL_Rect * rect,
+    void (*RenderFill) (SDL_Renderer * renderer, const SDL_Rect * rect,
                         Uint32 color);
     int (*RenderCopy) (SDL_Renderer * renderer, SDL_Texture * texture,
-                       SDL_Rect * srcrect, SDL_Rect * dstrect, int blendMode,
-                       int scaleMode);
-    int (*RenderReadPixels) (SDL_Renderer * renderer, SDL_Rect * rect,
+                       const SDL_Rect * srcrect, const SDL_Rect * dstrect,
+                       int blendMode, int scaleMode);
+    int (*RenderReadPixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                              void *pixels, int pitch);
-    int (*RenderWritePixels) (SDL_Renderer * renderer, SDL_Rect * rect,
+    int (*RenderWritePixels) (SDL_Renderer * renderer, const SDL_Rect * rect,
                               const void *pixels, int pitch);
     void (*RenderPresent) (SDL_Renderer * renderer);
     void (*DestroyTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
@@ -142,6 +146,7 @@ struct SDL_VideoDisplay
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
     SDL_DisplayMode current_mode;
+    SDL_Palette palette;
 
     int num_render_drivers;
     SDL_RenderDriver *render_drivers;
@@ -184,18 +189,17 @@ struct SDL_VideoDevice
      */
     int (*SetDisplayMode) (_THIS, const SDL_DisplayMode * mode);
 
-    /* Sets the color entries { firstcolor .. (firstcolor+ncolors-1) }
-       of the physical palette to those in 'colors'.  The return value
-       is 0 if all entries could be set properly or -1 otherwise.
+    /* Sets the color entries of the display palette to those in 'colors'.
+       The return value is 0 if all entries could be set properly or -1
+       otherwise.
      */
-    int (*SetDisplayColors) (_THIS, int firstcolor, int ncolors,
-                             SDL_Color * colors);
+    int (*SetDisplayPalette) (_THIS, SDL_Palette * palette);
 
     /* * * */
     /* Window functions
      */
     int (*CreateWindow) (_THIS, SDL_Window * window);
-    int (*CreateWindowFrom) (_THIS, SDL_Window * window, void *data);
+    int (*CreateWindowFrom) (_THIS, SDL_Window * window, const void *data);
     void (*SetWindowTitle) (_THIS, SDL_Window * window);
     void (*SetWindowPosition) (_THIS, SDL_Window * window);
     void (*SetWindowSize) (_THIS, SDL_Window * window);

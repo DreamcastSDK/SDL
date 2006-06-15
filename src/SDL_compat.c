@@ -666,6 +666,8 @@ SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
         SDL_SetTexturePalette(SDL_VideoTexture,
                               SDL_VideoSurface->format->palette->colors, 0,
                               SDL_VideoSurface->format->palette->ncolors);
+        SDL_SetDisplayPalette(SDL_VideoSurface->format->palette->colors, 0,
+                              SDL_VideoSurface->format->palette->ncolors);
     }
 
     return gotall;
