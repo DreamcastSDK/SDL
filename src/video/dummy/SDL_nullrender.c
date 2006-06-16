@@ -32,11 +32,11 @@ static SDL_Renderer *SDL_DUMMY_CreateRenderer(SDL_Window * window,
 static int SDL_DUMMY_CreateTexture(SDL_Renderer * renderer,
                                    SDL_Texture * texture);
 static int SDL_DUMMY_RenderReadPixels(SDL_Renderer * renderer,
-                                      SDL_Rect * rect, void *pixels,
+                                      const SDL_Rect * rect, void *pixels,
                                       int pitch);
 static int SDL_DUMMY_RenderWritePixels(SDL_Renderer * renderer,
-                                       SDL_Rect * rect, const void *pixels,
-                                       int pitch);
+                                       const SDL_Rect * rect,
+                                       const void *pixels, int pitch);
 static void SDL_DUMMY_RenderPresent(SDL_Renderer * renderer);
 static void SDL_DUMMY_DestroyRenderer(SDL_Renderer * renderer);
 
@@ -57,7 +57,7 @@ SDL_RenderDriver SDL_DUMMY_RenderDriver = {
 
 typedef struct
 {
-    SDL_Surface *screen;
+    SDL_Surface *surface;
 } SDL_DUMMY_RenderData;
 
 SDL_Renderer *
@@ -99,24 +99,34 @@ SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->window = window;
     renderer->driverdata = data;
 
-    data->screen =
+    data->surface =
         SDL_CreateRGBSurface(0, window->w, window->h, bpp, Rmask, Gmask,
                              Bmask, Amask);
-    if (!data->screen) {
+    if (!data->surface) {
         SDL_DUMMY_DestroyRenderer(renderer);
         return NULL;
+    }
+
+    /* If the display has a palette, use it for the window surfaces */
+    if (window->display->palette.ncolors) {
+        SDL_PixelFormat *format = data->surface->format;
+        if (format->palette->colors) {
+            SDL_free(format->palette->colors);
+        }
+        SDL_free(format->palette);
+        format->palette = &window->display->palette;
     }
 
     return renderer;
 }
 
 int
-SDL_DUMMY_RenderReadPixels(SDL_Renderer * renderer, SDL_Rect * rect,
+SDL_DUMMY_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                            void *pixels, int pitch)
 {
     SDL_DUMMY_RenderData *data =
         (SDL_DUMMY_RenderData *) renderer->driverdata;
-    SDL_Surface *surface = data->screen;
+    SDL_Surface *surface = data->surface;
     Uint8 *src, *dst;
     int row;
     size_t length;
@@ -135,12 +145,12 @@ SDL_DUMMY_RenderReadPixels(SDL_Renderer * renderer, SDL_Rect * rect,
 }
 
 int
-SDL_DUMMY_RenderWritePixels(SDL_Renderer * renderer, SDL_Rect * rect,
+SDL_DUMMY_RenderWritePixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                             const void *pixels, int pitch)
 {
     SDL_DUMMY_RenderData *data =
         (SDL_DUMMY_RenderData *) renderer->driverdata;
-    SDL_Surface *surface = data->screen;
+    SDL_Surface *surface = data->surface;
     Uint8 *src, *dst;
     int row;
     size_t length;
@@ -164,7 +174,7 @@ SDL_DUMMY_RenderPresent(SDL_Renderer * renderer)
     static int frame_number;
     SDL_DUMMY_RenderData *data =
         (SDL_DUMMY_RenderData *) renderer->driverdata;
-    SDL_Surface *surface = data->screen;
+    SDL_Surface *surface = data->surface;
 
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
@@ -181,8 +191,9 @@ SDL_DUMMY_DestroyRenderer(SDL_Renderer * renderer)
         (SDL_DUMMY_RenderData *) renderer->driverdata;
 
     if (data) {
-        if (data->screen) {
-            SDL_FreeSurface(data->screen);
+        if (data->surface) {
+            data->surface->format->palette = NULL;
+            SDL_FreeSurface(data->surface);
         }
         SDL_free(data);
     }

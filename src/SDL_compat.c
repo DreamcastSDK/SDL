@@ -218,6 +218,7 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     Uint32 desktop_format;
     Uint32 desired_format;
     Uint32 texture_format;
+    Uint32 surface_flags;
 
     if (!SDL_GetVideoDevice()) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE) < 0) {
@@ -262,6 +263,21 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         SDL_CreateWindow(wm_title, 0, 0, width, height, window_flags);
     if (!SDL_VideoWindow) {
         return NULL;
+    }
+
+    window_flags = SDL_GetWindowFlags(SDL_VideoWindow);
+    surface_flags = SDL_SCREEN_SURFACE;
+    if (window_flags & SDL_WINDOW_FULLSCREEN) {
+        surface_flags |= SDL_FULLSCREEN;
+    }
+    if (window_flags & SDL_WINDOW_OPENGL) {
+        surface_flags |= SDL_OPENGL;
+    }
+    if (window_flags & SDL_WINDOW_RESIZABLE) {
+        surface_flags |= SDL_RESIZABLE;
+    }
+    if (window_flags & SDL_WINDOW_BORDERLESS) {
+        surface_flags |= SDL_NOFRAME;
     }
 
     /* Set up the desired display mode */
@@ -323,6 +339,18 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         return NULL;
     }
 
+    /* If we're in OpenGL mode, just create a stub surface and we're done! */
+    if (flags & SDL_OPENGL) {
+        SDL_VideoSurface =
+            SDL_CreateRGBSurfaceFrom(NULL, width, height, bpp, 0, 0, 0, 0, 0);
+        if (!SDL_VideoSurface) {
+            return NULL;
+        }
+        SDL_VideoSurface->flags |= surface_flags;
+        SDL_PublicSurface = SDL_VideoSurface;
+        return SDL_PublicSurface;
+    }
+
     /* Create a renderer for the window */
     if (SDL_CreateRenderer(SDL_VideoWindow, -1, 0) < 0) {
         return NULL;
@@ -345,6 +373,7 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     if (!SDL_VideoSurface) {
         return NULL;
     }
+    SDL_VideoSurface->flags |= surface_flags;
 
     /* Set a default screen palette */
     if (SDL_VideoSurface->format->palette) {
@@ -353,6 +382,8 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
                          SDL_VideoSurface->format->BitsPerPixel);
         SDL_SetTexturePalette(SDL_VideoTexture,
                               SDL_VideoSurface->format->palette->colors, 0,
+                              SDL_VideoSurface->format->palette->ncolors);
+        SDL_SetDisplayPalette(SDL_VideoSurface->format->palette->colors, 0,
                               SDL_VideoSurface->format->palette->ncolors);
     }
 
@@ -377,6 +408,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         if (!SDL_ShadowSurface) {
             return NULL;
         }
+        surface_flags &= ~SDL_SCREEN_SURFACE;
+        surface_flags |= SDL_SHADOW_SURFACE;
+        SDL_ShadowSurface->flags |= surface_flags;
 
         /* 8-bit SDL_ShadowSurface surfaces report that they have exclusive palette */
         if (SDL_ShadowSurface->format->palette) {
@@ -615,15 +649,15 @@ SDL_Linked_Version(void)
 }
 
 int
-SDL_SetPalette(SDL_Surface * surface, int flags, SDL_Color * colors,
+SDL_SetPalette(SDL_Surface * surface, int flags, const SDL_Color * colors,
                int firstcolor, int ncolors)
 {
     SDL_SetColors(surface, colors, firstcolor, ncolors);
 }
 
 int
-SDL_SetScreenColors(SDL_Surface * screen, SDL_Color * colors, int firstcolor,
-                    int ncolors)
+SDL_SetScreenColors(SDL_Surface * screen, const SDL_Color * colors,
+                    int firstcolor, int ncolors)
 {
     SDL_Palette *pal;
     int gotall;

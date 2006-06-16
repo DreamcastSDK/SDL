@@ -39,7 +39,6 @@ SDL_CreateRGBSurface(Uint32 flags,
                      int width, int height, int depth,
                      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Surface *screen;
     SDL_Surface *surface;
 
@@ -170,7 +169,7 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
  * Set the palette in a blittable surface
  */
 int
-SDL_SetColors(SDL_Surface * surface, SDL_Color * colors, int firstcolor,
+SDL_SetColors(SDL_Surface * surface, const SDL_Color * colors, int firstcolor,
               int ncolors)
 {
     SDL_Palette *pal;
@@ -557,7 +556,6 @@ SDL_FillRect4(SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
 int
 SDL_FillRect(SDL_Surface * dst, SDL_Rect * dstrect, Uint32 color)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int x, y;
     Uint8 *row;
 
@@ -789,9 +787,9 @@ SDL_ConvertSurface(SDL_Surface * surface,
     if (format->palette != NULL) {
         int i;
         for (i = 0; i < format->palette->ncolors; ++i) {
-            if ((format->palette->colors[i].r != 0) ||
-                (format->palette->colors[i].g != 0) ||
-                (format->palette->colors[i].b != 0))
+            if ((format->palette->colors[i].r != 0xFF) ||
+                (format->palette->colors[i].g != 0xFF) ||
+                (format->palette->colors[i].b != 0xFF))
                 break;
         }
         if (i == format->palette->ncolors) {

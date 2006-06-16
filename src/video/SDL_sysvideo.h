@@ -159,6 +159,8 @@ struct SDL_VideoDisplay
     /* The hash list of textures */
     SDL_Texture *textures[64];
 
+    SDL_VideoDevice *device;
+
     void *driverdata;
 };
 

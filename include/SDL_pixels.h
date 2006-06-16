@@ -114,7 +114,7 @@ enum
      (SDL_PIXELTYPE(format) == SDL_PixelType_Index8))
 
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \
-    ((format) && !((format) & 0x8000000))
+    ((format) && !((format) & 0x80000000))
 
 enum
 {

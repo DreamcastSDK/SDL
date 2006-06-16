@@ -333,6 +333,7 @@ SDL_AddVideoDisplay(const SDL_VideoDisplay * display)
     if (displays) {
         index = _this->num_displays++;
         displays[index] = *display;
+        displays[index].device = _this;
         _this->displays = displays;
     } else {
         SDL_OutOfMemory();

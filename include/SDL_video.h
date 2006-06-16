@@ -1082,8 +1082,8 @@ extern DECLSPEC int SDLCALL SDL_GetGammaRamp(Uint16 * red, Uint16 * green,
  * emulation.
  */
 extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
-                                          SDL_Color * colors, int firstcolor,
-                                          int ncolors);
+                                          const SDL_Color * colors,
+                                          int firstcolor, int ncolors);
 
 /*
  * Maps an RGB triple to an opaque pixel value for a given pixel format

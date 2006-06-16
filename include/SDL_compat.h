@@ -44,8 +44,8 @@ extern "C" {
 #define SDL_RESIZABLE       0x01000000
 #define SDL_NOFRAME         0x02000000
 #define SDL_OPENGL          0x04000000
-#define SDL_ASYNCBLIT       0x00000000
-#define SDL_HWACCEL         0x00000000
+#define SDL_ASYNCBLIT       0x08000000  /* Not used */
+#define SDL_HWACCEL         0x08000000  /* Not used */
 #define SDL_SCREEN_SURFACE  0x10000000  /* Surface is a window screen surface */
 #define SDL_SHADOW_SURFACE  0x20000000  /* Surface is a window shadow surface */
 
@@ -146,10 +146,10 @@ extern DECLSPEC int SDLCALL SDL_WM_IconifyWindow(void);
 extern DECLSPEC int SDLCALL SDL_WM_ToggleFullScreen(SDL_Surface * surface);
 extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
 extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
-                                           SDL_Color * colors,
+                                           const SDL_Color * colors,
                                            int firstcolor, int ncolors);
 extern DECLSPEC int SDLCALL SDL_SetScreenColors(SDL_Surface * screen,
-                                                SDL_Color * colors,
+                                                const SDL_Color * colors,
                                                 int firstcolor, int ncolors);
 extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
 extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);

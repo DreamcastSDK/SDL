@@ -386,7 +386,7 @@ SDL_AllocFormat(int bpp,
                 a = (a << format->Aloss) | ((a * Am) >> Aw);
                 format->palette->colors[i].unused = a;
 #else
-                format->palette->colors[i].unused = 0;
+                format->palette->colors[i].unused = SDL_ALPHA_OPAQUE;
 #endif
             }
         } else if (ncolors == 2) {
@@ -399,7 +399,7 @@ SDL_AllocFormat(int bpp,
             format->palette->colors[1].b = 0x00;
         } else {
             /* Create an empty palette */
-            SDL_memset((format->palette)->colors, 0,
+            SDL_memset((format->palette)->colors, 0xFF,
                        (format->palette)->ncolors * sizeof(SDL_Color));
         }
     }
@@ -474,6 +474,7 @@ SDL_DitherColors(SDL_Color * colors, int bpp)
         b |= b << 2;
         b |= b << 4;
         colors[i].b = b;
+        colors[i].unused = SDL_ALPHA_OPAQUE;
     }
 }
 
@@ -696,7 +697,7 @@ MapNto1(SDL_PixelFormat * src, SDL_PixelFormat * dst, int *identical)
 
     /* SDL_DitherColors does not initialize the 'unused' component of colors,
        but Map1to1 compares it against pal, so we should initialize it. */
-    SDL_memset(colors, 0, sizeof(colors));
+    SDL_memset(colors, 0xFF, sizeof(colors));
 
     dithered.ncolors = 256;
     SDL_DitherColors(colors, 8);
