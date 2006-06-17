@@ -195,11 +195,24 @@ typedef struct SDL_Color
 } SDL_Color;
 #define SDL_Colour SDL_Color
 
-typedef struct SDL_Palette
+typedef struct SDL_Palette SDL_Palette;
+typedef int (*SDL_PaletteChangedFunc) (void *userdata, SDL_Palette * palette);
+
+typedef struct SDL_PaletteWatch
+{
+    SDL_PaletteChangedFunc callback;
+    void *userdata;
+    struct SDL_PaletteWatch *next;
+} SDL_PaletteWatch;
+
+struct SDL_Palette
 {
     int ncolors;
     SDL_Color *colors;
-} SDL_Palette;
+
+    int refcount;
+    SDL_PaletteWatch *watch;
+};
 
 /* Everything in the pixel format structure is read-only */
 typedef struct SDL_PixelFormat
@@ -226,23 +239,96 @@ typedef struct SDL_PixelFormat
     Uint8 alpha;
 } SDL_PixelFormat;
 
-/*
- * Convert one of the enumerated formats above to a bpp and RGBA masks.
- * Returns SDL_TRUE, or SDL_FALSE if the conversion wasn't possible.
+/**
+ * \fn SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp, Uint32 * Rmask, Uint32 * Gmask, Uint32 * Bmask, Uint32 * Amask)
+ *
+ * \brief Convert one of the enumerated pixel formats to a bpp and RGBA masks.
+ *
+ * \return SDL_TRUE, or SDL_FALSE if the conversion wasn't possible.
+ *
+ * \sa SDL_MasksToPixelFormatEnum()
  */
-extern DECLSPEC SDL_bool SDL_PixelFormatEnumToMasks(Uint32 format, int *bpp,
-                                                    Uint32 * Rmask,
-                                                    Uint32 * Gmask,
-                                                    Uint32 * Bmask,
-                                                    Uint32 * Amask);
+extern DECLSPEC SDL_bool SDLCALL SDL_PixelFormatEnumToMasks(Uint32 format,
+                                                            int *bpp,
+                                                            Uint32 * Rmask,
+                                                            Uint32 * Gmask,
+                                                            Uint32 * Bmask,
+                                                            Uint32 * Amask);
 
-/*
- * Convert a bpp and RGBA masks to one of the enumerated formats above.
- * Returns SDL_PixelFormat_Unknown if the conversion wasn't possible.
+/**
+ * \fn Uint32 SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+ *
+ * \brief Convert a bpp and RGBA masks to an enumerated pixel format.
+ *
+ * \return The pixel format, or SDL_PixelFormat_Unknown if the conversion wasn't possible.
+ *
+ * \sa SDL_PixelFormatEnumToMasks()
  */
-extern DECLSPEC Uint32 SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask,
-                                                  Uint32 Gmask, Uint32 Bmask,
-                                                  Uint32 Amask);
+extern DECLSPEC Uint32 SDLCALL SDL_MasksToPixelFormatEnum(int bpp,
+                                                          Uint32 Rmask,
+                                                          Uint32 Gmask,
+                                                          Uint32 Bmask,
+                                                          Uint32 Amask);
+
+/**
+ * \fn SDL_Palette *SDL_AllocPalette(int ncolors)
+ *
+ * \brief Create a palette structure with the specified number of color entries.
+ *
+ * \return A new palette, or NULL if there wasn't enough memory
+ *
+ * \note The palette entries are initialized to white.
+ *
+ * \sa SDL_FreePalette()
+ */
+extern DECLSPEC SDL_Palette *SDLCALL SDL_AllocPalette(int ncolors);
+
+/**
+ * \fn int SDL_AddPaletteWatch(SDL_Palette *palette, SDL_PaletteChangedFunc callback, void *userdata)
+ *
+ * \brief Add a callback function which is called when the palette changes.
+ *
+ * \sa SDL_DelPaletteWatch()
+ */
+extern DECLSPEC int SDLCALL SDL_AddPaletteWatch(SDL_Palette * palette,
+                                                SDL_PaletteChangedFunc
+                                                callback, void *userdata);
+
+/**
+ * \fn void SDL_DelPaletteWatch(SDL_Palette *palette, SDL_PaletteChangedFunc callback, void *userdata)
+ *
+ * \brief Remove a callback function previously added with SDL_AddPaletteWatch()
+ *
+ * \sa SDL_AddPaletteWatch()
+ */
+extern DECLSPEC void SDLCALL SDL_DelPaletteWatch(SDL_Palette * palette,
+                                                 SDL_PaletteChangedFunc
+                                                 callback, void *userdata);
+
+/**
+ * \fn int SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Colors *colors, int firstcolor, int numcolors)
+ *
+ * \brief Set a range of colors in a palette.
+ *
+ * \param palette The palette to modify
+ * \param colors An array of colors to copy into the palette
+ * \param firstcolor The index of the first palette entry to modify
+ * \param ncolors The number of entries to modify
+ *
+ * \return 0 on success, or -1 if not all of the colors could be set
+ */
+extern DECLSPEC int SDLCALL SDL_SetPaletteColors(SDL_Palette * palette,
+                                                 const SDL_Color * colors,
+                                                 int firstcolor, int ncolors);
+
+/**
+ * \fn void SDL_FreePalette(SDL_Palette *palette)
+ *
+ * \brief Free a palette created with SDL_AllocPalette()
+ *
+ * \sa SDL_AllocPalette()
+ */
+extern DECLSPEC void SDLCALL SDL_FreePalette(SDL_Palette * palette);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

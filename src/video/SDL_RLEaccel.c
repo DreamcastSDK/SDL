@@ -1618,8 +1618,7 @@ RLEAlphaSurface(SDL_Surface * surface)
 #undef ADD_TRANSL_COUNTS
 
     /* Now that we have it encoded, release the original pixels */
-    if ((surface->flags & SDL_PREALLOC) != SDL_PREALLOC
-        && (surface->flags & SDL_HWSURFACE) != SDL_HWSURFACE) {
+    if (!(surface->flags & SDL_PREALLOC) && !(surface->flags & SDL_HWSURFACE)) {
         SDL_free(surface->pixels);
         surface->pixels = NULL;
     }
@@ -1784,8 +1783,7 @@ RLEColorkeySurface(SDL_Surface * surface)
 #undef ADD_COUNTS
 
     /* Now that we have it encoded, release the original pixels */
-    if ((surface->flags & SDL_PREALLOC) != SDL_PREALLOC
-        && (surface->flags & SDL_HWSURFACE) != SDL_HWSURFACE) {
+    if (!(surface->flags & SDL_PREALLOC) && !(surface->flags & SDL_HWSURFACE)) {
         SDL_free(surface->pixels);
         surface->pixels = NULL;
     }
@@ -1936,8 +1934,8 @@ SDL_UnRLESurface(SDL_Surface * surface, int recode)
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
         surface->flags &= ~SDL_RLEACCEL;
 
-        if (recode && (surface->flags & SDL_PREALLOC) != SDL_PREALLOC
-            && (surface->flags & SDL_HWSURFACE) != SDL_HWSURFACE) {
+        if (recode && !(surface->flags & SDL_PREALLOC)
+            && !(surface->flags & SDL_HWSURFACE)) {
             if ((surface->flags & SDL_SRCCOLORKEY) == SDL_SRCCOLORKEY) {
                 SDL_Rect full;
                 unsigned alpha_flag;

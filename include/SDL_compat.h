@@ -148,9 +148,9 @@ extern DECLSPEC SDL_GrabMode SDLCALL SDL_WM_GrabInput(SDL_GrabMode mode);
 extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
                                            const SDL_Color * colors,
                                            int firstcolor, int ncolors);
-extern DECLSPEC int SDLCALL SDL_SetScreenColors(SDL_Surface * screen,
-                                                const SDL_Color * colors,
-                                                int firstcolor, int ncolors);
+extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
+                                          const SDL_Color * colors,
+                                          int firstcolor, int ncolors);
 extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
 extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
 extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);

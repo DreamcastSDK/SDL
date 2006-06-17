@@ -106,16 +106,7 @@ SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_DUMMY_DestroyRenderer(renderer);
         return NULL;
     }
-
-    /* If the display has a palette, use it for the window surfaces */
-    if (window->display->palette.ncolors) {
-        SDL_PixelFormat *format = data->surface->format;
-        if (format->palette->colors) {
-            SDL_free(format->palette->colors);
-        }
-        SDL_free(format->palette);
-        format->palette = &window->display->palette;
-    }
+    SDL_SetSurfacePalette(data->surface, window->display->palette);
 
     return renderer;
 }
@@ -178,8 +169,8 @@ SDL_DUMMY_RenderPresent(SDL_Renderer * renderer)
 
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_frame-%8.8d.bmp",
-                     ++frame_number);
+        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
+                     renderer->window->id, ++frame_number);
         SDL_SaveBMP(surface, file);
     }
 }

@@ -146,7 +146,7 @@ struct SDL_VideoDisplay
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
     SDL_DisplayMode current_mode;
-    SDL_Palette palette;
+    SDL_Palette *palette;
 
     int num_render_drivers;
     SDL_RenderDriver *render_drivers;

@@ -178,6 +178,7 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
             SDL_SW_DestroyRenderer(renderer);
             return NULL;
         }
+        SDL_SetSurfacePalette(data->screens[i], window->display->palette);
     }
     data->current_screen = 0;
     data->target = data->screens[0];
@@ -248,8 +249,8 @@ SDL_SW_SetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    SDL_SetColors(surface, colors, firstcolor, ncolors);
-    return 0;
+    return SDL_SetPaletteColors(surface->format->palette, colors, firstcolor,
+                                ncolors);
 }
 
 static int
@@ -314,7 +315,12 @@ static void
 SDL_SW_SelectRenderTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
-    data->target = (SDL_Surface *) texture->driverdata;
+
+    if (texture) {
+        data->target = (SDL_Surface *) texture->driverdata;
+    } else {
+        data->target = data->screens[data->current_screen];
+    }
 }
 
 static void

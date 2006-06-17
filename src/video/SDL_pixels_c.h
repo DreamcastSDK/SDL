@@ -29,9 +29,6 @@
 extern SDL_PixelFormat *SDL_AllocFormat(int bpp,
                                         Uint32 Rmask, Uint32 Gmask,
                                         Uint32 Bmask, Uint32 Amask);
-extern SDL_PixelFormat *SDL_ReallocFormat(SDL_Surface * surface, int bpp,
-                                          Uint32 Rmask, Uint32 Gmask,
-                                          Uint32 Bmask, Uint32 Amask);
 extern void SDL_FormatChanged(SDL_Surface * surface);
 extern void SDL_FreeFormat(SDL_PixelFormat * format);
 

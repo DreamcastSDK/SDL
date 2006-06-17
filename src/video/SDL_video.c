@@ -517,7 +517,7 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
 {
     SDL_VideoDisplay *display;
     SDL_DisplayMode display_mode;
-    int i;
+    int i, ncolors;
 
     if (!_this) {
         SDL_SetError("Video subsystem has not been initialized");
@@ -560,26 +560,24 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         return 0;
     }
 
+    /* Set up a palette, if necessary */
     if (SDL_ISPIXELFORMAT_INDEXED(display_mode.format)) {
-        display->palette.ncolors =
-            (1 << SDL_BITSPERPIXEL(display_mode.format));
-        display->palette.colors =
-            (SDL_Color *) SDL_realloc(display->palette.colors,
-                                      display->palette.ncolors *
-                                      sizeof(*display->palette.colors));
-        if (!display->palette.colors) {
-            SDL_OutOfMemory();
-            return -1;
-        }
-        SDL_memset(display->palette.colors, 0xff,
-                   display->palette.ncolors *
-                   sizeof(*display->palette.colors));
+        ncolors = (1 << SDL_BITSPERPIXEL(display_mode.format));
     } else {
-        if (display->palette.colors) {
-            SDL_free(display->palette.colors);
+        ncolors = 0;
+    }
+    if ((!ncolors && display->palette) || (ncolors && !display->palette)
+        || (ncolors != display->palette->ncolors)) {
+        if (display->palette) {
+            SDL_FreePalette(display->palette);
+            display->palette = NULL;
         }
-        display->palette.colors = NULL;
-        display->palette.ncolors = 0;
+        if (ncolors) {
+            display->palette = SDL_AllocPalette(ncolors);
+            if (!display->palette) {
+                return -1;
+            }
+        }
     }
 
     return _this->SetDisplayMode(_this, &display_mode);
@@ -589,31 +587,27 @@ int
 SDL_SetDisplayPalette(const SDL_Color * colors, int firstcolor, int ncolors)
 {
     SDL_Palette *palette;
+    int status = 0;
 
     if (!_this) {
         SDL_SetError("Video subsystem has not been initialized");
         return -1;
     }
-
-    palette = &SDL_CurrentDisplay.palette;
-    if (!palette->ncolors) {
+    if (!SDL_CurrentDisplay.palette) {
         SDL_SetError("Display mode does not have a palette");
         return -1;
     }
 
-    if (firstcolor < 0 || (firstcolor + ncolors) > palette->ncolors) {
-        SDL_SetError("Palette indices are out of range");
-        return -1;
-    }
-
-    SDL_memcpy(&palette->colors[firstcolor], colors,
-               ncolors * sizeof(*colors));
+    status =
+        SDL_SetPaletteColors(SDL_CurrentDisplay.palette, colors, firstcolor,
+                             ncolors);
 
     if (_this->SetDisplayPalette) {
-        return _this->SetDisplayPalette(_this, palette);
-    } else {
-        return 0;
+        if (_this->SetDisplayPalette(_this, palette) < 0) {
+            status = -1;
+        }
     }
+    return status;
 }
 
 int
@@ -626,7 +620,7 @@ SDL_GetDisplayPalette(SDL_Color * colors, int firstcolor, int ncolors)
         return -1;
     }
 
-    palette = &SDL_CurrentDisplay.palette;
+    palette = SDL_CurrentDisplay.palette;
     if (!palette->ncolors) {
         SDL_SetError("Display mode does not have a palette");
         return -1;
@@ -1717,10 +1711,9 @@ SDL_VideoQuit(void)
             SDL_free(display->windows);
             display->windows = NULL;
         }
-        if (display->palette.colors) {
-            SDL_free(display->palette.colors);
-            display->palette.colors = NULL;
-            display->palette.ncolors = 0;
+        if (display->palette) {
+            SDL_FreePalette(display->palette);
+            display->palette = NULL;
         }
     }
     _this->VideoQuit(_this);

@@ -252,6 +252,9 @@ typedef struct SDL_Surface
     int pitch;                  /* Read-only */
     void *pixels;               /* Read-write */
 
+    /* texture associated with the surface, if any */
+    SDL_TextureID textureID;
+
     /* information needed for surfaces requiring locks */
     int locked;
     void *lock_data;
@@ -1067,25 +1070,6 @@ extern DECLSPEC int SDLCALL SDL_GetGammaRamp(Uint16 * red, Uint16 * green,
                                              Uint16 * blue);
 
 /*
- * Sets a portion of the colormap for the given 8-bit surface.  If 'surface'
- * is not a palettized surface, this function does nothing, returning 0.
- * If all of the colors were set as passed to SDL_SetColors(), it will
- * return 1.  If not all the color entries were set exactly as given,
- * it will return 0, and you should look at the surface palette to
- * determine the actual color palette.
- *
- * When 'surface' is the surface associated with the current display, the
- * display colormap will be updated with the requested colors.  If 
- * SDL_HWPALETTE was set in SDL_SetVideoMode() flags, SDL_SetColors()
- * will always return 1, and the palette is guaranteed to be set the way
- * you desire, even if the window colormap has to be warped or run under
- * emulation.
- */
-extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
-                                          const SDL_Color * colors,
-                                          int firstcolor, int ncolors);
-
-/*
  * Maps an RGB triple to an opaque pixel value for a given pixel format
  */
 extern DECLSPEC Uint32 SDLCALL SDL_MapRGB
@@ -1137,6 +1121,18 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
 extern DECLSPEC SDL_Surface *SDLCALL
 SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID);
 extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
+
+/**
+ * \fn int SDL_SetSurfacePalette(SDL_Surface *surface, SDL_Palette *palette)
+ *
+ * \brief Set the palette used by a surface.
+ *
+ * \return 0, or -1 if the surface format doesn't use a palette.
+ *
+ * \note A single palette can be shared with many surfaces.
+ */
+extern DECLSPEC int SDLCALL SDL_SetSurfacePalette(SDL_Surface * surface,
+                                                  SDL_Palette * palette);
 
 /*
  * SDL_LockSurface() sets up a surface for directly accessing the pixels.

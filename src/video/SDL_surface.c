@@ -47,20 +47,21 @@ SDL_CreateRGBSurface(Uint32 flags,
     /* Next time I write a library like SDL, I'll use int for size. :) */
     if (width >= 16384 || height >= 65536) {
         SDL_SetError("Width or height is too large");
-        return (NULL);
+        return NULL;
     }
 
     /* Allocate the surface */
     surface = (SDL_Surface *) SDL_malloc(sizeof(*surface));
     if (surface == NULL) {
         SDL_OutOfMemory();
-        return (NULL);
+        return NULL;
     }
-    surface->flags = 0;
+    SDL_zerop(surface);
+
     surface->format = SDL_AllocFormat(depth, Rmask, Gmask, Bmask, Amask);
-    if (surface->format == NULL) {
-        SDL_free(surface);
-        return (NULL);
+    if (!surface->format) {
+        SDL_FreeSurface(surface);
+        return NULL;
     }
     if (Amask) {
         surface->flags |= SDL_SRCALPHA;
@@ -68,16 +69,69 @@ SDL_CreateRGBSurface(Uint32 flags,
     surface->w = width;
     surface->h = height;
     surface->pitch = SDL_CalculatePitch(surface);
-    surface->pixels = NULL;
-    surface->locked = 0;
-    surface->map = NULL;
     SDL_SetClipRect(surface, NULL);
-    SDL_FormatChanged(surface);
+
+    if (surface->format->BitsPerPixel <= 8) {
+        SDL_Palette *palette =
+            SDL_AllocPalette((1 << surface->format->BitsPerPixel));
+        if (!palette) {
+            SDL_FreeSurface(surface);
+            return NULL;
+        }
+        if (Rmask || Bmask || Gmask) {
+            const SDL_PixelFormat *format = surface->format;
+
+            /* create palette according to masks */
+            int i;
+            int Rm = 0, Gm = 0, Bm = 0;
+            int Rw = 0, Gw = 0, Bw = 0;
+
+            if (Rmask) {
+                Rw = 8 - format->Rloss;
+                for (i = format->Rloss; i > 0; i -= Rw)
+                    Rm |= 1 << i;
+            }
+            if (Gmask) {
+                Gw = 8 - format->Gloss;
+                for (i = format->Gloss; i > 0; i -= Gw)
+                    Gm |= 1 << i;
+            }
+            if (Bmask) {
+                Bw = 8 - format->Bloss;
+                for (i = format->Bloss; i > 0; i -= Bw)
+                    Bm |= 1 << i;
+            }
+            for (i = 0; i < palette->ncolors; ++i) {
+                int r, g, b;
+                r = (i & Rmask) >> format->Rshift;
+                r = (r << format->Rloss) | ((r * Rm) >> Rw);
+                palette->colors[i].r = r;
+
+                g = (i & Gmask) >> format->Gshift;
+                g = (g << format->Gloss) | ((g * Gm) >> Gw);
+                palette->colors[i].g = g;
+
+                b = (i & Bmask) >> format->Bshift;
+                b = (b << format->Bloss) | ((b * Bm) >> Bw);
+                palette->colors[i].b = b;
+            }
+        } else if (palette->ncolors == 2) {
+            /* Create a black and white bitmap palette */
+            palette->colors[0].r = 0xFF;
+            palette->colors[0].g = 0xFF;
+            palette->colors[0].b = 0xFF;
+            palette->colors[1].r = 0x00;
+            palette->colors[1].g = 0x00;
+            palette->colors[1].b = 0x00;
+        }
+        SDL_SetSurfacePalette(surface, palette);
+        SDL_FreePalette(palette);
+    }
 
     /* Get the pixels */
     if (surface->w && surface->h) {
         surface->pixels = SDL_malloc(surface->h * surface->pitch);
-        if (surface->pixels == NULL) {
+        if (!surface->pixels) {
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
             return NULL;
@@ -88,17 +142,18 @@ SDL_CreateRGBSurface(Uint32 flags,
 
     /* Allocate an empty mapping */
     surface->map = SDL_AllocBlitMap();
-    if (surface->map == NULL) {
+    if (!surface->map) {
         SDL_FreeSurface(surface);
-        return (NULL);
+        return NULL;
     }
+    SDL_FormatChanged(surface);
 
     /* The surface is ready to go */
     surface->refcount = 1;
 #ifdef CHECK_LEAKS
     ++surfaces_allocated;
 #endif
-    return (surface);
+    return surface;
 }
 
 /*
@@ -157,47 +212,64 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
             surface->flags |= SDL_HWSURFACE;
             surface->w = w;
             surface->h = h;
-            surface->lock_data = (void *) textureID;
             SDL_SetClipRect(surface, NULL);
         }
+    }
+    if (surface) {
+        surface->textureID = textureID;
     }
 
     return surface;
 }
 
-/*
- * Set the palette in a blittable surface
- */
-int
-SDL_SetColors(SDL_Surface * surface, const SDL_Color * colors, int firstcolor,
-              int ncolors)
+static int
+SDL_SurfacePaletteChanged(void *userdata, SDL_Palette * palette)
 {
-    SDL_Palette *pal;
-    int gotall;
-    int palsize;
+    SDL_Surface *surface = (SDL_Surface *) userdata;
 
-    /* Verify the parameters */
-    pal = surface->format->palette;
-    if (!pal) {
-        return 0;               /* not a palettized surface */
-    }
-    gotall = 1;
-    palsize = 1 << surface->format->BitsPerPixel;
-    if (ncolors > (palsize - firstcolor)) {
-        ncolors = (palsize - firstcolor);
-        gotall = 0;
-    }
-
-    if (colors != (pal->colors + firstcolor)) {
-        SDL_memcpy(pal->colors + firstcolor, colors,
-                   ncolors * sizeof(*colors));
+    if (surface->textureID) {
+        if (SDL_SetTexturePalette
+            (surface->textureID, palette->colors, 0, palette->ncolors) < 0) {
+            SDL_GetTexturePalette(surface->textureID, palette->colors, 0,
+                                  palette->ncolors);
+            return -1;
+        }
     }
     SDL_FormatChanged(surface);
 
-    if (surface->flags & (SDL_SHADOW_SURFACE | SDL_SCREEN_SURFACE)) {
-        gotall &= SDL_SetScreenColors(surface, colors, firstcolor, ncolors);
+    return 0;
+}
+
+int
+SDL_SetSurfacePalette(SDL_Surface * surface, SDL_Palette * palette)
+{
+    if (!surface || !surface->format) {
+        SDL_SetError("SDL_SetSurfacePalette() passed a NULL surface");
+        return -1;
     }
-    return gotall;
+
+    if (palette && palette->ncolors != (1 << surface->format->BitsPerPixel)) {
+        SDL_SetError
+            ("SDL_SetSurfacePalette() passed a palette that doesn't match the surface format");
+        return -1;
+    }
+
+    if (surface->format->palette == palette) {
+        return 0;
+    }
+
+    if (surface->format->palette) {
+        SDL_DelPaletteWatch(surface->format->palette,
+                            SDL_SurfacePaletteChanged, surface);
+    }
+
+    surface->format->palette = palette;
+
+    if (surface->format->palette) {
+        SDL_AddPaletteWatch(surface->format->palette,
+                            SDL_SurfacePaletteChanged, surface);
+    }
+    return 0;
 }
 
 /*
@@ -729,8 +801,8 @@ SDL_LockSurface(SDL_Surface * surface)
         /* Perform the lock */
         if (surface->flags & SDL_HWSURFACE) {
             if (SDL_LockTexture
-                ((SDL_TextureID) surface->lock_data, NULL, 1,
-                 &surface->pixels, &surface->pitch) < 0) {
+                (surface->textureID, NULL, 1, &surface->pixels,
+                 &surface->pitch) < 0) {
                 return (-1);
             }
         }
@@ -760,13 +832,13 @@ SDL_UnlockSurface(SDL_Surface * surface)
 
     /* Unlock hardware or accelerated surfaces */
     if (surface->flags & SDL_HWSURFACE) {
-        SDL_UnlockTexture((SDL_TextureID) surface->lock_data);
-    } else {
-        /* Update RLE encoded surface with new data */
-        if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
-            surface->flags &= ~SDL_RLEACCEL;    /* stop lying */
-            SDL_RLESurface(surface);
-        }
+        SDL_UnlockTexture(surface->textureID);
+    }
+
+    /* Update RLE encoded surface with new data */
+    if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
+        surface->flags &= ~SDL_RLEACCEL;        /* stop lying */
+        SDL_RLESurface(surface);
     }
 }
 
@@ -894,6 +966,7 @@ SDL_FreeSurface(SDL_Surface * surface)
         SDL_UnRLESurface(surface, 0);
     }
     if (surface->format) {
+        SDL_SetSurfacePalette(surface, NULL);
         SDL_FreeFormat(surface->format);
         surface->format = NULL;
     }
@@ -902,8 +975,8 @@ SDL_FreeSurface(SDL_Surface * surface)
         surface->map = NULL;
     }
     /* Should we destroy the texture too?
-       if (surface->flags & SDL_HWSURFACE) {
-       SDL_DestroyTexture((SDL_TextureID)surface->lock_data);
+       if (surface->textureID) {
+       SDL_DestroyTexture(surface->textureID);
        }
      */
     if (surface->pixels && ((surface->flags & SDL_PREALLOC) != SDL_PREALLOC)) {

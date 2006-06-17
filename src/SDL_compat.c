@@ -204,7 +204,25 @@ SDL_CompatEventFilter(const SDL_Event * event)
             break;
         }
     }
-    return orig_eventfilter(event);
+    if (orig_eventfilter) {
+        return orig_eventfilter(event);
+    } else {
+        return 1;
+    }
+}
+
+static int
+SDL_VideoPaletteChanged(void *userdata, SDL_Palette * palette)
+{
+    if (userdata == SDL_ShadowSurface) {
+        /* If the shadow palette changed, make the changes visible */
+        if (!SDL_VideoSurface->format->palette) {
+            SDL_UpdateRect(SDL_ShadowSurface, 0, 0, 0, 0);
+        }
+    }
+    if (userdata == SDL_VideoSurface) {
+        return SDL_SetDisplayPalette(palette->colors, 0, palette->ncolors);
+    }
 }
 
 SDL_Surface *
@@ -233,7 +251,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         SDL_ShadowSurface = NULL;
     }
     if (SDL_VideoSurface) {
-        SDL_FreeSurface(SDL_ShadowSurface);
+        SDL_DelPaletteWatch(SDL_VideoSurface->format->palette,
+                            SDL_VideoPaletteChanged, NULL);
+        SDL_FreeSurface(SDL_VideoSurface);
         SDL_VideoSurface = NULL;
     }
     SDL_DestroyWindow(SDL_VideoWindow);
@@ -380,11 +400,11 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         SDL_VideoSurface->flags |= SDL_HWPALETTE;
         SDL_DitherColors(SDL_VideoSurface->format->palette->colors,
                          SDL_VideoSurface->format->BitsPerPixel);
-        SDL_SetTexturePalette(SDL_VideoTexture,
-                              SDL_VideoSurface->format->palette->colors, 0,
-                              SDL_VideoSurface->format->palette->ncolors);
-        SDL_SetDisplayPalette(SDL_VideoSurface->format->palette->colors, 0,
-                              SDL_VideoSurface->format->palette->ncolors);
+        SDL_AddPaletteWatch(SDL_VideoSurface->format->palette,
+                            SDL_VideoPaletteChanged, NULL);
+        SDL_SetPaletteColors(SDL_VideoSurface->format->palette,
+                             SDL_VideoSurface->format->palette->colors, 0,
+                             SDL_VideoSurface->format->palette->ncolors);
     }
 
     /* Create a shadow surface if necessary */
@@ -415,8 +435,13 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         /* 8-bit SDL_ShadowSurface surfaces report that they have exclusive palette */
         if (SDL_ShadowSurface->format->palette) {
             SDL_ShadowSurface->flags |= SDL_HWPALETTE;
-            SDL_DitherColors(SDL_ShadowSurface->format->palette->colors,
-                             SDL_ShadowSurface->format->BitsPerPixel);
+            if (SDL_VideoSurface->format->palette) {
+                SDL_SetSurfacePalette(SDL_ShadowSurface,
+                                      SDL_VideoSurface->format->palette);
+            } else {
+                SDL_DitherColors(SDL_ShadowSurface->format->palette->colors,
+                                 SDL_ShadowSurface->format->BitsPerPixel);
+            }
         }
     }
     SDL_PublicSurface =
@@ -656,55 +681,15 @@ SDL_SetPalette(SDL_Surface * surface, int flags, const SDL_Color * colors,
 }
 
 int
-SDL_SetScreenColors(SDL_Surface * screen, const SDL_Color * colors,
-                    int firstcolor, int ncolors)
+SDL_SetColors(SDL_Surface * surface, const SDL_Color * colors, int firstcolor,
+              int ncolors)
 {
-    SDL_Palette *pal;
-    int gotall;
-    int palsize;
-
-    /* Verify the parameters */
-    pal = screen->format->palette;
-    if (!pal) {
-        return 0;               /* not a palettized surface */
+    if (SDL_SetPaletteColors
+        (surface->format->palette, colors, firstcolor, ncolors) == 0) {
+        return 1;
+    } else {
+        return 0;
     }
-    gotall = 1;
-    palsize = 1 << screen->format->BitsPerPixel;
-    if (ncolors > (palsize - firstcolor)) {
-        ncolors = (palsize - firstcolor);
-        gotall = 0;
-    }
-
-    if (screen == SDL_ShadowSurface) {
-        SDL_Palette *vidpal;
-
-        vidpal = SDL_VideoSurface->format->palette;
-        if (vidpal && vidpal->ncolors == pal->ncolors) {
-            /* This is a shadow surface, and the physical
-             * framebuffer is also indexed. Propagate the
-             * changes to its logical palette so that
-             * updates are always identity blits
-             */
-            SDL_memcpy(vidpal->colors + firstcolor, colors,
-                       ncolors * sizeof(*colors));
-        }
-        if (SDL_VideoSurface->flags & SDL_HWPALETTE) {
-            /* Set the physical palette */
-            screen = SDL_VideoSurface;
-        } else {
-            SDL_UpdateRect(screen, 0, 0, 0, 0);
-        }
-    }
-
-    if (screen == SDL_VideoSurface) {
-        SDL_SetTexturePalette(SDL_VideoTexture,
-                              SDL_VideoSurface->format->palette->colors, 0,
-                              SDL_VideoSurface->format->palette->ncolors);
-        SDL_SetDisplayPalette(SDL_VideoSurface->format->palette->colors, 0,
-                              SDL_VideoSurface->format->palette->ncolors);
-    }
-
-    return gotall;
 }
 
 int
