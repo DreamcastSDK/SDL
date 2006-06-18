@@ -208,12 +208,13 @@ SDL_CompatEventFilter(SDL_Event * event)
         {
             Uint32 unicode = 0;
             if (event->key.type == SDL_KEYDOWN && event->key.keysym.sym < 256) {
-                int shifted = !!(event->key.keysym.mod & KMOD_SHIFT);
-                int capslock = !!(event->key.keysym.mod & KMOD_CAPS);
-                if ((shifted ^ capslock) != 0) {
-                    unicode = SDL_toupper(event->key.keysym.sym);
-                } else {
-                    unicode = event->key.keysym.sym;
+                unicode = event->key.keysym.sym;
+                if(unicode >= 'a' && unicode <= 'z') {
+                    int shifted = !!(event->key.keysym.mod & KMOD_SHIFT);
+                    int capslock = !!(event->key.keysym.mod & KMOD_CAPS);
+                    if ((shifted ^ capslock) != 0) {
+                        unicode = SDL_toupper(unicode);
+                    }
                 }
             }
             if (unicode) {
