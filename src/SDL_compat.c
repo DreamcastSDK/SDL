@@ -1259,7 +1259,7 @@ SDL_CreateYUVOverlay(int w, int h, Uint32 format, SDL_Surface * display)
     case SDL_YUY2_OVERLAY:
     case SDL_UYVY_OVERLAY:
     case SDL_YVYU_OVERLAY:
-        overlay->pitches[0] = overlay->h * 2;
+        overlay->pitches[0] = overlay->w * 2;
         break;
     }
 
