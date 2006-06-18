@@ -179,11 +179,16 @@ enum
         SDL_DEFINE_PIXELFORMAT(SDL_PixelType_Packed32, SDL_PackedOrder_ARGB,
                                SDL_PackedLayout_2101010, 32, 4),
 
-    SDL_PixelFormat_YV12 = SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
-    SDL_PixelFormat_IYUV = SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'),
-    SDL_PixelFormat_YUY2 = SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'),
-    SDL_PixelFormat_UYVY = SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'),
-    SDL_PixelFormat_YVYU = SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'),
+    SDL_PixelFormat_YV12 =      /* Planar mode: Y + V + U  (3 planes) */
+        SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
+    SDL_PixelFormat_IYUV =      /* Planar mode: Y + U + V  (3 planes) */
+        SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'),
+    SDL_PixelFormat_YUY2 =      /* Packed mode: Y0+U0+Y1+V0 (1 plane) */
+        SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'),
+    SDL_PixelFormat_UYVY =      /* Packed mode: U0+Y0+V0+Y1 (1 plane) */
+        SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'),
+    SDL_PixelFormat_YVYU =      /* Packed mode: Y0+V0+Y1+U0 (1 plane) */
+        SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'),
 };
 
 typedef struct SDL_Color

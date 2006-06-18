@@ -23,6 +23,7 @@
 
 #include "SDL_video.h"
 #include "SDL_sysvideo.h"
+#include "SDL_yuv_sw_c.h"
 
 
 /* SDL surface based renderer implementation */
@@ -205,29 +206,30 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 static int
 SDL_SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    SDL_Surface *surface;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
-
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
-        /* FIXME: implement this */
-        return -1;
+        if (texture->access == SDL_TextureAccess_Render) {
+            SDL_SetError("Rendering to YUV format textures is not supported");
+            return -1;
+        }
+        texture->driverdata = SDL_SW_CreateYUVTexture(texture);
+    } else {
+        int bpp;
+        Uint32 Rmask, Gmask, Bmask, Amask;
+
+        if (!SDL_PixelFormatEnumToMasks
+            (texture->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
+            SDL_SetError("Unknown texture format");
+            return -1;
+        }
+
+        texture->driverdata =
+            SDL_CreateRGBSurface(0, texture->w, texture->h, bpp, Rmask, Gmask,
+                                 Bmask, Amask);
     }
 
-    if (!SDL_PixelFormatEnumToMasks
-        (texture->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-        SDL_SetError("Unknown texture format");
+    if (!texture->driverdata) {
         return -1;
     }
-
-    surface =
-        SDL_CreateRGBSurface(0, texture->w, texture->h, bpp, Rmask, Gmask,
-                             Bmask, Amask);
-    if (!surface) {
-        return -1;
-    }
-
-    texture->driverdata = surface;
     return 0;
 }
 
@@ -235,11 +237,16 @@ static int
 SDL_SW_QueryTexturePixels(SDL_Renderer * renderer, SDL_Texture * texture,
                           void **pixels, int *pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        return SDL_SW_QueryYUVTexturePixels((SDL_SW_YUVTexture *) texture->
+                                            driverdata, pixels, pitch);
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    *pixels = surface->pixels;
-    *pitch = surface->pitch;
-    return 0;
+        *pixels = surface->pixels;
+        *pitch = surface->pitch;
+        return 0;
+    }
 }
 
 static int
@@ -247,43 +254,58 @@ SDL_SW_SetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
                          const SDL_Color * colors, int firstcolor,
                          int ncolors)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("YUV textures don't have a palette");
+        return -1;
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    return SDL_SetPaletteColors(surface->format->palette, colors, firstcolor,
-                                ncolors);
+        return SDL_SetPaletteColors(surface->format->palette, colors,
+                                    firstcolor, ncolors);
+    }
 }
 
 static int
 SDL_SW_GetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
                          SDL_Color * colors, int firstcolor, int ncolors)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("YUV textures don't have a palette");
+        return -1;
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    SDL_memcpy(colors, &surface->format->palette->colors[firstcolor],
-               ncolors * sizeof(*colors));
-    return 0;
+        SDL_memcpy(colors, &surface->format->palette->colors[firstcolor],
+                   ncolors * sizeof(*colors));
+        return 0;
+    }
 }
 
 static int
 SDL_SW_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                      const SDL_Rect * rect, const void *pixels, int pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
-    Uint8 *src, *dst;
-    int row;
-    size_t length;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        return SDL_SW_UpdateYUVTexture((SDL_SW_YUVTexture *) texture->
+                                       driverdata, rect, pixels, pitch);
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+        Uint8 *src, *dst;
+        int row;
+        size_t length;
 
-    src = (Uint8 *) pixels;
-    dst =
-        (Uint8 *) surface->pixels + rect->y * surface->pitch +
-        rect->x * surface->format->BytesPerPixel;
-    length = rect->w * surface->format->BytesPerPixel;
-    for (row = 0; row < rect->h; ++row) {
-        SDL_memcpy(dst, src, length);
-        src += pitch;
-        dst += surface->pitch;
+        src = (Uint8 *) pixels;
+        dst =
+            (Uint8 *) surface->pixels + rect->y * surface->pitch +
+            rect->x * surface->format->BytesPerPixel;
+        length = rect->w * surface->format->BytesPerPixel;
+        for (row = 0; row < rect->h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += pitch;
+            dst += surface->pitch;
+        }
+        return 0;
     }
-    return 0;
 }
 
 static int
@@ -291,18 +313,27 @@ SDL_SW_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * rect, int markDirty, void **pixels,
                    int *pitch)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        return SDL_SW_LockYUVTexture((SDL_SW_YUVTexture *) texture->
+                                     driverdata, rect, markDirty, pixels,
+                                     pitch);
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    *pixels =
-        (void *) ((Uint8 *) surface->pixels + rect->y * surface->pitch +
-                  rect->x * surface->format->BytesPerPixel);
-    *pitch = surface->pitch;
-    return 0;
+        *pixels =
+            (void *) ((Uint8 *) surface->pixels + rect->y * surface->pitch +
+                      rect->x * surface->format->BytesPerPixel);
+        *pitch = surface->pitch;
+        return 0;
+    }
 }
 
 static void
 SDL_SW_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SW_UnlockYUVTexture((SDL_SW_YUVTexture *) texture->driverdata);
+    }
 }
 
 static void
@@ -346,22 +377,36 @@ SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                   int blendMode, int scaleMode)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
-    SDL_Rect real_srcrect = *srcrect;
-    SDL_Rect real_dstrect = *dstrect;
 
-    if (blendMode & (SDL_TextureBlendMode_Mask | SDL_TextureBlendMode_Blend)) {
-        SDL_SetAlpha(surface, SDL_SRCALPHA, 0);
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_Surface *target = data->target;
+        void *pixels =
+            (Uint8 *) target->pixels + dstrect->y * target->pitch +
+            dstrect->x * target->format->BytesPerPixel;
+        return SDL_SW_CopyYUVToRGB((SDL_SW_YUVTexture *) texture->driverdata,
+                                   srcrect,
+                                   renderer->window->display->current_mode.
+                                   format, dstrect->w, dstrect->h, pixels,
+                                   target->pitch);
     } else {
-        SDL_SetAlpha(surface, 0, 0);
-    }
-    if (scaleMode != SDL_TextureScaleMode_None &&
-        (srcrect->w != dstrect->w || srcrect->h != dstrect->h)) {
-        return SDL_SoftStretch(surface, &real_srcrect, data->target,
-                               &real_dstrect);
-    } else {
-        return SDL_LowerBlit(surface, &real_srcrect, data->target,
-                             &real_dstrect);
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+        SDL_Rect real_srcrect = *srcrect;
+        SDL_Rect real_dstrect = *dstrect;
+
+        if (blendMode &
+            (SDL_TextureBlendMode_Mask | SDL_TextureBlendMode_Blend)) {
+            SDL_SetAlpha(surface, SDL_SRCALPHA, 0);
+        } else {
+            SDL_SetAlpha(surface, 0, 0);
+        }
+        if (scaleMode != SDL_TextureScaleMode_None &&
+            (srcrect->w != dstrect->w || srcrect->h != dstrect->h)) {
+            return SDL_SoftStretch(surface, &real_srcrect, data->target,
+                                   &real_dstrect);
+        } else {
+            return SDL_LowerBlit(surface, &real_srcrect, data->target,
+                                 &real_dstrect);
+        }
     }
 }
 
@@ -446,9 +491,13 @@ SDL_SW_RenderPresent(SDL_Renderer * renderer)
 static void
 SDL_SW_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SW_DestroyYUVTexture((SDL_SW_YUVTexture *) texture->driverdata);
+    } else {
+        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
 
-    SDL_FreeSurface(surface);
+        SDL_FreeSurface(surface);
+    }
 }
 
 static void

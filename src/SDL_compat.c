@@ -1176,121 +1176,159 @@ SDL_ResetCursor(void)
         SDL_memset(SDL_cursor->save[0], 0, savelen);
     }
 }
+#endif
+
+struct private_yuvhwdata
+{
+    Uint16 pitches[3];
+    Uint8 *planes[3];
+
+    SDL_TextureID textureID;
+};
 
 SDL_Overlay *
 SDL_CreateYUVOverlay(int w, int h, Uint32 format, SDL_Surface * display)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *window;
-    const char *yuv_hwaccel;
     SDL_Overlay *overlay;
+    Uint32 texture_format;
 
-    window = SDL_GetWindowFromSurface(display);
-    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
+    if ((display->flags & SDL_OPENGL) == SDL_OPENGL) {
         SDL_SetError("YUV overlays are not supported in OpenGL mode");
         return NULL;
     }
 
-    /* Display directly on video surface, if possible */
-    if (SDL_getenv("SDL_VIDEO_YUV_DIRECT")) {
-        if (window &&
-            ((window->surface->format->BytesPerPixel == 2) ||
-             (window->surface->format->BytesPerPixel == 4))) {
-            display = window->surface;
-        }
+    if (display != SDL_PublicSurface) {
+        SDL_SetError("YUV display is only supported on the screen surface");
+        return NULL;
     }
-    overlay = NULL;
-    yuv_hwaccel = SDL_getenv("SDL_VIDEO_YUV_HWACCEL");
-    if (((display->flags & SDL_SCREEN_SURFACE) && _this->CreateYUVOverlay) &&
-        (!yuv_hwaccel || (SDL_atoi(yuv_hwaccel) > 0))) {
-        overlay = _this->CreateYUVOverlay(_this, w, h, format, display);
+
+    switch (format) {
+    case SDL_YV12_OVERLAY:
+        texture_format = SDL_PixelFormat_YV12;
+        break;
+    case SDL_IYUV_OVERLAY:
+        texture_format = SDL_PixelFormat_IYUV;
+        break;
+    case SDL_YUY2_OVERLAY:
+        texture_format = SDL_PixelFormat_YUY2;
+        break;
+    case SDL_UYVY_OVERLAY:
+        texture_format = SDL_PixelFormat_UYVY;
+        break;
+    case SDL_YVYU_OVERLAY:
+        texture_format = SDL_PixelFormat_YVYU;
+        break;
+    default:
+        SDL_SetError("Unknown YUV format");
+        return NULL;
     }
-    /* If hardware YUV overlay failed ... */
-    if (overlay == NULL) {
-        overlay = SDL_CreateYUV_SW(_this, w, h, format, display);
+
+    overlay = (SDL_Overlay *) SDL_malloc(sizeof(*overlay));
+    if (!overlay) {
+        SDL_OutOfMemory();
+        return NULL;
     }
+    SDL_zerop(overlay);
+
+    overlay->hwdata =
+        (struct private_yuvhwdata *) SDL_malloc(sizeof(*overlay->hwdata));
+    if (!overlay->hwdata) {
+        SDL_free(overlay);
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    overlay->format = format;
+    overlay->w = w;
+    overlay->h = h;
+    if (format == SDL_YV12_OVERLAY || format == SDL_IYUV_OVERLAY) {
+        overlay->planes = 3;
+    } else {
+        overlay->planes = 1;
+    }
+    overlay->pitches = overlay->hwdata->pitches;
+    overlay->pixels = overlay->hwdata->planes;
+
+    switch (format) {
+    case SDL_YV12_OVERLAY:
+    case SDL_IYUV_OVERLAY:
+        overlay->pitches[0] = overlay->w;
+        overlay->pitches[1] = overlay->w / 2;
+        overlay->pitches[2] = overlay->w / 2;
+        break;
+    case SDL_YUY2_OVERLAY:
+    case SDL_UYVY_OVERLAY:
+    case SDL_YVYU_OVERLAY:
+        overlay->pitches[0] = overlay->h * 2;
+        break;
+    }
+
+    overlay->hwdata->textureID =
+        SDL_CreateTexture(texture_format, SDL_TextureAccess_Local, w, h);
+    if (!overlay->hwdata->textureID) {
+        SDL_FreeYUVOverlay(overlay);
+        return NULL;
+    }
+
     return overlay;
 }
 
 int
 SDL_LockYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    return overlay->hwfuncs->Lock(_this, overlay);
+    void *pixels;
+    int pitch;
+    if (SDL_LockTexture(overlay->hwdata->textureID, NULL, 1, &pixels, &pitch)
+        < 0) {
+        return -1;
+    }
+    switch (overlay->format) {
+    case SDL_YV12_OVERLAY:
+    case SDL_IYUV_OVERLAY:
+        overlay->pixels[0] = (Uint8 *) pixels;
+        overlay->pixels[1] =
+            overlay->pixels[0] + overlay->pitches[0] * overlay->h;
+        overlay->pixels[2] =
+            overlay->pixels[1] + overlay->pitches[1] * overlay->h;
+        break;
+    case SDL_YUY2_OVERLAY:
+    case SDL_UYVY_OVERLAY:
+    case SDL_YVYU_OVERLAY:
+        overlay->pixels[0] = (Uint8 *) pixels;
+        break;
+    }
+    return 0;
 }
 
 void
 SDL_UnlockYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    overlay->hwfuncs->Unlock(_this, overlay);
+    SDL_UnlockTexture(overlay->hwdata->textureID);
 }
 
 int
 SDL_DisplayYUVOverlay(SDL_Overlay * overlay, SDL_Rect * dstrect)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Rect src, dst;
-    int srcx, srcy, srcw, srch;
-    int dstx, dsty, dstw, dsth;
-
-    /* Clip the rectangle to the screen area */
-    srcx = 0;
-    srcy = 0;
-    srcw = overlay->w;
-    srch = overlay->h;
-    dstx = dstrect->x;
-    dsty = dstrect->y;
-    dstw = dstrect->w;
-    dsth = dstrect->h;
-    if (dstx < 0) {
-        srcw += (dstx * overlay->w) / dstrect->w;
-        dstw += dstx;
-        srcx -= (dstx * overlay->w) / dstrect->w;
-        dstx = 0;
+    if (SDL_RenderCopy(overlay->hwdata->textureID, NULL, dstrect,
+                       SDL_TextureBlendMode_None,
+                       SDL_TextureScaleMode_Fast) < 0) {
+        return -1;
     }
-    if ((dstx + dstw) > SDL_VideoSurface->w) {
-        int extra = (dstx + dstw - SDL_VideoSurface->w);
-        srcw -= (extra * overlay->w) / dstrect->w;
-        dstw -= extra;
-    }
-    if (dsty < 0) {
-        srch += (dsty * overlay->h) / dstrect->h;
-        dsth += dsty;
-        srcy -= (dsty * overlay->h) / dstrect->h;
-        dsty = 0;
-    }
-    if ((dsty + dsth) > SDL_VideoSurface->h) {
-        int extra = (dsty + dsth - SDL_VideoSurface->h);
-        srch -= (extra * overlay->h) / dstrect->h;
-        dsth -= extra;
-    }
-    if (srcw <= 0 || srch <= 0 || srch <= 0 || dsth <= 0) {
-        return 0;
-    }
-    /* Ugh, I can't wait for SDL_Rect to be int values */
-    src.x = srcx;
-    src.y = srcy;
-    src.w = srcw;
-    src.h = srch;
-    dst.x = dstx;
-    dst.y = dsty;
-    dst.w = dstw;
-    dst.h = dsth;
-    return overlay->hwfuncs->Display(_this, overlay, &src, &dst);
+    SDL_RenderPresent();
 }
 
 void
 SDL_FreeYUVOverlay(SDL_Overlay * overlay)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (overlay) {
-        if (overlay->hwfuncs) {
-            overlay->hwfuncs->FreeHW(_this, overlay);
+        if (overlay->hwdata) {
+            if (overlay->hwdata->textureID) {
+                SDL_DestroyTexture(overlay->hwdata->textureID);
+            }
+            SDL_free(overlay->hwdata);
         }
         SDL_free(overlay);
     }
 }
-#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

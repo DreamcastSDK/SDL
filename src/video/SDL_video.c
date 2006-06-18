@@ -567,7 +567,7 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         ncolors = 0;
     }
     if ((!ncolors && display->palette) || (ncolors && !display->palette)
-        || (ncolors != display->palette->ncolors)) {
+        || (ncolors && ncolors != display->palette->ncolors)) {
         if (display->palette) {
             SDL_FreePalette(display->palette);
             display->palette = NULL;
@@ -1434,6 +1434,7 @@ SDL_UpdateTexture(SDL_TextureID textureID, const SDL_Rect * rect,
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
+    SDL_Rect full_rect;
 
     if (!texture) {
         return -1;
@@ -1443,6 +1444,15 @@ SDL_UpdateTexture(SDL_TextureID textureID, const SDL_Rect * rect,
     if (!renderer->UpdateTexture) {
         return -1;
     }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = texture->w;
+        full_rect.h = texture->h;
+        rect = &full_rect;
+    }
+
     return renderer->UpdateTexture(renderer, texture, rect, pixels, pitch);
 }
 
@@ -1452,6 +1462,7 @@ SDL_LockTexture(SDL_TextureID textureID, const SDL_Rect * rect, int markDirty,
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
+    SDL_Rect full_rect;
 
     if (!texture) {
         return -1;
@@ -1461,6 +1472,15 @@ SDL_LockTexture(SDL_TextureID textureID, const SDL_Rect * rect, int markDirty,
     if (!renderer->LockTexture) {
         return -1;
     }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = texture->w;
+        full_rect.h = texture->h;
+        rect = &full_rect;
+    }
+
     return renderer->LockTexture(renderer, texture, rect, markDirty, pixels,
                                  pitch);
 }
@@ -1520,6 +1540,7 @@ int
 SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
 {
     SDL_Renderer *renderer;
+    SDL_Rect full_rect;
 
     if (!_this) {
         return -1;
@@ -1528,6 +1549,14 @@ SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
     renderer = SDL_CurrentDisplay.current_renderer;
     if (!renderer || !renderer->RenderFill) {
         return -1;
+    }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = renderer->window->w;
+        full_rect.h = renderer->window->h;
+        rect = &full_rect;
     }
 
     renderer->RenderFill(renderer, rect, color);
@@ -1539,6 +1568,8 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
+    SDL_Rect full_srcrect;
+    SDL_Rect full_dstrect;
 
     if (!texture || texture->renderer != SDL_CurrentDisplay.current_renderer) {
         return;
@@ -1549,6 +1580,21 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
         return -1;
     }
 
+    if (!srcrect) {
+        full_srcrect.x = 0;
+        full_srcrect.y = 0;
+        full_srcrect.w = texture->w;
+        full_srcrect.h = texture->h;
+        srcrect = &full_srcrect;
+    }
+    if (!dstrect) {
+        full_dstrect.x = 0;
+        full_dstrect.y = 0;
+        full_dstrect.w = renderer->window->w;
+        full_dstrect.h = renderer->window->h;
+        dstrect = &full_dstrect;
+    }
+
     return renderer->RenderCopy(renderer, texture, srcrect, dstrect,
                                 blendMode, scaleMode);
 }
@@ -1557,6 +1603,7 @@ int
 SDL_RenderReadPixels(const SDL_Rect * rect, void *pixels, int pitch)
 {
     SDL_Renderer *renderer;
+    SDL_Rect full_rect;
 
     if (!_this) {
         return -1;
@@ -1567,6 +1614,14 @@ SDL_RenderReadPixels(const SDL_Rect * rect, void *pixels, int pitch)
         return -1;
     }
 
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = renderer->window->w;
+        full_rect.h = renderer->window->h;
+        rect = &full_rect;
+    }
+
     return renderer->RenderReadPixels(renderer, rect, pixels, pitch);
 }
 
@@ -1574,6 +1629,7 @@ int
 SDL_RenderWritePixels(const SDL_Rect * rect, const void *pixels, int pitch)
 {
     SDL_Renderer *renderer;
+    SDL_Rect full_rect;
 
     if (!_this) {
         return -1;
@@ -1582,6 +1638,14 @@ SDL_RenderWritePixels(const SDL_Rect * rect, const void *pixels, int pitch)
     renderer = SDL_CurrentDisplay.current_renderer;
     if (!renderer || !renderer->RenderWritePixels) {
         return -1;
+    }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = renderer->window->w;
+        full_rect.h = renderer->window->h;
+        rect = &full_rect;
     }
 
     return renderer->RenderWritePixels(renderer, rect, pixels, pitch);
