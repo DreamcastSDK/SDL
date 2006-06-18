@@ -150,10 +150,10 @@ SDL_ListModes(SDL_PixelFormat * format, Uint32 flags)
     return modes;
 }
 
-static int (*orig_eventfilter) (const SDL_Event * event);
+static int (*orig_eventfilter) (SDL_Event * event);
 
 static int
-SDL_CompatEventFilter(const SDL_Event * event)
+SDL_CompatEventFilter(SDL_Event * event)
 {
     SDL_Event fake;
 
@@ -203,6 +203,24 @@ SDL_CompatEventFilter(const SDL_Event * event)
             SDL_PushEvent(&fake);
             break;
         }
+    case SDL_KEYDOWN:
+    case SDL_KEYUP:
+        {
+            Uint32 unicode = 0;
+            if (event->key.type == SDL_KEYDOWN && event->key.keysym.sym < 256) {
+                int shifted = !!(event->key.keysym.mod & KMOD_SHIFT);
+                int capslock = !!(event->key.keysym.mod & KMOD_CAPS);
+                if ((shifted ^ capslock) != 0) {
+                    unicode = SDL_toupper(event->key.keysym.sym);
+                } else {
+                    unicode = event->key.keysym.sym;
+                }
+            }
+            if (unicode) {
+                event->key.keysym.unicode = unicode;
+            }
+            break;
+        }
     }
     if (orig_eventfilter) {
         return orig_eventfilter(event);
@@ -228,7 +246,7 @@ SDL_VideoPaletteChanged(void *userdata, SDL_Palette * palette)
 SDL_Surface *
 SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 {
-    int (*filter) (const SDL_Event * event);
+    int (*filter) (SDL_Event * event);
     const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
     int i;

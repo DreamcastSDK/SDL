@@ -129,7 +129,7 @@ typedef struct SDL_WindowEvent
 /**
  * \struct SDL_KeyboardEvent
  *
- * \brief Keyboard event structure
+ * \brief Keyboard button event structure
  */
 typedef struct SDL_KeyboardEvent
 {
@@ -139,6 +139,19 @@ typedef struct SDL_KeyboardEvent
     SDL_keysym keysym;      /**< The key that was pressed or released */
     SDL_WindowID windowID;  /**< The window with keyboard focus, if any */
 } SDL_KeyboardEvent;
+
+/**
+ * \struct SDL_CharEvent
+ *
+ * \brief Keyboard input event structure
+ */
+typedef struct SDL_CharEvent
+{
+    Uint8 type;             /**< SDL_CHARINPUT (FIXME: NYI) */
+    Uint8 which;            /**< The keyboard device index */
+    char text[32];          /**< The input text */
+    SDL_WindowID windowID;  /**< The window with keyboard focus, if any */
+} SDL_CharEvent;
 
 /**
  * \struct SDL_MouseMotionEvent
@@ -364,7 +377,7 @@ extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
 
   The filter is protypted as:
 */
-typedef int (SDLCALL * SDL_EventFilter) (const SDL_Event * event);
+typedef int (SDLCALL * SDL_EventFilter) (SDL_Event * event);
 /*
   If the filter returns 1, then the event will be added to the internal queue.
   If it returns 0, then the event will be dropped from the queue, but the 

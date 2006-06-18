@@ -176,7 +176,7 @@ HotKey_Quit(void)
 }
 
 int SDLCALL
-FilterEvents(const SDL_Event * event)
+FilterEvents(SDL_Event * event)
 {
     static int reallyquit = 0;
 
