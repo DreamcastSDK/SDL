@@ -349,4 +349,5 @@ _DllMainCRTStartup(HANDLE hModule,
 #endif /* building DLL with Watcom C */
 
 #endif /* OS/2 elif __WIN32__ */
+
 /* vi: set ts=4 sw=4 expandtab: */
