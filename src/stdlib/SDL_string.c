@@ -534,7 +534,15 @@ SDL_strtol(const char *string, char **endp, int base)
     size_t len;
     long value;
 
-    len = SDL_ScanLong(string, base ? base : 10, &value);
+    if (!base) {
+        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
+            base = 16;
+        } else {
+            base = 10;
+        }
+    }
+
+    len = SDL_ScanLong(string, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -549,7 +557,15 @@ SDL_strtoul(const char *string, char **endp, int base)
     size_t len;
     unsigned long value;
 
-    len = SDL_ScanUnsignedLong(string, base ? base : 10, &value);
+    if (!base) {
+        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
+            base = 16;
+        } else {
+            base = 10;
+        }
+    }
+
+    len = SDL_ScanUnsignedLong(string, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -620,7 +636,15 @@ SDL_strtoll(const char *string, char **endp, int base)
     size_t len;
     Sint64 value;
 
-    len = SDL_ScanLongLong(string, base ? base : 10, &value);
+    if (!base) {
+        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
+            base = 16;
+        } else {
+            base = 10;
+        }
+    }
+
+    len = SDL_ScanLongLong(string, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
@@ -635,7 +659,15 @@ SDL_strtoull(const char *string, char **endp, int base)
     size_t len;
     Uint64 value;
 
-    len = SDL_ScanUnsignedLongLong(string, base ? base : 10, &value);
+    if (!base) {
+        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
+            base = 16;
+        } else {
+            base = 10;
+        }
+    }
+
+    len = SDL_ScanUnsignedLongLong(string, base, &value);
     if (endp) {
         *endp = (char *) string + len;
     }
