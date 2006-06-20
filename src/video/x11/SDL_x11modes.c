@@ -737,14 +737,15 @@ X11_ResizeFullScreen(_THIS)
     screen_w = DisplayWidth(SDL_Display, SDL_Screen);
     screen_h = DisplayHeight(SDL_Display, SDL_Screen);
 
-#if SDL_VIDEO_DRIVER_X11_VIDMODE
+#if SDL_VIDEO_DRIVER_X11_XINERAMA
     if (use_xinerama &&
         window_w <= xinerama[this->current_display].width &&
         window_h <= xinerama[this->current_display].height) {
         x = xinerama[this->current_display].x_org;
         y = xinerama[this->current_display].y_org;
     }
-#endif
+#endif /* SDL_VIDEO_DRIVER_X11_XINERAMA */
+
     if (currently_fullscreen) {
         /* Switch resolution and cover it with the FSwindow */
         move_cursor_to(this, x, y);
@@ -801,14 +802,15 @@ X11_EnterFullScreen(_THIS)
     /* Ungrab the input so that we can move the mouse around */
     X11_GrabInputNoLock(this, SDL_GRAB_OFF);
 
-#if SDL_VIDEO_DRIVER_X11_VIDMODE
+#if SDL_VIDEO_DRIVER_X11_XINERAMA
     if (use_xinerama &&
         window_w <= xinerama[this->current_display].width &&
         window_h <= xinerama[this->current_display].height) {
         x = xinerama[this->current_display].x_org;
         y = xinerama[this->current_display].y_org;
     }
-#endif
+#endif /* SDL_VIDEO_DRIVER_X11_XINERAMA */
+
     /* Map the fullscreen window to blank the screen */
     screen_w = DisplayWidth(SDL_Display, SDL_Screen);
     screen_h = DisplayHeight(SDL_Display, SDL_Screen);

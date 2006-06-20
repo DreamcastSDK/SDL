@@ -341,7 +341,7 @@ create_aux_windows(_THIS)
     if (FSwindow)
         XDestroyWindow(SDL_Display, FSwindow);
 
-#if SDL_VIDEO_DRIVER_X11_VIDMODE
+#if SDL_VIDEO_DRIVER_X11_XINERAMA
     if (use_xinerama) {
         x = xinerama[this->current_display].x_org;
         y = xinerama[this->current_display].y_org;
