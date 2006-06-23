@@ -263,7 +263,7 @@ DX5_WaitAudio_BusyWait(_THIS)
     /* Semi-busy wait, since we have no way of getting play notification
        on a primary mixing buffer located in hardware (DirectX 5.0)
      */
-    result = IDirectSoundBuffer_GetCurrentPosition(mixbuf, &cursor, &junk);
+    result = IDirectSoundBuffer_GetCurrentPosition(mixbuf, &junk, &cursor);
     if (result != DS_OK) {
         if (result == DSERR_BUFFERLOST) {
             IDirectSoundBuffer_Restore(mixbuf);
@@ -273,11 +273,10 @@ DX5_WaitAudio_BusyWait(_THIS)
 #endif
         return;
     }
-    cursor /= mixlen;
 
-    while (cursor == playing) {
+    while ((cursor / mixlen) == lastchunk) {
         /* FIXME: find out how much time is left and sleep that long */
-        SDL_Delay(10);
+        SDL_Delay(1);
 
         /* Try to restore a lost sound buffer */
         IDirectSoundBuffer_GetStatus(mixbuf, &status);
@@ -301,12 +300,11 @@ DX5_WaitAudio_BusyWait(_THIS)
 
         /* Find out where we are playing */
         result = IDirectSoundBuffer_GetCurrentPosition(mixbuf,
-                                                       &cursor, &junk);
+                                                       &junk, &cursor);
         if (result != DS_OK) {
             SetDSerror("DirectSound GetCurrentPosition", result);
             return;
         }
-        cursor /= mixlen;
     }
 }
 
@@ -358,18 +356,31 @@ DX5_GetAudioBuf(_THIS)
 
     /* Figure out which blocks to fill next */
     locked_buf = NULL;
-    result = IDirectSoundBuffer_GetCurrentPosition(mixbuf, &cursor, &junk);
+    result = IDirectSoundBuffer_GetCurrentPosition(mixbuf, &junk, &cursor);
     if (result == DSERR_BUFFERLOST) {
         IDirectSoundBuffer_Restore(mixbuf);
         result = IDirectSoundBuffer_GetCurrentPosition(mixbuf,
-                                                       &cursor, &junk);
+                                                       &junk, &cursor);
     }
     if (result != DS_OK) {
         SetDSerror("DirectSound GetCurrentPosition", result);
         return (NULL);
     }
     cursor /= mixlen;
-    playing = cursor;
+#ifdef DEBUG_SOUND
+    /* Detect audio dropouts */
+    {
+        DWORD spot = cursor;
+        if (spot < lastchunk) {
+            spot += NUM_BUFFERS;
+        }
+        if (spot > lastchunk + 1) {
+            fprintf(stderr, "Audio dropout, missed %d fragments\n",
+                    (spot - (lastchunk + 1)));
+        }
+    }
+#endif
+    lastchunk = cursor;
     cursor = (cursor + 1) % NUM_BUFFERS;
     cursor *= mixlen;
 
@@ -511,7 +522,7 @@ CreateSecondary(LPDIRECTSOUND sndObj, HWND focus,
                 LPDIRECTSOUNDBUFFER * sndbuf, WAVEFORMATEX * wavefmt,
                 Uint32 chunksize)
 {
-    const int numchunks = 2;
+    const int numchunks = 8;
     HRESULT result;
     DSBUFFERDESC format;
     LPVOID pvAudioPtr1, pvAudioPtr2;
@@ -563,10 +574,9 @@ CreateSecondary(LPDIRECTSOUND sndObj, HWND focus,
 
     /* Silence the initial audio buffer */
     result = IDirectSoundBuffer_Lock(*sndbuf, 0, format.dwBufferBytes,
-                                     (LPVOID *) & pvAudioPtr1,
-                                     &dwAudioBytes1,
-                                     (LPVOID *) & pvAudioPtr2,
-                                     &dwAudioBytes2, DSBLOCK_ENTIREBUFFER);
+                                     (LPVOID *) & pvAudioPtr1, &dwAudioBytes1,
+                                     (LPVOID *) & pvAudioPtr2, &dwAudioBytes2,
+                                     DSBLOCK_ENTIREBUFFER);
     if (result == DS_OK) {
         if (wavefmt->wBitsPerSample == 8) {
             SDL_memset(pvAudioPtr1, 0x80, dwAudioBytes1);
@@ -706,7 +716,7 @@ DX5_OpenAudio(_THIS, SDL_AudioSpec * spec)
 #endif
 
     /* The buffer will auto-start playing in DX5_WaitAudio() */
-    playing = 0;
+    lastchunk = 0;
     mixlen = spec->size;
 
 #ifdef USE_POSITION_NOTIFY
