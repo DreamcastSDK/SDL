@@ -1225,9 +1225,8 @@ DX5_SetVideoMode(_THIS, SDL_Surface * current,
             bounds.top = SDL_windowY;
             bounds.right = SDL_windowX + video->w;
             bounds.bottom = SDL_windowY + video->h;
-            AdjustWindowRectEx(&bounds,
-                               GetWindowLong(SDL_Window, GWL_STYLE),
-                               FALSE, 0);
+            AdjustWindowRectEx(&bounds, GetWindowLong(SDL_Window, GWL_STYLE),
+                               (GetMenu(SDL_Window) != NULL), 0);
             width = bounds.right - bounds.left;
             height = bounds.bottom - bounds.top;
             if ((flags & SDL_FULLSCREEN)) {
@@ -1315,10 +1314,10 @@ DX5_SetVideoMode(_THIS, SDL_Surface * current,
         bounds.right = GetSystemMetrics(SM_CXSCREEN);
         bounds.bottom = GetSystemMetrics(SM_CYSCREEN);
         AdjustWindowRectEx(&bounds, GetWindowLong(SDL_Window, GWL_STYLE),
-                           FALSE, 0);
+                           (GetMenu(SDL_Window) != NULL), 0);
         SetWindowPos(SDL_Window, HWND_TOPMOST, bounds.left, bounds.top,
-                     bounds.right - bounds.left,
-                     bounds.bottom - bounds.top, SWP_NOCOPYBITS);
+                     bounds.right - bounds.left, bounds.bottom - bounds.top,
+                     SWP_NOCOPYBITS);
         ShowWindow(SDL_Window, SW_SHOW);
         while (GetForegroundWindow() != SDL_Window) {
             SetForegroundWindow(SDL_Window);
@@ -1635,9 +1634,8 @@ DX5_SetVideoMode(_THIS, SDL_Surface * current,
             bounds.top = SDL_windowY;
             bounds.right = SDL_windowX + video->w;
             bounds.bottom = SDL_windowY + video->h;
-            AdjustWindowRectEx(&bounds,
-                               GetWindowLong(SDL_Window, GWL_STYLE),
-                               FALSE, 0);
+            AdjustWindowRectEx(&bounds, GetWindowLong(SDL_Window, GWL_STYLE),
+                               (GetMenu(SDL_Window) != NULL), 0);
             width = bounds.right - bounds.left;
             height = bounds.bottom - bounds.top;
             if (center) {

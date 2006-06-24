@@ -805,7 +805,7 @@ DIB_SetVideoMode(_THIS, SDL_Surface * current,
         bounds.right = SDL_windowX + video->w;
         bounds.bottom = SDL_windowY + video->h;
         AdjustWindowRectEx(&bounds, GetWindowLong(SDL_Window, GWL_STYLE),
-                           FALSE, 0);
+                           (GetMenu(SDL_Window) != NULL), 0);
         width = bounds.right - bounds.left;
         height = bounds.bottom - bounds.top;
         if ((flags & SDL_FULLSCREEN)) {
