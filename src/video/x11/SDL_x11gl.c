@@ -411,9 +411,10 @@ X11_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
         break;
     case SDL_GL_SWAP_CONTROL:
         if (this->gl_data->glXGetSwapIntervalMESA) {
-            return this->gl_data->glXGetSwapIntervalMESA();
+            *value = this->gl_data->glXGetSwapIntervalMESA();
+            return (0);
         } else {
-            return (-1) /*(this->gl_config.swap_control > 0) */ ;
+            return (-1);
         }
         break;
     default:
@@ -567,3 +568,5 @@ X11_GL_GetProcAddress(_THIS, const char *proc)
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */
+
+/* vi: set ts=4 sw=4 expandtab: */

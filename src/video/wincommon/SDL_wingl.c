@@ -150,8 +150,8 @@ Init_WGL_ARB_extensions(_THIS)
         this->gl_data->wglChoosePixelFormatARB = (BOOL(WINAPI *)
                                                   (HDC, const int *,
                                                    const FLOAT *, UINT, int *,
-                                                   UINT *)) this->gl_data->
-            wglGetProcAddress("wglChoosePixelFormatARB");
+                                                   UINT *))
+            this->gl_data->wglGetProcAddress("wglChoosePixelFormatARB");
         this->gl_data->wglGetPixelFormatAttribivARB =
             (BOOL(WINAPI *) (HDC, int, int, UINT, const int *, int *))
             this->gl_data->wglGetProcAddress("wglGetPixelFormatAttribivARB");
@@ -357,7 +357,12 @@ WIN_GL_SetupWindow(_THIS)
         /* Uh oh, something is seriously wrong here... */
         wglext = NULL;
     }
-    if (!wglext || !SDL_strstr(wglext, "WGL_EXT_swap_control")) {
+    if (wglext && SDL_strstr(wglext, "WGL_EXT_swap_control")) {
+        this->gl_data->wglSwapIntervalEXT =
+            WIN_GL_GetProcAddress(this, "wglSwapIntervalEXT");
+        this->gl_data->wglGetSwapIntervalEXT =
+            WIN_GL_GetProcAddress(this, "wglGetSwapIntervalEXT");
+    } else {
         this->gl_data->wglSwapIntervalEXT = NULL;
         this->gl_data->wglGetSwapIntervalEXT = NULL;
     }
@@ -470,9 +475,8 @@ WIN_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
             break;
         case SDL_GL_ACCELERATED_VISUAL:
             wgl_attrib = WGL_ACCELERATION_ARB;
-            this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc,
-                                                        pixel_format, 0,
-                                                        1, &wgl_attrib,
+            this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc, pixel_format,
+                                                        0, 1, &wgl_attrib,
                                                         value);
             if (*value == WGL_NO_ACCELERATION_ARB) {
                 *value = SDL_FALSE;
@@ -483,15 +487,17 @@ WIN_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
             break;
         case SDL_GL_SWAP_CONTROL:
             if (this->gl_data->wglGetSwapIntervalEXT) {
-                return this->gl_data->wglGetSwapIntervalEXT();
+                *value = this->gl_data->wglGetSwapIntervalEXT();
+                return 0;
             } else {
                 return -1;
             }
+            break;
         default:
             return (-1);
         }
-        this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc, pixel_format,
-                                                    0, 1, &wgl_attrib, value);
+        this->gl_data->wglGetPixelFormatAttribivARB(GL_hdc, pixel_format, 0,
+                                                    1, &wgl_attrib, value);
 
         return 0;
     }
@@ -550,6 +556,14 @@ WIN_GL_GetAttribute(_THIS, SDL_GLattr attrib, int *value)
         break;
     case SDL_GL_MULTISAMPLESAMPLES:
         *value = 1;
+        break;
+    case SDL_GL_SWAP_CONTROL:
+        if (this->gl_data->wglGetSwapIntervalEXT) {
+            *value = this->gl_data->wglGetSwapIntervalEXT();
+            return 0;
+        } else {
+            return -1;
+        }
         break;
     default:
         retval = -1;
@@ -653,4 +667,5 @@ WIN_GL_GetProcAddress(_THIS, const char *proc)
 }
 
 #endif /* SDL_VIDEO_OPENGL */
+
 /* vi: set ts=4 sw=4 expandtab: */
