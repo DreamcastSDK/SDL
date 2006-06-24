@@ -534,10 +534,8 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         return -1;
     }
 
-    /* Make sure there's an actual display mode to set */
     if (!mode) {
-        SDL_SetError("No mode passed to SDL_SetDisplayMode");
-        return -1;
+        mode = SDL_GetDesktopDisplayMode();
     }
     display = &SDL_CurrentDisplay;
     display_mode = *mode;

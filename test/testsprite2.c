@@ -155,22 +155,10 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Initialize the video mode, if necessary */
-    current_mode = SDL_GetCurrentDisplayMode();
-    if (!current_mode->w || !current_mode->h) {
-        SDL_DisplayMode mode;
-
-        /* Let the driver pick something it likes, we don't care */
-        mode.format = 0;
-        mode.w = 0;
-        mode.h = 0;
-        mode.refresh_rate = 0;
-
-        if (SDL_SetDisplayMode(&mode) < 0) {
-            fprintf(stderr, "Couldn't set display mode: %s\n",
-                    SDL_GetError());
-            quit(2);
-        }
+    /* Set the desktop mode, we don't care what it is */
+    if (SDL_SetDisplayMode(NULL) < 0) {
+        fprintf(stderr, "Couldn't set display mode: %s\n", SDL_GetError());
+        quit(2);
     }
 
     /* Create the windows, initialize the renderers, and load the textures */

@@ -458,7 +458,7 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(const
  *
  * \brief Set up the closest available mode on the current display.
  *
- * \param mode The desired display mode
+ * \param mode The desired display mode, or NULL to set the desktop mode.
  *
  * \return 0 on success, or -1 if setting the display mode failed.
  */
