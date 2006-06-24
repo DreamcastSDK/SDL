@@ -104,7 +104,7 @@ struct SDL_Renderer
     SDL_RendererInfo info;
 
     /* The window associated with the renderer */
-    SDL_Window *window;
+    SDL_WindowID window;
 
     void *driverdata;
 };
@@ -130,7 +130,7 @@ struct SDL_Window
 
     Uint16 *gamma;
 
-    SDL_VideoDisplay *display;
+    int display;
     SDL_Renderer *renderer;
 
     void *userdata;
@@ -444,6 +444,9 @@ extern void SDL_AddDisplayMode(int displayIndex,
                                const SDL_DisplayMode * mode);
 extern void SDL_AddRenderDriver(int displayIndex,
                                 const SDL_RenderDriver * driver);
+
+extern SDL_Window *SDL_GetWindowFromID(SDL_WindowID windowID);
+extern SDL_VideoDisplay *SDL_GetDisplayFromWindow(SDL_Window * window);
 
 #endif /* _SDL_sysvideo_h */
 

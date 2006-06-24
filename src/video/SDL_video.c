@@ -507,6 +507,16 @@ SDL_GetClosestDisplayMode(const SDL_DisplayMode * mode,
         } else {
             closest->refresh_rate = mode->refresh_rate;
         }
+        /* Pick some reasonable defaults if the app and driver don't care */
+        if (!closest->format) {
+            closest->format = SDL_PixelFormat_RGB888;
+        }
+        if (!closest->w) {
+            closest->w = 640;
+        }
+        if (!closest->h) {
+            closest->h = 480;
+        }
         return closest;
     }
     return NULL;
@@ -577,6 +587,8 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
             if (!display->palette) {
                 return -1;
             }
+            SDL_DitherColors(display->palette->colors,
+                             SDL_BITSPERPIXEL(display_mode.format));
         }
     }
 
@@ -664,7 +676,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window.w = w;
     window.h = h;
     window.flags = (flags & allowed_flags);
-    window.display = &SDL_CurrentDisplay;
+    window.display = _this->current_display;
 
     if (_this->CreateWindow && _this->CreateWindow(_this, &window) < 0) {
         if (window.title) {
@@ -707,7 +719,7 @@ SDL_CreateWindowFrom(const void *data)
 
     SDL_zero(window);
     window.id = _this->next_object_id++;
-    window.display = &SDL_CurrentDisplay;
+    window.display = _this->current_display;
 
     if (!_this->CreateWindowFrom ||
         _this->CreateWindowFrom(_this, &window, data) < 0) {
@@ -734,7 +746,7 @@ SDL_CreateWindowFrom(const void *data)
     return window.id;
 }
 
-static __inline__ SDL_Window *
+SDL_Window *
 SDL_GetWindowFromID(SDL_WindowID windowID)
 {
     int i, j;
@@ -753,6 +765,15 @@ SDL_GetWindowFromID(SDL_WindowID windowID)
         }
     }
     return NULL;
+}
+
+SDL_VideoDisplay *
+SDL_GetDisplayFromWindow(SDL_Window * window)
+{
+    if (!_this) {
+        return NULL;
+    }
+    return &_this->displays[window->display];
 }
 
 Uint32
@@ -1221,11 +1242,20 @@ SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
             return 0;
         }
     } else {
-        bpp = fmt->BitsPerPixel;
-        Rmask = fmt->Rmask;
-        Gmask = fmt->Gmask;
-        Bmask = fmt->Bmask;
-        Amask = fmt->Amask;
+        if (fmt->Amask || !(surface_flags & (SDL_SRCCOLORKEY | SDL_SRCALPHA))) {
+            bpp = fmt->BitsPerPixel;
+            Rmask = fmt->Rmask;
+            Gmask = fmt->Gmask;
+            Bmask = fmt->Bmask;
+            Amask = fmt->Amask;
+        } else {
+            /* Need a format with alpha */
+            bpp = 32;
+            Rmask = 0x00FF0000;
+            Gmask = 0x0000FF00;
+            Bmask = 0x000000FF;
+            Amask = 0xFF000000;
+        }
         format = SDL_MasksToPixelFormatEnum(bpp, Rmask, Gmask, Bmask, Amask);
         if (!format) {
             SDL_SetError("Unknown pixel format");
@@ -1261,14 +1291,10 @@ SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
     }
 
     /* Copy the palette if any */
-    if (fmt->palette && dst.format->palette) {
+    if (fmt->palette) {
         SDL_SetTexturePalette(textureID, fmt->palette->colors, 0,
                               fmt->palette->ncolors);
-
-        SDL_memcpy(dst.format->palette->colors,
-                   fmt->palette->colors,
-                   fmt->palette->ncolors * sizeof(SDL_Color));
-        dst.format->palette->ncolors = fmt->palette->ncolors;
+        SDL_SetSurfacePalette(&dst, fmt->palette);
     }
 
     /* Make the texture transparent if the surface has colorkey */
@@ -1552,10 +1578,11 @@ SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
     }
 
     if (!rect) {
+        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
         full_rect.x = 0;
         full_rect.y = 0;
-        full_rect.w = renderer->window->w;
-        full_rect.h = renderer->window->h;
+        full_rect.w = window->w;
+        full_rect.h = window->h;
         rect = &full_rect;
     }
 
@@ -1588,10 +1615,11 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
         srcrect = &full_srcrect;
     }
     if (!dstrect) {
+        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
         full_dstrect.x = 0;
         full_dstrect.y = 0;
-        full_dstrect.w = renderer->window->w;
-        full_dstrect.h = renderer->window->h;
+        full_dstrect.w = window->w;
+        full_dstrect.h = window->h;
         dstrect = &full_dstrect;
     }
 
@@ -1615,10 +1643,11 @@ SDL_RenderReadPixels(const SDL_Rect * rect, void *pixels, int pitch)
     }
 
     if (!rect) {
+        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
         full_rect.x = 0;
         full_rect.y = 0;
-        full_rect.w = renderer->window->w;
-        full_rect.h = renderer->window->h;
+        full_rect.w = window->w;
+        full_rect.h = window->h;
         rect = &full_rect;
     }
 
@@ -1641,10 +1670,11 @@ SDL_RenderWritePixels(const SDL_Rect * rect, const void *pixels, int pitch)
     }
 
     if (!rect) {
+        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
         full_rect.x = 0;
         full_rect.y = 0;
-        full_rect.w = renderer->window->w;
-        full_rect.h = renderer->window->h;
+        full_rect.w = window->w;
+        full_rect.h = window->h;
         rect = &full_rect;
     }
 

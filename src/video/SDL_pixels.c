@@ -642,8 +642,11 @@ Map1to1(SDL_Palette * src, SDL_Palette * dst, int *identical)
     if (identical) {
         if (src->ncolors <= dst->ncolors) {
             /* If an identical palette, no need to map */
-            if (SDL_memcmp(src->colors, dst->colors, src->ncolors *
-                           sizeof(SDL_Color)) == 0) {
+            if (src == dst
+                ||
+                (SDL_memcmp
+                 (src->colors, dst->colors,
+                  src->ncolors * sizeof(SDL_Color)) == 0)) {
                 *identical = 1;
                 return (NULL);
             }

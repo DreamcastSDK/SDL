@@ -763,7 +763,7 @@ extern DECLSPEC int SDLCALL SDL_SelectRenderer(SDL_WindowID windowID);
 /**
  * \fn SDL_TextureID SDL_CreateTexture(Uint32 format, int access, int w, int h)
  *
- * \brief Create a texture
+ * \brief Create a texture for the current rendering context.
  *
  * \param format The format of the texture
  * \param access One of the enumerated values in SDL_TextureAccess

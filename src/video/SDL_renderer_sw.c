@@ -111,7 +111,8 @@ typedef struct
 SDL_Renderer *
 SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
-    SDL_DisplayMode *displayMode = &window->display->current_mode;
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+    SDL_DisplayMode *displayMode = &display->current_mode;
     SDL_Renderer *renderer;
     SDL_SW_RenderData *data;
     int i, n;
@@ -156,7 +157,7 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->DestroyTexture = SDL_SW_DestroyTexture;
     renderer->DestroyRenderer = SDL_SW_DestroyRenderer;
     renderer->info = SDL_SW_RenderDriver.info;
-    renderer->window = window;
+    renderer->window = window->id;
     renderer->driverdata = data;
 
     renderer->info.flags = SDL_Renderer_RenderTarget;
@@ -179,14 +180,14 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
             SDL_SW_DestroyRenderer(renderer);
             return NULL;
         }
-        SDL_SetSurfacePalette(data->screens[i], window->display->palette);
+        SDL_SetSurfacePalette(data->screens[i], display->palette);
     }
     data->current_screen = 0;
     data->target = data->screens[0];
 
     /* Find a render driver that we can use to display data */
-    for (i = 0; i < window->display->num_render_drivers; ++i) {
-        SDL_RenderDriver *driver = &window->display->render_drivers[i];
+    for (i = 0; i < display->num_render_drivers; ++i) {
+        SDL_RenderDriver *driver = &display->render_drivers[i];
         if (driver->info.name != SDL_SW_RenderDriver.info.name) {
             data->renderer =
                 driver->CreateRenderer(window, SDL_Renderer_PresentDiscard);
@@ -195,7 +196,7 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
             }
         }
     }
-    if (i == window->display->num_render_drivers) {
+    if (i == display->num_render_drivers) {
         SDL_SW_DestroyRenderer(renderer);
         SDL_SetError("Couldn't find display render driver");
         return NULL;
@@ -377,6 +378,8 @@ SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                   int blendMode, int scaleMode)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
+    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_Surface *target = data->target;
@@ -384,9 +387,8 @@ SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
             (Uint8 *) target->pixels + dstrect->y * target->pitch +
             dstrect->x * target->format->BytesPerPixel;
         return SDL_SW_CopyYUVToRGB((SDL_SW_YUVTexture *) texture->driverdata,
-                                   srcrect,
-                                   renderer->window->display->current_mode.
-                                   format, dstrect->w, dstrect->h, pixels,
+                                   srcrect, display->current_mode.format,
+                                   dstrect->w, dstrect->h, pixels,
                                    target->pitch);
     } else {
         SDL_Surface *surface = (SDL_Surface *) texture->driverdata;

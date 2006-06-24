@@ -63,7 +63,8 @@ typedef struct
 SDL_Renderer *
 SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
-    SDL_DisplayMode *displayMode = &window->display->current_mode;
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+    SDL_DisplayMode *displayMode = &display->current_mode;
     SDL_Renderer *renderer;
     SDL_DUMMY_RenderData *data;
     int i, n;
@@ -96,7 +97,7 @@ SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = SDL_DUMMY_RenderPresent;
     renderer->DestroyRenderer = SDL_DUMMY_DestroyRenderer;
     renderer->info = SDL_DUMMY_RenderDriver.info;
-    renderer->window = window;
+    renderer->window = window->id;
     renderer->driverdata = data;
 
     data->surface =
@@ -106,7 +107,7 @@ SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_DUMMY_DestroyRenderer(renderer);
         return NULL;
     }
-    SDL_SetSurfacePalette(data->surface, window->display->palette);
+    SDL_SetSurfacePalette(data->surface, display->palette);
 
     return renderer;
 }
@@ -170,7 +171,7 @@ SDL_DUMMY_RenderPresent(SDL_Renderer * renderer)
     if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
         char file[128];
         SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     renderer->window->id, ++frame_number);
+                     renderer->window, ++frame_number);
         SDL_SaveBMP(surface, file);
     }
 }

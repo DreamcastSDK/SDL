@@ -232,7 +232,6 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
                 SDL_RWread(src, &palette->colors[i].unused, 1, 1);
             }
         }
-        palette->ncolors = biClrUsed;
     }
 
     /* Read the surface pixels.  Note that the bmp image is upside down */
