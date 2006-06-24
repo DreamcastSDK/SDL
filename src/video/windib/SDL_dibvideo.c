@@ -426,6 +426,7 @@ DIB_SussScreenDepth()
     ReleaseDC(SDL_Window, hdc);
     return (depth);
 #else
+    int depth;
     int dib_size;
     LPBITMAPINFOHEADER dib_hdr;
     HDC hdc;
@@ -454,25 +455,32 @@ DIB_SussScreenDepth()
     DeleteObject(hbm);
     ReleaseDC(NULL, hdc);
 
+    depth = 0;
     switch (dib_hdr->biBitCount) {
     case 8:
-        return 8;
+        depth = 8;
+        break;
     case 24:
-        return 24;
+        depth = 24;
+        break;
     case 32:
-        return 32;
+        depth = 32;
+        break;
     case 16:
         if (dib_hdr->biCompression == BI_BITFIELDS) {
             /* check the red mask */
             switch (((DWORD *) ((char *) dib_hdr + dib_hdr->biSize))[0]) {
             case 0xf800:
-                return 16;      /* 565 */
+                depth = 16;
+                break;          /* 565 */
             case 0x7c00:
-                return 15;      /* 555 */
+                depth = 15;
+                break;          /* 555 */
             }
         }
     }
-    return 0;                   /* poo. */
+    SDL_free(dib_hdr);
+    return depth;
 #endif /* NO_GETDIBITS */
 }
 
@@ -595,8 +603,8 @@ DIB_SetVideoMode(_THIS, SDL_Surface * current,
                 if (settings.dmDisplayOrientation != rotation) {
                     // go to landscape
                     this->hidden->origRotation = rotation;
-                    ChangeDisplaySettingsEx(NULL, &settings, NULL,
-                                            CDS_RESET, NULL);
+                    ChangeDisplaySettingsEx(NULL, &settings, NULL, CDS_RESET,
+                                            NULL);
                 }
             }
             if ((width < GetDeviceCaps(GetDC(NULL), HORZRES))
@@ -612,8 +620,8 @@ DIB_SetVideoMode(_THIS, SDL_Surface * current,
                 if (settings.dmDisplayOrientation != rotation) {
                     // go to portrait
                     this->hidden->origRotation = rotation;
-                    ChangeDisplaySettingsEx(NULL, &settings, NULL,
-                                            CDS_RESET, NULL);
+                    ChangeDisplaySettingsEx(NULL, &settings, NULL, CDS_RESET,
+                                            NULL);
                 }
             }
 
@@ -1050,6 +1058,8 @@ DIB_GetGammaRamp(_THIS, Uint16 * ramp)
 void
 DIB_VideoQuit(_THIS)
 {
+    int i, j;
+
     /* Destroy the window and everything associated with it */
     if (SDL_Window) {
         /* Delete the screen bitmap (also frees screen->pixels) */
@@ -1060,7 +1070,7 @@ DIB_VideoQuit(_THIS)
                 ShowWindow(SDL_Window, SW_HIDE);
             }
 #endif
-            if (this->screen->flags & SDL_INTERNALOPENGL) {
+            if (this->screen->flags & SDL_OPENGL) {
                 WIN_GL_ShutDown(this);
             }
             this->screen->pixels = NULL;
@@ -1086,7 +1096,18 @@ DIB_VideoQuit(_THIS)
             aygshell = NULL;
         }
 #endif
+    }
 
+    for (i = 0; i < SDL_arraysize(SDL_modelist); ++i) {
+        if (!SDL_modelist[i]) {
+            continue;
+        }
+        for (j = 0; SDL_modelist[i][j]; ++j) {
+            SDL_free(SDL_modelist[i][j]);
+        }
+        SDL_free(SDL_modelist[i]);
+        SDL_modelist[i] = NULL;
+        SDL_nummodes[i] = 0;
     }
 }
 
