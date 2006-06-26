@@ -46,8 +46,6 @@ extern "C" {
 #define SDL_OPENGL          0x04000000
 #define SDL_ASYNCBLIT       0x08000000  /* Not used */
 #define SDL_HWACCEL         0x08000000  /* Not used */
-#define SDL_SCREEN_SURFACE  0x10000000  /* Surface is a window screen surface */
-#define SDL_SHADOW_SURFACE  0x20000000  /* Surface is a window shadow surface */
 
 #define SDL_APPMOUSEFOCUS	0x01
 #define SDL_APPINPUTFOCUS	0x02

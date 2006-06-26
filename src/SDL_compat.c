@@ -306,7 +306,7 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     }
 
     window_flags = SDL_GetWindowFlags(SDL_VideoWindow);
-    surface_flags = SDL_SCREEN_SURFACE;
+    surface_flags = 0;
     if (window_flags & SDL_WINDOW_FULLSCREEN) {
         surface_flags |= SDL_FULLSCREEN;
     }
@@ -448,8 +448,6 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         if (!SDL_ShadowSurface) {
             return NULL;
         }
-        surface_flags &= ~SDL_SCREEN_SURFACE;
-        surface_flags |= SDL_SHADOW_SURFACE;
         SDL_ShadowSurface->flags |= surface_flags;
 
         /* 8-bit SDL_ShadowSurface surfaces report that they have exclusive palette */
