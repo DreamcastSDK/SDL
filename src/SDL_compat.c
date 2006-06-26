@@ -24,6 +24,7 @@
 /* This file contains functions for backwards compatibility with SDL 1.2 */
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 #include "video/SDL_pixels_c.h"
 

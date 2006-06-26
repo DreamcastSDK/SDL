@@ -21,22 +21,13 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
+#ifndef _SDL_win32events_h
+#define _SDL_win32events_h
 
 #include "../SDL_sysvideo.h"
 
-/* Hidden "this" pointer for the video functions */
-#define _THIS	SDL_VideoDevice *_this
+extern void WIN32_PumpEvents(_THIS);
 
-
-/* Private display data */
-
-struct SDL_PrivateVideoData
-{
-    int unused;
-};
-
-#endif /* _SDL_nullvideo_h */
+#endif /* _SDL_win32events_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

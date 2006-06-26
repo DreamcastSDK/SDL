@@ -1,10 +1,6 @@
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
 #include <time.h>
 
 #include "SDL.h"
@@ -122,7 +118,6 @@ MoveSprites(SDL_WindowID window, SDL_TextureID sprite)
 int
 main(int argc, char *argv[])
 {
-    const SDL_DisplayMode *current_mode;
     int window_w, window_h;
     int i, done;
     SDL_Event event;

@@ -26,7 +26,7 @@
 #define _SDL_compat_h
 
 #include "SDL_video.h"
-#include "SDL_syswm.h"
+#include "SDL_version.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -117,6 +117,8 @@ typedef enum
     SDL_GRAB_ON = 1
 } SDL_GrabMode;
 
+struct SDL_SysWMinfo;
+
 #define SDL_AllocSurface    SDL_CreateRGBSurface
 
 extern DECLSPEC const SDL_version *SDLCALL SDL_Linked_Version(void);
@@ -151,7 +153,7 @@ extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
 extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
                                           const SDL_Color * colors,
                                           int firstcolor, int ncolors);
-extern DECLSPEC int SDLCALL SDL_GetWMInfo(SDL_SysWMinfo * info);
+extern DECLSPEC int SDLCALL SDL_GetWMInfo(struct SDL_SysWMinfo * info);
 extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
 extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
 extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay(int width,

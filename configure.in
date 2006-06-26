@@ -1861,9 +1861,8 @@ AC_HELP_STRING([--enable-stdio-redirect], [Redirect STDIO to files on Win32 [[de
     fi
 
     if test x$enable_video = xyes; then
-        AC_DEFINE(SDL_VIDEO_DRIVER_WINDIB)
-        SOURCES="$SOURCES $srcdir/src/video/wincommon/*.c"
-        SOURCES="$SOURCES $srcdir/src/video/windib/*.c"
+        AC_DEFINE(SDL_VIDEO_DRIVER_WIN32)
+        SOURCES="$SOURCES $srcdir/src/video/win32/*.c"
         have_video=yes
     fi
 }
@@ -1875,18 +1874,8 @@ CheckDIRECTX()
 AC_HELP_STRING([--enable-directx], [use DirectX for Win32 audio/video [[default=yes]]]),
                   , enable_directx=yes)
     if test x$enable_directx = xyes; then
-        have_directx=no
-        AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, use_dinput=yes)
-        if test x$have_ddraw = xyes -a x$have_dsound = xyes -a x$use_dinput = xyes; then
-            have_directx=yes
-        fi
-        if test x$enable_video = xyes -a x$have_directx = xyes; then
-            AC_DEFINE(SDL_VIDEO_DRIVER_DDRAW)
-            SOURCES="$SOURCES $srcdir/src/video/windx5/*.c"
-            have_video=yes
-        fi
     fi
 }
 
@@ -2311,7 +2300,7 @@ case "$host" in
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_WAVEOUT)
             SOURCES="$SOURCES $srcdir/src/audio/windib/*.c"
-            if test x$have_directx = xyes; then
+            if test x$have_dsound = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND)
                 SOURCES="$SOURCES $srcdir/src/audio/windx5/*.c"
             fi
@@ -2319,7 +2308,7 @@ case "$host" in
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-            if test x$have_directx = xyes; then
+            if test x$have_dinput = xyes; then
                 AC_DEFINE(SDL_JOYSTICK_DINPUT)
                 SOURCES="$SOURCES $srcdir/src/joystick/win32/SDL_dxjoystick.c"
             else
@@ -2357,9 +2346,6 @@ case "$host" in
         fi
         # Set up the system libraries we need
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm"
-        if test x$have_directx = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldxguid"
-        fi
         # The Win32 platform requires special setup
         SDLMAIN_SOURCES="$srcdir/src/main/win32/*.c"
         SDL_CFLAGS="$SDL_CFLAGS -Dmain=SDL_main"

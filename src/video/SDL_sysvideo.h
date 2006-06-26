@@ -29,14 +29,6 @@
 #include "SDL_syswm.h"
 #undef SDL_PROTOTYPES_ONLY
 
-/* This file prototypes the video driver implementation.
-   This is designed to be easily converted to C++ in the future.
- */
-
-#if SDL_VIDEO_OPENGL
-#include "SDL_opengl.h"
-#endif /* SDL_VIDEO_OPENGL */
-
 /* The SDL video driver */
 
 typedef struct SDL_Window SDL_Window;
@@ -256,21 +248,6 @@ struct SDL_VideoDevice
     /* Swap the current buffers in double buffer mode. */
     void (*GL_SwapBuffers) (_THIS);
 
-    /* OpenGL functions for glSDL */
-#if SDL_VIDEO_OPENGL
-#if !defined(__WIN32__)
-#define WINAPI
-#endif
-#define SDL_PROC(ret,func,params) ret (WINAPI *func) params;
-#include "SDL_glfuncs.h"
-#undef SDL_PROC
-
-    /* Texture id */
-    GLuint texture;
-
-    int is_32bit;
-#endif
-
     /* Determine whether the mouse should be in relative mode or not.
        This function is called when the input grab state or cursor
        visibility state changes.
@@ -330,7 +307,6 @@ struct SDL_VideoDevice
     /* The function used to dispose of this structure */
     void (*free) (_THIS);
 };
-#undef _THIS
 
 typedef struct VideoBootStrap
 {
@@ -382,11 +358,8 @@ extern VideoBootStrap SVGALIB_bootstrap;
 #if SDL_VIDEO_DRIVER_GAPI
 extern VideoBootStrap GAPI_bootstrap;
 #endif
-#if SDL_VIDEO_DRIVER_WINDIB
-extern VideoBootStrap WINDIB_bootstrap;
-#endif
-#if SDL_VIDEO_DRIVER_DDRAW
-extern VideoBootStrap DIRECTX_bootstrap;
+#if SDL_VIDEO_DRIVER_WIN32
+extern VideoBootStrap WIN32_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_BWINDOW
 extern VideoBootStrap BWINDOW_bootstrap;

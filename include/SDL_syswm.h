@@ -129,7 +129,7 @@ struct SDL_SysWMinfo
     GR_WINDOW_ID window;        /* The display window */
 };
 
-#elif defined(SDL_VIDEO_DRIVER_WINDIB) || defined(SDL_VIDEO_DRIVER_DDRAW) || defined(SDL_VIDEO_DRIVER_GAPI)
+#elif defined(SDL_VIDEO_DRIVER_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

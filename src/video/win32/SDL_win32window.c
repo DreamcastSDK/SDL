@@ -21,22 +21,65 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
-
 #include "../SDL_sysvideo.h"
 
-/* Hidden "this" pointer for the video functions */
-#define _THIS	SDL_VideoDevice *_this
+#include "SDL_win32video.h"
 
 
-/* Private display data */
-
-struct SDL_PrivateVideoData
+int WIN32_CreateWindow(_THIS, SDL_Window * window)
 {
-    int unused;
-};
+}
 
-#endif /* _SDL_nullvideo_h */
+int WIN32_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
+{
+}
+
+void WIN32_SetWindowTitle(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_SetWindowPosition(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_SetWindowSize(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_ShowWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_HideWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_RaiseWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_MaximizeWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_MinimizeWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_RestoreWindow(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_SetWindowGrab(_THIS, SDL_Window * window)
+{
+}
+
+void WIN32_DestroyWindow(_THIS, SDL_Window * window)
+{
+}
+
+SDL_bool WIN32_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+{
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

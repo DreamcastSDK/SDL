@@ -348,6 +348,11 @@ _DllMainCRTStartup(HANDLE hModule,
 }
 #endif /* building DLL with Watcom C */
 
+void SDL_SetModuleHandle(void *hInst)
+{
+    /* FIXME: Do we still need this? */
+}
+
 #endif /* OS/2 elif __WIN32__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

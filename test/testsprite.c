@@ -1,10 +1,6 @@
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <math.h>
 #include <time.h>
 
 #include "SDL.h"
