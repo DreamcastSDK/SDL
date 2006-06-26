@@ -26,59 +26,73 @@
 #include "SDL_win32video.h"
 
 
-int WIN32_CreateWindow(_THIS, SDL_Window * window)
+int
+WIN32_CreateWindow(_THIS, SDL_Window * window)
 {
 }
 
-int WIN32_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
+int
+WIN32_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
 }
 
-void WIN32_SetWindowTitle(_THIS, SDL_Window * window)
+void
+WIN32_SetWindowTitle(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_SetWindowPosition(_THIS, SDL_Window * window)
+void
+WIN32_SetWindowPosition(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_SetWindowSize(_THIS, SDL_Window * window)
+void
+WIN32_SetWindowSize(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_ShowWindow(_THIS, SDL_Window * window)
+void
+WIN32_ShowWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_HideWindow(_THIS, SDL_Window * window)
+void
+WIN32_HideWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_RaiseWindow(_THIS, SDL_Window * window)
+void
+WIN32_RaiseWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_MaximizeWindow(_THIS, SDL_Window * window)
+void
+WIN32_MaximizeWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_MinimizeWindow(_THIS, SDL_Window * window)
+void
+WIN32_MinimizeWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_RestoreWindow(_THIS, SDL_Window * window)
+void
+WIN32_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_SetWindowGrab(_THIS, SDL_Window * window)
+void
+WIN32_SetWindowGrab(_THIS, SDL_Window * window)
 {
 }
 
-void WIN32_DestroyWindow(_THIS, SDL_Window * window)
+void
+WIN32_DestroyWindow(_THIS, SDL_Window * window)
 {
 }
 
-SDL_bool WIN32_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+SDL_bool
+WIN32_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
 }
 

@@ -348,7 +348,8 @@ _DllMainCRTStartup(HANDLE hModule,
 }
 #endif /* building DLL with Watcom C */
 
-void SDL_SetModuleHandle(void *hInst)
+void
+SDL_SetModuleHandle(void *hInst)
 {
     /* FIXME: Do we still need this? */
 }

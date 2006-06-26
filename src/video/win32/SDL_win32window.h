@@ -28,7 +28,8 @@
 #include "SDL_win32video.h"
 
 extern int WIN32_CreateWindow(_THIS, SDL_Window * window);
-extern int WIN32_CreateWindowFrom(_THIS, SDL_Window * window, const void *data);
+extern int WIN32_CreateWindowFrom(_THIS, SDL_Window * window,
+                                  const void *data);
 extern void WIN32_SetWindowTitle(_THIS, SDL_Window * window);
 extern void WIN32_SetWindowPosition(_THIS, SDL_Window * window);
 extern void WIN32_SetWindowSize(_THIS, SDL_Window * window);
@@ -40,7 +41,8 @@ extern void WIN32_MinimizeWindow(_THIS, SDL_Window * window);
 extern void WIN32_RestoreWindow(_THIS, SDL_Window * window);
 extern void WIN32_SetWindowGrab(_THIS, SDL_Window * window);
 extern void WIN32_DestroyWindow(_THIS, SDL_Window * window);
-extern SDL_bool WIN32_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
+extern SDL_bool WIN32_GetWindowWMInfo(_THIS, SDL_Window * window,
+                                      SDL_SysWMinfo * info);
 
 #endif /* _SDL_win32window_h */
 

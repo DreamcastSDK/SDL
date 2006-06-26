@@ -45,8 +45,7 @@ main(int argc, char *argv[])
             window_h = atoi(argv[argc]);
             --argc;
         } else {
-            fprintf(stderr,
-                    "Usage: %s [-width] [-height]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-width] [-height]\n", argv[0]);
             quit(1);
         }
     }

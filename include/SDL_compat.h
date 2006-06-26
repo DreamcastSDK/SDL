@@ -153,7 +153,7 @@ extern DECLSPEC int SDLCALL SDL_SetPalette(SDL_Surface * surface, int flags,
 extern DECLSPEC int SDLCALL SDL_SetColors(SDL_Surface * surface,
                                           const SDL_Color * colors,
                                           int firstcolor, int ncolors);
-extern DECLSPEC int SDLCALL SDL_GetWMInfo(struct SDL_SysWMinfo * info);
+extern DECLSPEC int SDLCALL SDL_GetWMInfo(struct SDL_SysWMinfo *info);
 extern DECLSPEC Uint8 SDLCALL SDL_GetAppState(void);
 extern DECLSPEC void SDLCALL SDL_WarpMouse(Uint16 x, Uint16 y);
 extern DECLSPEC SDL_Overlay *SDLCALL SDL_CreateYUVOverlay(int width,
