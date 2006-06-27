@@ -10,20 +10,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#ifdef _WIN32_WCE
-# define DIR_SEPERATOR TEXT("\\")
-# undef _getcwd
-# define _getcwd(str,len)	wcscpy(str,TEXT(""))
-# define setbuf(f,b)
-# define setvbuf(w,x,y,z)
-# define fopen		_wfopen
-# define freopen	_wfreopen
-# define remove(x)	DeleteFile(x)
-#else
-# define DIR_SEPERATOR TEXT("/")
-# include <direct.h>
-#endif
-
 /* Include the SDL main definition header */
 #include "SDL.h"
 #include "SDL_main.h"
@@ -33,20 +19,6 @@
 #  undef main
 # endif /* _WIN32_WCE_EMULATION */
 #endif /* main */
-
-/* The standard output files */
-#define STDOUT_FILE	TEXT("stdout.txt")
-#define STDERR_FILE	TEXT("stderr.txt")
-
-#ifndef NO_STDIO_REDIRECT
-# ifdef _WIN32_WCE
-static wchar_t stdoutPath[MAX_PATH];
-static wchar_t stderrPath[MAX_PATH];
-# else
-static char stdoutPath[MAX_PATH];
-static char stderrPath[MAX_PATH];
-# endif
-#endif
 
 #if defined(_WIN32_WCE) && _WIN32_WCE < 300
 /* seems to be undefined in Win CE although in online help */
@@ -124,52 +96,6 @@ OutOfMemory(void)
     return FALSE;
 }
 
-/* SDL_Quit() shouldn't be used with atexit() directly because
-   calling conventions may differ... */
-static void
-cleanup(void)
-{
-    SDL_Quit();
-}
-
-/* Remove the output files if there was no output written */
-static void
-cleanup_output(void)
-{
-#ifndef NO_STDIO_REDIRECT
-    FILE *file;
-    int empty;
-#endif
-
-    /* Flush the output in case anything is queued */
-    fclose(stdout);
-    fclose(stderr);
-
-#ifndef NO_STDIO_REDIRECT
-    /* See if the files have any output in them */
-    if (stdoutPath[0]) {
-        file = fopen(stdoutPath, TEXT("rb"));
-        if (file) {
-            empty = (fgetc(file) == EOF) ? 1 : 0;
-            fclose(file);
-            if (empty) {
-                remove(stdoutPath);
-            }
-        }
-    }
-    if (stderrPath[0]) {
-        file = fopen(stderrPath, TEXT("rb"));
-        if (file) {
-            empty = (fgetc(file) == EOF) ? 1 : 0;
-            fclose(file);
-            if (empty) {
-                remove(stderrPath);
-            }
-        }
-    }
-#endif
-}
-
 #if defined(_MSC_VER) && !defined(_WIN32_WCE)
 /* The VC++ compiler needs main defined */
 #define console_main main
@@ -179,44 +105,7 @@ cleanup_output(void)
 int
 console_main(int argc, char *argv[])
 {
-    size_t n;
-    char *bufp, *appname;
     int status;
-
-    /* Get the class name from argv[0] */
-    appname = argv[0];
-    if ((bufp = SDL_strrchr(argv[0], '\\')) != NULL) {
-        appname = bufp + 1;
-    } else if ((bufp = SDL_strrchr(argv[0], '/')) != NULL) {
-        appname = bufp + 1;
-    }
-
-    if ((bufp = SDL_strrchr(appname, '.')) == NULL)
-        n = SDL_strlen(appname);
-    else
-        n = (bufp - appname);
-
-    bufp = SDL_stack_alloc(char, n + 1);
-    if (bufp == NULL) {
-        return OutOfMemory();
-    }
-    SDL_strlcpy(bufp, appname, n + 1);
-    appname = bufp;
-
-    /* Load SDL dynamic link library */
-    if (SDL_Init(SDL_INIT_NOPARACHUTE) < 0) {
-        ShowError("WinMain() error", SDL_GetError());
-        return (FALSE);
-    }
-    atexit(cleanup_output);
-    atexit(cleanup);
-
-    /* Sam:
-       We still need to pass in the application handle so that
-       DirectInput will initialize properly when SDL_RegisterApp()
-       is called later in the video initialization.
-     */
-    SDL_SetModuleHandle(GetModuleHandle(NULL));
 
     /* Run the application main() code */
     status = SDL_main(argc, argv);
@@ -229,24 +118,12 @@ console_main(int argc, char *argv[])
 }
 
 /* This is where execution begins [windowed apps] */
-#ifdef _WIN32_WCE
 int WINAPI
-WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPWSTR szCmdLine, int sw)
-#else
-int WINAPI
-WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
-#endif
+WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPTSTR szCmdLine, int sw)
 {
-    HINSTANCE handle;
     char **argv;
     int argc;
     char *cmdline;
-    DWORD pathlen;
-#ifdef _WIN32_WCE
-    wchar_t path[MAX_PATH];
-#else
-    char path[MAX_PATH];
-#endif
 #ifdef _WIN32_WCE
     wchar_t *bufp;
     int nLen;
@@ -254,76 +131,6 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     char *bufp;
     size_t nLen;
 #endif
-#ifndef NO_STDIO_REDIRECT
-    FILE *newfp;
-#endif
-
-    /* Start up DDHELP.EXE before opening any files, so DDHELP doesn't
-       keep them open.  This is a hack.. hopefully it will be fixed 
-       someday.  DDHELP.EXE starts up the first time DDRAW.DLL is loaded.
-     */
-    handle = LoadLibrary(TEXT("DDRAW.DLL"));
-    if (handle != NULL) {
-        FreeLibrary(handle);
-    }
-#ifndef NO_STDIO_REDIRECT
-    pathlen = GetModuleFileName(NULL, path, SDL_arraysize(path));
-    while (pathlen > 0 && path[pathlen] != '\\') {
-        --pathlen;
-    }
-    path[pathlen] = '\0';
-
-#ifdef _WIN32_WCE
-    wcsncpy(stdoutPath, path, SDL_arraysize(stdoutPath));
-    wcsncat(stdoutPath, DIR_SEPERATOR STDOUT_FILE, SDL_arraysize(stdoutPath));
-#else
-    SDL_strlcpy(stdoutPath, path, SDL_arraysize(stdoutPath));
-    SDL_strlcat(stdoutPath, DIR_SEPERATOR STDOUT_FILE,
-                SDL_arraysize(stdoutPath));
-#endif
-
-    /* Redirect standard input and standard output */
-    newfp = freopen(stdoutPath, TEXT("w"), stdout);
-
-#ifndef _WIN32_WCE
-    if (newfp == NULL) {        /* This happens on NT */
-#if !defined(stdout)
-        stdout = fopen(stdoutPath, TEXT("w"));
-#else
-        newfp = fopen(stdoutPath, TEXT("w"));
-        if (newfp) {
-            *stdout = *newfp;
-        }
-#endif
-    }
-#endif /* _WIN32_WCE */
-
-#ifdef _WIN32_WCE
-    wcsncpy(stderrPath, path, SDL_arraysize(stdoutPath));
-    wcsncat(stderrPath, DIR_SEPERATOR STDOUT_FILE, SDL_arraysize(stdoutPath));
-#else
-    SDL_strlcpy(stderrPath, path, SDL_arraysize(stderrPath));
-    SDL_strlcat(stderrPath, DIR_SEPERATOR STDERR_FILE,
-                SDL_arraysize(stderrPath));
-#endif
-
-    newfp = freopen(stderrPath, TEXT("w"), stderr);
-#ifndef _WIN32_WCE
-    if (newfp == NULL) {        /* This happens on NT */
-#if !defined(stderr)
-        stderr = fopen(stderrPath, TEXT("w"));
-#else
-        newfp = fopen(stderrPath, TEXT("w"));
-        if (newfp) {
-            *stderr = *newfp;
-        }
-#endif
-    }
-#endif /* _WIN32_WCE */
-
-    setvbuf(stdout, NULL, _IOLBF, BUFSIZ);      /* Line buffered */
-    setbuf(stderr, NULL);       /* No buffering */
-#endif /* !NO_STDIO_REDIRECT */
 
 #ifdef _WIN32_WCE
     nLen = wcslen(szCmdLine) + 128 + 1;
@@ -357,7 +164,7 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     }
     ParseCommandLine(cmdline, argv);
 
-    /* Run the main program (after a little SDL initialization) */
+    /* Run the main program */
     console_main(argc, argv);
 
     /* Hush little compiler, don't you cry... */

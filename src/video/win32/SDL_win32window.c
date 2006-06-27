@@ -27,72 +27,72 @@
 
 
 int
-WIN32_CreateWindow(_THIS, SDL_Window * window)
+WIN_CreateWindow(_THIS, SDL_Window * window)
 {
 }
 
 int
-WIN32_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
+WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
 }
 
 void
-WIN32_SetWindowTitle(_THIS, SDL_Window * window)
+WIN_SetWindowTitle(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_SetWindowPosition(_THIS, SDL_Window * window)
+WIN_SetWindowPosition(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_SetWindowSize(_THIS, SDL_Window * window)
+WIN_SetWindowSize(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_ShowWindow(_THIS, SDL_Window * window)
+WIN_ShowWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_HideWindow(_THIS, SDL_Window * window)
+WIN_HideWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_RaiseWindow(_THIS, SDL_Window * window)
+WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_MaximizeWindow(_THIS, SDL_Window * window)
+WIN_MaximizeWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_MinimizeWindow(_THIS, SDL_Window * window)
+WIN_MinimizeWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_RestoreWindow(_THIS, SDL_Window * window)
+WIN_RestoreWindow(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_SetWindowGrab(_THIS, SDL_Window * window)
+WIN_SetWindowGrab(_THIS, SDL_Window * window)
 {
 }
 
 void
-WIN32_DestroyWindow(_THIS, SDL_Window * window)
+WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
 }
 
 SDL_bool
-WIN32_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
 }
 

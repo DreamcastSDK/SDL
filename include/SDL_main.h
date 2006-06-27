@@ -63,13 +63,11 @@ extern "C" {
 /* *INDENT-ON* */
 #endif
 
-/* This should be called from your WinMain() function, if any */
-extern DECLSPEC void SDLCALL SDL_SetModuleHandle(void *hInst);
-/* This can also be called, but is no longer necessary */
+/* This can be called to set the application class at startup */
 extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style,
                                             void *hInst);
-/* This can also be called, but is no longer necessary (SDL_Quit calls it) */
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
+
 #ifdef __cplusplus
 /* *INDENT-OFF* */
 }

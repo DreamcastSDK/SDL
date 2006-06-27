@@ -26,7 +26,11 @@
 
 #include "../SDL_sysvideo.h"
 
-extern void WIN32_PumpEvents(_THIS);
+extern LPTSTR SDL_Appname;
+extern Uint32 SDL_Appstyle;
+extern HINSTANCE SDL_Instance;
+
+extern void WIN_PumpEvents(_THIS);
 
 #endif /* _SDL_win32events_h */
 

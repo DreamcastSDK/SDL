@@ -27,6 +27,7 @@
 #include "../SDL_sysvideo.h"
 
 #define WIN32_LEAN_AND_MEAN
+#define UNICODE
 #include <windows.h>
 
 #include "SDL_win32events.h"

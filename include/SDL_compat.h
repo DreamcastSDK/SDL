@@ -117,6 +117,7 @@ typedef enum
 
 struct SDL_SysWMinfo;
 
+#define SDL_SetModuleHandle(x)
 #define SDL_AllocSurface    SDL_CreateRGBSurface
 
 extern DECLSPEC const SDL_version *SDLCALL SDL_Linked_Version(void);
