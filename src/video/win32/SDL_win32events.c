@@ -24,10 +24,20 @@
 #include "SDL_win32video.h"
 
 
-static LRESULT CALLBACK
-WinMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK
+WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+    SDL_WindowData *data;
+    SDL_Window *window;
+
+    /* Get the window data for the window */
+    data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
+    if (!data) {
+        return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
+    }
+    window = data->window;
+
+    return CallWindowProc(data->wndproc, hwnd, msg, wParam, lParam);
 }
 
 void
@@ -63,7 +73,7 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     }
 
     if (name) {
-        SDL_Appname = SDL_iconv_utf8_ucs2(name);
+        SDL_Appname = WIN_UTF8ToString(name);
         SDL_Appstyle = style;
         SDL_Instance = hInst ? hInst : GetModuleHandle(NULL);
     }
@@ -77,7 +87,7 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     class.hbrBackground = NULL;
     class.hInstance = SDL_Instance;
     class.style = SDL_Appstyle;
-    class.lpfnWndProc = WinMessage;
+    class.lpfnWndProc = DefWindowProc;
     class.cbWndExtra = 0;
     class.cbClsExtra = 0;
     if (!RegisterClass(&class)) {
@@ -108,6 +118,22 @@ SDL_UnregisterApp()
         SDL_free(SDL_Appname);
         SDL_Appname = NULL;
     }
+}
+
+/* Sets an error message based on GetLastError() */
+void
+WIN_SetError(const char *prefix)
+{
+    TCHAR buffer[1024];
+    char *message;
+
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  GetLastError(), 0, buffer, SDL_arraysize(buffer), NULL);
+
+    message = WIN_StringToUTF8(buffer);
+    SDL_SetError("%s%s%s", prefix ? prefix : "", prefix ? ":" : "", message);
+    SDL_free(message);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

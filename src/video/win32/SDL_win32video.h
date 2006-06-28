@@ -33,6 +33,14 @@
 #include "SDL_win32events.h"
 #include "SDL_win32window.h"
 
+#ifdef UNICODE
+#define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UCS-2", (char *)S, (wcslen(S)+1)*sizeof(WCHAR))
+#define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UCS-2", "UTF-8", (char *)S, SDL_strlen(S)+1)
+#else
+#define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "ASCII", (char *)S, (strlen(S)+1))
+#define WIN_UTF8ToString(S) SDL_iconv_string("ASCII", "UTF-8", (char *)S, SDL_strlen(S)+1)
+#endif
+
 /* Private display data */
 
 struct SDL_PrivateVideoData

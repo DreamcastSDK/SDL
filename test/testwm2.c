@@ -64,10 +64,18 @@ main(int argc, char *argv[])
     }
     for (i = 0; i < num_windows; ++i) {
         char title[32];
+        int x, y;
 
         SDL_snprintf(title, sizeof(title), "testwm %d", i + 1);
+        if (i == 0) {
+            x = SDL_WINDOWPOS_CENTERED;
+            y = SDL_WINDOWPOS_CENTERED;
+        } else {
+            x = SDL_WINDOWPOS_UNDEFINED;
+            y = SDL_WINDOWPOS_UNDEFINED;
+        }
         windows[i] =
-            SDL_CreateWindow(title, -1, -1, window_w, window_h,
+            SDL_CreateWindow(title, x, y, window_w, window_h,
                              SDL_WINDOW_SHOWN);
         if (!windows[i]) {
             fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());

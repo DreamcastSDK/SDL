@@ -27,6 +27,14 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_win32video.h"
 
+typedef struct
+{
+    SDL_Window *window;
+    HWND hwnd;
+    WNDPROC wndproc;
+    BOOL created;
+} SDL_WindowData;
+
 extern int WIN_CreateWindow(_THIS, SDL_Window * window);
 extern int WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data);
 extern void WIN_SetWindowTitle(_THIS, SDL_Window * window);

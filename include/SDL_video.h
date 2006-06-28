@@ -116,16 +116,27 @@ typedef Uint32 SDL_WindowID;
 typedef enum
 {
     SDL_WINDOW_FULLSCREEN = 0x00000001,         /**< fullscreen window, implies borderless */
-    SDL_WINDOW_BORDERLESS = 0x00000002,         /**< no window decoration */
+    SDL_WINDOW_OPENGL = 0x00000002,             /**< window usable with OpenGL context */
     SDL_WINDOW_SHOWN = 0x00000004,              /**< window is visible */
-    SDL_WINDOW_OPENGL = 0x00000008,             /**< window usable with OpenGL context */
+    SDL_WINDOW_BORDERLESS = 0x00000008,         /**< no window decoration */
     SDL_WINDOW_RESIZABLE = 0x00000010,          /**< window can be resized */
     SDL_WINDOW_MAXIMIZED = 0x00000020,          /**< maximized */
     SDL_WINDOW_MINIMIZED = 0x00000040,          /**< minimized */
-    SDL_WINDOW_INPUT_GRABBED = 0x00000080,      /**< window has grabbed input focus */
-    SDL_WINDOW_KEYBOARD_FOCUS = 0x00000100,     /**< window has keyboard focus */
-    SDL_WINDOW_MOUSE_FOCUS = 0x00000200,        /**< window has mouse focus */
+    SDL_WINDOW_INPUT_GRABBED = 0x00000100,      /**< window has grabbed input focus */
+    SDL_WINDOW_KEYBOARD_FOCUS = 0x00000200,     /**< window has keyboard focus */
+    SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
 } SDL_WindowFlags;
+
+/**
+ * \def SDL_WINDOWPOS_UNDEFINED
+ * \brief Used to indicate that you don't care what the window position is.
+ */
+#define SDL_WINDOWPOS_UNDEFINED 0x7FFFFFF
+/**
+ * \def SDL_WINDOWPOS_CENTERED
+ * \brief Used to indicate that the window position should be centered.
+ */
+#define SDL_WINDOWPOS_CENTERED  0x7FFFFFE
 
 /**
  * \enum SDL_WindowEventID
@@ -584,6 +595,12 @@ extern DECLSPEC void *SDLCALL SDL_GetWindowData(SDL_WindowID windowID);
  *
  * \brief Set the position of the window.
  *
+ * \param windowID The window to reposition
+ * \param x The x coordinate of the window, SDL_WINDOWPOS_CENTERED, or SDL_WINDOWPOS_UNDEFINED
+ * \param y The y coordinate of the window, SDL_WINDOWPOS_CENTERED, or SDL_WINDOWPOS_UNDEFINED
+ *
+ * \note The window coordinate origin is the upper left of the display.
+ *
  * \sa SDL_GetWindowPosition()
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowPosition(SDL_WindowID windowID,
@@ -737,7 +754,7 @@ extern DECLSPEC int SDLCALL SDL_GetRendererInfo(int index,
  *
  * \brief Create and make active a 2D rendering context for a window.
  *
- * \param windowID The window used for rendering.
+ * \param windowID The window used for rendering
  * \param index The index of the render manager to initialize, or -1 to initialize the first one supporting the requested flags.
  * \param flags SDL_RendererFlags
  *

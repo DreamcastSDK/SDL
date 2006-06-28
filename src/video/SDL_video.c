@@ -647,9 +647,9 @@ SDL_WindowID
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     const Uint32 allowed_flags = (SDL_WINDOW_FULLSCREEN |
-                                  SDL_WINDOW_BORDERLESS |
-                                  SDL_WINDOW_SHOWN |
                                   SDL_WINDOW_OPENGL |
+                                  SDL_WINDOW_SHOWN |
+                                  SDL_WINDOW_BORDERLESS |
                                   SDL_WINDOW_RESIZABLE |
                                   SDL_WINDOW_MAXIMIZED |
                                   SDL_WINDOW_MINIMIZED |
@@ -842,8 +842,12 @@ SDL_SetWindowPosition(SDL_WindowID windowID, int x, int y)
         return;
     }
 
-    window->x = x;
-    window->y = y;
+    if (x != SDL_WINDOWPOS_UNDEFINED) {
+        window->x = x;
+    }
+    if (y != SDL_WINDOWPOS_UNDEFINED) {
+        window->y = y;
+    }
 
     if (_this->SetWindowPosition) {
         _this->SetWindowPosition(_this, window);
