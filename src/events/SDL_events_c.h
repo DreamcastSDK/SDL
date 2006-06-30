@@ -39,11 +39,6 @@ extern int SDL_QuitInit(void);
 extern int SDL_SendQuit(void);
 extern void SDL_QuitQuit(void);
 
-extern int SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent,
-                               int data1, int data2);
-
-extern int SDL_SendSysWMEvent(SDL_SysWMmsg * message);
-
 /* The event filter function */
 extern SDL_EventFilter SDL_EventOK;
 

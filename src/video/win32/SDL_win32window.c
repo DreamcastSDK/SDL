@@ -25,6 +25,9 @@
 
 #include "SDL_win32video.h"
 
+/* This is included after SDL_win32video.h, which includes windows.h */
+#include "SDL_syswm.h"
+
 
 static int
 SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
@@ -59,6 +62,8 @@ SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
     /* Fill in the SDL window with the window data */
     {
         POINT point;
+        point.x = 0;
+        point.y = 0;
         if (ClientToScreen(hwnd, &point)) {
             window->x = point.x;
             window->y = point.y;
@@ -385,8 +390,6 @@ SDL_bool
 WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-/* FIXME! */
-#if 0
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->window = hwnd;
         /* FIXME! */
@@ -397,7 +400,6 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return SDL_FALSE;
     }
-#endif
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

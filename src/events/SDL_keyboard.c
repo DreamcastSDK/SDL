@@ -291,8 +291,6 @@ int
 SDL_AddKeyboard(const SDL_Keyboard * keyboard, int index)
 {
     SDL_Keyboard **keyboards;
-    SDL_Cursor *cursor;
-    int selected_keyboard;
 
     /* Add the keyboard to the list of keyboards */
     if (index < 0 || index >= SDL_num_keyboards || SDL_keyboards[index]) {

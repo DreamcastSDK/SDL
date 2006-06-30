@@ -718,6 +718,18 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_WindowID windowID,
 extern DECLSPEC int SDLCALL SDL_GetWindowGrab(SDL_WindowID windowID);
 
 /**
+ * \fn SDL_bool SDL_GetWindowWMInfo(SDL_WindowID windowID, struct SDL_SysWMinfo * info)
+ *
+ * \brief Get driver specific information about a window.
+ *
+ * \note Include SDL_syswm.h for the declaration of SDL_SysWMinfo.
+ */
+struct SDL_SysWMinfo;
+extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowWMInfo(SDL_WindowID windowID,
+                                                     struct SDL_SysWMinfo
+                                                     *info);
+
+/**
  * \fn void SDL_DestroyWindow(SDL_WindowID windowID)
  *
  * \brief Destroy a window.

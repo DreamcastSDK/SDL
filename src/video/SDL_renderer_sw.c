@@ -54,8 +54,8 @@ static void SDL_SW_DirtyTexture(SDL_Renderer * renderer,
                                 const SDL_Rect * rects);
 static void SDL_SW_SelectRenderTexture(SDL_Renderer * renderer,
                                        SDL_Texture * texture);
-static void SDL_SW_RenderFill(SDL_Renderer * renderer, const SDL_Rect * rect,
-                              Uint32 color);
+static int SDL_SW_RenderFill(SDL_Renderer * renderer, const SDL_Rect * rect,
+                             Uint32 color);
 static int SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                              const SDL_Rect * srcrect,
                              const SDL_Rect * dstrect, int blendMode,
@@ -355,7 +355,7 @@ SDL_SW_SelectRenderTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 }
 
-static void
+static int
 SDL_SW_RenderFill(SDL_Renderer * renderer, const SDL_Rect * rect,
                   Uint32 color)
 {
@@ -369,7 +369,7 @@ SDL_SW_RenderFill(SDL_Renderer * renderer, const SDL_Rect * rect,
     b = (Uint8) (color & 0xFF);
     color = SDL_MapRGBA(data->target->format, r, g, b, a);
 
-    SDL_FillRect(data->target, &real_rect, color);
+    return SDL_FillRect(data->target, &real_rect, color);
 }
 
 static int

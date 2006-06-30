@@ -21,11 +21,18 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
+#include "SDL_win32video.h"
 
-#include "../SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
 
-#endif /* _SDL_nullvideo_h */
+void
+WIN_AddKeyboard(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_Keyboard keyboard;
+
+    SDL_zero(keyboard);
+    data->keyboard = SDL_AddKeyboard(&keyboard, -1);
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

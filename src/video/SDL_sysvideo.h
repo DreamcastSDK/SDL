@@ -25,9 +25,6 @@
 #define _SDL_sysvideo_h
 
 #include "SDL_mouse.h"
-#define SDL_PROTOTYPES_ONLY
-#include "SDL_syswm.h"
-#undef SDL_PROTOTYPES_ONLY
 
 /* The SDL video driver */
 
@@ -78,8 +75,8 @@ struct SDL_Renderer
                           int numrects, const SDL_Rect * rects);
     void (*SelectRenderTexture) (SDL_Renderer * renderer,
                                  SDL_Texture * texture);
-    void (*RenderFill) (SDL_Renderer * renderer, const SDL_Rect * rect,
-                        Uint32 color);
+    int (*RenderFill) (SDL_Renderer * renderer, const SDL_Rect * rect,
+                       Uint32 color);
     int (*RenderCopy) (SDL_Renderer * renderer, SDL_Texture * texture,
                        const SDL_Rect * srcrect, const SDL_Rect * dstrect,
                        int blendMode, int scaleMode);
@@ -208,7 +205,7 @@ struct SDL_VideoDevice
 
     /* Get some platform dependent window information */
       SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
-                                  SDL_SysWMinfo * info);
+                                  struct SDL_SysWMinfo * info);
 
     /* Reverse the effects VideoInit() -- called if VideoInit() fails
        or if the application is shutting down the video subsystem.
@@ -300,7 +297,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data private to this driver */
-    struct SDL_PrivateVideoData *hidden;
+    void *driverdata;
     struct SDL_PrivateGLData *gl_data;
 
     /* * * */

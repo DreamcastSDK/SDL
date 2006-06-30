@@ -26,6 +26,7 @@
 #include "SDL.h"
 #include "SDL_syswm.h"
 
+#include "video/SDL_sysvideo.h"
 #include "video/SDL_pixels_c.h"
 
 
@@ -94,7 +95,7 @@ SDL_VideoModeOK(int width, int height, int bpp, Uint32 flags)
             if (!mode->format) {
                 return bpp;
             }
-            if (SDL_BITSPERPIXEL(mode->format) >= bpp) {
+            if (SDL_BITSPERPIXEL(mode->format) >= (Uint32) bpp) {
                 actual_bpp = SDL_BITSPERPIXEL(mode->format);
             }
         }
@@ -118,6 +119,7 @@ SDL_ListModes(SDL_PixelFormat * format, Uint32 flags)
 
     /* Memory leak, but this is a compatibility function, who cares? */
     nmodes = 0;
+    modes = NULL;
     for (i = 0; i < SDL_GetNumDisplayModes(); ++i) {
         const SDL_DisplayMode *mode = SDL_GetDisplayMode(i);
         if (!mode->w || !mode->h) {
@@ -243,6 +245,7 @@ SDL_VideoPaletteChanged(void *userdata, SDL_Palette * palette)
     if (userdata == SDL_VideoSurface) {
         return SDL_SetDisplayPalette(palette->colors, 0, palette->ncolors);
     }
+    return 0;
 }
 
 SDL_Surface *
@@ -251,11 +254,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     int (*filter) (SDL_Event * event);
     const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
-    int i;
     Uint32 window_flags;
     Uint32 desktop_format;
     Uint32 desired_format;
-    Uint32 texture_format;
     Uint32 surface_flags;
 
     if (!SDL_GetVideoDevice()) {
@@ -641,6 +642,7 @@ int
 SDL_WM_IconifyWindow(void)
 {
     SDL_MinimizeWindow(SDL_VideoWindow);
+    return 0;
 }
 
 int
@@ -695,7 +697,7 @@ int
 SDL_SetPalette(SDL_Surface * surface, int flags, const SDL_Color * colors,
                int firstcolor, int ncolors)
 {
-    SDL_SetColors(surface, colors, firstcolor, ncolors);
+    return SDL_SetColors(surface, colors, firstcolor, ncolors);
 }
 
 int
@@ -1333,6 +1335,7 @@ SDL_DisplayYUVOverlay(SDL_Overlay * overlay, SDL_Rect * dstrect)
         return -1;
     }
     SDL_RenderPresent();
+    return 0;
 }
 
 void

@@ -177,8 +177,6 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
     SDL_VideoDevice *video;
     int index;
     int i;
-    int bpp;
-    Uint32 Rmask, Gmask, Bmask, Amask;
 
     /* Toggle the event thread flags, based on OS requirements */
 #if defined(MUST_THREAD_EVENTS)
@@ -524,7 +522,7 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
 {
     SDL_VideoDisplay *display;
     SDL_DisplayMode display_mode;
-    int i, ncolors;
+    int ncolors;
 
     if (!_this) {
         SDL_SetError("Video subsystem has not been initialized");
@@ -600,14 +598,13 @@ SDL_SetDisplayPalette(const SDL_Color * colors, int firstcolor, int ncolors)
         SDL_SetError("Video subsystem has not been initialized");
         return -1;
     }
-    if (!SDL_CurrentDisplay.palette) {
+    palette = SDL_CurrentDisplay.palette;
+    if (!palette) {
         SDL_SetError("Display mode does not have a palette");
         return -1;
     }
 
-    status =
-        SDL_SetPaletteColors(SDL_CurrentDisplay.palette, colors, firstcolor,
-                             ncolors);
+    status = SDL_SetPaletteColors(palette, colors, firstcolor, ncolors);
 
     if (_this->SetDisplayPalette) {
         if (_this->SetDisplayPalette(_this, palette) < 0) {
@@ -1222,7 +1219,6 @@ SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
     SDL_TextureID textureID;
     Uint32 surface_flags = surface->flags;
     SDL_PixelFormat *fmt = surface->format;
-    Uint32 colorkey;
     Uint8 alpha;
     SDL_Rect bounds;
     SDL_Surface dst;
@@ -1328,10 +1324,6 @@ SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
     SDL_LowerBlit(surface, &bounds, &dst, &bounds);
 
     /* Clean up the original surface */
-    if ((surface_flags & SDL_SRCCOLORKEY) == SDL_SRCCOLORKEY) {
-        Uint32 cflags = surface_flags & (SDL_SRCCOLORKEY | SDL_RLEACCELOK);
-        SDL_SetColorKey(surface, cflags, colorkey);
-    }
     if ((surface_flags & SDL_SRCALPHA) == SDL_SRCALPHA) {
         Uint32 aflags = surface_flags & (SDL_SRCALPHA | SDL_RLEACCELOK);
         if (fmt->Amask) {
@@ -1524,7 +1516,7 @@ SDL_UnlockTexture(SDL_TextureID textureID)
     if (!renderer->UnlockTexture) {
         return;
     }
-    return renderer->UnlockTexture(renderer, texture);
+    renderer->UnlockTexture(renderer, texture);
 }
 
 void
@@ -1585,7 +1577,7 @@ SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
         rect = &full_rect;
     }
 
-    renderer->RenderFill(renderer, rect, color);
+    return renderer->RenderFill(renderer, rect, color);
 }
 
 int
@@ -1598,7 +1590,7 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
     SDL_Rect full_dstrect;
 
     if (!texture || texture->renderer != SDL_CurrentDisplay.current_renderer) {
-        return;
+        return -1;
     }
 
     renderer = SDL_CurrentDisplay.current_renderer;
@@ -2042,7 +2034,7 @@ SDL_WM_SetIcon(SDL_Surface * icon, Uint8 * mask)
 #endif
 
 SDL_bool
-SDL_GetWindowWMInfo(SDL_WindowID windowID, SDL_SysWMinfo * info)
+SDL_GetWindowWMInfo(SDL_WindowID windowID, struct SDL_SysWMinfo *info)
 {
     SDL_Window *window = SDL_GetWindowFromID(windowID);
 

@@ -50,7 +50,7 @@ SDL_RenderDriver SDL_DUMMY_RenderDriver = {
      SDL_TextureBlendMode_None,
      SDL_TextureScaleMode_None,
      0,
-     {},
+     {0},
      0,
      0}
 };
@@ -67,7 +67,6 @@ SDL_DUMMY_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_DisplayMode *displayMode = &display->current_mode;
     SDL_Renderer *renderer;
     SDL_DUMMY_RenderData *data;
-    int i, n;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
 

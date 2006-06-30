@@ -53,7 +53,6 @@ int
 SDL_AddMouse(const SDL_Mouse * mouse, int index)
 {
     SDL_Mouse **mice;
-    SDL_Cursor *cursor;
     int selected_mouse;
 
     /* Add the mouse to the list of mice */
@@ -398,9 +397,7 @@ SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
         return NULL;
     }
     for (y = 0; y < h; ++y) {
-        pixel =
-            (Uint32 *) ((Uint8 *) surface->pixels + y * surface->pitch +
-                        x * 4);
+        pixel = (Uint32 *) ((Uint8 *) surface->pixels + y * surface->pitch);
         for (x = 0; x < w; ++x) {
             if ((x % 8) == 0) {
                 datab = *data++;

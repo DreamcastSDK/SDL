@@ -49,7 +49,7 @@ extern void WIN_RestoreWindow(_THIS, SDL_Window * window);
 extern void WIN_SetWindowGrab(_THIS, SDL_Window * window);
 extern void WIN_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool WIN_GetWindowWMInfo(_THIS, SDL_Window * window,
-                                    SDL_SysWMinfo * info);
+                                    struct SDL_SysWMinfo *info);
 
 #endif /* _SDL_win32window_h */
 

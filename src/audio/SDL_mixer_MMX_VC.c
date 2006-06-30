@@ -40,14 +40,19 @@
 void
 SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
 {
+	/* *INDENT-OFF* */
     __asm {
-
-        push edi push esi push ebx mov edi, dst // edi = dst
+          push edi
+          push esi
+		  push ebx
+		  mov edi, dst          // edi = dst
           mov esi, src          // esi = src
           mov eax, volume       // eax = volume
           mov ebx, nSize        // ebx = size
           shr ebx, 4            // process 16 bytes per iteration = 8 samples
-          jz endS16 pxor mm0, mm0 movd mm0, eax //%%eax,%%mm0
+          jz endS16
+		  pxor mm0, mm0
+		  movd mm0, eax         //%%eax,%%mm0
           movq mm1, mm0         //%%mm0,%%mm1
           psllq mm0, 16         //$16,%%mm0
           por mm0, mm1          //%%mm1,%%mm0
@@ -58,13 +63,14 @@ SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
 #ifndef __WATCOMC__
           align 16
 #endif
-          mixloopS16:movq mm1,[esi]     //(%%esi),%%mm1\n" // mm1 = a|b|c|d
-        movq mm2, mm1           //%%mm1,%%mm2\n" // mm2 = a|b|c|d
+      mixloopS16:
+		  movq mm1,[esi]        //(%%esi),%%mm1\n" // mm1 = a|b|c|d
+          movq mm2, mm1         //%%mm1,%%mm2\n" // mm2 = a|b|c|d
           movq mm4,[esi + 8]    //8(%%esi),%%mm4\n" // mm4 = e|f|g|h
             // pre charger le buffer dst dans mm7
-        movq mm7,[edi]          //(%%edi),%%mm7\n" // mm7 = dst[0]"
+          movq mm7,[edi]        //(%%edi),%%mm7\n" // mm7 = dst[0]"
             // multiplier par le volume
-        pmullw mm1, mm0         //%%mm0,%%mm1\n" // mm1 = l(a*v)|l(b*v)|l(c*v)|l(d*v)
+          pmullw mm1, mm0       //%%mm0,%%mm1\n" // mm1 = l(a*v)|l(b*v)|l(c*v)|l(d*v)
           pmulhw mm2, mm0       //%%mm0,%%mm2\n" // mm2 = h(a*v)|h(b*v)|h(c*v)|h(d*v)
           movq mm5, mm4         //%%mm4,%%mm5\n" // mm5 = e|f|g|h
           pmullw mm4, mm0       //%%mm0,%%mm4\n" // mm4 = l(e*v)|l(f*v)|l(g*v)|l(h*v)
@@ -78,7 +84,7 @@ SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
             // pre charger le buffer dst dans mm5
           movq mm5,[edi + 8]    //8(%%edi),%%mm5\n" // mm5 = dst[1]
             // diviser par 128
-        psrad mm1, 7            //$7,%%mm1\n" // mm1 = a*v/128|b*v/128 , 128 = SDL_MIX_MAXVOLUME
+          psrad mm1, 7          //$7,%%mm1\n" // mm1 = a*v/128|b*v/128 , 128 = SDL_MIX_MAXVOLUME
           add esi, 16           //$16,%%esi\n"
           psrad mm3, 7          //$7,%%mm3\n" // mm3 = c*v/128|d*v/128
           psrad mm4, 7          //$7,%%mm4\n" // mm4 = e*v/128|f*v/128
@@ -93,8 +99,14 @@ SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
           movq[edi + 8], mm6    //%%mm6,8(%%edi)\n"
           add edi, 16           //$16,%%edi\n"
           dec ebx               //%%ebx\n"
-      jnz mixloopS16 ends16:emms pop ebx pop esi pop edi}
-
+          jnz mixloopS16
+	ends16:
+		  emms
+          pop ebx
+		  pop esi
+		  pop edi
+	}
+	/* *INDENT-ON* */
 }
 
 ////////////////////////////////////////////////
@@ -104,9 +116,13 @@ SDL_MixAudio_MMX_S16_VC(char *dst, char *src, unsigned int nSize, int volume)
 void
 SDL_MixAudio_MMX_S8_VC(char *dst, char *src, unsigned int nSize, int volume)
 {
+	/* *INDENT-OFF* */
     _asm {
 
-        push edi push esi push ebx mov edi, dst //movl  %0,%%edi        // edi = dst
+          push edi
+          push esi
+		  push ebx
+		  mov edi, dst          //%0,%%edi      // edi = dst
           mov esi, src          //%1,%%esi      // esi = src
           mov eax, volume       //%3,%%eax      // eax = volume
           movd mm0, eax         //%%eax,%%mm0
@@ -124,15 +140,16 @@ SDL_MixAudio_MMX_S8_VC(char *dst, char *src, unsigned int nSize, int volume)
 #ifndef __WATCOMC__
           align 16
 #endif
-          mixloopS8:pxor mm2, mm2       //%%mm2,%%mm2           // mm2 = 0
+      mixloopS8:
+		  pxor mm2, mm2         //%%mm2,%%mm2           // mm2 = 0
           movq mm1,[esi]        //(%%esi),%%mm1 // mm1 = a|b|c|d|e|f|g|h
-        movq mm3, mm1           //%%mm1,%%mm3   // mm3 = a|b|c|d|e|f|g|h
+          movq mm3, mm1         //%%mm1,%%mm3   // mm3 = a|b|c|d|e|f|g|h
             // on va faire le "sign extension" en faisant un cmp avec 0 qui retourne 1 si <0, 0 si >0
           pcmpgtb mm2, mm1      //%%mm1,%%mm2   // mm2 = 11111111|00000000|00000000....
           punpckhbw mm1, mm2    //%%mm2,%%mm1   // mm1 = 0|a|0|b|0|c|0|d
           punpcklbw mm3, mm2    //%%mm2,%%mm3   // mm3 = 0|e|0|f|0|g|0|h
           movq mm2,[edi]        //(%%edi),%%mm2 // mm2 = destination
-        pmullw mm1, mm0         //%%mm0,%%mm1   // mm1 = v*a|v*b|v*c|v*d
+          pmullw mm1, mm0       //%%mm0,%%mm1   // mm1 = v*a|v*b|v*c|v*d
           add esi, 8            //$8,%%esi
           pmullw mm3, mm0       //%%mm0,%%mm3   // mm3 = v*e|v*f|v*g|v*h
           psraw mm1, 7          //$7,%%mm1              // mm1 = v*a/128|v*b/128|v*c/128|v*d/128 
@@ -142,8 +159,16 @@ SDL_MixAudio_MMX_S8_VC(char *dst, char *src, unsigned int nSize, int volume)
           movq[edi], mm3        //%%mm3,(%%edi) // store back to ram
           add edi, 8            //$8,%%edi
           dec ebx               //%%ebx
-      jnz mixloopS8 endS8:emms pop ebx pop esi pop edi}
+          jnz mixloopS8
+      endS8:
+		  emms
+          pop ebx
+		  pop esi
+		  pop edi
+	}
+	/* *INDENT-ON* */
 }
 
 #endif                          /* SDL_ASSEMBLY_ROUTINES */
+
 /* vi: set ts=4 sw=4 expandtab: */

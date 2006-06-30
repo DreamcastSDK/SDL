@@ -21,11 +21,11 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
+#ifndef _SDL_win32keyboard_h
+#define _SDL_win32keyboard_h
 
-#include "../SDL_sysvideo.h"
+extern void WIN_AddKeyboard(_THIS);
 
-#endif /* _SDL_nullvideo_h */
+#endif /* _SDL_win32keyboard_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

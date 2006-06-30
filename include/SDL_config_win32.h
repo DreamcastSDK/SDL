@@ -133,7 +133,7 @@ typedef unsigned int uintptr_t;
 #ifdef _WIN32_WCE
 #define SDL_JOYSTICK_DISABLED   1
 #else
-#define SDL_JOYSTICK_DINPUT	1
+#define SDL_JOYSTICK_WINMM	1
 #endif
 
 /* Enable various shared object loading systems */
@@ -150,17 +150,8 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Enable various video drivers */
-#ifdef _WIN32_WCE
-#define SDL_VIDEO_DRIVER_GAPI	1
-#endif
-#ifndef _WIN32_WCE
-#define SDL_VIDEO_DRIVER_DDRAW	1
-#endif
 #define SDL_VIDEO_DRIVER_DUMMY	1
-#ifndef _WIN32_WCE
-#define SDL_VIDEO_DRIVER_GLSDL	1
-#endif
-#define SDL_VIDEO_DRIVER_WINDIB	1
+#define SDL_VIDEO_DRIVER_WIN32	1
 
 /* Enable OpenGL support */
 #ifndef _WIN32_WCE

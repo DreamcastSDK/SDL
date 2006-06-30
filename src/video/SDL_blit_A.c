@@ -617,7 +617,9 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
     __m64 src1, dst1, mm_alpha, mm_zero, dmask;
 
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
-    multmask = ~(0xFFFFi 64 << (ashift * 2));
+	/* *INDENT-OFF* */
+	multmask = ~(0xFFFFI64 << (ashift * 2));
+	/* *INDENT-ON* */
     dmask = *(__m64 *) & multmask;      /* dst alpha mask -> dmask */
 
     while (height--) {
@@ -1753,7 +1755,9 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
     __m64 src1, dst1, mm_alpha, mm_zero, dmask;
 
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
-    multmask = ~(0xFFFFi 64 << (ashift * 2));
+	/* *INDENT-OFF* */
+    multmask = ~(0xFFFFI64 << (ashift * 2));
+	/* *INDENT-ON* */
     dmask = *(__m64 *) & multmask;      /* dst alpha mask -> dmask */
 
     while (height--) {

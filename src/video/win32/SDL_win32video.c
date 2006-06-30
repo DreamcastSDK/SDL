@@ -21,6 +21,7 @@
 */
 #include "SDL_config.h"
 
+#include "SDL_main.h"
 #include "SDL_video.h"
 #include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
@@ -47,7 +48,7 @@ static void
 WIN_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_UnregisterApp();
-    SDL_free(device->hidden);
+    SDL_free(device->driverdata);
     SDL_free(device);
 }
 
@@ -59,20 +60,18 @@ WIN_CreateDevice(int devindex)
     SDL_RegisterApp(NULL, 0, NULL);
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
+    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device) {
-        SDL_memset(device, 0, (sizeof *device));
-        device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc((sizeof *device->hidden));
+        device->driverdata =
+            (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
     }
-    if ((device == NULL) || (device->hidden == NULL)) {
+    if (!device || !device->driverdata) {
         SDL_OutOfMemory();
         if (device) {
             SDL_free(device);
         }
         return NULL;
     }
-    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = WIN_VideoInit;
@@ -117,6 +116,9 @@ WIN_VideoInit(_THIS)
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
+
+    WIN_AddKeyboard(_this);
+    WIN_AddMouse(_this);
 
     /* We're done! */
     return 0;

@@ -31,6 +31,8 @@
 #include <windows.h>
 
 #include "SDL_win32events.h"
+#include "SDL_win32keyboard.h"
+#include "SDL_win32mouse.h"
 #include "SDL_win32window.h"
 
 #ifdef UNICODE
@@ -43,9 +45,11 @@
 
 /* Private display data */
 
-struct SDL_PrivateVideoData
+typedef struct
 {
-};
+    int mouse;
+    int keyboard;
+} SDL_VideoData;
 
 #endif /* _SDL_win32video_h */
 

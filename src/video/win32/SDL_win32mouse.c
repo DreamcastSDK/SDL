@@ -21,11 +21,18 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
+#include "SDL_win32video.h"
 
-#include "../SDL_sysvideo.h"
+#include "../../events/SDL_mouse_c.h"
 
-#endif /* _SDL_nullvideo_h */
+void
+WIN_AddMouse(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_Mouse mouse;
+
+    SDL_zero(mouse);
+    data->mouse = SDL_AddMouse(&mouse, -1);
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -69,7 +69,6 @@ DUMMY_Available(void)
 static void
 DUMMY_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free(device->hidden);
     SDL_free(device);
 }
 
@@ -79,20 +78,14 @@ DUMMY_CreateDevice(int devindex)
     SDL_VideoDevice *device;
 
     /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_malloc(sizeof(SDL_VideoDevice));
-    if (device) {
-        SDL_memset(device, 0, (sizeof *device));
-        device->hidden = (struct SDL_PrivateVideoData *)
-            SDL_malloc((sizeof *device->hidden));
-    }
-    if ((device == NULL) || (device->hidden == NULL)) {
+    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+    if (!device) {
         SDL_OutOfMemory();
         if (device) {
             SDL_free(device);
         }
         return (0);
     }
-    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
