@@ -29,10 +29,11 @@
 
 typedef struct
 {
-    SDL_Window *window;
+    SDL_WindowID windowID;
     HWND hwnd;
     WNDPROC wndproc;
     BOOL created;
+    struct SDL_VideoData *videodata;
 } SDL_WindowData;
 
 extern int WIN_CreateWindow(_THIS, SDL_Window * window);

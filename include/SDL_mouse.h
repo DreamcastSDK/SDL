@@ -75,9 +75,38 @@ extern DECLSPEC int SDLCALL SDL_SelectMouse(int index);
 extern DECLSPEC SDL_WindowID SDLCALL SDL_GetMouseFocusWindow(void);
 
 /**
+ * \fn int SDL_SetRelativeMouseMode(SDL_bool enabled)
+ *
+ * \brief Set relative mouse mode for the currently selected mouse.
+ *
+ * \param enabled Whether or not to enable relative mode
+ *
+ * \return 0 on success, or -1 if relative mode is not supported.
+ *
+ * While the mouse is in relative mode, the cursor is hidden, and the
+ * driver will try to report continuous motion in the current window.
+ * Only relative motion events will be delivered, the mouse position
+ * will not change.
+ *
+ * \note This function will flush any pending mouse motion.
+ *
+ * \sa SDL_GetRelativeMouseMode()
+ */
+extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
+
+/**
+ * \fn SDL_bool SDL_GetRelativeMouseMode()
+ *
+ * \brief Query whether relative mouse mode is enabled for the currently selected mouse.
+ *
+ * \sa SDL_SetRelativeMouseMode()
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetRelativeMouseMode();
+
+/**
  * \fn Uint8 SDL_GetMouseState(int *x, int *y)
  *
- * \brief Retrieve the current state of the mouse.
+ * \brief Retrieve the current state of the currently selected mouse.
  *
  * The current button state is returned as a button bitmask, which can
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the
@@ -89,7 +118,7 @@ extern DECLSPEC Uint8 SDLCALL SDL_GetMouseState(int *x, int *y);
 /**
  * \fn Uint8 SDL_GetRelativeMouseState(int *x, int *y)
  *
- * \brief Retrieve the current state of the mouse.
+ * \brief Retrieve the state of the currently selected mouse.
  *
  * The current button state is returned as a button bitmask, which can
  * be tested using the SDL_BUTTON(X) macros, and x and y are set to the

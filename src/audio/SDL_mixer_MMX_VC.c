@@ -184,3 +184,5 @@ endS8:
 }
 
 #endif /* SDL_ASSEMBLY_ROUTINES */
+
+/* vi: set ts=4 sw=4 expandtab: */

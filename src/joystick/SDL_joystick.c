@@ -448,7 +448,8 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
         event.jaxis.which = joystick->index;
         event.jaxis.axis = axis;
         event.jaxis.value = value;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -474,7 +475,8 @@ SDL_PrivateJoystickHat(SDL_Joystick * joystick, Uint8 hat, Uint8 value)
         event.jhat.which = joystick->index;
         event.jhat.hat = hat;
         event.jhat.value = value;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -503,7 +505,8 @@ SDL_PrivateJoystickBall(SDL_Joystick * joystick, Uint8 ball,
         event.jball.ball = ball;
         event.jball.xrel = xrel;
         event.jball.yrel = yrel;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -542,7 +545,8 @@ SDL_PrivateJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state)
         event.jbutton.which = joystick->index;
         event.jbutton.button = button;
         event.jbutton.state = state;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }

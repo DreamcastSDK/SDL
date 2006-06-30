@@ -40,9 +40,10 @@ SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
         SDL_OutOfMemory();
         return -1;
     }
-    data->window = window;
+    data->windowID = window->id;
     data->hwnd = hwnd;
     data->created = created;
+    data->videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
 
     /* Associate the data with the window */
     if (!SetProp(hwnd, TEXT("SDL_WindowData"), data)) {

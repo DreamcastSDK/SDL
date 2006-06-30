@@ -45,7 +45,7 @@
 
 /* Private display data */
 
-typedef struct
+typedef struct SDL_VideoData
 {
     int mouse;
     int keyboard;

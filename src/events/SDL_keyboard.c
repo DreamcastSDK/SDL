@@ -632,7 +632,7 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
             keyboard->repeat.firsttime = 1;
             keyboard->repeat.timestamp = 1;
         }
-        if ((SDL_EventOK == NULL) || SDL_EventOK(&event)) {
+        if ((SDL_EventOK == NULL) || SDL_EventOK(SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -669,7 +669,8 @@ SDL_CheckKeyRepeat(void)
                 if (interval > (Uint32) keyboard->repeat.interval) {
                     keyboard->repeat.timestamp = now;
                     if ((SDL_EventOK == NULL)
-                        || SDL_EventOK(&keyboard->repeat.evt)) {
+                        || SDL_EventOK(SDL_EventOKParam,
+                                       &keyboard->repeat.evt)) {
                         SDL_PushEvent(&keyboard->repeat.evt);
                     }
                 }

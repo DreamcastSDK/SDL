@@ -25,12 +25,75 @@
 
 #include "SDL_events.h"
 #include "SDL_events_c.h"
+#include "../video/SDL_sysvideo.h"
 
 int
 SDL_PrivateWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
                        int data2)
 {
     int posted;
+    SDL_Window *window;
+
+    window = SDL_GetWindowFromID(windowID);
+    if (!window) {
+        return 0;
+    }
+    switch (windowevent) {
+    case SDL_WINDOWEVENT_SHOWN:
+        if (window->flags & SDL_WINDOW_SHOWN) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_SHOWN;
+        break;
+    case SDL_WINDOWEVENT_HIDDEN:
+        if (!(window->flags & SDL_WINDOW_SHOWN)) {
+            return 0;
+        }
+        window->flags &= ~SDL_WINDOW_SHOWN;
+        break;
+    case SDL_WINDOWEVENT_MINIMIZED:
+        if (window->flags & SDL_WINDOW_MINIMIZED) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_MINIMIZED;
+        break;
+    case SDL_WINDOWEVENT_MAXIMIZED:
+        if (window->flags & SDL_WINDOW_MAXIMIZED) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_MAXIMIZED;
+        break;
+    case SDL_WINDOWEVENT_RESTORED:
+        if (!(window->flags & (SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED))) {
+            return 0;
+        }
+        window->flags &= ~(SDL_WINDOW_MINIMIZED | SDL_WINDOW_MAXIMIZED);
+        break;
+    case SDL_WINDOWEVENT_ENTER:
+        if (window->flags & SDL_WINDOW_MOUSE_FOCUS) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_MOUSE_FOCUS;
+        break;
+    case SDL_WINDOWEVENT_LEAVE:
+        if (!(window->flags & SDL_WINDOW_MOUSE_FOCUS)) {
+            return 0;
+        }
+        window->flags &= ~SDL_WINDOW_MOUSE_FOCUS;
+        break;
+    case SDL_WINDOWEVENT_FOCUS_GAINED:
+        if (window->flags & SDL_WINDOW_KEYBOARD_FOCUS) {
+            return 0;
+        }
+        window->flags |= SDL_WINDOW_KEYBOARD_FOCUS;
+        break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+        if (!(window->flags & SDL_WINDOW_KEYBOARD_FOCUS)) {
+            return 0;
+        }
+        window->flags &= ~SDL_WINDOW_KEYBOARD_FOCUS;
+        break;
+    }
 
     /* Post the event, if desired */
     posted = 0;
@@ -41,7 +104,8 @@ SDL_PrivateWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
         event.window.data1 = data1;
         event.window.data2 = data2;
         event.window.windowID = windowID;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }

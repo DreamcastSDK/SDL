@@ -165,6 +165,56 @@ SDL_GetMouseFocusWindow()
     return mouse->focus;
 }
 
+static int
+FlushMouseMotion(void *param, SDL_Event * event)
+{
+    if (event->type == SDL_MOUSEMOTION
+        && event->motion.which == (Uint8) SDL_current_mouse) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+int
+SDL_SetRelativeMouseMode(SDL_bool enabled)
+{
+    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+
+    if (!mouse) {
+        return -1;
+    }
+
+    /* Flush pending mouse motion */
+    mouse->flush_motion = SDL_TRUE;
+    SDL_PumpEvents();
+    mouse->flush_motion = SDL_FALSE;
+    SDL_FilterEvents(FlushMouseMotion, mouse);
+
+    /* Set the relative mode */
+    mouse->relative_mode = enabled;
+
+    /* Update cursor visibility */
+    SDL_SetCursor(NULL);
+
+    if (!enabled) {
+        /* Restore the expected mouse position */
+        SDL_WarpMouseInWindow(mouse->focus, mouse->x, mouse->y);
+    }
+    return 0;
+}
+
+SDL_bool
+SDL_GetRelativeMouseMode()
+{
+    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+
+    if (!mouse) {
+        return SDL_FALSE;
+    }
+    return mouse->relative_mode;
+}
+
 Uint8
 SDL_GetMouseState(int *x, int *y)
 {
@@ -224,7 +274,7 @@ SDL_SendMouseMotion(int index, SDL_WindowID windowID, int relative, int x,
     int xrel;
     int yrel;
 
-    if (!mouse) {
+    if (!mouse || mouse->flush_motion) {
         return 0;
     }
 
@@ -252,13 +302,16 @@ SDL_SendMouseMotion(int index, SDL_WindowID windowID, int relative, int x,
     }
 
     /* Update internal mouse state */
-    mouse->x = x;
-    mouse->y = y;
+    if (!mouse->relative_mode) {
+        mouse->x = x;
+        mouse->y = y;
+    }
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
 
     /* Move the mouse cursor, if needed */
-    if (mouse->MoveCursor && mouse->cur_cursor) {
+    if (mouse->cursor_shown && !mouse->relative_mode &&
+        mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
 
@@ -274,7 +327,8 @@ SDL_SendMouseMotion(int index, SDL_WindowID windowID, int relative, int x,
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         event.motion.windowID = mouse->focus;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -332,7 +386,8 @@ SDL_SendMouseButton(int index, SDL_WindowID windowID, Uint8 state,
         event.button.x = mouse->x;
         event.button.y = mouse->y;
         event.button.windowID = mouse->focus;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }
@@ -457,7 +512,7 @@ SDL_SetCursor(SDL_Cursor * cursor)
         cursor = mouse->cur_cursor;
     }
 
-    if (cursor && mouse->cursor_shown) {
+    if (cursor && mouse->cursor_shown && !mouse->relative_mode) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }

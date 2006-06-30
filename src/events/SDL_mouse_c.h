@@ -63,6 +63,8 @@ struct SDL_Mouse
     int xdelta;
     int ydelta;
     Uint8 buttonstate;
+    SDL_bool relative_mode;
+    SDL_bool flush_motion;
 
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;

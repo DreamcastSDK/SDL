@@ -34,6 +34,7 @@
 
 /* Public data -- the event filter */
 SDL_EventFilter SDL_EventOK = NULL;
+void *SDL_EventOKParam;
 Uint8 SDL_ProcessEvents[SDL_NUMEVENTS];
 static Uint32 SDL_eventstate = 0;
 
@@ -434,19 +435,41 @@ SDL_PushEvent(SDL_Event * event)
 }
 
 void
-SDL_SetEventFilter(SDL_EventFilter filter)
+SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
     SDL_Event bitbucket;
 
     /* Set filter and discard pending events */
     SDL_EventOK = filter;
+    SDL_EventOKParam = userdata;
     while (SDL_PollEvent(&bitbucket) > 0);
 }
 
 SDL_EventFilter
-SDL_GetEventFilter(void)
+SDL_GetEventFilter(void **userdata)
 {
+    if (userdata) {
+        *userdata = SDL_EventOKParam;
+    }
     return (SDL_EventOK);
+}
+
+void
+SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
+{
+    if (SDL_mutexP(SDL_EventQ.lock) == 0) {
+        int spot;
+
+        spot = SDL_EventQ.head;
+        while (spot != SDL_EventQ.tail) {
+            if (filter(userdata, &SDL_EventQ.event[spot])) {
+                spot = (spot + 1) % MAXEVENTS;
+            } else {
+                spot = SDL_CutEvent(spot);
+            }
+        }
+    }
+    SDL_mutexV(SDL_EventQ.lock);
 }
 
 Uint8
@@ -507,7 +530,8 @@ SDL_PrivateSysWMEvent(SDL_SysWMmsg * message)
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_SYSWMEVENT;
         event.syswm.msg = message;
-        if ((SDL_EventOK == NULL) || (*SDL_EventOK) (&event)) {
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);
         }

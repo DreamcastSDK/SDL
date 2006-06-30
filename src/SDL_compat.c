@@ -153,10 +153,11 @@ SDL_ListModes(SDL_PixelFormat * format, Uint32 flags)
     return modes;
 }
 
-static int (*orig_eventfilter) (SDL_Event * event);
+static SDL_EventFilter orig_eventfilter;
+static void *orig_eventfilterparam;
 
 static int
-SDL_CompatEventFilter(SDL_Event * event)
+SDL_CompatEventFilter(void *userdata, SDL_Event * event)
 {
     SDL_Event fake;
 
@@ -227,7 +228,7 @@ SDL_CompatEventFilter(SDL_Event * event)
         }
     }
     if (orig_eventfilter) {
-        return orig_eventfilter(event);
+        return orig_eventfilter(orig_eventfilterparam, event);
     } else {
         return 1;
     }
@@ -251,7 +252,8 @@ SDL_VideoPaletteChanged(void *userdata, SDL_Palette * palette)
 SDL_Surface *
 SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 {
-    int (*filter) (SDL_Event * event);
+    SDL_EventFilter filter;
+    void *filterparam;
     const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
     Uint32 window_flags;
@@ -280,11 +282,12 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     SDL_DestroyWindow(SDL_VideoWindow);
 
     /* Set up the event filter */
-    filter = SDL_GetEventFilter();
+    filter = SDL_GetEventFilter(&filterparam);
     if (filter != SDL_CompatEventFilter) {
         orig_eventfilter = filter;
+        orig_eventfilterparam = filterparam;
     }
-    SDL_SetEventFilter(SDL_CompatEventFilter);
+    SDL_SetEventFilter(SDL_CompatEventFilter, NULL);
 
     /* Create a new window */
     window_flags = SDL_WINDOW_SHOWN;
