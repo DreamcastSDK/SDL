@@ -33,6 +33,7 @@ typedef struct
     HWND hwnd;
     WNDPROC wndproc;
     BOOL created;
+    int mouse_pressed;
     struct SDL_VideoData *videodata;
 } SDL_WindowData;
 

@@ -35,4 +35,12 @@ WIN_AddKeyboard(_THIS)
     data->keyboard = SDL_AddKeyboard(&keyboard, -1);
 }
 
+void
+WIN_DelKeyboard(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    SDL_DelKeyboard(data->keyboard);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

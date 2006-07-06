@@ -22,8 +22,370 @@
 #include "SDL_config.h"
 
 #include "SDL_win32video.h"
+#include "SDL_version.h"
+#include "SDL_syswm.h"
+#include "SDL_vkeys.h"
 #include "../../events/SDL_events_c.h"
 
+/*#define WMMSG_DEBUG*/
+#ifdef WMMSG_DEBUG
+#include "wmmsg.h"
+#endif
+
+/* Masks for processing the windows KEYDOWN and KEYUP messages */
+#define REPEATED_KEYMASK	(1<<30)
+#define EXTENDED_KEYMASK	(1<<24)
+
+
+static SDLKey
+TranslateKey(WPARAM vkey)
+{
+    SDLKey key;
+
+    /* FIXME: Assign vkey directly to key if in ASCII range */
+    switch (vkey) {
+    case VK_BACK:
+        key = SDLK_BACKSPACE;
+        break;
+    case VK_TAB:
+        key = SDLK_TAB;
+        break;
+    case VK_CLEAR:
+        key = SDLK_CLEAR;
+        break;
+    case VK_RETURN:
+        key = SDLK_RETURN;
+        break;
+    case VK_PAUSE:
+        key = SDLK_PAUSE;
+        break;
+    case VK_ESCAPE:
+        key = SDLK_ESCAPE;
+        break;
+    case VK_SPACE:
+        key = SDLK_SPACE;
+        break;
+    case VK_APOSTROPHE:
+        key = SDLK_QUOTE;
+        break;
+    case VK_COMMA:
+        key = SDLK_COMMA;
+        break;
+    case VK_MINUS:
+        key = SDLK_MINUS;
+        break;
+    case VK_PERIOD:
+        key = SDLK_PERIOD;
+        break;
+    case VK_SLASH:
+        key = SDLK_SLASH;
+        break;
+    case VK_0:
+        key = SDLK_0;
+        break;
+    case VK_1:
+        key = SDLK_1;
+        break;
+    case VK_2:
+        key = SDLK_2;
+        break;
+    case VK_3:
+        key = SDLK_3;
+        break;
+    case VK_4:
+        key = SDLK_4;
+        break;
+    case VK_5:
+        key = SDLK_5;
+        break;
+    case VK_6:
+        key = SDLK_6;
+        break;
+    case VK_7:
+        key = SDLK_7;
+        break;
+    case VK_8:
+        key = SDLK_8;
+        break;
+    case VK_9:
+        key = SDLK_9;
+        break;
+    case VK_SEMICOLON:
+        key = SDLK_SEMICOLON;
+        break;
+    case VK_EQUALS:
+        key = SDLK_EQUALS;
+        break;
+    case VK_LBRACKET:
+        key = SDLK_LEFTBRACKET;
+        break;
+    case VK_BACKSLASH:
+        key = SDLK_BACKSLASH;
+        break;
+    case VK_OEM_102:
+        key = SDLK_LESS;
+        break;
+    case VK_RBRACKET:
+        key = SDLK_RIGHTBRACKET;
+        break;
+    case VK_GRAVE:
+        key = SDLK_BACKQUOTE;
+        break;
+    case VK_BACKTICK:
+        key = SDLK_BACKQUOTE;
+        break;
+    case VK_A:
+        key = SDLK_a;
+        break;
+    case VK_B:
+        key = SDLK_b;
+        break;
+    case VK_C:
+        key = SDLK_c;
+        break;
+    case VK_D:
+        key = SDLK_d;
+        break;
+    case VK_E:
+        key = SDLK_e;
+        break;
+    case VK_F:
+        key = SDLK_f;
+        break;
+    case VK_G:
+        key = SDLK_g;
+        break;
+    case VK_H:
+        key = SDLK_h;
+        break;
+    case VK_I:
+        key = SDLK_i;
+        break;
+    case VK_J:
+        key = SDLK_j;
+        break;
+    case VK_K:
+        key = SDLK_k;
+        break;
+    case VK_L:
+        key = SDLK_l;
+        break;
+    case VK_M:
+        key = SDLK_m;
+        break;
+    case VK_N:
+        key = SDLK_n;
+        break;
+    case VK_O:
+        key = SDLK_o;
+        break;
+    case VK_P:
+        key = SDLK_p;
+        break;
+    case VK_Q:
+        key = SDLK_q;
+        break;
+    case VK_R:
+        key = SDLK_r;
+        break;
+    case VK_S:
+        key = SDLK_s;
+        break;
+    case VK_T:
+        key = SDLK_t;
+        break;
+    case VK_U:
+        key = SDLK_u;
+        break;
+    case VK_V:
+        key = SDLK_v;
+        break;
+    case VK_W:
+        key = SDLK_w;
+        break;
+    case VK_X:
+        key = SDLK_x;
+        break;
+    case VK_Y:
+        key = SDLK_y;
+        break;
+    case VK_Z:
+        key = SDLK_z;
+        break;
+    case VK_DELETE:
+        key = SDLK_DELETE;
+        break;
+    case VK_NUMPAD0:
+        key = SDLK_KP0;
+        break;
+    case VK_NUMPAD1:
+        key = SDLK_KP1;
+        break;
+    case VK_NUMPAD2:
+        key = SDLK_KP2;
+        break;
+    case VK_NUMPAD3:
+        key = SDLK_KP3;
+        break;
+    case VK_NUMPAD4:
+        key = SDLK_KP4;
+        break;
+    case VK_NUMPAD5:
+        key = SDLK_KP5;
+        break;
+    case VK_NUMPAD6:
+        key = SDLK_KP6;
+        break;
+    case VK_NUMPAD7:
+        key = SDLK_KP7;
+        break;
+    case VK_NUMPAD8:
+        key = SDLK_KP8;
+        break;
+    case VK_NUMPAD9:
+        key = SDLK_KP9;
+        break;
+    case VK_DECIMAL:
+        key = SDLK_KP_PERIOD;
+        break;
+    case VK_DIVIDE:
+        key = SDLK_KP_DIVIDE;
+        break;
+    case VK_MULTIPLY:
+        key = SDLK_KP_MULTIPLY;
+        break;
+    case VK_SUBTRACT:
+        key = SDLK_KP_MINUS;
+        break;
+    case VK_ADD:
+        key = SDLK_KP_PLUS;
+        break;
+    case VK_UP:
+        key = SDLK_UP;
+        break;
+    case VK_DOWN:
+        key = SDLK_DOWN;
+        break;
+    case VK_RIGHT:
+        key = SDLK_RIGHT;
+        break;
+    case VK_LEFT:
+        key = SDLK_LEFT;
+        break;
+    case VK_INSERT:
+        key = SDLK_INSERT;
+        break;
+    case VK_HOME:
+        key = SDLK_HOME;
+        break;
+    case VK_END:
+        key = SDLK_END;
+        break;
+    case VK_PRIOR:
+        key = SDLK_PAGEUP;
+        break;
+    case VK_NEXT:
+        key = SDLK_PAGEDOWN;
+        break;
+    case VK_F1:
+        key = SDLK_F1;
+        break;
+    case VK_F2:
+        key = SDLK_F2;
+        break;
+    case VK_F3:
+        key = SDLK_F3;
+        break;
+    case VK_F4:
+        key = SDLK_F4;
+        break;
+    case VK_F5:
+        key = SDLK_F5;
+        break;
+    case VK_F6:
+        key = SDLK_F6;
+        break;
+    case VK_F7:
+        key = SDLK_F7;
+        break;
+    case VK_F8:
+        key = SDLK_F8;
+        break;
+    case VK_F9:
+        key = SDLK_F9;
+        break;
+    case VK_F10:
+        key = SDLK_F10;
+        break;
+    case VK_F11:
+        key = SDLK_F11;
+        break;
+    case VK_F12:
+        key = SDLK_F12;
+        break;
+    case VK_F13:
+        key = SDLK_F13;
+        break;
+    case VK_F14:
+        key = SDLK_F14;
+        break;
+    case VK_F15:
+        key = SDLK_F15;
+        break;
+    case VK_NUMLOCK:
+        key = SDLK_NUMLOCK;
+        break;
+    case VK_CAPITAL:
+        key = SDLK_CAPSLOCK;
+        break;
+    case VK_SCROLL:
+        key = SDLK_SCROLLOCK;
+        break;
+    case VK_RSHIFT:
+        key = SDLK_RSHIFT;
+        break;
+    case VK_LSHIFT:
+        key = SDLK_LSHIFT;
+        break;
+    case VK_RCONTROL:
+        key = SDLK_RCTRL;
+        break;
+    case VK_LCONTROL:
+        key = SDLK_LCTRL;
+        break;
+    case VK_RMENU:
+        key = SDLK_RALT;
+        break;
+    case VK_LMENU:
+        key = SDLK_LALT;
+        break;
+    case VK_RWIN:
+        key = SDLK_RSUPER;
+        break;
+    case VK_LWIN:
+        key = SDLK_LSUPER;
+        break;
+    case VK_HELP:
+        key = SDLK_HELP;
+        break;
+    case VK_PRINT:
+        key = SDLK_PRINT;
+        break;
+    case VK_SNAPSHOT:
+        key = SDLK_PRINT;
+        break;
+    case VK_CANCEL:
+        key = SDLK_BREAK;
+        break;
+    case VK_APPS:
+        key = SDLK_MENU;
+        break;
+    default:
+        key = SDLK_UNKNOWN;
+        break;
+    }
+    return key;
+}
 
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -35,33 +397,60 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
-#if 0
+#ifdef WMMSG_DEBUG
+    fprintf(stderr, "Received windows message:  ");
+    if (msg > MAX_WMMSG) {
+        fprintf(stderr, "%d", msg);
+    } else {
+        fprintf(stderr, "%s", wmtab[msg]);
+    }
+    fprintf(stderr, " -- 0x%X, 0x%X\n", wParam, lParam);
+#endif
+
+    /* Send a SDL_SYSWMEVENT if the application wants them */
+    if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
+        SDL_SysWMmsg wmmsg;
+
+        SDL_VERSION(&wmmsg.version);
+        wmmsg.hwnd = hwnd;
+        wmmsg.msg = msg;
+        wmmsg.wParam = wParam;
+        wmmsg.lParam = lParam;
+        SDL_SendSysWMEvent(&wmmsg);
+    }
+
     switch (msg) {
 
     case WM_ACTIVATE:
         {
+            int index;
+            SDL_Keyboard *keyboard;
             BOOL minimized;
 
             minimized = HIWORD(wParam);
+            index = data->videodata->keyboard;
+            keyboard = SDL_GetKeyboard(index);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
-                SDL_PrivateWindowEvent(data->windowID, SDL_WINDOWEVENT_SHOWN,
-                                       0, 0);
-                SDL_PrivateWindowEvent(data->windowID,
-                                       SDL_WINDOWEVENT_RESTORED, 0, 0);
+                SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_SHOWN,
+                                    0, 0);
+                SDL_SendWindowEvent(data->windowID,
+                                    SDL_WINDOWEVENT_RESTORED, 0, 0);
                 if (IsZoomed(hwnd)) {
-                    SDL_PrivateWindowEvent(data->windowID,
-                                           SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                    SDL_SendWindowEvent(data->windowID,
+                                        SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
                 }
-                SDL_PrivateWindowEvent(data->windowID,
-                                       SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+                if (keyboard && keyboard->focus != data->windowID) {
+                    SDL_SetKeyboardFocus(index, data->windowID);
+                }
                 /* FIXME: Restore mode state (mode, gamma, grab) */
                 /* FIXME: Update keyboard state */
             } else {
-                SDL_PrivateWindowEvent(data->windowID,
-                                       SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+                if (keyboard && keyboard->focus == data->windowID) {
+                    SDL_SetKeyboardFocus(index, 0);
+                }
                 if (minimized) {
-                    SDL_PrivateWindowEvent(data->windowID,
-                                           SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                    SDL_SendWindowEvent(data->windowID,
+                                        SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 }
                 /* FIXME: Restore desktop state (mode, gamma, grab) */
             }
@@ -73,11 +462,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             int index;
             SDL_Mouse *mouse;
+            int x, y;
 
-            if (!
-                (SDL_GetWindowFlags(data->windowID) & SDL_WINDOW_MOUSE_FOCUS))
-            {
-                /* mouse has entered the window */
+            index = data->videodata->mouse;
+            mouse = SDL_GetMouse(index);
+
+            if (mouse->focus != data->windowID) {
                 TRACKMOUSEEVENT tme;
 
                 tme.cbSize = sizeof(tme);
@@ -85,41 +475,42 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 tme.hwndTrack = hwnd;
                 TrackMouseEvent(&tme);
 
-                SDL_PrivateWindowEvent(data->windowID, SDL_WINDOWEVENT_ENTER,
-                                       0, 0);
+                SDL_SetMouseFocus(index, data->windowID);
             }
 
-            index = data->videodata->mouse;
-            mouse = SDL_GetMouse(index);
-            if (mouse) {
-                int x, y;
-                /* mouse has moved within the window */
-                x = LOWORD(lParam);
-                y = HIWORD(lParam);
-                if (mouse->relative_mode) {
-                    int w, h;
-                    POINT center;
-                    SDL_GetWindowSize(data->windowID, &w, &h);
-                    center.x = (w / 2);
-                    center.y = (h / 2);
-                    x -= center.x;
-                    y -= center.y;
-                    if (x || y) {
-                        ClientToScreen(SDL_Window, &center);
-                        SetCursorPos(center.x, center.y);
-                        SDL_SendMouseMotion(index, data->windowID, 1, x, y);
-                    }
-                } else {
-                    SDL_SendMouseMotion(index, data->windowID, 0, x, y);
+            /* mouse has moved within the window */
+            x = LOWORD(lParam);
+            y = HIWORD(lParam);
+            if (mouse->relative_mode) {
+                int w, h;
+                POINT center;
+                SDL_GetWindowSize(data->windowID, &w, &h);
+                center.x = (w / 2);
+                center.y = (h / 2);
+                x -= center.x;
+                y -= center.y;
+                if (x || y) {
+                    ClientToScreen(hwnd, &center);
+                    SetCursorPos(center.x, center.y);
+                    SDL_SendMouseMotion(index, 1, x, y);
                 }
+            } else {
+                SDL_SendMouseMotion(index, 0, x, y);
             }
         }
         return (0);
 
     case WM_MOUSELEAVE:
         {
-            SDL_PrivateWindowEvent(data->windowID, SDL_WINDOWEVENT_LEAVE, 0,
-                                   0);
+            int index;
+            SDL_Mouse *mouse;
+
+            index = data->videodata->mouse;
+            mouse = SDL_GetMouse(index);
+
+            if (mouse->focus == data->windowID) {
+                SDL_SetMouseFocus(index, 0);
+            }
         }
         return (0);
 
@@ -130,7 +521,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_RBUTTONDOWN:
     case WM_RBUTTONUP:
         {
-            int x, y;
+            int index;
+            SDL_Mouse *mouse;
             Uint8 button, state;
 
             /* DJM:
@@ -138,7 +530,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                it acts like a normal windows "component"
                (e.g. gains keyboard focus on a mouse click).
              */
-            SetFocus(SDL_Window);
+            SetFocus(hwnd);
+
+            index = data->videodata->mouse;
+            mouse = SDL_GetMouse(index);
 
             /* Figure out which button to use */
             switch (msg) {
@@ -172,85 +567,155 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             if (state == SDL_PRESSED) {
                 /* Grab mouse so we get up events */
-                if (++mouse_pressed > 0) {
+                if (++data->mouse_pressed > 0) {
                     SetCapture(hwnd);
                 }
             } else {
                 /* Release mouse after all up events */
-                if (--mouse_pressed <= 0) {
+                if (--data->mouse_pressed <= 0) {
                     ReleaseCapture();
-                    mouse_pressed = 0;
+                    data->mouse_pressed = 0;
                 }
             }
-            x = LOWORD(lParam);
-            y = HIWORD(lParam);
-#ifdef _WIN32_WCE
-            if (SDL_VideoSurface)
-                GapiTransform(this->hidden->userOrientation,
-                              this->hidden->hiresFix, &x, &y);
-#endif
-            posted = SDL_PrivateMouseButton(state, button, x, y);
-        }
 
-        return (0);
-
-
-#if (_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)
-    case WM_MOUSEWHEEL:
-        if (SDL_VideoSurface && !DINPUT_FULLSCREEN()) {
-            int move = (short) HIWORD(wParam);
-            if (move) {
-                Uint8 button;
-                if (move > 0)
-                    button = SDL_BUTTON_WHEELUP;
-                else
-                    button = SDL_BUTTON_WHEELDOWN;
-                posted = SDL_PrivateMouseButton(SDL_PRESSED, button, 0, 0);
-                posted |= SDL_PrivateMouseButton(SDL_RELEASED, button, 0, 0);
+            if (!mouse->relative_mode) {
+                int x, y;
+                x = LOWORD(lParam);
+                y = HIWORD(lParam);
+                SDL_SendMouseMotion(index, 0, x, y);
             }
+            SDL_SendMouseButton(index, state, button);
         }
         return (0);
-#endif
 
-#ifdef WM_GETMINMAXINFO
-        /* This message is sent as a way for us to "check" the values
-         * of a position change.  If we don't like it, we can adjust
-         * the values before they are changed.
-         */
+    case WM_MOUSEWHEEL:
+        {
+            int index;
+            int motion = (short) HIWORD(wParam);
+
+            index = data->videodata->mouse;
+            SDL_SendMouseWheel(index, motion);
+        }
+        return (0);
+
+    case WM_SYSKEYDOWN:
+    case WM_KEYDOWN:
+        {
+            int index;
+
+            /* Ignore repeated keys */
+            if (lParam & REPEATED_KEYMASK) {
+                return (0);
+            }
+
+            index = data->videodata->keyboard;
+            switch (wParam) {
+            case VK_CONTROL:
+                if (lParam & EXTENDED_KEYMASK)
+                    wParam = VK_RCONTROL;
+                else
+                    wParam = VK_LCONTROL;
+                break;
+            case VK_SHIFT:
+                /* EXTENDED trick doesn't work here */
+                {
+                    Uint8 *state = SDL_GetKeyState(NULL);
+                    if (state[SDLK_LSHIFT] == SDL_RELEASED
+                        && (GetKeyState(VK_LSHIFT) & 0x8000)) {
+                        wParam = VK_LSHIFT;
+                    } else if (state[SDLK_RSHIFT] == SDL_RELEASED
+                               && (GetKeyState(VK_RSHIFT) & 0x8000)) {
+                        wParam = VK_RSHIFT;
+                    } else {
+                        /* Probably a key repeat */
+                        return (0);
+                    }
+                }
+                break;
+            case VK_MENU:
+                if (lParam & EXTENDED_KEYMASK)
+                    wParam = VK_RMENU;
+                else
+                    wParam = VK_LMENU;
+                break;
+            }
+            SDL_SendKeyboardKey(index, SDL_PRESSED, (Uint8) HIWORD(lParam),
+                                TranslateKey(wParam));
+        }
+        return (0);
+
+    case WM_SYSKEYUP:
+    case WM_KEYUP:
+        {
+            int index;
+
+            index = data->videodata->keyboard;
+            switch (wParam) {
+            case VK_CONTROL:
+                if (lParam & EXTENDED_KEYMASK)
+                    wParam = VK_RCONTROL;
+                else
+                    wParam = VK_LCONTROL;
+                break;
+            case VK_SHIFT:
+                /* EXTENDED trick doesn't work here */
+                {
+                    Uint8 *state = SDL_GetKeyState(NULL);
+                    if (state[SDLK_LSHIFT] == SDL_PRESSED
+                        && !(GetKeyState(VK_LSHIFT) & 0x8000)) {
+                        wParam = VK_LSHIFT;
+                    } else if (state[SDLK_RSHIFT] == SDL_PRESSED
+                               && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
+                        wParam = VK_RSHIFT;
+                    } else {
+                        /* Probably a key repeat */
+                        return (0);
+                    }
+                }
+                break;
+            case VK_MENU:
+                if (lParam & EXTENDED_KEYMASK)
+                    wParam = VK_RMENU;
+                else
+                    wParam = VK_LMENU;
+                break;
+            }
+            /* Windows only reports keyup for print screen */
+            if (wParam == VK_SNAPSHOT
+                && SDL_GetKeyState(NULL)[SDLK_PRINT] == SDL_RELEASED) {
+                SDL_SendKeyboardKey(index, SDL_PRESSED,
+                                    (Uint8) HIWORD(lParam),
+                                    TranslateKey(wParam));
+            }
+            SDL_SendKeyboardKey(index, SDL_RELEASED, (Uint8) HIWORD(lParam),
+                                TranslateKey(wParam));
+        }
+        return (0);
+
     case WM_GETMINMAXINFO:
         {
             MINMAXINFO *info;
             RECT size;
             int x, y;
+            int w, h;
             int style;
-            int width;
-            int height;
 
-            /* We don't want to clobber an internal resize */
-            if (SDL_resizing)
-                return (0);
-
-            /* We allow resizing with the SDL_RESIZABLE flag */
-            if (SDL_PublicSurface
-                && (SDL_PublicSurface->flags & SDL_RESIZABLE)) {
+            /* If we allow resizing, let the resize happen naturally */
+            if (SDL_GetWindowFlags(data->windowID) & SDL_WINDOW_RESIZABLE) {
                 return (0);
             }
 
             /* Get the current position of our window */
-            GetWindowRect(SDL_Window, &size);
+            GetWindowRect(hwnd, &size);
             x = size.left;
             y = size.top;
 
-            /* Calculate current width and height of our window */
+            /* Calculate current size of our window */
+            SDL_GetWindowSize(data->windowID, &w, &h);
             size.top = 0;
             size.left = 0;
-            if (SDL_PublicSurface != NULL) {
-                size.bottom = SDL_PublicSurface->h;
-                size.right = SDL_PublicSurface->w;
-            } else {
-                size.bottom = 0;
-                size.right = 0;
-            }
+            size.bottom = h;
+            size.right = w;
 
             /* DJM - according to the docs for GetMenu(), the
                return value is undefined if hwnd is a child window.
@@ -263,122 +728,111 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                              style & WS_CHILDWINDOW ? FALSE : GetMenu(hwnd) !=
                              NULL);
 
-            width = size.right - size.left;
-            height = size.bottom - size.top;
+            w = size.right - size.left;
+            h = size.bottom - size.top;
 
             /* Fix our size to the current size */
             info = (MINMAXINFO *) lParam;
-            info->ptMaxSize.x = width;
-            info->ptMaxSize.y = height;
+            info->ptMaxSize.x = w;
+            info->ptMaxSize.y = h;
             info->ptMaxPosition.x = x;
             info->ptMaxPosition.y = y;
-            info->ptMinTrackSize.x = width;
-            info->ptMinTrackSize.y = height;
-            info->ptMaxTrackSize.x = width;
-            info->ptMaxTrackSize.y = height;
+            info->ptMinTrackSize.x = w;
+            info->ptMinTrackSize.y = h;
+            info->ptMaxTrackSize.x = w;
+            info->ptMaxTrackSize.y = h;
         }
-
         return (0);
-#endif /* WM_GETMINMAXINFO */
 
     case WM_WINDOWPOSCHANGED:
         {
-            SDL_VideoDevice *this = current_video;
+            RECT rect;
+            int x, y;
             int w, h;
 
-            GetClientRect(SDL_Window, &SDL_bounds);
-            ClientToScreen(SDL_Window, (LPPOINT) & SDL_bounds);
-            ClientToScreen(SDL_Window, (LPPOINT) & SDL_bounds + 1);
-            if (!SDL_resizing && !IsZoomed(SDL_Window) &&
-                SDL_PublicSurface
-                && !(SDL_PublicSurface->flags & SDL_FULLSCREEN)) {
-                SDL_windowX = SDL_bounds.left;
-                SDL_windowY = SDL_bounds.top;
-            }
-            w = SDL_bounds.right - SDL_bounds.left;
-            h = SDL_bounds.bottom - SDL_bounds.top;
-            if (this->input_grab != SDL_GRAB_OFF) {
-                ClipCursor(&SDL_bounds);
-            }
-            if (SDL_PublicSurface
-                && (SDL_PublicSurface->flags & SDL_RESIZABLE)) {
-                SDL_PrivateResize(w, h);
-            }
-        }
+            GetClientRect(hwnd, &rect);
+            ClientToScreen(hwnd, (LPPOINT) & rect);
+            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
 
+            if (SDL_GetWindowFlags(data->windowID) & SDL_WINDOW_INPUT_GRABBED) {
+                ClipCursor(&rect);
+            }
+
+            x = rect.left;
+            y = rect.top;
+            SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_MOVED, x, y);
+
+            w = rect.right - rect.left;
+            h = rect.bottom - rect.top;
+            SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_RESIZED, w,
+                                h);
+        }
         break;
 
-        /* We need to set the cursor */
     case WM_SETCURSOR:
         {
-            Uint16 hittest;
+            /*
+               Uint16 hittest;
 
-            hittest = LOWORD(lParam);
-            if (hittest == HTCLIENT) {
-                SetCursor(SDL_hcursor);
-                return (TRUE);
-            }
+               hittest = LOWORD(lParam);
+               if (hittest == HTCLIENT) {
+               SetCursor(SDL_hcursor);
+               return (TRUE);
+               }
+             */
         }
-
         break;
 
         /* We are about to get palette focus! */
     case WM_QUERYNEWPALETTE:
         {
-            WIN_RealizePalette(current_video);
-            return (TRUE);
+            /*
+               WIN_RealizePalette(current_video);
+               return (TRUE);
+             */
         }
-
         break;
 
         /* Another application changed the palette */
     case WM_PALETTECHANGED:
         {
-            WIN_PaletteChanged(current_video, (HWND) wParam);
+            /*
+               WIN_PaletteChanged(current_video, (HWND) wParam);
+             */
         }
-
         break;
 
         /* We were occluded, refresh our display */
     case WM_PAINT:
         {
-            HDC hdc;
-            PAINTSTRUCT ps;
-
-            hdc = BeginPaint(SDL_Window, &ps);
-            if (current_video->screen &&
-                !(current_video->screen->flags & SDL_INTERNALOPENGL)) {
-                WIN_WinPAINT(current_video, hdc);
+            RECT rect;
+            if (GetUpdateRect(hwnd, &rect, FALSE)) {
+                ValidateRect(hwnd, &rect);
+                SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_EXPOSED,
+                                    0, 0);
             }
-            EndPaint(SDL_Window, &ps);
         }
-
         return (0);
 
-        /* DJM: Send an expose event in this case */
-    case WM_ERASEBKGND:
+    case WM_SYSCOMMAND:
         {
-            posted = SDL_PrivateExpose();
+            /* Don't start the screensaver or blank the monitor in fullscreen apps */
+            if ((wParam & 0xFFF0) == SC_SCREENSAVE ||
+                (wParam & 0xFFF0) == SC_MONITORPOWER) {
+                if (SDL_GetWindowFlags(data->windowID) &
+                    SDL_WINDOW_FULLSCREEN) {
+                    return (0);
+                }
+            }
         }
-
-        return (0);
+        break;
 
     case WM_CLOSE:
         {
-            if ((posted = SDL_PrivateQuit()))
-                PostQuitMessage(0);
+            SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_CLOSE, 0, 0);
         }
-
-        return (0);
-
-    case WM_DESTROY:
-        {
-            PostQuitMessage(0);
-        }
-
         return (0);
     }
-#endif
     return CallWindowProc(data->wndproc, hwnd, msg, wParam, lParam);
 }
 

@@ -373,6 +373,12 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     return (used);
 }
 
+SDL_bool
+SDL_HasEvent(Uint32 mask)
+{
+    return (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, mask) > 0);
+}
+
 /* Run the system dependent event loops */
 void
 SDL_PumpEvents(void)
@@ -520,7 +526,7 @@ SDL_EventState(Uint8 type, int state)
 /* This is a generic event handler.
  */
 int
-SDL_PrivateSysWMEvent(SDL_SysWMmsg * message)
+SDL_SendSysWMEvent(SDL_SysWMmsg * message)
 {
     int posted;
 

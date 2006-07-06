@@ -43,6 +43,7 @@ SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
     data->windowID = window->id;
     data->hwnd = hwnd;
     data->created = created;
+    data->mouse_pressed = SDL_FALSE;
     data->videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
 
     /* Associate the data with the window */
@@ -180,6 +181,8 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
     hwnd = CreateWindow(SDL_Appname,
                         title ? title : TEXT(""),
                         style, x, y, w, h, NULL, NULL, SDL_Instance, NULL);
+    WIN_PumpEvents(_this);
+
     if (title) {
         SDL_free(title);
     }

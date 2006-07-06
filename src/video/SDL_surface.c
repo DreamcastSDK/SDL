@@ -418,7 +418,7 @@ SDL_SetAlphaChannel(SDL_Surface * surface, Uint8 value)
  * A function to calculate the intersection of two rectangles:
  * return true if the rectangles intersect, false otherwise
  */
-static __inline__ SDL_bool
+SDL_bool
 SDL_IntersectRect(const SDL_Rect * A, const SDL_Rect * B,
                   SDL_Rect * intersection)
 {

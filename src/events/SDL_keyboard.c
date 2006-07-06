@@ -338,18 +338,15 @@ void
 SDL_ResetKeyboard(int index)
 {
     SDL_Keyboard *keyboard = SDL_GetKeyboard(index);
-    SDL_keysym keysym;
-    Uint16 key;
+    SDLKey key;
 
     if (!keyboard) {
         return;
     }
 
-    SDL_memset(&keysym, 0, (sizeof keysym));
     for (key = SDLK_FIRST; key < SDLK_LAST; ++key) {
         if (keyboard->keystate[key] == SDL_PRESSED) {
-            keysym.sym = key;
-            SDL_SendKeyboardKey(index, 0, SDL_RELEASED, &keysym);
+            SDL_SendKeyboardKey(index, SDL_RELEASED, 0, key);
         }
     }
     keyboard->repeat.timestamp = 0;
@@ -463,9 +460,57 @@ SDL_GetKeyName(SDLKey key)
     return keyname;
 }
 
+void
+SDL_SetKeyboardFocus(int index, SDL_WindowID windowID)
+{
+    SDL_Keyboard *keyboard = SDL_GetKeyboard(index);
+    int i;
+    SDL_bool focus;
+
+    if (!keyboard || (keyboard->focus == windowID)) {
+        return;
+    }
+
+    /* See if the current window has lost focus */
+    if (keyboard->focus) {
+        focus = SDL_FALSE;
+        for (i = 0; i < SDL_num_keyboards; ++i) {
+            SDL_Keyboard *check;
+            if (i != index) {
+                check = SDL_GetKeyboard(i);
+                if (check && check->focus == keyboard->focus) {
+                    focus = SDL_TRUE;
+                    break;
+                }
+            }
+        }
+        if (!focus) {
+            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+        }
+    }
+
+    keyboard->focus = windowID;
+
+    if (keyboard->focus) {
+        focus = SDL_FALSE;
+        for (i = 0; i < SDL_num_keyboards; ++i) {
+            SDL_Keyboard *check;
+            if (i != index) {
+                check = SDL_GetKeyboard(i);
+                if (check && check->focus == keyboard->focus) {
+                    focus = SDL_TRUE;
+                    break;
+                }
+            }
+        }
+        if (!focus) {
+            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+        }
+    }
+}
+
 int
-SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
-                    SDL_keysym * keysym)
+SDL_SendKeyboardKey(int index, Uint8 state, Uint8 scancode, SDLKey key)
 {
     SDL_Keyboard *keyboard = SDL_GetKeyboard(index);
     int posted, repeatable;
@@ -475,106 +520,91 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
     if (!keyboard) {
         return 0;
     }
-
-    if (windowID) {
-        keyboard->focus = windowID;
-    }
 #if 0
-    printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym),
+    printf("The '%s' key has been %s\n", SDL_GetKeyName(key),
            state == SDL_PRESSED ? "pressed" : "released");
 #endif
-    /* Set up the keysym */
-    modstate = keyboard->modstate;
-
     repeatable = 0;
-
     if (state == SDL_PRESSED) {
-        keysym->mod = modstate;
-        switch (keysym->sym) {
+        modstate = keyboard->modstate;
+        switch (key) {
         case SDLK_UNKNOWN:
             break;
         case SDLK_NUMLOCK:
-            modstate ^= KMOD_NUM;
-            if (!(modstate & KMOD_NUM))
-                state = SDL_RELEASED;
-            keysym->mod = modstate;
+            keyboard->modstate ^= KMOD_NUM;
             break;
         case SDLK_CAPSLOCK:
-            modstate ^= KMOD_CAPS;
-            if (!(modstate & KMOD_CAPS))
-                state = SDL_RELEASED;
-            keysym->mod = modstate;
+            keyboard->modstate ^= KMOD_CAPS;
             break;
         case SDLK_LCTRL:
-            modstate |= KMOD_LCTRL;
+            keyboard->modstate |= KMOD_LCTRL;
             break;
         case SDLK_RCTRL:
-            modstate |= KMOD_RCTRL;
+            keyboard->modstate |= KMOD_RCTRL;
             break;
         case SDLK_LSHIFT:
-            modstate |= KMOD_LSHIFT;
+            keyboard->modstate |= KMOD_LSHIFT;
             break;
         case SDLK_RSHIFT:
-            modstate |= KMOD_RSHIFT;
+            keyboard->modstate |= KMOD_RSHIFT;
             break;
         case SDLK_LALT:
-            modstate |= KMOD_LALT;
+            keyboard->modstate |= KMOD_LALT;
             break;
         case SDLK_RALT:
-            modstate |= KMOD_RALT;
+            keyboard->modstate |= KMOD_RALT;
             break;
         case SDLK_LMETA:
-            modstate |= KMOD_LMETA;
+            keyboard->modstate |= KMOD_LMETA;
             break;
         case SDLK_RMETA:
-            modstate |= KMOD_RMETA;
+            keyboard->modstate |= KMOD_RMETA;
             break;
         case SDLK_MODE:
-            modstate |= KMOD_MODE;
+            keyboard->modstate |= KMOD_MODE;
             break;
         default:
             repeatable = 1;
             break;
         }
     } else {
-        switch (keysym->sym) {
+        switch (key) {
         case SDLK_UNKNOWN:
             break;
         case SDLK_NUMLOCK:
         case SDLK_CAPSLOCK:
-            /* Only send keydown events */
-            return (0);
+            break;
         case SDLK_LCTRL:
-            modstate &= ~KMOD_LCTRL;
+            keyboard->modstate &= ~KMOD_LCTRL;
             break;
         case SDLK_RCTRL:
-            modstate &= ~KMOD_RCTRL;
+            keyboard->modstate &= ~KMOD_RCTRL;
             break;
         case SDLK_LSHIFT:
-            modstate &= ~KMOD_LSHIFT;
+            keyboard->modstate &= ~KMOD_LSHIFT;
             break;
         case SDLK_RSHIFT:
-            modstate &= ~KMOD_RSHIFT;
+            keyboard->modstate &= ~KMOD_RSHIFT;
             break;
         case SDLK_LALT:
-            modstate &= ~KMOD_LALT;
+            keyboard->modstate &= ~KMOD_LALT;
             break;
         case SDLK_RALT:
-            modstate &= ~KMOD_RALT;
+            keyboard->modstate &= ~KMOD_RALT;
             break;
         case SDLK_LMETA:
-            modstate &= ~KMOD_LMETA;
+            keyboard->modstate &= ~KMOD_LMETA;
             break;
         case SDLK_RMETA:
-            modstate &= ~KMOD_RMETA;
+            keyboard->modstate &= ~KMOD_RMETA;
             break;
         case SDLK_MODE:
-            modstate &= ~KMOD_MODE;
+            keyboard->modstate &= ~KMOD_MODE;
             break;
         default:
             break;
         }
-        keysym->mod = modstate;
+        modstate = keyboard->modstate;
     }
 
     /* Figure out what type of event this is */
@@ -588,7 +618,7 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
          * jk 991215 - Added
          */
         if (keyboard->repeat.timestamp &&
-            keyboard->repeat.evt.key.keysym.sym == keysym->sym) {
+            keyboard->repeat.evt.key.keysym.sym == key) {
             keyboard->repeat.timestamp = 0;
         }
         break;
@@ -597,9 +627,9 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
         return 0;
     }
 
-    if (keysym->sym != SDLK_UNKNOWN) {
+    if (key != SDLK_UNKNOWN) {
         /* Drop events that don't change state */
-        if (keyboard->keystate[keysym->sym] == state) {
+        if (keyboard->keystate[key] == state) {
 #if 0
             printf("Keyboard event didn't change state - dropped!\n");
 #endif
@@ -607,8 +637,7 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
         }
 
         /* Update internal keyboard state */
-        keyboard->modstate = modstate;
-        keyboard->keystate[keysym->sym] = state;
+        keyboard->keystate[key] = state;
     }
 
     /* Post the event, if desired */
@@ -618,7 +647,10 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
         event.key.type = type;
         event.key.which = (Uint8) index;
         event.key.state = state;
-        event.key.keysym = *keysym;
+        event.key.keysym.scancode = scancode;
+        event.key.keysym.sym = (Uint16) key;
+        event.key.keysym.mod = modstate;
+        event.key.keysym.unicode = 0;
         event.key.windowID = keyboard->focus;
         /*
          * jk 991215 - Added
@@ -632,6 +664,32 @@ SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
             keyboard->repeat.firsttime = 1;
             keyboard->repeat.timestamp = 1;
         }
+        if ((SDL_EventOK == NULL) || SDL_EventOK(SDL_EventOKParam, &event)) {
+            posted = 1;
+            SDL_PushEvent(&event);
+        }
+    }
+    return (posted);
+}
+
+int
+SDL_SendKeyboardText(int index, const char *text)
+{
+    SDL_Keyboard *keyboard = SDL_GetKeyboard(index);
+    int posted;
+
+    if (!keyboard) {
+        return 0;
+    }
+
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_ProcessEvents[SDL_TEXTINPUT] == SDL_ENABLE) {
+        SDL_Event event;
+        event.text.type = SDL_TEXTINPUT;
+        event.text.which = (Uint8) index;
+        SDL_strlcpy(event.text.text, text, SDL_arraysize(event.text.text));
+        event.key.windowID = keyboard->focus;
         if ((SDL_EventOK == NULL) || SDL_EventOK(SDL_EventOKParam, &event)) {
             posted = 1;
             SDL_PushEvent(&event);

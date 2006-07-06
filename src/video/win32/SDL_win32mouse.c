@@ -35,4 +35,12 @@ WIN_AddMouse(_THIS)
     data->mouse = SDL_AddMouse(&mouse, -1);
 }
 
+void
+WIN_DelMouse(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    SDL_DelMouse(data->mouse);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

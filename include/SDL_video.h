@@ -148,6 +148,7 @@ typedef enum
     SDL_WINDOWEVENT_NONE,               /**< Never used */
     SDL_WINDOWEVENT_SHOWN,              /**< Window has been shown */
     SDL_WINDOWEVENT_HIDDEN,             /**< Window has been hidden */
+    SDL_WINDOWEVENT_EXPOSED,            /**< Window has been exposed and should be redrawn */
     SDL_WINDOWEVENT_MOVED,              /**< Window has been moved to data1,data2 */
     SDL_WINDOWEVENT_RESIZED,            /**< Window size changed to data1xdata2 */
     SDL_WINDOWEVENT_MINIMIZED,          /**< Window has been minimized */
@@ -157,6 +158,7 @@ typedef enum
     SDL_WINDOWEVENT_LEAVE,              /**< The window has lost mouse focus */
     SDL_WINDOWEVENT_FOCUS_GAINED,       /**< The window has gained keyboard focus */
     SDL_WINDOWEVENT_FOCUS_LOST,         /**< The window has lost keyboard focus */
+    SDL_WINDOWEVENT_CLOSE,                              /**< The window manager requests that the window be closed */
 } SDL_WindowEventID;
 
 /**
@@ -1418,6 +1420,13 @@ extern DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
  * Swap the OpenGL buffers, if double-buffering is supported.
  */
 extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers(void);
+
+/*
+ * Calculate the intersection of two rectangles
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRect(const SDL_Rect * A,
+                                                   const SDL_Rect * B,
+                                                   SDL_Rect * intersection);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

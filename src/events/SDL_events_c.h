@@ -25,6 +25,7 @@
 #include "SDL_events.h"
 #include "SDL_mouse_c.h"
 #include "SDL_keyboard_c.h"
+#include "SDL_windowevents_c.h"
 
 /* Start and stop the event processing loop */
 extern int SDL_StartEventLoop(Uint32 flags);
@@ -34,6 +35,8 @@ extern void SDL_QuitInterrupt(void);
 extern void SDL_Lock_EventThread(void);
 extern void SDL_Unlock_EventThread(void);
 extern Uint32 SDL_EventThreadID(void);
+
+extern int SDL_SendSysWMEvent(SDL_SysWMmsg * message);
 
 extern int SDL_QuitInit(void);
 extern int SDL_SendQuit(void);

@@ -21,12 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_win32mouse_h
-#define _SDL_win32mouse_h
+/* SDL surface based renderer implementation */
 
-extern void WIN_AddMouse(_THIS);
-extern void WIN_DelMouse(_THIS);
-
-#endif /* _SDL_win32mouse_h */
+extern SDL_RenderDriver SDL_DIB_RenderDriver;
 
 /* vi: set ts=4 sw=4 expandtab: */
