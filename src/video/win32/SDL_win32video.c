@@ -28,8 +28,7 @@
 #include "../SDL_pixels_c.h"
 
 #include "SDL_win32video.h"
-#include "SDL_win32events.h"
-#include "SDL_win32window.h"
+#include "SDL_dibrender.h"
 
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
@@ -109,10 +108,51 @@ VideoBootStrap WIN32_bootstrap = {
 int
 WIN_VideoInit(_THIS)
 {
+    int bmi_size;
+    LPBITMAPINFO bmi;
     SDL_DisplayMode mode;
 
-    SDL_AddBasicVideoDisplay(NULL);
-    //SDL_AddRenderDriver(0, &SDL_WIN_RenderDriver);
+    /* Find out the desktop mode */
+    mode.format = SDL_PixelFormat_Unknown;
+    mode.w = GetSystemMetrics(SM_CXSCREEN);
+    mode.h = GetSystemMetrics(SM_CYSCREEN);
+    mode.refresh_rate = 0;
+
+    bmi_size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
+    bmi = (LPBITMAPINFO) SDL_malloc(bmi_size);
+    if (bmi) {
+        HDC hdc;
+        HBITMAP hbm;
+
+        SDL_memset(bmi, 0, bmi_size);
+        bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        hdc = GetDC(NULL);
+        hbm = CreateCompatibleBitmap(hdc, 1, 1);
+        GetDIBits(hdc, hbm, 0, 1, NULL, bmi, DIB_RGB_COLORS);
+        GetDIBits(hdc, hbm, 0, 1, NULL, bmi, DIB_RGB_COLORS);
+        DeleteObject(hbm);
+        ReleaseDC(NULL, hdc);
+        if (bmi->bmiHeader.biCompression == BI_BITFIELDS) {
+            switch (*(Uint32 *) bmi->bmiColors) {
+            case 0x00FF0000:
+                mode.format = SDL_PixelFormat_RGB888;
+                break;
+            case 0x000000FF:
+                mode.format = SDL_PixelFormat_BGR888;
+                break;
+            case 0xF800:
+                mode.format = SDL_PixelFormat_RGB565;
+                break;
+            case 0x7C00:
+                mode.format = SDL_PixelFormat_RGB555;
+                break;
+            }
+        } else if (bmi->bmiHeader.biBitCount == 8) {
+            mode.format = SDL_PixelFormat_Index8;
+        }
+    }
+    SDL_AddBasicVideoDisplay(&mode);
+    SDL_AddRenderDriver(0, &SDL_DIB_RenderDriver);
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
@@ -134,6 +174,8 @@ WIN_SetDisplayMode(_THIS, const SDL_DisplayMode * mode)
 void
 WIN_VideoQuit(_THIS)
 {
+    WIN_DelKeyboard(_this);
+    WIN_DelMouse(_this);
 }
 
 /* vim: set ts=4 sw=4 expandtab: */

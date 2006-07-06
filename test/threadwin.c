@@ -80,7 +80,7 @@ LoadIconSurface(char *file, Uint8 ** maskp)
 }
 
 int SDLCALL
-FilterEvents(SDL_Event * event)
+FilterEvents(void *userdata, SDL_Event * event)
 {
     static int reallyquit = 0;
 
@@ -296,7 +296,7 @@ main(int argc, char *argv[])
     SDL_EnableUNICODE(1);
 
     /* Set an event filter that discards everything but QUIT */
-    SDL_SetEventFilter(FilterEvents);
+    SDL_SetEventFilter(FilterEvents, NULL);
 
     /* Create the event handling threads */
     mouse_thread = SDL_CreateThread(HandleMouse, NULL);

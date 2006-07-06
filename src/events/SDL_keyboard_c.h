@@ -75,9 +75,15 @@ extern void SDL_DelKeyboard(int index);
 /* Clear the state of a keyboard at an index */
 extern void SDL_ResetKeyboard(int index);
 
+/* Set the keyboard focus window */
+extern void SDL_SetKeyboardFocus(int index, SDL_WindowID windowID);
+
 /* Send a keyboard event for a keyboard at an index */
-extern int SDL_SendKeyboardKey(int index, SDL_WindowID windowID, Uint8 state,
-                               SDL_keysym * keysym);
+extern int SDL_SendKeyboardKey(int index, Uint8 state, Uint8 scancode,
+                               SDLKey key);
+
+/* Send keyboard text input for a keyboard at an index */
+extern int SDL_SendKeyboardText(int index, const char *text);
 
 /* Used by the event loop to queue pending keyboard repeat events */
 extern void SDL_CheckKeyRepeat(void);

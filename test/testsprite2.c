@@ -5,11 +5,12 @@
 
 #include "SDL.h"
 
-#define NUM_WINDOWS 2
+#define NUM_WINDOWS 4
 #define WINDOW_W    640
 #define WINDOW_H    480
 #define NUM_SPRITES	100
 #define MAX_SPEED 	1
+#define BACKGROUND  0x00FFFFFF
 
 static int num_windows;
 static int num_sprites;
@@ -85,13 +86,15 @@ MoveSprites(SDL_WindowID window, SDL_TextureID sprite)
 
     SDL_SelectRenderer(window);
 
-    SDL_RenderFill(NULL, 0);
-
     /* Query the sizes */
     SDL_GetWindowSize(window, &window_w, &window_h);
 
     /* Move the sprite, bounce at the wall, and draw */
     n = 0;
+    for (i = 0; i < num_sprites; ++i) {
+        position = &positions[i];
+        SDL_RenderFill(position, BACKGROUND);
+    }
     for (i = 0; i < num_sprites; ++i) {
         position = &positions[i];
         velocity = &velocities[i];
@@ -168,7 +171,8 @@ main(int argc, char *argv[])
 
         SDL_snprintf(title, sizeof(title), "testsprite %d", i + 1);
         windows[i] =
-            SDL_CreateWindow(title, -1, -1, window_w, window_h,
+            SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED,
+                             SDL_WINDOWPOS_UNDEFINED, window_w, window_h,
                              SDL_WINDOW_SHOWN);
         if (!windows[i]) {
             fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
@@ -179,6 +183,7 @@ main(int argc, char *argv[])
             fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
             quit(2);
         }
+        SDL_RenderFill(NULL, BACKGROUND);
     }
     if (LoadSprite("icon.bmp") < 0) {
         quit(2);
@@ -214,6 +219,17 @@ main(int argc, char *argv[])
         ++frames;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
+            case SDL_WINDOWEVENT:
+                switch (event.window.event) {
+                case SDL_WINDOWEVENT_EXPOSED:
+                    SDL_SelectRenderer(event.window.windowID);
+                    SDL_RenderFill(NULL, BACKGROUND);
+                    break;
+                case SDL_WINDOWEVENT_CLOSE:
+                    done = 1;
+                    break;
+                }
+                break;
             case SDL_KEYDOWN:
                 /* Any keypress quits the app... */
             case SDL_QUIT:

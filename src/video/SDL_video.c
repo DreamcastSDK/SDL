@@ -188,6 +188,11 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
     }
 #endif
 
+    /* Start the event loop */
+    if (SDL_StartEventLoop(flags) < 0) {
+        return -1;
+    }
+
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
         SDL_VideoQuit();
@@ -275,12 +280,6 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
         if (_this->displays[i].num_render_drivers > 0) {
             SDL_AddRenderDriver(i, &SDL_SW_RenderDriver);
         }
-    }
-
-    /* Start the event loop */
-    if (SDL_StartEventLoop(flags) < 0) {
-        SDL_VideoQuit();
-        return -1;
     }
 
     /* We're ready to go! */
@@ -1286,10 +1285,22 @@ SDL_CreateTextureFromSurface(Uint32 format, int access, SDL_Surface * surface)
     }
 
     /* Copy the palette if any */
-    if (fmt->palette) {
-        SDL_SetTexturePalette(textureID, fmt->palette->colors, 0,
-                              fmt->palette->ncolors);
-        SDL_SetSurfacePalette(&dst, fmt->palette);
+    if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        if (fmt->palette) {
+            SDL_SetTexturePalette(textureID, fmt->palette->colors, 0,
+                                  fmt->palette->ncolors);
+            SDL_SetSurfacePalette(&dst, fmt->palette);
+        } else {
+            dst.format->palette =
+                SDL_AllocPalette((1 << SDL_BITSPERPIXEL(format)));
+            if (!dst.format->palette) {
+                SDL_DestroyTexture(textureID);
+                SDL_FreeFormat(dst.format);
+                return 0;
+            }
+            SDL_DitherColors(dst.format->palette->colors,
+                             SDL_BITSPERPIXEL(format));
+        }
     }
 
     /* Make the texture transparent if the surface has colorkey */
@@ -1557,7 +1568,8 @@ int
 SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
 {
     SDL_Renderer *renderer;
-    SDL_Rect full_rect;
+    SDL_Window *window;
+    SDL_Rect real_rect;
 
     if (!_this) {
         return -1;
@@ -1568,14 +1580,17 @@ SDL_RenderFill(const SDL_Rect * rect, Uint32 color)
         return -1;
     }
 
-    if (!rect) {
-        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-        full_rect.x = 0;
-        full_rect.y = 0;
-        full_rect.w = window->w;
-        full_rect.h = window->h;
-        rect = &full_rect;
+    window = SDL_GetWindowFromID(renderer->window);
+    real_rect.x = 0;
+    real_rect.y = 0;
+    real_rect.w = window->w;
+    real_rect.h = window->h;
+    if (rect) {
+        if (!SDL_IntersectRect(rect, &real_rect, &real_rect)) {
+            return 0;
+        }
     }
+    rect = &real_rect;
 
     return renderer->RenderFill(renderer, rect, color);
 }
@@ -1586,8 +1601,9 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
 {
     SDL_Texture *texture = SDL_GetTextureFromID(textureID);
     SDL_Renderer *renderer;
-    SDL_Rect full_srcrect;
-    SDL_Rect full_dstrect;
+    SDL_Window *window;
+    SDL_Rect real_srcrect;
+    SDL_Rect real_dstrect;
 
     if (!texture || texture->renderer != SDL_CurrentDisplay.current_renderer) {
         return -1;
@@ -1598,20 +1614,21 @@ SDL_RenderCopy(SDL_TextureID textureID, const SDL_Rect * srcrect,
         return -1;
     }
 
+    /* FIXME: implement clipping */
+    window = SDL_GetWindowFromID(renderer->window);
+    real_srcrect.x = 0;
+    real_srcrect.y = 0;
+    real_srcrect.w = texture->w;
+    real_srcrect.h = texture->h;
+    real_dstrect.x = 0;
+    real_dstrect.y = 0;
+    real_dstrect.w = window->w;
+    real_dstrect.h = window->h;
     if (!srcrect) {
-        full_srcrect.x = 0;
-        full_srcrect.y = 0;
-        full_srcrect.w = texture->w;
-        full_srcrect.h = texture->h;
-        srcrect = &full_srcrect;
+        srcrect = &real_srcrect;
     }
     if (!dstrect) {
-        SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-        full_dstrect.x = 0;
-        full_dstrect.y = 0;
-        full_dstrect.w = window->w;
-        full_dstrect.h = window->h;
-        dstrect = &full_dstrect;
+        dstrect = &real_dstrect;
     }
 
     return renderer->RenderCopy(renderer, texture, srcrect, dstrect,

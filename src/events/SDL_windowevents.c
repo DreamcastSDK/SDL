@@ -28,8 +28,8 @@
 #include "../video/SDL_sysvideo.h"
 
 int
-SDL_PrivateWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
-                       int data2)
+SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
+                    int data2)
 {
     int posted;
     SDL_Window *window;
@@ -50,6 +50,16 @@ SDL_PrivateWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
             return 0;
         }
         window->flags &= ~SDL_WINDOW_SHOWN;
+        break;
+    case SDL_WINDOWEVENT_MOVED:
+        if (data1 == window->x && data2 == window->y) {
+            return 0;
+        }
+        break;
+    case SDL_WINDOWEVENT_RESIZED:
+        if (data1 == window->w && data2 == window->h) {
+            return 0;
+        }
         break;
     case SDL_WINDOWEVENT_MINIMIZED:
         if (window->flags & SDL_WINDOW_MINIMIZED) {

@@ -228,8 +228,11 @@ main(int argc, char *argv[])
             DrawBackground(screen);
             break;
         case SDL_VIDEORESIZE:
-            screen = CreateScreen(event.resize.w, event.resize.h,
-                                  screen->format->BitsPerPixel, videoflags);
+            printf("Screen resized to %dx%d\n", event.resize.w,
+                   event.resize.h);
+            screen =
+                CreateScreen(event.resize.w, event.resize.h,
+                             screen->format->BitsPerPixel, videoflags);
             if (screen == NULL) {
                 fprintf(stderr, "Couldn't resize video mode\n");
                 done = 1;

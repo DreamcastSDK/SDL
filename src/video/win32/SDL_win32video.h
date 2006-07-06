@@ -28,6 +28,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define UNICODE
+#define WINVER  0x0410          // 0x0410 needed for AlphaBlend()
 #include <windows.h>
 
 #include "SDL_win32events.h"

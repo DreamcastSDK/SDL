@@ -60,9 +60,11 @@ typedef enum
     SDL_WINDOWEVENT,            /**< Window state change */
     SDL_KEYDOWN,                /**< Keys pressed */
     SDL_KEYUP,                  /**< Keys released */
+    SDL_TEXTINPUT,                              /**< Keyboard text input */
     SDL_MOUSEMOTION,            /**< Mouse moved */
     SDL_MOUSEBUTTONDOWN,        /**< Mouse button pressed */
     SDL_MOUSEBUTTONUP,          /**< Mouse button released */
+    SDL_MOUSEWHEEL,                             /**< Mouse wheel motion */
     SDL_JOYAXISMOTION,          /**< Joystick axis motion */
     SDL_JOYBALLMOTION,          /**< Joystick trackball motion */
     SDL_JOYHATMOTION,           /**< Joystick hat position change */
@@ -93,9 +95,11 @@ typedef enum
     SDL_KEYDOWNMASK = SDL_EVENTMASK(SDL_KEYDOWN),
     SDL_KEYUPMASK = SDL_EVENTMASK(SDL_KEYUP),
     SDL_KEYEVENTMASK = SDL_EVENTMASK(SDL_KEYDOWN) | SDL_EVENTMASK(SDL_KEYUP),
+    SDL_TEXTINPUTMASK = SDL_EVENTMASK(SDL_TEXTINPUT),
     SDL_MOUSEMOTIONMASK = SDL_EVENTMASK(SDL_MOUSEMOTION),
     SDL_MOUSEBUTTONDOWNMASK = SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN),
     SDL_MOUSEBUTTONUPMASK = SDL_EVENTMASK(SDL_MOUSEBUTTONUP),
+    SDL_MOUSEWHEELMASK = SDL_EVENTMASK(SDL_MOUSEWHEEL),
     SDL_MOUSEEVENTMASK = SDL_EVENTMASK(SDL_MOUSEMOTION) |
         SDL_EVENTMASK(SDL_MOUSEBUTTONDOWN) | SDL_EVENTMASK(SDL_MOUSEBUTTONUP),
     SDL_JOYAXISMOTIONMASK = SDL_EVENTMASK(SDL_JOYAXISMOTION),
@@ -141,17 +145,17 @@ typedef struct SDL_KeyboardEvent
 } SDL_KeyboardEvent;
 
 /**
- * \struct SDL_CharEvent
+ * \struct SDL_TextInputEvent
  *
- * \brief Keyboard input event structure
+ * \brief Keyboard text input event structure
  */
-typedef struct SDL_CharEvent
+typedef struct SDL_TextInputEvent
 {
-    Uint8 type;             /**< SDL_CHARINPUT (FIXME: NYI) */
+    Uint8 type;             /**< SDL_TEXTINPUT */
     Uint8 which;            /**< The keyboard device index */
     char text[32];          /**< The input text */
     SDL_WindowID windowID;  /**< The window with keyboard focus, if any */
-} SDL_CharEvent;
+} SDL_TextInputEvent;
 
 /**
  * \struct SDL_MouseMotionEvent
@@ -185,6 +189,19 @@ typedef struct SDL_MouseButtonEvent
     int y;                  /**< Y coordinate, relative to window */
     SDL_WindowID windowID;  /**< The window with mouse focus, if any */
 } SDL_MouseButtonEvent;
+
+/**
+ * \struct SDL_MouseWheelEvent
+ *
+ * \brief Mouse wheel event structure
+ */
+typedef struct SDL_MouseWheelEvent
+{
+    Uint8 type;             /**< SDL_MOUSEWHEEL */
+    Uint8 which;            /**< The mouse device index */
+    int motion;                                 /**< The direction and distance scrolled */
+    SDL_WindowID windowID;  /**< The window with mouse focus, if any */
+} SDL_MouseWheelEvent;
 
 /**
  * \struct SDL_JoyAxisEvent
@@ -306,8 +323,10 @@ typedef union SDL_Event
     Uint8 type;                     /**< Event type, shared with all events */
     SDL_WindowEvent window;         /**< Window event data */
     SDL_KeyboardEvent key;          /**< Keyboard event data */
+    SDL_TextInputEvent text;                    /**< Text input event data */
     SDL_MouseMotionEvent motion;    /**< Mouse motion event data */
     SDL_MouseButtonEvent button;    /**< Mouse button event data */
+    SDL_MouseWheelEvent wheel;                  /**< Mouse wheel event data */
     SDL_JoyAxisEvent jaxis;         /**< Joystick axis event data */
     SDL_JoyBallEvent jball;         /**< Joystick ball event data */
     SDL_JoyHatEvent jhat;           /**< Joystick hat event data */
@@ -352,6 +371,10 @@ typedef enum
 extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
                                            SDL_eventaction action,
                                            Uint32 mask);
+
+/* Checks to see if certain event types are in the event queue.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasEvent(Uint32 mask);
 
 /* Polls for currently pending events, and returns 1 if there are any pending
    events, or 0 if there are none available.  If 'event' is not NULL, the next

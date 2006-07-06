@@ -164,6 +164,12 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
     switch (event->type) {
     case SDL_WINDOWEVENT:
         switch (event->window.event) {
+        case SDL_WINDOWEVENT_EXPOSED:
+            if (!SDL_HasEvent(SDL_VIDEOEXPOSEMASK)) {
+                fake.type = SDL_VIDEOEXPOSE;
+                SDL_PushEvent(&fake);
+            }
+            break;
         case SDL_WINDOWEVENT_RESIZED:
             fake.type = SDL_VIDEORESIZE;
             fake.resize.w = event->window.data1;
@@ -206,6 +212,10 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
             fake.active.state = SDL_APPINPUTFOCUS;
             SDL_PushEvent(&fake);
             break;
+        case SDL_WINDOWEVENT_CLOSE:
+            fake.type = SDL_QUIT;
+            SDL_PushEvent(&fake);
+            break;
         }
     case SDL_KEYDOWN:
     case SDL_KEYUP:
@@ -226,6 +236,38 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
             }
             break;
         }
+    case SDL_MOUSEWHEEL:
+        {
+            Uint8 button;
+            int selected;
+            int x, y;
+
+            selected = SDL_SelectMouse(event->wheel.which);
+            SDL_GetMouseState(&x, &y);
+            SDL_SelectMouse(selected);
+
+            if (event->wheel.motion > 0) {
+                button = SDL_BUTTON_WHEELUP;
+            } else {
+                button = SDL_BUTTON_WHEELDOWN;
+            }
+
+            fake.button.which = event->wheel.windowID;
+            fake.button.button = button;
+            fake.button.x = x;
+            fake.button.y = y;
+            fake.button.windowID = event->wheel.windowID;
+
+            fake.type = SDL_MOUSEBUTTONDOWN;
+            fake.button.state = SDL_PRESSED;
+            SDL_PushEvent(&fake);
+
+            fake.type = SDL_MOUSEBUTTONUP;
+            fake.button.state = SDL_RELEASED;
+            SDL_PushEvent(&fake);
+            break;
+        }
+
     }
     if (orig_eventfilter) {
         return orig_eventfilter(orig_eventfilterparam, event);
@@ -304,7 +346,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         window_flags |= SDL_WINDOW_BORDERLESS;
     }
     SDL_VideoWindow =
-        SDL_CreateWindow(wm_title, 0, 0, width, height, window_flags);
+        SDL_CreateWindow(wm_title, SDL_WINDOWPOS_UNDEFINED,
+                         SDL_WINDOWPOS_UNDEFINED, width, height,
+                         window_flags);
     if (!SDL_VideoWindow) {
         return NULL;
     }

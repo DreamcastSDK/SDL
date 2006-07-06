@@ -52,7 +52,7 @@ typedef struct SDL_keysym
     Uint8 padding[3];           /**< alignment padding */
     Uint16 sym;                 /**< SDL virtual keysym */
     Uint16 mod;                 /**< current key modifiers */
-    Uint32 unicode;             /**< OBSOLETE, use SDL_CharEvent instead */
+    Uint32 unicode;             /**< OBSOLETE, use SDL_TextInputEvent instead */
 } SDL_keysym;
 
 /* Function prototypes */

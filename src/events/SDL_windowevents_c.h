@@ -27,8 +27,6 @@
 extern int SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent,
                                int data1, int data2);
 
-extern int SDL_SendSysWMEvent(SDL_SysWMmsg * message);
-
 #endif /* _SDL_windowevents_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

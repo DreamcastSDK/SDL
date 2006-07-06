@@ -176,7 +176,7 @@ HotKey_Quit(void)
 }
 
 int SDLCALL
-FilterEvents(SDL_Event * event)
+FilterEvents(void *userdata, SDL_Event * event)
 {
     static int reallyquit = 0;
 
@@ -344,7 +344,7 @@ main(int argc, char *argv[])
     }
 
     /* Set an event filter that discards everything but QUIT */
-    SDL_SetEventFilter(FilterEvents);
+    SDL_SetEventFilter(FilterEvents, NULL);
 
     /* Ignore key up events, they don't even get filtered */
     SDL_EventState(SDL_KEYUP, SDL_IGNORE);
