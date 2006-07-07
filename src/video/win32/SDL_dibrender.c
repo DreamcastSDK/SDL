@@ -564,7 +564,7 @@ SDL_DIB_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         } else {
             if (!StretchBlt
                 (data->current_hdc, dstrect->x, dstrect->y, dstrect->w,
-                 srcrect->h, data->memory_hdc, srcrect->x, srcrect->y,
+                 dstrect->h, data->memory_hdc, srcrect->x, srcrect->y,
                  srcrect->w, srcrect->h, SRCCOPY)) {
                 WIN_SetError("StretchBlt()");
                 return -1;
