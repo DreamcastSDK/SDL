@@ -253,7 +253,6 @@ SDL_VideoInit(const char *driver_name, Uint32 flags)
     _this->gl_config.multisamplebuffers = 0;
     _this->gl_config.multisamplesamples = 0;
     _this->gl_config.accelerated = -1;  /* not known, don't set */
-    _this->gl_config.swap_control = -1; /* not known, don't set */
 
     /* Initialize the video subsystem */
     if (_this->VideoInit(_this) < 0) {
@@ -1970,9 +1969,6 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_ACCELERATED_VISUAL:
         _this->gl_config.accelerated = value;
-        break;
-    case SDL_GL_SWAP_CONTROL:
-        _this->gl_config.swap_control = value;
         break;
     default:
         SDL_SetError("Unknown OpenGL attribute");
