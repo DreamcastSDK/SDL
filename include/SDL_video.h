@@ -242,6 +242,13 @@ typedef enum
  */
 typedef Uint32 SDL_TextureID;
 
+/**
+ * \typedef SDL_GLContext
+ *
+ * \brief An opaque handle to an OpenGL context.
+ */
+typedef void *SDL_GLContext;
+
 
 /* These are the currently supported flags for the SDL_surface */
 /* Used internally (read-only) */
