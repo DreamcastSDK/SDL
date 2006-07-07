@@ -26,7 +26,7 @@
 #include "../../events/SDL_mouse_c.h"
 
 void
-WIN_AddMouse(_THIS)
+WIN_InitMouse(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_Mouse mouse;
@@ -36,7 +36,7 @@ WIN_AddMouse(_THIS)
 }
 
 void
-WIN_DelMouse(_THIS)
+WIN_QuitMouse(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 

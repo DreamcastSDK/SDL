@@ -37,7 +37,6 @@ main(int argc, char *argv[])
     window_w = WINDOW_W;
     window_h = WINDOW_H;
     while (argc > 1) {
-        --argc;
         if (strcmp(argv[argc - 1], "-width") == 0) {
             window_w = atoi(argv[argc]);
             --argc;

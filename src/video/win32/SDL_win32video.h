@@ -28,11 +28,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define UNICODE
-#define WINVER  0x0410          // 0x0410 needed for AlphaBlend()
+#define WINVER  0x500           // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices()
 #include <windows.h>
 
 #include "SDL_win32events.h"
 #include "SDL_win32keyboard.h"
+#include "SDL_win32modes.h"
 #include "SDL_win32mouse.h"
 #include "SDL_win32window.h"
 

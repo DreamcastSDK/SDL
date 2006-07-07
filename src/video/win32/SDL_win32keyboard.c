@@ -26,7 +26,7 @@
 #include "../../events/SDL_keyboard_c.h"
 
 void
-WIN_AddKeyboard(_THIS)
+WIN_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_Keyboard keyboard;
@@ -36,7 +36,7 @@ WIN_AddKeyboard(_THIS)
 }
 
 void
-WIN_DelKeyboard(_THIS)
+WIN_QuitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 

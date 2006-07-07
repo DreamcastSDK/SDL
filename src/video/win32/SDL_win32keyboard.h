@@ -24,8 +24,8 @@
 #ifndef _SDL_win32keyboard_h
 #define _SDL_win32keyboard_h
 
-extern void WIN_AddKeyboard(_THIS);
-extern void WIN_DelKeyboard(_THIS);
+extern void WIN_InitKeyboard(_THIS);
+extern void WIN_QuitKeyboard(_THIS);
 
 #endif /* _SDL_win32keyboard_h */
 

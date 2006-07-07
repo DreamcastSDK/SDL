@@ -21,12 +21,13 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_win32mouse_h
-#define _SDL_win32mouse_h
+#ifndef _SDL_win32modes_h
+#define _SDL_win32modes_h
 
-extern void WIN_InitMouse(_THIS);
-extern void WIN_QuitMouse(_THIS);
+extern void WIN_InitModes(_THIS);
+extern int WIN_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
+extern void WIN_QuitModes(_THIS);
 
-#endif /* _SDL_win32mouse_h */
+#endif /* _SDL_win32modes_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

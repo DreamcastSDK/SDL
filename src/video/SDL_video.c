@@ -362,7 +362,7 @@ SDL_SelectVideoDisplay(int index)
     return _this->current_display;
 }
 
-void
+SDL_bool
 SDL_AddDisplayMode(int displayIndex, const SDL_DisplayMode * mode)
 {
     SDL_VideoDisplay *display = &_this->displays[displayIndex];
@@ -372,19 +372,27 @@ SDL_AddDisplayMode(int displayIndex, const SDL_DisplayMode * mode)
     /* Make sure we don't already have the mode in the list */
     modes = display->display_modes;
     nmodes = display->num_display_modes;
-    for (i = 0; i < nmodes; ++i) {
+    for (i = nmodes; i--;) {
         if (SDL_memcmp(mode, &modes[i], sizeof(*mode)) == 0) {
-            return;
+            return SDL_FALSE;
         }
     }
 
     /* Go ahead and add the new mode */
-    modes = SDL_realloc(modes, (nmodes + 1) * sizeof(*mode));
-    if (modes) {
+    if (nmodes == display->max_display_modes) {
+        modes =
+            SDL_realloc(modes,
+                        (display->max_display_modes + 32) * sizeof(*modes));
+        if (!modes) {
+            return SDL_FALSE;
+        }
         display->display_modes = modes;
-        modes[nmodes] = *mode;
-        display->num_display_modes++;
+        display->max_display_modes += 32;
     }
+    modes[nmodes] = *mode;
+    display->num_display_modes++;
+
+    return SDL_TRUE;
 }
 
 int
@@ -501,6 +509,8 @@ SDL_GetClosestDisplayMode(const SDL_DisplayMode * mode,
         } else {
             closest->refresh_rate = mode->refresh_rate;
         }
+        closest->driverdata = match->driverdata;
+
         /* Pick some reasonable defaults if the app and driver don't care */
         if (!closest->format) {
             closest->format = SDL_PixelFormat_RGB888;
@@ -521,7 +531,7 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
 {
     SDL_VideoDisplay *display;
     SDL_DisplayMode display_mode;
-    int ncolors;
+    int i, ncolors;
 
     if (!_this) {
         SDL_SetError("Video subsystem has not been initialized");
@@ -562,6 +572,12 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         return 0;
     }
 
+    /* Actually change the display mode */
+    if (_this->SetDisplayMode(_this, &display_mode) < 0) {
+        return -1;
+    }
+    display->current_mode = display_mode;
+
     /* Set up a palette, if necessary */
     if (SDL_ISPIXELFORMAT_INDEXED(display_mode.format)) {
         ncolors = (1 << SDL_BITSPERPIXEL(display_mode.format));
@@ -584,7 +600,17 @@ SDL_SetDisplayMode(const SDL_DisplayMode * mode)
         }
     }
 
-    return _this->SetDisplayMode(_this, &display_mode);
+    /* Move any fullscreen windows into position */
+    for (i = 0; i < display->num_windows; ++i) {
+        SDL_Window *window = &display->windows[i];
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            SDL_SetWindowPosition(window->id,
+                                  ((display_mode.w - window->w) / 2),
+                                  ((display_mode.h - window->h) / 2));
+        }
+    }
+
+    return 0;
 }
 
 int
@@ -662,8 +688,14 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     SDL_zero(window);
     window.id = _this->next_object_id++;
     window.title = title ? SDL_strdup(title) : NULL;
-    window.x = x;
-    window.y = y;
+    if (flags & SDL_WINDOW_FULLSCREEN) {
+        const SDL_DisplayMode *mode = &SDL_CurrentDisplay.current_mode;
+        window.x = (mode->w - w) / 2;
+        window.y = (mode->h - h) / 2;
+    } else {
+        window.x = x;
+        window.y = y;
+    }
     window.w = w;
     window.h = h;
     window.flags = (flags & allowed_flags);
@@ -1813,14 +1845,34 @@ SDL_VideoQuit(void)
             SDL_free(display->windows);
             display->windows = NULL;
         }
+        display->num_windows = 0;
+    }
+    _this->VideoQuit(_this);
+
+    for (i = _this->num_displays; i--;) {
+        SDL_VideoDisplay *display = &_this->displays[i];
+        for (j = display->num_display_modes; j--;) {
+            if (display->display_modes[j].driverdata) {
+                SDL_free(display->display_modes[j].driverdata);
+                display->display_modes[j].driverdata = NULL;
+            }
+        }
+        if (display->display_modes) {
+            SDL_free(display->display_modes);
+            display->display_modes = NULL;
+        }
+        if (display->desktop_mode.driverdata) {
+            SDL_free(display->desktop_mode.driverdata);
+            display->desktop_mode.driverdata = NULL;
+        }
         if (display->palette) {
             SDL_FreePalette(display->palette);
             display->palette = NULL;
         }
     }
-    _this->VideoQuit(_this);
     if (_this->displays) {
         SDL_free(_this->displays);
+        _this->displays = NULL;
     }
     _this->free(_this);
     _this = NULL;

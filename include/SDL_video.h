@@ -75,6 +75,7 @@ typedef struct
     int w;                      /**< width */
     int h;                      /**< height */
     int refresh_rate;           /**< refresh rate (or zero for unspecified) */
+    void *driverdata;           /**< driver-specific data, initialize to 0 */
 } SDL_DisplayMode;
 
 /**

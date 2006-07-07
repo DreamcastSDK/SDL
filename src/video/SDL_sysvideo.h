@@ -131,6 +131,7 @@ struct SDL_Window
  */
 struct SDL_VideoDisplay
 {
+    int max_display_modes;
     int num_display_modes;
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
@@ -178,7 +179,7 @@ struct SDL_VideoDevice
      * should have their data updated accordingly, including the
      * display surfaces associated with them.
      */
-    int (*SetDisplayMode) (_THIS, const SDL_DisplayMode * mode);
+    int (*SetDisplayMode) (_THIS, SDL_DisplayMode * mode);
 
     /* Sets the color entries of the display palette to those in 'colors'.
        The return value is 0 if all entries could be set properly or -1
@@ -410,8 +411,8 @@ extern VideoBootStrap glSDL_bootstrap;
 extern SDL_VideoDevice *SDL_GetVideoDevice();
 extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 extern int SDL_AddVideoDisplay(const SDL_VideoDisplay * display);
-extern void SDL_AddDisplayMode(int displayIndex,
-                               const SDL_DisplayMode * mode);
+extern SDL_bool SDL_AddDisplayMode(int displayIndex,
+                                   const SDL_DisplayMode * mode);
 extern void SDL_AddRenderDriver(int displayIndex,
                                 const SDL_RenderDriver * driver);
 
