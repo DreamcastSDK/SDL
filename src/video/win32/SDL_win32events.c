@@ -814,6 +814,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         return (0);
 
+        /* We'll do our own drawing, prevent flicker */
+    case WM_ERASEBKGND:
+        {
+        }
+        return (1);
+
     case WM_SYSCOMMAND:
         {
             /* Don't start the screensaver or blank the monitor in fullscreen apps */

@@ -313,8 +313,7 @@ typedef enum
     SDL_GL_STEREO,
     SDL_GL_MULTISAMPLEBUFFERS,
     SDL_GL_MULTISAMPLESAMPLES,
-    SDL_GL_ACCELERATED_VISUAL,
-    SDL_GL_SWAP_CONTROL
+    SDL_GL_ACCELERATED_VISUAL
 } SDL_GLattr;
 
 
@@ -1377,6 +1376,7 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
  * \fn int SDL_SoftStretch(SDL_Surface * src, SDL_Rect * srcrect, SDL_Surface * dst, SDL_Rect * dstrect)
  *
  * \brief Perform a fast, low quality, stretch blit between two surfaces of the same pixel format.
+ *
  * \note This function uses a static buffer, and is not thread-safe.
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
@@ -1388,39 +1388,98 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
 /* OpenGL support functions.                                                 */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-/*
- * Dynamically load an OpenGL library, or the default one if path is NULL
+/**
+ * \fn int SDL_GL_LoadLibrary(const char *path)
  *
- * If you do this, you need to retrieve all of the GL functions used in
- * your program from the dynamic library using SDL_GL_GetProcAddress().
+ * \brief Dynamically load an OpenGL library.
+ *
+ * \param path The platform dependent OpenGL library name, or NULL to open the default OpenGL library
+ *
+ * \return 0 on success, or -1 if the library couldn't be loaded
+ *
+ * \note If you do this, you need to retrieve all of the GL functions used in
+ *       your program from the dynamic library using SDL_GL_GetProcAddress().
+ *
+ * \sa SDL_GL_GetProcAddress()
  */
 extern DECLSPEC int SDLCALL SDL_GL_LoadLibrary(const char *path);
 
-/*
- * Get the address of a GL function
+/**
+ * \fn void *SDL_GL_GetProcAddress(const char *proc)
+ *
+ * \brief Get the address of an OpenGL function.
  */
 extern DECLSPEC void *SDLCALL SDL_GL_GetProcAddress(const char *proc);
 
-/*
- * Set an attribute of the OpenGL subsystem before window creation.
+/**
+ * \fn int SDL_GL_SetAttribute(SDL_GLattr attr, int value)
+ *
+ * \brief Set an OpenGL window attribute before window creation.
  */
 extern DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
 
-/*
- * Get an attribute of the OpenGL subsystem from the windowing
- * interface, such as glX. This is of course different from getting
- * the values from SDL's internal OpenGL subsystem, which only
- * stores the values you request before initialization.
+/**
+ * \fn int SDL_GL_GetWindowAttribute(SDL_WindowID windowID, SDL_GLattr attr, int *value)
  *
- * Developers should track the values they pass into SDL_GL_SetAttribute
- * themselves if they want to retrieve these values.
+ * \brief Get the actual value for an OpenGL window attribute.
  */
-extern DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
+extern DECLSPEC int SDLCALL SDL_GL_GetWindowAttribute(SDL_WindowID windowID,
+                                                      SDL_GLattr attr,
+                                                      int *value);
 
-/*
+/**
+ * \fn SDL_GLContext SDL_GL_CreateContext(SDL_WindowID windowID)
+ *
+ * \brief Create an OpenGL context for use with an OpenGL window, and make it current.
+ *
+ * \sa SDL_GL_DeleteContext()
+ */
+extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_WindowID
+                                                           windowID);
+
+/**
+ * \fn int SDL_GL_MakeCurrent(SDL_WindowID windowID, SDL_GLContext context)
+ *
+ * \brief Set up an OpenGL context for rendering into an OpenGL window.
+ *
+ * \note The context must have been created with a compatible window.
+ */
+extern DECLSPEC int SDLCALL SDL_GL_MakeCurrent(SDL_WindowID windowID,
+                                               SDL_GLContext context);
+
+/**
+ * \fn int SDL_GL_SetSwapInterval(int interval)
+ *
+ * \brief Set the swap interval for the current OpenGL context.
+ *
+ * \sa SDL_GL_GetSwapInterval()
+ */
+extern DECLSPEC int SDLCALL SDL_GL_SetSwapInterval(int interval);
+
+/**
+ * \fn int SDL_GL_GetSwapInterval(void)
+ *
+ * \brief Get the swap interval for the current OpenGL context.
+ *
+ * \sa SDL_GL_SetSwapInterval()
+ */
+extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(void);
+
+/**
+ * \fn void SDL_GL_SwapBuffers(void)
+ *
  * Swap the OpenGL buffers, if double-buffering is supported.
  */
 extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers(void);
+
+/**
+ * \fn void SDL_GL_DeleteContext(SDL_GLContext context)
+ *
+ * \brief Delete an OpenGL context.
+ *
+ * \sa SDL_GL_CreateContext()
+ */
+extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
 /*
  * Calculate the intersection of two rectangles
