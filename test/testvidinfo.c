@@ -417,7 +417,7 @@ int
 main(int argc, char *argv[])
 {
     const SDL_VideoInfo *info;
-    int i, n;
+    int i, d, n;
     const char *driver;
     const SDL_DisplayMode *mode;
     int bpp;
@@ -448,39 +448,46 @@ main(int argc, char *argv[])
         printf("Video driver: %s\n", driver);
     }
     printf("Number of displays: %d\n", SDL_GetNumVideoDisplays());
-    mode = SDL_GetDesktopDisplayMode();
-    SDL_PixelFormatEnumToMasks(mode->format, &bpp, &Rmask, &Gmask, &Bmask,
-                               &Amask);
-    printf("Current display: %dx%d@%dHz, %d bits-per-pixel\n", mode->w,
-           mode->h, mode->refresh_rate, bpp);
-    if (Rmask || Gmask || Bmask) {
-        printf("	Red Mask = 0x%.8x\n", Rmask);
-        printf("	Green Mask = 0x%.8x\n", Gmask);
-        printf("	Blue Mask = 0x%.8x\n", Bmask);
-        if (Amask)
-            printf("	Alpha Mask = 0x%.8x\n", Amask);
-    }
-    /* Print available fullscreen video modes */
-    nmodes = SDL_GetNumDisplayModes();
-    if (nmodes == 0) {
-        printf("No available fullscreen video modes\n");
-    } else {
-        printf("Fullscreen video modes:\n");
-        for (i = 0; i < nmodes; ++i) {
-            mode = SDL_GetDisplayMode(i);
-            SDL_PixelFormatEnumToMasks(mode->format, &bpp, &Rmask,
-                                       &Gmask, &Bmask, &Amask);
-            printf("Mode %d: %dx%d@%dHz, %d bits-per-pixel\n", i,
-                   mode->w, mode->h, mode->refresh_rate, bpp);
-            if (Rmask || Gmask || Bmask) {
-                printf("	Red Mask = 0x%.8x\n", Rmask);
-                printf("	Green Mask = 0x%.8x\n", Gmask);
-                printf("	Blue Mask = 0x%.8x\n", Bmask);
-                if (Amask)
-                    printf("	Alpha Mask = 0x%.8x\n", Amask);
+    for (d = 0; d < SDL_GetNumVideoDisplays(); ++d) {
+        printf("Display %d:\n", d);
+        SDL_SelectVideoDisplay(d);
+
+        mode = SDL_GetDesktopDisplayMode();
+        SDL_PixelFormatEnumToMasks(mode->format, &bpp, &Rmask, &Gmask, &Bmask,
+                                   &Amask);
+        printf("  Current mode: %dx%d@%dHz, %d bits-per-pixel\n", mode->w,
+               mode->h, mode->refresh_rate, bpp);
+        if (Rmask || Gmask || Bmask) {
+            printf("      Red Mask = 0x%.8x\n", Rmask);
+            printf("      Green Mask = 0x%.8x\n", Gmask);
+            printf("      Blue Mask = 0x%.8x\n", Bmask);
+            if (Amask)
+                printf("      Alpha Mask = 0x%.8x\n", Amask);
+        }
+
+        /* Print available fullscreen video modes */
+        nmodes = SDL_GetNumDisplayModes();
+        if (nmodes == 0) {
+            printf("No available fullscreen video modes\n");
+        } else {
+            printf("  Fullscreen video modes:\n");
+            for (i = 0; i < nmodes; ++i) {
+                mode = SDL_GetDisplayMode(i);
+                SDL_PixelFormatEnumToMasks(mode->format, &bpp, &Rmask,
+                                           &Gmask, &Bmask, &Amask);
+                printf("    Mode %d: %dx%d@%dHz, %d bits-per-pixel\n", i,
+                       mode->w, mode->h, mode->refresh_rate, bpp);
+                if (Rmask || Gmask || Bmask) {
+                    printf("        Red Mask = 0x%.8x\n", Rmask);
+                    printf("        Green Mask = 0x%.8x\n", Gmask);
+                    printf("        Blue Mask = 0x%.8x\n", Bmask);
+                    if (Amask)
+                        printf("        Alpha Mask = 0x%.8x\n", Amask);
+                }
             }
         }
     }
+
     info = SDL_GetVideoInfo();
     if (info->wm_available) {
         printf("A window manager is available\n");

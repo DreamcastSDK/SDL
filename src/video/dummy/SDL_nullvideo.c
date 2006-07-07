@@ -50,7 +50,7 @@
 
 /* Initialization/Query functions */
 static int DUMMY_VideoInit(_THIS);
-static int DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode);
+static int DUMMY_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
 static void DUMMY_VideoQuit(_THIS);
 
 /* DUMMY driver bootstrap functions */
@@ -120,9 +120,8 @@ DUMMY_VideoInit(_THIS)
 }
 
 static int
-DUMMY_SetDisplayMode(_THIS, const SDL_DisplayMode * mode)
+DUMMY_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
-    SDL_CurrentDisplay.current_mode = *mode;
     return 0;
 }
 

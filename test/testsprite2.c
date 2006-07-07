@@ -122,6 +122,8 @@ int
 main(int argc, char *argv[])
 {
     int window_w, window_h;
+    Uint32 window_flags = SDL_WINDOW_SHOWN;
+    SDL_DisplayMode *mode, fullscreen_mode;
     int i, done;
     SDL_Event event;
     Uint32 then, now, frames;
@@ -137,12 +139,15 @@ main(int argc, char *argv[])
     window_w = WINDOW_W;
     window_h = WINDOW_H;
     while (argc > 1) {
-        --argc;
         if (strcmp(argv[argc - 1], "-width") == 0) {
             window_w = atoi(argv[argc]);
             --argc;
         } else if (strcmp(argv[argc - 1], "-height") == 0) {
             window_h = atoi(argv[argc]);
+            --argc;
+        } else if (strcmp(argv[argc - 1], "-fullscreen") == 0) {
+            num_windows = 1;
+            window_flags |= SDL_WINDOW_FULLSCREEN;
             --argc;
         } else if (isdigit(argv[argc][0])) {
             num_sprites = atoi(argv[argc]);
@@ -153,8 +158,16 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Set the desktop mode, we don't care what it is */
-    if (SDL_SetDisplayMode(NULL) < 0) {
+    if (window_flags & SDL_WINDOW_FULLSCREEN) {
+        SDL_zero(fullscreen_mode);
+        fullscreen_mode.w = window_w;
+        fullscreen_mode.h = window_h;
+        mode = &fullscreen_mode;
+    } else {
+        /* Set the desktop mode, we don't care what it is */
+        mode = NULL;
+    }
+    if (SDL_SetDisplayMode(mode) < 0) {
         fprintf(stderr, "Couldn't set display mode: %s\n", SDL_GetError());
         quit(2);
     }
@@ -173,7 +186,7 @@ main(int argc, char *argv[])
         windows[i] =
             SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED,
                              SDL_WINDOWPOS_UNDEFINED, window_w, window_h,
-                             SDL_WINDOW_SHOWN);
+                             window_flags);
         if (!windows[i]) {
             fprintf(stderr, "Couldn't create window: %s\n", SDL_GetError());
             quit(2);

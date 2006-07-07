@@ -32,7 +32,6 @@
 
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
-static int WIN_SetDisplayMode(_THIS, const SDL_DisplayMode * mode);
 static void WIN_VideoQuit(_THIS);
 
 /* WIN32 driver bootstrap functions */
@@ -108,74 +107,21 @@ VideoBootStrap WIN32_bootstrap = {
 int
 WIN_VideoInit(_THIS)
 {
-    int bmi_size;
-    LPBITMAPINFO bmi;
-    SDL_DisplayMode mode;
-
-    /* Find out the desktop mode */
-    mode.format = SDL_PixelFormat_Unknown;
-    mode.w = GetSystemMetrics(SM_CXSCREEN);
-    mode.h = GetSystemMetrics(SM_CYSCREEN);
-    mode.refresh_rate = 0;
-
-    bmi_size = sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD);
-    bmi = (LPBITMAPINFO) SDL_malloc(bmi_size);
-    if (bmi) {
-        HDC hdc;
-        HBITMAP hbm;
-
-        SDL_memset(bmi, 0, bmi_size);
-        bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-        hdc = GetDC(NULL);
-        hbm = CreateCompatibleBitmap(hdc, 1, 1);
-        GetDIBits(hdc, hbm, 0, 1, NULL, bmi, DIB_RGB_COLORS);
-        GetDIBits(hdc, hbm, 0, 1, NULL, bmi, DIB_RGB_COLORS);
-        DeleteObject(hbm);
-        ReleaseDC(NULL, hdc);
-        if (bmi->bmiHeader.biCompression == BI_BITFIELDS) {
-            switch (*(Uint32 *) bmi->bmiColors) {
-            case 0x00FF0000:
-                mode.format = SDL_PixelFormat_RGB888;
-                break;
-            case 0x000000FF:
-                mode.format = SDL_PixelFormat_BGR888;
-                break;
-            case 0xF800:
-                mode.format = SDL_PixelFormat_RGB565;
-                break;
-            case 0x7C00:
-                mode.format = SDL_PixelFormat_RGB555;
-                break;
-            }
-        } else if (bmi->bmiHeader.biBitCount == 8) {
-            mode.format = SDL_PixelFormat_Index8;
-        }
-    }
-    SDL_AddBasicVideoDisplay(&mode);
+    WIN_InitModes(_this);
     SDL_AddRenderDriver(0, &SDL_DIB_RenderDriver);
 
-    SDL_zero(mode);
-    SDL_AddDisplayMode(0, &mode);
+    WIN_InitKeyboard(_this);
+    WIN_InitMouse(_this);
 
-    WIN_AddKeyboard(_this);
-    WIN_AddMouse(_this);
-
-    /* We're done! */
-    return 0;
-}
-
-static int
-WIN_SetDisplayMode(_THIS, const SDL_DisplayMode * mode)
-{
-    SDL_CurrentDisplay.current_mode = *mode;
     return 0;
 }
 
 void
 WIN_VideoQuit(_THIS)
 {
-    WIN_DelKeyboard(_this);
-    WIN_DelMouse(_this);
+    WIN_QuitModes(_this);
+    WIN_QuitKeyboard(_this);
+    WIN_QuitMouse(_this);
 }
 
 /* vim: set ts=4 sw=4 expandtab: */
