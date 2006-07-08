@@ -485,7 +485,8 @@ SDL_SetKeyboardFocus(int index, SDL_WindowID windowID)
             }
         }
         if (!focus) {
-            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+            SDL_SendWindowEvent(keyboard->focus, SDL_WINDOWEVENT_FOCUS_LOST,
+                                0, 0);
         }
     }
 
@@ -504,7 +505,8 @@ SDL_SetKeyboardFocus(int index, SDL_WindowID windowID)
             }
         }
         if (!focus) {
-            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+            SDL_SendWindowEvent(keyboard->focus, SDL_WINDOWEVENT_FOCUS_GAINED,
+                                0, 0);
         }
     }
 }
