@@ -28,8 +28,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #define UNICODE
-#define WINVER  0x500           // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices()
+#define WINVER  0x500           /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices() */
 #include <windows.h>
+
+#if SDL_VIDEO_RENDER_D3D
+#include <d3d9.h>
+#endif
 
 #include "SDL_win32events.h"
 #include "SDL_win32keyboard.h"
@@ -49,6 +53,10 @@
 
 typedef struct SDL_VideoData
 {
+#if SDL_VIDEO_RENDER_D3D
+    HANDLE d3dDLL;
+    IDirect3D9 *d3d;
+#endif
     int mouse;
     int keyboard;
 } SDL_VideoData;

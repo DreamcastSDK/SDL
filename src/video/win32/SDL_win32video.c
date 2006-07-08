@@ -28,7 +28,8 @@
 #include "../SDL_pixels_c.h"
 
 #include "SDL_win32video.h"
-#include "SDL_dibrender.h"
+#include "SDL_d3drender.h"
+#include "SDL_gdirender.h"
 
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
@@ -45,7 +46,15 @@ WIN_Available(void)
 static void
 WIN_DeleteDevice(SDL_VideoDevice * device)
 {
+    SDL_VideoData *data = (SDL_VideoData *) device->driverdata;
+
     SDL_UnregisterApp();
+#if SDL_VIDEO_RENDER_D3D
+    if (data->d3d) {
+        IDirect3D9_Release(data->d3d);
+        FreeLibrary(data->d3dDLL);
+    }
+#endif
     SDL_free(device->driverdata);
     SDL_free(device);
 }
@@ -54,22 +63,41 @@ static SDL_VideoDevice *
 WIN_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
+    SDL_VideoData *data;
 
     SDL_RegisterApp(NULL, 0, NULL);
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device) {
-        device->driverdata =
-            (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+        data = (struct SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
     }
-    if (!device || !device->driverdata) {
+    if (!device || !data) {
         SDL_OutOfMemory();
         if (device) {
             SDL_free(device);
         }
         return NULL;
     }
+    device->driverdata = data;
+
+#if SDL_VIDEO_RENDER_D3D
+    data->d3dDLL = LoadLibrary(TEXT("D3D9.DLL"));
+    if (data->d3dDLL) {
+        IDirect3D9 *WINAPI(*D3DCreate) (UINT SDKVersion);
+
+        D3DCreate =
+            (IDirect3D9 * WINAPI(*)(UINT)) GetProcAddress(data->d3dDLL,
+                                                          "Direct3DCreate9");
+        if (D3DCreate) {
+            data->d3d = D3DCreate(D3D_SDK_VERSION);
+        }
+        if (!data->d3d) {
+            FreeLibrary(data->d3dDLL);
+            data->d3dDLL = NULL;
+        }
+    }
+#endif /* SDL_VIDEO_RENDER_D3D */
 
     /* Set the function pointers */
     device->VideoInit = WIN_VideoInit;
@@ -108,7 +136,13 @@ int
 WIN_VideoInit(_THIS)
 {
     WIN_InitModes(_this);
-    SDL_AddRenderDriver(0, &SDL_DIB_RenderDriver);
+
+#if SDL_VIDEO_RENDER_GDI
+    GDI_AddRenderDriver(_this);
+#endif
+#if SDL_VIDEO_RENDER_D3D
+    D3D_AddRenderDriver(_this);
+#endif
 
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);

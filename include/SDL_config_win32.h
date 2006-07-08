@@ -153,10 +153,14 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_DRIVER_DUMMY	1
 #define SDL_VIDEO_DRIVER_WIN32	1
 
+#define SDL_VIDEO_RENDER_D3D	1
+#define SDL_VIDEO_RENDER_GDI	1
+
 /* Enable OpenGL support */
 #ifndef _WIN32_WCE
 #define SDL_VIDEO_OPENGL	1
 #define SDL_VIDEO_OPENGL_WGL	1
+#define SDL_VIDEO_RENDER_OGL	1
 #endif
 
 /* Enable assembly routines (Win64 doesn't have inline asm) */

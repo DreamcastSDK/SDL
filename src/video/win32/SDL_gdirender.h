@@ -23,6 +23,8 @@
 
 /* SDL surface based renderer implementation */
 
-extern SDL_RenderDriver SDL_DIB_RenderDriver;
+#if SDL_VIDEO_RENDER_GDI
+extern void GDI_AddRenderDriver(_THIS);
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
