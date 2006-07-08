@@ -389,8 +389,8 @@ extern DECLSPEC int SDLCALL SDL_PollEvent(SDL_Event * event);
 extern DECLSPEC int SDLCALL SDL_WaitEvent(SDL_Event * event);
 
 /* Add an event to the event queue.
-   This function returns 0 on success, or -1 if the event queue was full
-   or there was some other error.
+   This function returns 1 on success, 0 if the event was filtered,
+   or -1 if the event queue was full or there was some other error.
  */
 extern DECLSPEC int SDLCALL SDL_PushEvent(SDL_Event * event);
 
@@ -422,9 +422,10 @@ extern DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter,
 
 /*
   Return the current event filter - can be used to "chain" filters.
-  If there is no event filter set, this function returns NULL.
+  If there is no event filter set, this function returns SDL_FALSE.
 */
-extern DECLSPEC SDL_EventFilter SDLCALL SDL_GetEventFilter(void **userdata);
+extern DECLSPEC SDL_bool SDLCALL SDL_GetEventFilter(SDL_EventFilter * filter,
+                                                    void **userdata);
 
 /*
   Run the filter function on the current event queue, removing any

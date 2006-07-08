@@ -435,9 +435,13 @@ SDL_WaitEvent(SDL_Event * event)
 int
 SDL_PushEvent(SDL_Event * event)
 {
-    if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0) <= 0)
+    if (SDL_EventOK && !SDL_EventOK(SDL_EventOKParam, event)) {
+        return 0;
+    }
+    if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0) <= 0) {
         return -1;
-    return 0;
+    }
+    return 1;
 }
 
 void
@@ -451,13 +455,16 @@ SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
     while (SDL_PollEvent(&bitbucket) > 0);
 }
 
-SDL_EventFilter
-SDL_GetEventFilter(void **userdata)
+SDL_bool
+SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata)
 {
+    if (filter) {
+        *filter = SDL_EventOK;
+    }
     if (userdata) {
         *userdata = SDL_EventOKParam;
     }
-    return (SDL_EventOK);
+    return SDL_EventOK ? SDL_TRUE : SDL_FALSE;
 }
 
 void
@@ -536,11 +543,7 @@ SDL_SendSysWMEvent(SDL_SysWMmsg * message)
         SDL_memset(&event, 0, sizeof(event));
         event.type = SDL_SYSWMEVENT;
         event.syswm.msg = message;
-        if ((SDL_EventOK == NULL)
-            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     /* Update internal event state */
     return (posted);

@@ -664,10 +664,7 @@ SDL_SendKeyboardKey(int index, Uint8 state, Uint8 scancode, SDLKey key)
             keyboard->repeat.firsttime = 1;
             keyboard->repeat.timestamp = 1;
         }
-        if ((SDL_EventOK == NULL) || SDL_EventOK(SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return (posted);
 }
@@ -690,10 +687,7 @@ SDL_SendKeyboardText(int index, const char *text)
         event.text.which = (Uint8) index;
         SDL_strlcpy(event.text.text, text, SDL_arraysize(event.text.text));
         event.key.windowID = keyboard->focus;
-        if ((SDL_EventOK == NULL) || SDL_EventOK(SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return (posted);
 }
@@ -726,11 +720,7 @@ SDL_CheckKeyRepeat(void)
             } else {
                 if (interval > (Uint32) keyboard->repeat.interval) {
                     keyboard->repeat.timestamp = now;
-                    if ((SDL_EventOK == NULL)
-                        || SDL_EventOK(SDL_EventOKParam,
-                                       &keyboard->repeat.evt)) {
-                        SDL_PushEvent(&keyboard->repeat.evt);
-                    }
+                    SDL_PushEvent(&keyboard->repeat.evt);
                 }
             }
         }

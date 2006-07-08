@@ -114,11 +114,7 @@ SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
         event.window.data1 = data1;
         event.window.data2 = data2;
         event.window.windowID = windowID;
-        if ((SDL_EventOK == NULL)
-            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return (posted);
 }

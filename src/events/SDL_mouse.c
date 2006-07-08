@@ -371,11 +371,7 @@ SDL_SendMouseMotion(int index, int relative, int x, int y)
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         event.motion.windowID = mouse->focus;
-        if ((SDL_EventOK == NULL)
-            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
 }
@@ -425,11 +421,7 @@ SDL_SendMouseButton(int index, Uint8 state, Uint8 button)
         event.button.x = mouse->x;
         event.button.y = mouse->y;
         event.button.windowID = mouse->focus;
-        if ((SDL_EventOK == NULL)
-            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
 }
@@ -452,11 +444,7 @@ SDL_SendMouseWheel(int index, int motion)
         event.wheel.which = (Uint8) index;
         event.wheel.motion = motion;
         event.wheel.windowID = mouse->focus;
-        if ((SDL_EventOK == NULL)
-            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            posted = 1;
-            SDL_PushEvent(&event);
-        }
+        posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;
 }
