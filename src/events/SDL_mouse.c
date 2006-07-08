@@ -290,7 +290,7 @@ SDL_SetMouseFocus(int index, SDL_WindowID windowID)
             }
         }
         if (!focus) {
-            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_LEAVE, 0, 0);
+            SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_LEAVE, 0, 0);
         }
     }
 
@@ -309,7 +309,7 @@ SDL_SetMouseFocus(int index, SDL_WindowID windowID)
             }
         }
         if (!focus) {
-            SDL_SendWindowEvent(windowID, SDL_WINDOWEVENT_ENTER, 0, 0);
+            SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_ENTER, 0, 0);
         }
     }
 }

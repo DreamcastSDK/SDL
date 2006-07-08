@@ -441,18 +441,33 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
                 if (keyboard && keyboard->focus != data->windowID) {
                     SDL_SetKeyboardFocus(index, data->windowID);
+
+                    if (SDL_GetWindowFlags(data->windowID) &
+                        SDL_WINDOW_INPUT_GRABBED) {
+                        RECT rect;
+
+                        GetClientRect(hwnd, &rect);
+                        ClientToScreen(hwnd, (LPPOINT) & rect);
+                        ClientToScreen(hwnd, (LPPOINT) & rect + 1);
+                        ClipCursor(&rect);
+                    }
                 }
-                /* FIXME: Restore mode state (mode, gamma, grab) */
+                /* FIXME: Restore mode state (mode, gamma) */
                 /* FIXME: Update keyboard state */
             } else {
                 if (keyboard && keyboard->focus == data->windowID) {
                     SDL_SetKeyboardFocus(index, 0);
+
+                    if (SDL_GetWindowFlags(data->windowID) &
+                        SDL_WINDOW_INPUT_GRABBED) {
+                        ClipCursor(NULL);
+                    }
                 }
                 if (minimized) {
                     SDL_SendWindowEvent(data->windowID,
                                         SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 }
-                /* FIXME: Restore desktop state (mode, gamma, grab) */
+                /* FIXME: Restore desktop state (mode, gamma) */
             }
             return (0);
         }
@@ -749,12 +764,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
+            Uint32 window_flags;
 
             GetClientRect(hwnd, &rect);
             ClientToScreen(hwnd, (LPPOINT) & rect);
             ClientToScreen(hwnd, (LPPOINT) & rect + 1);
 
-            if (SDL_GetWindowFlags(data->windowID) & SDL_WINDOW_INPUT_GRABBED) {
+            window_flags = SDL_GetWindowFlags(data->windowID);
+            if ((window_flags & SDL_WINDOW_INPUT_GRABBED) &&
+                (window_flags & SDL_WINDOW_KEYBOARD_FOCUS)) {
                 ClipCursor(&rect);
             }
 
