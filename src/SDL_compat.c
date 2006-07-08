@@ -153,9 +153,6 @@ SDL_ListModes(SDL_PixelFormat * format, Uint32 flags)
     return modes;
 }
 
-static SDL_EventFilter orig_eventfilter;
-static void *orig_eventfilterparam;
-
 static int
 SDL_CompatEventFilter(void *userdata, SDL_Event * event)
 {
@@ -269,11 +266,7 @@ SDL_CompatEventFilter(void *userdata, SDL_Event * event)
         }
 
     }
-    if (orig_eventfilter) {
-        return orig_eventfilter(orig_eventfilterparam, event);
-    } else {
-        return 1;
-    }
+    return 1;
 }
 
 static int
@@ -291,6 +284,26 @@ SDL_VideoPaletteChanged(void *userdata, SDL_Palette * palette)
     return 0;
 }
 
+static void
+GetEnvironmentWindowPosition(int w, int h, int *x, int *y)
+{
+    const char *window = SDL_getenv("SDL_VIDEO_WINDOW_POS");
+    const char *center = SDL_getenv("SDL_VIDEO_CENTERED");
+    if (window) {
+        if (SDL_sscanf(window, "%d,%d", x, y) == 2) {
+            return;
+        }
+        if (SDL_strcmp(window, "center") == 0) {
+            center = window;
+        }
+    }
+    if (center) {
+        const SDL_DisplayMode *current = SDL_GetDesktopDisplayMode();
+        *x = (current->w - w) / 2;
+        *y = (current->h - h) / 2;
+    }
+}
+
 SDL_Surface *
 SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 {
@@ -298,6 +311,8 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     void *filterparam;
     const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
+    int window_x = SDL_WINDOWPOS_UNDEFINED;
+    int window_y = SDL_WINDOWPOS_UNDEFINED;
     Uint32 window_flags;
     Uint32 desktop_format;
     Uint32 desired_format;
@@ -321,15 +336,15 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
         SDL_FreeSurface(SDL_VideoSurface);
         SDL_VideoSurface = NULL;
     }
+    if (SDL_VideoWindow) {
+        SDL_GetWindowPosition(SDL_VideoWindow, &window_x, &window_y);
+    }
     SDL_DestroyWindow(SDL_VideoWindow);
 
     /* Set up the event filter */
-    filter = SDL_GetEventFilter(&filterparam);
-    if (filter != SDL_CompatEventFilter) {
-        orig_eventfilter = filter;
-        orig_eventfilterparam = filterparam;
+    if (!SDL_GetEventFilter(NULL, NULL)) {
+        SDL_SetEventFilter(SDL_CompatEventFilter, NULL);
     }
-    SDL_SetEventFilter(SDL_CompatEventFilter, NULL);
 
     /* Create a new window */
     window_flags = SDL_WINDOW_SHOWN;
@@ -345,9 +360,11 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     if (flags & SDL_NOFRAME) {
         window_flags |= SDL_WINDOW_BORDERLESS;
     }
+    if (SDL_getenv("SDL_WINDOW_POS")) {
+    }
+    GetEnvironmentWindowPosition(width, height, &window_x, &window_y);
     SDL_VideoWindow =
-        SDL_CreateWindow(wm_title, SDL_WINDOWPOS_UNDEFINED,
-                         SDL_WINDOWPOS_UNDEFINED, width, height,
+        SDL_CreateWindow(wm_title, window_x, window_y, width, height,
                          window_flags);
     if (!SDL_VideoWindow) {
         return NULL;

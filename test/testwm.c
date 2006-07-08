@@ -175,10 +175,17 @@ HotKey_Quit(void)
     SDL_PushEvent(&event);
 }
 
+static int SDLCALL(*old_filterfunc) (void *, SDL_Event *);
+static void *old_filterdata;
+
 int SDLCALL
 FilterEvents(void *userdata, SDL_Event * event)
 {
     static int reallyquit = 0;
+
+    if (old_filterfunc) {
+        old_filterfunc(old_filterdata, event);
+    }
 
     switch (event->type) {
 
@@ -344,6 +351,7 @@ main(int argc, char *argv[])
     }
 
     /* Set an event filter that discards everything but QUIT */
+    SDL_GetEventFilter(&old_filterfunc, &old_filterdata);
     SDL_SetEventFilter(FilterEvents, NULL);
 
     /* Ignore key up events, they don't even get filtered */
