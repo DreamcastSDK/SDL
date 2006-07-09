@@ -162,14 +162,7 @@ main(int argc, char *argv[])
         SDL_zero(fullscreen_mode);
         fullscreen_mode.w = window_w;
         fullscreen_mode.h = window_h;
-        mode = &fullscreen_mode;
-    } else {
-        /* Set the desktop mode, we don't care what it is */
-        mode = NULL;
-    }
-    if (SDL_SetDisplayMode(mode) < 0) {
-        fprintf(stderr, "Couldn't set display mode: %s\n", SDL_GetError());
-        quit(2);
+        SDL_SetFullscreenDisplayMode(&fullscreen_mode);
     }
 
     /* Create the windows, initialize the renderers, and load the textures */

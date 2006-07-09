@@ -360,9 +360,8 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
     if (flags & SDL_NOFRAME) {
         window_flags |= SDL_WINDOW_BORDERLESS;
     }
-    if (SDL_getenv("SDL_WINDOW_POS")) {
-    }
     GetEnvironmentWindowPosition(width, height, &window_x, &window_y);
+    SDL_SetFullscreenDisplayMode(NULL);
     SDL_VideoWindow =
         SDL_CreateWindow(wm_title, window_x, window_y, width, height,
                          window_flags);
@@ -427,21 +426,9 @@ SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 
     /* Set the desired display mode */
     if (flags & SDL_FULLSCREEN) {
-        if (!SDL_GetClosestDisplayMode(&mode, &mode)) {
+        if (SDL_SetFullscreenDisplayMode(&mode) < 0) {
             return NULL;
         }
-    } else {
-        if (desktop_format) {
-            mode.format = desktop_format;
-        }
-        if (desktop_mode->w && desktop_mode->h) {
-            mode.w = desktop_mode->w;
-            mode.h = desktop_mode->h;
-        }
-        mode.refresh_rate = desktop_mode->refresh_rate;
-    }
-    if (SDL_SetDisplayMode(&mode) < 0) {
-        return NULL;
     }
 
     /* If we're in OpenGL mode, just create a stub surface and we're done! */

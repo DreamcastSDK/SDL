@@ -98,6 +98,7 @@ typedef struct
  * \sa SDL_RaiseWindow()
  * \sa SDL_RestoreWindow()
  * \sa SDL_SetWindowData()
+ * \sa SDL_SetWindowFullscreen()
  * \sa SDL_SetWindowGrab()
  * \sa SDL_SetWindowIcon()
  * \sa SDL_SetWindowPosition()
@@ -474,15 +475,28 @@ extern DECLSPEC SDL_DisplayMode *SDLCALL SDL_GetClosestDisplayMode(const
                                                                    * closest);
 
 /**
- * \fn int SDL_SetDisplayMode(const SDL_DisplayMode *mode)
+ * \fn int SDL_SetFullscreenDisplayMode(const SDL_DisplayMode *mode)
  *
- * \brief Set up the closest available mode on the current display.
+ * \brief Set the display mode used when a fullscreen window is visible
+ *        on the currently selected display.
  *
- * \param mode The desired display mode, or NULL to set the desktop mode.
+ * \param mode The mode to use, or NULL for the desktop mode.
  *
  * \return 0 on success, or -1 if setting the display mode failed.
+ *
+ * \sa SDL_SetWindowFullscreen()
  */
-extern DECLSPEC int SDLCALL SDL_SetDisplayMode(const SDL_DisplayMode * mode);
+extern DECLSPEC int SDLCALL SDL_SetFullscreenDisplayMode(const SDL_DisplayMode
+                                                         * mode);
+
+/**
+ * \fn const SDL_DisplayMode *SDL_GetFullscreenDisplayMode(void)
+ *
+ * \brief Query the display mode used when a fullscreen window is visible
+ *        on the currently selected display.
+ */
+extern DECLSPEC const SDL_DisplayMode *SDLCALL
+SDL_GetFullscreenDisplayMode(void);
 
 /**
  * \fn int SDL_SetDisplayPalette(const SDL_Color *colors, int firstcolor, int ncolors)
@@ -507,6 +521,57 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayPalette(SDL_Color * colors,
                                                   int ncolors);
 
 /**
+ * \fn int SDL_SetGamma(float red, float green, float blue)
+ *
+ * \brief Set the gamma correction for each of the color channels on the currently selected display.
+ *
+ * \return 0 on success, or -1 if setting the gamma isn't supported.
+ *
+ * \sa SDL_SetGammaRamp()
+ */
+extern DECLSPEC int SDLCALL SDL_SetGamma(float red, float green, float blue);
+
+/**
+ * \fn int SDL_SetGammaRamp(const Uint16 * red, const Uint16 * green, const Uint16 * blue)
+ *
+ * \brief Set the gamma ramp for the currently selected display.
+ *
+ * \param red The translation table for the red channel, or NULL
+ * \param green The translation table for the green channel, or NULL
+ * \param blue The translation table for the blue channel, or NULL
+ *
+ * \return 0 on success, or -1 if gamma ramps are unsupported.
+ *
+ * Set the gamma translation table for the red, green, and blue channels
+ * of the video hardware.  Each table is an array of 256 16-bit quantities,
+ * representing a mapping between the input and output for that channel.
+ * The input is the index into the array, and the output is the 16-bit
+ * gamma value at that index, scaled to the output color precision.
+ * 
+ * \sa SDL_GetGammaRamp()
+ */
+extern DECLSPEC int SDLCALL SDL_SetGammaRamp(const Uint16 * red,
+                                             const Uint16 * green,
+                                             const Uint16 * blue);
+
+/**
+ * \fn int SDL_GetGammaRamp(Uint16 * red, Uint16 * green, Uint16 * blue)
+ *
+ * \brief Get the gamma ramp for the currently selected display.
+ *
+ * \param red A pointer to a 256 element array of 16-bit quantities to hold the translation table for the red channel, or NULL.
+ * \param green A pointer to a 256 element array of 16-bit quantities to hold the translation table for the green channel, or NULL.
+ * \param blue A pointer to a 256 element array of 16-bit quantities to hold the translation table for the blue channel, or NULL.
+ * 
+ * \return 0 on success, or -1 if gamma ramps are unsupported.
+ *
+ * \sa SDL_SetGammaRamp()
+ */
+extern DECLSPEC int SDLCALL SDL_GetGammaRamp(Uint16 * red, Uint16 * green,
+                                             Uint16 * blue);
+
+
+/**
  * \fn SDL_WindowID SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
  *
  * \brief Create a window with the specified position, dimensions, and flags.
@@ -516,7 +581,7 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayPalette(SDL_Color * colors,
  * \param y The y position of the window
  * \param w The width of the window
  * \param h The height of the window
- * \param flags The flags for the window
+ * \param flags The flags for the window, a mask of any of the following: SDL_WINDOW_FULLSCREEN, SDL_WINDOW_OPENGL, SDL_WINDOW_SHOWN, SDL_WINDOW_BORDERLESS, SDL_WINDOW_RESIZABLE, SDL_WINDOW_MAXIMIZED, SDL_WINDOW_MINIMIZED, SDL_WINDOW_INPUT_GRABBED
  *
  * \return The id of the window created, or zero if window creation failed.
  *
@@ -702,13 +767,24 @@ extern DECLSPEC void SDLCALL SDL_MinimizeWindow(SDL_WindowID windowID);
 extern DECLSPEC void SDLCALL SDL_RestoreWindow(SDL_WindowID windowID);
 
 /**
+ * \fn int SDL_SetWindowFullscreen(SDL_WindowID windowID, int fullscreen)
+ *
+ * \brief Set the window's fullscreen state.
+ *
+ * \return 0 on success, or -1 if setting the display mode failed.
+ *
+ * \sa SDL_SetFullscreenDisplayMode()
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowFullscreen(SDL_WindowID windowID,
+                                                    int fullscreen);
+
+/**
  * \fn void SDL_SetWindowGrab(SDL_WindowID windowID, int mode)
  *
  * \brief Set the window's input grab mode.
  *
  * \param mode This is 1 to grab input, and 0 to release input.
  *
- * \sa SDL_GrabMode
  * \sa SDL_GetWindowGrab()
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_WindowID windowID,
@@ -721,7 +797,6 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_WindowID windowID,
  *
  * \return This returns 1 if input is grabbed, and 0 otherwise.
  *
- * \sa SDL_GrabMode
  * \sa SDL_SetWindowGrab()
  */
 extern DECLSPEC int SDLCALL SDL_GetWindowGrab(SDL_WindowID windowID);
@@ -1068,44 +1143,6 @@ extern DECLSPEC void SDLCALL SDL_DestroyTexture(SDL_TextureID textureID);
  * \sa SDL_CreateRenderer()
  */
 extern DECLSPEC void SDLCALL SDL_DestroyRenderer(SDL_WindowID windowID);
-
-/*
- * Set the gamma correction for each of the color channels.
- * The gamma values range (approximately) between 0.1 and 10.0
- * 
- * If this function isn't supported directly by the hardware, it will
- * be emulated using gamma ramps, if available.  If successful, this
- * function returns 0, otherwise it returns -1.
- */
-extern DECLSPEC int SDLCALL SDL_SetGamma(float red, float green, float blue);
-
-/*
- * Set the gamma translation table for the red, green, and blue channels
- * of the video hardware.  Each table is an array of 256 16-bit quantities,
- * representing a mapping between the input and output for that channel.
- * The input is the index into the array, and the output is the 16-bit
- * gamma value at that index, scaled to the output color precision.
- * 
- * You may pass NULL for any of the channels to leave it unchanged.
- * If the call succeeds, it will return 0.  If the display driver or
- * hardware does not support gamma translation, or otherwise fails,
- * this function will return -1.
- */
-extern DECLSPEC int SDLCALL SDL_SetGammaRamp(const Uint16 * red,
-                                             const Uint16 * green,
-                                             const Uint16 * blue);
-
-/*
- * Retrieve the current values of the gamma translation tables.
- * 
- * You must pass in valid pointers to arrays of 256 16-bit quantities.
- * Any of the pointers may be NULL to ignore that channel.
- * If the call succeeds, it will return 0.  If the display driver or
- * hardware does not support gamma translation, or otherwise fails,
- * this function will return -1.
- */
-extern DECLSPEC int SDLCALL SDL_GetGammaRamp(Uint16 * red, Uint16 * green,
-                                             Uint16 * blue);
 
 /*
  * Maps an RGB triple to an opaque pixel value for a given pixel format

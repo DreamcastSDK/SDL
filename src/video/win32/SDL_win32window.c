@@ -22,6 +22,7 @@
 #include "SDL_config.h"
 
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
 
 #include "SDL_win32video.h"
 
@@ -110,6 +111,14 @@ SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
         int index = data->videodata->keyboard;
         window->flags |= SDL_WINDOW_KEYBOARD_FOCUS;
         SDL_SetKeyboardFocus(index, data->windowID);
+
+        if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+            ClientToScreen(hwnd, (LPPOINT) & rect);
+            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
+            ClipCursor(&rect);
+        }
     }
 
     /* All done! */

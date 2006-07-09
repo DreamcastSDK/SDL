@@ -84,11 +84,11 @@ WIN_CreateDevice(int devindex)
 #if SDL_VIDEO_RENDER_D3D
     data->d3dDLL = LoadLibrary(TEXT("D3D9.DLL"));
     if (data->d3dDLL) {
-        IDirect3D9 *WINAPI(*D3DCreate) (UINT SDKVersion);
+        IDirect3D9 *(WINAPI * D3DCreate) (UINT SDKVersion);
 
         D3DCreate =
-            (IDirect3D9 * WINAPI(*)(UINT)) GetProcAddress(data->d3dDLL,
-                                                          "Direct3DCreate9");
+            (IDirect3D9 * (WINAPI *) (UINT)) GetProcAddress(data->d3dDLL,
+                                                            "Direct3DCreate9");
         if (D3DCreate) {
             data->d3d = D3DCreate(D3D_SDK_VERSION);
         }
@@ -101,7 +101,10 @@ WIN_CreateDevice(int devindex)
 
     /* Set the function pointers */
     device->VideoInit = WIN_VideoInit;
+    device->GetDisplayModes = WIN_GetDisplayModes;
     device->SetDisplayMode = WIN_SetDisplayMode;
+    device->SetDisplayGammaRamp = WIN_SetDisplayGammaRamp;
+    device->GetDisplayGammaRamp = WIN_GetDisplayGammaRamp;
     device->VideoQuit = WIN_VideoQuit;
     device->PumpEvents = WIN_PumpEvents;
 

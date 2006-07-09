@@ -24,12 +24,6 @@
 #include "SDL_win32video.h"
 
 
-typedef struct
-{
-    TCHAR DeviceName[32];
-    DEVMODE DeviceMode;
-} SDL_DisplayModeData;
-
 /* FIXME: Each call to EnumDisplaySettings() takes about 6 ms on my laptop.
           With 500 or so modes, this takes almost 3 seconds to run!
 */
@@ -123,7 +117,7 @@ void
 WIN_InitModes(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    DWORD i, j, k;
+    DWORD i, j;
     DISPLAY_DEVICE device;
 
     device.cb = sizeof(device);
@@ -143,6 +137,7 @@ WIN_InitModes(_THIS)
         for (j = 0;; ++j) {
             int index;
             SDL_VideoDisplay display;
+            SDL_DisplayData *displaydata;
             SDL_DisplayMode mode;
 
             if (!EnumDisplayDevices(DeviceName, j, &device, 0)) {
@@ -157,19 +152,37 @@ WIN_InitModes(_THIS)
             if (!WIN_GetDisplayMode(DeviceName, ENUM_CURRENT_SETTINGS, &mode)) {
                 break;
             }
+
+            displaydata =
+                (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
+            if (!displaydata) {
+                continue;
+            }
+            SDL_memcpy(displaydata->DeviceName, DeviceName,
+                       sizeof(DeviceName));
+
             SDL_zero(display);
             display.desktop_mode = mode;
             display.current_mode = mode;
-            index = SDL_AddVideoDisplay(&display);
+            display.driverdata = displaydata;
+            SDL_AddVideoDisplay(&display);
+        }
+    }
+}
 
-            for (k = 0;; ++k) {
-                if (!WIN_GetDisplayMode(DeviceName, k, &mode)) {
-                    break;
-                }
-                if (!SDL_AddDisplayMode(index, &mode)) {
-                    SDL_free(mode.driverdata);
-                }
-            }
+void
+WIN_GetDisplayModes(_THIS)
+{
+    SDL_DisplayData *data = (SDL_DisplayData *) SDL_CurrentDisplay.driverdata;
+    DWORD i;
+    SDL_DisplayMode mode;
+
+    for (i = 0;; ++i) {
+        if (!WIN_GetDisplayMode(data->DeviceName, i, &mode)) {
+            break;
+        }
+        if (!SDL_AddDisplayMode(_this->current_display, &mode)) {
+            SDL_free(mode.driverdata);
         }
     }
 }
