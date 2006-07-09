@@ -21,25 +21,43 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_win32modes_h
-#define _SDL_win32modes_h
+#include "SDL_win32video.h"
 
-typedef struct
+
+int
+WIN_SetDisplayGammaRamp(_THIS, Uint16 * ramp)
 {
-    TCHAR DeviceName[32];
-} SDL_DisplayData;
+    SDL_DisplayData *data = (SDL_DisplayData *) SDL_CurrentDisplay.driverdata;
+    HDC hdc;
+    BOOL succeeded = FALSE;
 
-typedef struct
+    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = SetDeviceGammaRamp(hdc, ramp);
+        if (!succeeded) {
+            WIN_SetError("SetDeviceGammaRamp()");
+        }
+        DeleteDC(hdc);
+    }
+    return succeeded ? 0 : -1;
+}
+
+int
+WIN_GetDisplayGammaRamp(_THIS, Uint16 * ramp)
 {
-    TCHAR DeviceName[32];
-    DEVMODE DeviceMode;
-} SDL_DisplayModeData;
+    SDL_DisplayData *data = (SDL_DisplayData *) SDL_CurrentDisplay.driverdata;
+    HDC hdc;
+    BOOL succeeded = FALSE;
 
-extern void WIN_InitModes(_THIS);
-extern void WIN_GetDisplayModes(_THIS);
-extern int WIN_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
-extern void WIN_QuitModes(_THIS);
-
-#endif /* _SDL_win32modes_h */
+    hdc = CreateDC(data->DeviceName, NULL, NULL, NULL);
+    if (hdc) {
+        succeeded = GetDeviceGammaRamp(hdc, ramp);
+        if (!succeeded) {
+            WIN_SetError("GetDeviceGammaRamp()");
+        }
+        DeleteDC(hdc);
+    }
+    return succeeded ? 0 : -1;
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

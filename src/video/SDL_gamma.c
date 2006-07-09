@@ -96,24 +96,13 @@ CalculateGammaFromRamp(float *gamma, Uint16 * ramp)
 int
 SDL_SetGamma(float red, float green, float blue)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    int succeeded;
+    Uint16 ramp[3][256];
 
-    succeeded = -1;
-    /* Prefer using SetGammaRamp(), as it's more flexible */
-    {
-        Uint16 ramp[3][256];
+    CalculateGammaRamp(red, ramp[0]);
+    CalculateGammaRamp(green, ramp[1]);
+    CalculateGammaRamp(blue, ramp[2]);
 
-        CalculateGammaRamp(red, ramp[0]);
-        CalculateGammaRamp(green, ramp[1]);
-        CalculateGammaRamp(blue, ramp[2]);
-        succeeded = SDL_SetGammaRamp(ramp[0], ramp[1], ramp[2]);
-    }
-    if ((succeeded < 0) && _this && _this->SetGamma) {
-        SDL_ClearError();
-        succeeded = _this->SetGamma(_this, red, green, blue);
-    }
-    return succeeded;
+    return SDL_SetGammaRamp(ramp[0], ramp[1], ramp[2]);
 }
 
 /* Calculating the gamma by integrating the gamma ramps isn't exact,
@@ -122,24 +111,14 @@ SDL_SetGamma(float red, float green, float blue)
 int
 SDL_GetGamma(float *red, float *green, float *blue)
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     int succeeded;
+    Uint16 ramp[3][256];
 
-    succeeded = -1;
-    /* Prefer using GetGammaRamp(), as it's more flexible */
-    {
-        Uint16 ramp[3][256];
-
-        succeeded = SDL_GetGammaRamp(ramp[0], ramp[1], ramp[2]);
-        if (succeeded >= 0) {
-            CalculateGammaFromRamp(red, ramp[0]);
-            CalculateGammaFromRamp(green, ramp[1]);
-            CalculateGammaFromRamp(blue, ramp[2]);
-        }
-    }
-    if ((succeeded < 0) && _this && _this->GetGamma) {
-        SDL_ClearError();
-        succeeded = _this->GetGamma(_this, red, green, blue);
+    succeeded = SDL_GetGammaRamp(ramp[0], ramp[1], ramp[2]);
+    if (succeeded >= 0) {
+        CalculateGammaFromRamp(red, ramp[0]);
+        CalculateGammaFromRamp(green, ramp[1]);
+        CalculateGammaFromRamp(blue, ramp[2]);
     }
     return succeeded;
 }
@@ -152,28 +131,29 @@ SDL_SetGammaRamp(const Uint16 * red, const Uint16 * green,
     int succeeded;
 
     /* Lazily allocate the gamma tables */
-    if (!SDL_CurrentWindow.gamma) {
-        SDL_GetGammaRamp(0, 0, 0);
+    if (!SDL_CurrentDisplay.gamma) {
+        SDL_GetGammaRamp(NULL, NULL, NULL);
     }
 
     /* Fill the gamma table with the new values */
     if (red) {
-        SDL_memcpy(&SDL_CurrentWindow.gamma[0 * 256], red,
-                   256 * sizeof(*SDL_CurrentWindow.gamma));
+        SDL_memcpy(&SDL_CurrentDisplay.gamma[0 * 256], red,
+                   256 * sizeof(*SDL_CurrentDisplay.gamma));
     }
     if (green) {
-        SDL_memcpy(&SDL_CurrentWindow.gamma[1 * 256], green,
-                   256 * sizeof(*SDL_CurrentWindow.gamma));
+        SDL_memcpy(&SDL_CurrentDisplay.gamma[1 * 256], green,
+                   256 * sizeof(*SDL_CurrentDisplay.gamma));
     }
     if (blue) {
-        SDL_memcpy(&SDL_CurrentWindow.gamma[2 * 256], blue,
-                   256 * sizeof(*SDL_CurrentWindow.gamma));
+        SDL_memcpy(&SDL_CurrentDisplay.gamma[2 * 256], blue,
+                   256 * sizeof(*SDL_CurrentDisplay.gamma));
     }
 
     /* Try to set the gamma ramp in the driver */
     succeeded = -1;
-    if (_this && _this->SetGammaRamp) {
-        succeeded = _this->SetGammaRamp(_this, SDL_CurrentWindow.gamma);
+    if (_this && _this->SetDisplayGammaRamp) {
+        succeeded =
+            _this->SetDisplayGammaRamp(_this, SDL_CurrentDisplay.gamma);
     } else {
         SDL_SetError("Gamma ramp manipulation not supported");
     }
@@ -186,38 +166,42 @@ SDL_GetGammaRamp(Uint16 * red, Uint16 * green, Uint16 * blue)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     /* Lazily allocate the gamma table */
-    if (!SDL_CurrentWindow.gamma) {
-        SDL_CurrentWindow.gamma =
-            SDL_malloc(3 * 256 * sizeof(*SDL_CurrentWindow.gamma));
-        if (!SDL_CurrentWindow.gamma) {
+    if (!SDL_CurrentDisplay.gamma) {
+        size_t rampsize = (3 * 256 * sizeof(*SDL_CurrentDisplay.gamma));
+
+        SDL_CurrentDisplay.gamma = SDL_malloc(rampsize * 2);
+        if (!SDL_CurrentDisplay.gamma) {
             SDL_OutOfMemory();
             return -1;
         }
-        if (_this && _this->GetGammaRamp) {
+        if (_this && _this->GetDisplayGammaRamp) {
             /* Get the real hardware gamma */
-            _this->GetGammaRamp(_this, SDL_CurrentWindow.gamma);
+            _this->GetDisplayGammaRamp(_this, SDL_CurrentDisplay.gamma);
         } else {
             /* Assume an identity gamma */
             int i;
             for (i = 0; i < 256; ++i) {
-                SDL_CurrentWindow.gamma[0 * 256 + i] = (i << 8) | i;
-                SDL_CurrentWindow.gamma[1 * 256 + i] = (i << 8) | i;
-                SDL_CurrentWindow.gamma[2 * 256 + i] = (i << 8) | i;
+                SDL_CurrentDisplay.gamma[0 * 256 + i] = (i << 8) | i;
+                SDL_CurrentDisplay.gamma[1 * 256 + i] = (i << 8) | i;
+                SDL_CurrentDisplay.gamma[2 * 256 + i] = (i << 8) | i;
             }
         }
+        SDL_CurrentDisplay.saved_gamma = SDL_CurrentDisplay.gamma + (3 * 256);
+        SDL_memcpy(SDL_CurrentDisplay.saved_gamma, SDL_CurrentDisplay.gamma,
+                   rampsize);
     }
 
     /* Just copy from our internal table */
     if (red) {
-        SDL_memcpy(red, &SDL_CurrentWindow.gamma[0 * 256],
+        SDL_memcpy(red, &SDL_CurrentDisplay.gamma[0 * 256],
                    256 * sizeof(*red));
     }
     if (green) {
-        SDL_memcpy(green, &SDL_CurrentWindow.gamma[1 * 256],
+        SDL_memcpy(green, &SDL_CurrentDisplay.gamma[1 * 256],
                    256 * sizeof(*green));
     }
     if (blue) {
-        SDL_memcpy(blue, &SDL_CurrentWindow.gamma[2 * 256],
+        SDL_memcpy(blue, &SDL_CurrentDisplay.gamma[2 * 256],
                    256 * sizeof(*blue));
     }
     return 0;

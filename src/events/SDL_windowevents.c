@@ -44,19 +44,27 @@ SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
             return 0;
         }
         window->flags |= SDL_WINDOW_SHOWN;
+        SDL_OnWindowShown(window);
         break;
     case SDL_WINDOWEVENT_HIDDEN:
         if (!(window->flags & SDL_WINDOW_SHOWN)) {
             return 0;
         }
         window->flags &= ~SDL_WINDOW_SHOWN;
+        SDL_OnWindowHidden(window);
         break;
     case SDL_WINDOWEVENT_MOVED:
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            return 0;
+        }
         if (data1 == window->x && data2 == window->y) {
             return 0;
         }
         break;
     case SDL_WINDOWEVENT_RESIZED:
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            return 0;
+        }
         if (data1 == window->w && data2 == window->h) {
             return 0;
         }
@@ -96,12 +104,14 @@ SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
             return 0;
         }
         window->flags |= SDL_WINDOW_KEYBOARD_FOCUS;
+        SDL_OnWindowFocusGained(window);
         break;
     case SDL_WINDOWEVENT_FOCUS_LOST:
         if (!(window->flags & SDL_WINDOW_KEYBOARD_FOCUS)) {
             return 0;
         }
         window->flags &= ~SDL_WINDOW_KEYBOARD_FOCUS;
+        SDL_OnWindowFocusLost(window);
         break;
     }
 

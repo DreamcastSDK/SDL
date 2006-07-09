@@ -49,12 +49,6 @@ main(int argc, char *argv[])
         }
     }
 
-    /* Set the desktop mode, we don't care what it is */
-    if (SDL_SetDisplayMode(NULL) < 0) {
-        fprintf(stderr, "Couldn't set display mode: %s\n", SDL_GetError());
-        quit(2);
-    }
-
     /* Create the windows */
     windows = (SDL_WindowID *) SDL_malloc(num_windows * sizeof(*windows));
     if (!windows) {

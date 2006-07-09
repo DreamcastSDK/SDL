@@ -36,6 +36,7 @@
 #endif
 
 #include "SDL_win32events.h"
+#include "SDL_win32gamma.h"
 #include "SDL_win32keyboard.h"
 #include "SDL_win32modes.h"
 #include "SDL_win32mouse.h"

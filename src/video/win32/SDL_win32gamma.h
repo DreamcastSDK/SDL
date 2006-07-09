@@ -21,25 +21,12 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_win32modes_h
-#define _SDL_win32modes_h
+#ifndef _SDL_win32gamma_h
+#define _SDL_win32gamma_h
 
-typedef struct
-{
-    TCHAR DeviceName[32];
-} SDL_DisplayData;
+extern int WIN_SetDisplayGammaRamp(_THIS, Uint16 * ramp);
+extern int WIN_GetDisplayGammaRamp(_THIS, Uint16 * ramp);
 
-typedef struct
-{
-    TCHAR DeviceName[32];
-    DEVMODE DeviceMode;
-} SDL_DisplayModeData;
-
-extern void WIN_InitModes(_THIS);
-extern void WIN_GetDisplayModes(_THIS);
-extern int WIN_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
-extern void WIN_QuitModes(_THIS);
-
-#endif /* _SDL_win32modes_h */
+#endif /* _SDL_win32gamma_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

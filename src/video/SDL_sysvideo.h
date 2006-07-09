@@ -117,14 +117,16 @@ struct SDL_Window
     int w, h;
     Uint32 flags;
 
-    Uint16 *gamma;
-
     int display;
     SDL_Renderer *renderer;
 
     void *userdata;
     void *driverdata;
 };
+#define FULLSCREEN_VISIBLE(W) \
+    ((W->flags & SDL_WINDOW_FULLSCREEN) && \
+     (W->flags & SDL_WINDOW_SHOWN) && \
+     !(W->flags & SDL_WINDOW_MINIMIZED))
 
 /* Define the SDL display structure
    This corresponds to physical monitors attached to the system.
@@ -136,7 +138,12 @@ struct SDL_VideoDisplay
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
     SDL_DisplayMode current_mode;
+    SDL_DisplayMode desired_mode;
+    SDL_DisplayMode *fullscreen_mode;
     SDL_Palette *palette;
+
+    Uint16 *gamma;
+    Uint16 *saved_gamma;        /* (just offset into gamma) */
 
     int num_render_drivers;
     SDL_RenderDriver *render_drivers;
@@ -174,6 +181,12 @@ struct SDL_VideoDevice
     /* * * */
     /* Display functions
      */
+
+    /* Get a list of the available display modes.
+     * e.g.  SDL_AddDisplayMode(_this->current_display, mode)
+     */
+    void (*GetDisplayModes) (_THIS);
+
     /* Setting the display mode is independent of creating windows,
      * so when the display mode is changed, all existing windows
      * should have their data updated accordingly, including the
@@ -181,11 +194,17 @@ struct SDL_VideoDevice
      */
     int (*SetDisplayMode) (_THIS, SDL_DisplayMode * mode);
 
-    /* Sets the color entries of the display palette to those in 'colors'.
-       The return value is 0 if all entries could be set properly or -1
-       otherwise.
-     */
+    /* Set the color entries of the display palette */
     int (*SetDisplayPalette) (_THIS, SDL_Palette * palette);
+
+    /* Get the color entries of the display palette */
+    int (*GetDisplayPalette) (_THIS, SDL_Palette * palette);
+
+    /* Set the gamma ramp */
+    int (*SetDisplayGammaRamp) (_THIS, Uint16 * ramp);
+
+    /* Get the gamma ramp */
+    int (*GetDisplayGammaRamp) (_THIS, Uint16 * ramp);
 
     /* * * */
     /* Window functions
@@ -212,21 +231,6 @@ struct SDL_VideoDevice
        or if the application is shutting down the video subsystem.
      */
     void (*VideoQuit) (_THIS);
-
-    /* * * */
-    /* Gamma support */
-
-    /* Set the gamma correction directly (emulated with gamma ramps) */
-    int (*SetGamma) (_THIS, float red, float green, float blue);
-
-    /* Get the gamma correction directly (emulated with gamma ramps) */
-    int (*GetGamma) (_THIS, float *red, float *green, float *blue);
-
-    /* Set the gamma ramp */
-    int (*SetGammaRamp) (_THIS, Uint16 * ramp);
-
-    /* Get the gamma ramp */
-    int (*GetGammaRamp) (_THIS, Uint16 * ramp);
 
     /* * * */
     /* OpenGL support */
@@ -405,7 +409,6 @@ extern VideoBootStrap glSDL_bootstrap;
 #endif
 
 #define SDL_CurrentDisplay	(_this->displays[_this->current_display])
-#define SDL_CurrentWindow	(SDL_CurrentDisplay.windows[0])
 
 extern SDL_VideoDevice *SDL_GetVideoDevice();
 extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
@@ -417,6 +420,11 @@ extern void SDL_AddRenderDriver(int displayIndex,
 
 extern SDL_Window *SDL_GetWindowFromID(SDL_WindowID windowID);
 extern SDL_VideoDisplay *SDL_GetDisplayFromWindow(SDL_Window * window);
+
+extern void SDL_OnWindowShown(SDL_Window * window);
+extern void SDL_OnWindowHidden(SDL_Window * window);
+extern void SDL_OnWindowFocusGained(SDL_Window * window);
+extern void SDL_OnWindowFocusLost(SDL_Window * window);
 
 #endif /* _SDL_sysvideo_h */
 

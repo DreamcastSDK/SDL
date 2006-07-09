@@ -421,6 +421,18 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     switch (msg) {
 
+    case WM_SHOWWINDOW:
+        {
+            if (wParam) {
+                SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_SHOWN, 0,
+                                    0);
+            } else {
+                SDL_SendWindowEvent(data->windowID, SDL_WINDOWEVENT_HIDDEN, 0,
+                                    0);
+            }
+        }
+        break;
+
     case WM_ACTIVATE:
         {
             int index;
@@ -452,7 +464,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         ClipCursor(&rect);
                     }
                 }
-                /* FIXME: Restore mode state (mode, gamma) */
                 /* FIXME: Update keyboard state */
             } else {
                 if (keyboard && keyboard->focus == data->windowID) {
@@ -467,7 +478,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SDL_SendWindowEvent(data->windowID,
                                         SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 }
-                /* FIXME: Restore desktop state (mode, gamma) */
             }
             return (0);
         }
