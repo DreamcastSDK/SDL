@@ -453,26 +453,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
                 if (keyboard && keyboard->focus != data->windowID) {
                     SDL_SetKeyboardFocus(index, data->windowID);
-
-                    if (SDL_GetWindowFlags(data->windowID) &
-                        SDL_WINDOW_INPUT_GRABBED) {
-                        RECT rect;
-
-                        GetClientRect(hwnd, &rect);
-                        ClientToScreen(hwnd, (LPPOINT) & rect);
-                        ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-                        ClipCursor(&rect);
-                    }
                 }
                 /* FIXME: Update keyboard state */
             } else {
                 if (keyboard && keyboard->focus == data->windowID) {
                     SDL_SetKeyboardFocus(index, 0);
-
-                    if (SDL_GetWindowFlags(data->windowID) &
-                        SDL_WINDOW_INPUT_GRABBED) {
-                        ClipCursor(NULL);
-                    }
                 }
                 if (minimized) {
                     SDL_SendWindowEvent(data->windowID,
@@ -782,7 +767,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             window_flags = SDL_GetWindowFlags(data->windowID);
             if ((window_flags & SDL_WINDOW_INPUT_GRABBED) &&
-                (window_flags & SDL_WINDOW_KEYBOARD_FOCUS)) {
+                (window_flags & SDL_WINDOW_INPUT_FOCUS)) {
                 ClipCursor(&rect);
             }
 

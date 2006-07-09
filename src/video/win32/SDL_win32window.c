@@ -109,7 +109,7 @@ SetupWindowData(SDL_Window * window, HWND hwnd, BOOL created)
     }
     if (GetFocus() == hwnd) {
         int index = data->videodata->keyboard;
-        window->flags |= SDL_WINDOW_KEYBOARD_FOCUS;
+        window->flags |= SDL_WINDOW_INPUT_FOCUS;
         SDL_SetKeyboardFocus(index, data->windowID);
 
         if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
@@ -390,20 +390,15 @@ WIN_SetWindowGrab(_THIS, SDL_Window * window)
 {
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
 
-    if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
-        if (window->flags & SDL_WINDOW_KEYBOARD_FOCUS) {
-            RECT rect;
-            GetClientRect(hwnd, &rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect);
-            ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-            ClipCursor(&rect);
-        } else {
-            SetFocus(hwnd);
-        }
+    if ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
+        (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        RECT rect;
+        GetClientRect(hwnd, &rect);
+        ClientToScreen(hwnd, (LPPOINT) & rect);
+        ClientToScreen(hwnd, (LPPOINT) & rect + 1);
+        ClipCursor(&rect);
     } else {
-        if (window->flags & SDL_WINDOW_KEYBOARD_FOCUS) {
-            ClipCursor(NULL);
-        }
+        ClipCursor(NULL);
     }
 }
 

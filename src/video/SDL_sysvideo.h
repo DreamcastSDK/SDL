@@ -124,9 +124,9 @@ struct SDL_Window
     void *driverdata;
 };
 #define FULLSCREEN_VISIBLE(W) \
-    ((W->flags & SDL_WINDOW_FULLSCREEN) && \
-     (W->flags & SDL_WINDOW_SHOWN) && \
-     !(W->flags & SDL_WINDOW_MINIMIZED))
+    (((W)->flags & SDL_WINDOW_FULLSCREEN) && \
+     ((W)->flags & SDL_WINDOW_SHOWN) && \
+     !((W)->flags & SDL_WINDOW_MINIMIZED))
 
 /* Define the SDL display structure
    This corresponds to physical monitors attached to the system.
@@ -425,6 +425,7 @@ extern void SDL_OnWindowShown(SDL_Window * window);
 extern void SDL_OnWindowHidden(SDL_Window * window);
 extern void SDL_OnWindowFocusGained(SDL_Window * window);
 extern void SDL_OnWindowFocusLost(SDL_Window * window);
+extern SDL_WindowID SDL_GetFocusWindow(void);
 
 #endif /* _SDL_sysvideo_h */
 

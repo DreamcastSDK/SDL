@@ -699,7 +699,18 @@ SDL_WM_IconifyWindow(void)
 int
 SDL_WM_ToggleFullScreen(SDL_Surface * surface)
 {
-    return 0;
+    if (SDL_GetWindowFlags(SDL_VideoWindow) & SDL_WINDOW_FULLSCREEN) {
+        if (SDL_SetWindowFullscreen(SDL_VideoWindow, 0) < 0) {
+            return 0;
+        }
+        SDL_PublicSurface->flags &= ~SDL_FULLSCREEN;
+    } else {
+        if (SDL_SetWindowFullscreen(SDL_VideoWindow, 1) < 0) {
+            return 0;
+        }
+        SDL_PublicSurface->flags |= SDL_FULLSCREEN;
+    }
+    return 1;
 }
 
 SDL_GrabMode
@@ -727,7 +738,7 @@ SDL_GetAppState(void)
     if ((flags & SDL_WINDOW_SHOWN) && !(flags & SDL_WINDOW_MINIMIZED)) {
         state |= SDL_APPACTIVE;
     }
-    if (flags & SDL_WINDOW_KEYBOARD_FOCUS) {
+    if (flags & SDL_WINDOW_INPUT_FOCUS) {
         state |= SDL_APPINPUTFOCUS;
     }
     if (flags & SDL_WINDOW_MOUSE_FOCUS) {
