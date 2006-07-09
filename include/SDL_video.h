@@ -125,7 +125,7 @@ typedef enum
     SDL_WINDOW_MINIMIZED = 0x00000020,          /**< minimized */
     SDL_WINDOW_MAXIMIZED = 0x00000040,          /**< maximized */
     SDL_WINDOW_INPUT_GRABBED = 0x00000100,      /**< window has grabbed input focus */
-    SDL_WINDOW_KEYBOARD_FOCUS = 0x00000200,     /**< window has keyboard focus */
+    SDL_WINDOW_INPUT_FOCUS = 0x00000200,        /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
 } SDL_WindowFlags;
 
@@ -734,7 +734,7 @@ extern DECLSPEC void SDLCALL SDL_HideWindow(SDL_WindowID windowID);
 /**
  * \fn void SDL_RaiseWindow(SDL_WindowID windowID)
  *
- * \brief Raise the window so it's above other windows.
+ * \brief Raise the window above other windows and set the input focus.
  */
 extern DECLSPEC void SDLCALL SDL_RaiseWindow(SDL_WindowID windowID);
 

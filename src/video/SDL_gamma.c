@@ -152,8 +152,12 @@ SDL_SetGammaRamp(const Uint16 * red, const Uint16 * green,
     /* Try to set the gamma ramp in the driver */
     succeeded = -1;
     if (_this && _this->SetDisplayGammaRamp) {
-        succeeded =
-            _this->SetDisplayGammaRamp(_this, SDL_CurrentDisplay.gamma);
+        if (SDL_GetFocusWindow()) {
+            succeeded =
+                _this->SetDisplayGammaRamp(_this, SDL_CurrentDisplay.gamma);
+        } else {
+            succeeded = 0;
+        }
     } else {
         SDL_SetError("Gamma ramp manipulation not supported");
     }

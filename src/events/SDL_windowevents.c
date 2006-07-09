@@ -100,17 +100,17 @@ SDL_SendWindowEvent(SDL_WindowID windowID, Uint8 windowevent, int data1,
         window->flags &= ~SDL_WINDOW_MOUSE_FOCUS;
         break;
     case SDL_WINDOWEVENT_FOCUS_GAINED:
-        if (window->flags & SDL_WINDOW_KEYBOARD_FOCUS) {
+        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
             return 0;
         }
-        window->flags |= SDL_WINDOW_KEYBOARD_FOCUS;
+        window->flags |= SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusGained(window);
         break;
     case SDL_WINDOWEVENT_FOCUS_LOST:
-        if (!(window->flags & SDL_WINDOW_KEYBOARD_FOCUS)) {
+        if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
             return 0;
         }
-        window->flags &= ~SDL_WINDOW_KEYBOARD_FOCUS;
+        window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         SDL_OnWindowFocusLost(window);
         break;
     }
