@@ -307,8 +307,6 @@ GetEnvironmentWindowPosition(int w, int h, int *x, int *y)
 SDL_Surface *
 SDL_SetVideoMode(int width, int height, int bpp, Uint32 flags)
 {
-    SDL_EventFilter filter;
-    void *filterparam;
     const SDL_DisplayMode *desktop_mode;
     SDL_DisplayMode mode;
     int window_x = SDL_WINDOWPOS_UNDEFINED;

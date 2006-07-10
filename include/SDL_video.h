@@ -53,8 +53,8 @@ extern "C" {
  */
 typedef struct SDL_Rect
 {
-    Sint16 x, y;
-    Uint16 w, h;
+    int x, y;
+    int w, h;
 } SDL_Rect;
 
 /**
@@ -177,7 +177,8 @@ typedef enum
     SDL_Renderer_PresentVSync = 0x00000010,     /**< Present is synchronized with the refresh rate */
     SDL_Renderer_RenderTarget = 0x00000020,     /**< The renderer can create texture render targets */
     SDL_Renderer_Accelerated = 0x00000040,      /**< The renderer uses hardware acceleration */
-    SDL_Renderer_Minimal = 0x00000080,          /**< The renderer only supports the read/write pixel and present functions */
+    SDL_Renderer_ = 0x00000080,      /**< The renderer uses hardware acceleration */
+    SDL_Renderer_Minimal = 0x00000100,          /**< The renderer only supports the read/write pixel and present functions */
 } SDL_RendererFlags;
 
 /**
@@ -1525,12 +1526,50 @@ extern DECLSPEC void SDLCALL SDL_GL_SwapBuffers(void);
  */
 extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
-/*
- * Calculate the intersection of two rectangles
+/**
+ * \def SDL_RectEmpty()
+ *
+ * \brief Returns true if the rectangle has no area.
+ */
+#define SDL_RectEmpty(X)    (((X)->w <= 0) || ((X)->h <= 0))
+
+/**
+ * \def SDL_RectEquals()
+ *
+ * \brief Returns true if the two rectangles are equal.
+ */
+#define SDL_RectEquals(A, B)   (((A)->x == (B)->x) && ((A)->y == (B)->y) && \
+                                ((A)->w == (B)->w) && ((A)->h == (B)->h))
+
+/**
+ * \fn SDL_bool SDL_HasIntersection(const SDL_Rect * A, const SDL_Rect * B);
+ *
+ * \brief Determine whether two rectangles intersect.
+ *
+ * \return SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasIntersection(const SDL_Rect * A,
+                                                     const SDL_Rect * B);
+
+/**
+ * \fn SDL_bool SDL_IntersectRect(const SDL_Rect * A, const SDL_Rect * B, SDL_Rect * result)
+ *
+ * \brief Calculate the intersection of two rectangles.
+ *
+ * \return SDL_TRUE if there is an intersection, SDL_FALSE otherwise.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRect(const SDL_Rect * A,
                                                    const SDL_Rect * B,
-                                                   SDL_Rect * intersection);
+                                                   SDL_Rect * result);
+
+/**
+ * \fn void SDL_UnionRect(const SDL_Rect * A, const SDL_Rect * B, SDL_Rect * result)
+ *
+ * \brief Calculate the union of two rectangles
+ */
+extern DECLSPEC void SDLCALL SDL_UnionRect(const SDL_Rect * A,
+                                           const SDL_Rect * B,
+                                           SDL_Rect * result);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

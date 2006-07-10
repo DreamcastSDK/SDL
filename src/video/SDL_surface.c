@@ -41,14 +41,6 @@ SDL_CreateRGBSurface(Uint32 flags,
 {
     SDL_Surface *surface;
 
-    /* FIXME!! */
-    /* Make sure the size requested doesn't overflow our datatypes */
-    /* Next time I write a library like SDL, I'll use int for size. :) */
-    if (width >= 16384 || height >= 65536) {
-        SDL_SetError("Width or height is too large");
-        return NULL;
-    }
-
     /* Allocate the surface */
     surface = (SDL_Surface *) SDL_malloc(sizeof(*surface));
     if (surface == NULL) {
@@ -211,6 +203,7 @@ SDL_CreateRGBSurfaceFromTexture(SDL_TextureID textureID)
             surface->flags |= SDL_HWSURFACE;
             surface->w = w;
             surface->h = h;
+            surface->pitch = SDL_CalculatePitch(surface);
             SDL_SetClipRect(surface, NULL);
         }
     }
@@ -412,43 +405,6 @@ SDL_SetAlphaChannel(SDL_Surface * surface, Uint8 value)
         SDL_UnlockSurface(surface);
     }
     return 0;
-}
-
-/*
- * A function to calculate the intersection of two rectangles:
- * return true if the rectangles intersect, false otherwise
- */
-SDL_bool
-SDL_IntersectRect(const SDL_Rect * A, const SDL_Rect * B,
-                  SDL_Rect * intersection)
-{
-    int Amin, Amax, Bmin, Bmax;
-
-    /* Horizontal intersection */
-    Amin = A->x;
-    Amax = Amin + A->w;
-    Bmin = B->x;
-    Bmax = Bmin + B->w;
-    if (Bmin > Amin)
-        Amin = Bmin;
-    intersection->x = Amin;
-    if (Bmax < Amax)
-        Amax = Bmax;
-    intersection->w = Amax - Amin > 0 ? Amax - Amin : 0;
-
-    /* Vertical intersection */
-    Amin = A->y;
-    Amax = Amin + A->h;
-    Bmin = B->y;
-    Bmax = Bmin + B->h;
-    if (Bmin > Amin)
-        Amin = Bmin;
-    intersection->y = Amin;
-    if (Bmax < Amax)
-        Amax = Bmax;
-    intersection->h = Amax - Amin > 0 ? Amax - Amin : 0;
-
-    return (intersection->w && intersection->h);
 }
 
 /*
