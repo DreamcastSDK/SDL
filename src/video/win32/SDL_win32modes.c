@@ -135,7 +135,6 @@ WIN_InitModes(_THIS)
         printf("Device: %s\n", WIN_StringToUTF8(DeviceName));
 #endif
         for (j = 0;; ++j) {
-            int index;
             SDL_VideoDisplay display;
             SDL_DisplayData *displaydata;
             SDL_DisplayMode mode;

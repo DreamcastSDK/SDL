@@ -1110,6 +1110,7 @@ SDL_SetWindowFullscreen(SDL_WindowID windowID, int fullscreen)
             SDL_SetDisplayMode(NULL);
         }
     }
+    return 0;
 }
 
 void

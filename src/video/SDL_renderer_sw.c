@@ -23,6 +23,7 @@
 
 #include "SDL_video.h"
 #include "SDL_sysvideo.h"
+#include "SDL_rect_c.h"
 #include "SDL_yuv_sw_c.h"
 
 
@@ -96,8 +97,8 @@ SDL_RenderDriver SDL_SW_RenderDriver = {
       SDL_PixelFormat_BGRA8888,
       SDL_PixelFormat_YUY2,
       SDL_PixelFormat_UYVY},
-     32768,
-     32768}
+     0,
+     0}
 };
 
 typedef struct
@@ -106,6 +107,7 @@ typedef struct
     SDL_Surface *screens[3];
     SDL_Surface *target;
     SDL_Renderer *renderer;
+    SDL_DirtyRectList dirty;
 } SDL_SW_RenderData;
 
 SDL_Renderer *
@@ -125,12 +127,11 @@ SDL_SW_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    renderer = (SDL_Renderer *) SDL_malloc(sizeof(*renderer));
+    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_OutOfMemory();
         return NULL;
     }
-    SDL_zerop(renderer);
 
     data = (SDL_SW_RenderData *) SDL_malloc(sizeof(*data));
     if (!data) {
@@ -363,6 +364,8 @@ SDL_SW_RenderFill(SDL_Renderer * renderer, const SDL_Rect * rect,
     SDL_Rect real_rect = *rect;
     Uint8 r, g, b, a;
 
+    SDL_AddDirtyRect(&data->dirty, rect);
+
     a = (Uint8) ((color >> 24) & 0xFF);
     r = (Uint8) ((color >> 16) & 0xFF);
     g = (Uint8) ((color >> 8) & 0xFF);
@@ -380,6 +383,8 @@ SDL_SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+
+    SDL_AddDirtyRect(&data->dirty, dstrect);
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_Surface *target = data->target;
@@ -445,6 +450,8 @@ SDL_SW_RenderWritePixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     int row;
     size_t length;
 
+    SDL_AddDirtyRect(&data->dirty, rect);
+
     src = (Uint8 *) pixels;
     dst =
         (Uint8 *) surface->pixels + rect->y * surface->pitch +
@@ -463,18 +470,21 @@ SDL_SW_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_SW_RenderData *data = (SDL_SW_RenderData *) renderer->driverdata;
     SDL_Surface *surface = data->screens[data->current_screen];
-    SDL_Rect rect;
+    SDL_DirtyRect *dirty;
     int new_screen;
 
     /* Send the data to the display */
-    /* FIXME: implement dirty rect updates */
-    rect.x = 0;
-    rect.y = 0;
-    rect.w = surface->w;
-    rect.h = surface->h;
-    data->renderer->RenderWritePixels(data->renderer, &rect, surface->pixels,
-                                      surface->pitch);
+    for (dirty = data->dirty.list; dirty; dirty = dirty->next) {
+        void *pixels =
+            (void *) ((Uint8 *) surface->pixels +
+                      dirty->rect.y * surface->pitch +
+                      dirty->rect.x * surface->format->BytesPerPixel);
+        data->renderer->RenderWritePixels(data->renderer, &dirty->rect,
+                                          pixels, surface->pitch);
+    }
+    SDL_ClearDirtyRects(&data->dirty);
     data->renderer->RenderPresent(data->renderer);
+
 
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_Renderer_PresentFlip2) {
@@ -514,6 +524,7 @@ SDL_SW_DestroyRenderer(SDL_Renderer * renderer)
                 SDL_FreeSurface(data->screens[i]);
             }
         }
+        SDL_FreeDirtyRects(&data->dirty);
         SDL_free(data);
     }
     SDL_free(renderer);
