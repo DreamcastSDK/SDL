@@ -212,7 +212,7 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  * may modify the requested size of the audio buffer, you should allocate
  * any local mixing buffers after you open the audio device.
  */
-extern DECLSPEC int SDLCALL SDL_OpenAudio(SDL_AudioSpec * desired,
+extern DECLSPEC int SDLCALL SDL_OpenAudio(const SDL_AudioSpec * desired,
                                           SDL_AudioSpec * obtained);
 
 /*
@@ -243,7 +243,8 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDevice(int index,
 /*
  * Open a specific audio device. Passing in a device name of NULL is
  *  equivalent to SDL_OpenAudio(). Returns 0 on error, a valid device ID
- *  on success.
+ *  on success. SDL_OpenAudio(), unlike this function, always acts on device
+ *  ID 1.
  */
 extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(const char
                                                               *device,

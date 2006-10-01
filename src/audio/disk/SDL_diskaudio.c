@@ -47,7 +47,7 @@
 #define DISKDEFAULT_WRITEDELAY   150
 
 /* Audio driver functions */
-static int DISKAUD_OpenAudio(_THIS, SDL_AudioSpec * spec);
+static int DISKAUD_OpenAudio(_THIS, const char *devname, int iscapture);
 static void DISKAUD_WaitAudio(_THIS);
 static void DISKAUD_PlayAudio(_THIS);
 static Uint8 *DISKAUD_GetAudioBuf(_THIS);
@@ -64,61 +64,34 @@ DISKAUD_GetOutputFilename(void)
 static int
 DISKAUD_Available(void)
 {
+    /* !!! FIXME: check this at a higher level... */
+    /* only ever use this driver if explicitly requested. */
     const char *envr = SDL_getenv("SDL_AUDIODRIVER");
-    if (envr && (SDL_strcmp(envr, DISKAUD_DRIVER_NAME) == 0)) {
+    if (envr && (SDL_strcasecmp(envr, DISKAUD_DRIVER_NAME) == 0)) {
         return (1);
     }
     return (0);
 }
 
-static void
-DISKAUD_DeleteDevice(SDL_AudioDevice * device)
+static int
+DISKAUD_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_free(device->hidden);
-    SDL_free(device);
-}
-
-static SDL_AudioDevice *
-DISKAUD_CreateDevice(int devindex)
-{
-    SDL_AudioDevice *this;
-    const char *envr;
-
     /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
-    if (this) {
-        SDL_memset(this, 0, (sizeof *this));
-        this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc((sizeof *this->hidden));
-    }
-    if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory();
-        if (this) {
-            SDL_free(this);
-        }
-        return (0);
-    }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
-    envr = SDL_getenv(DISKENVR_WRITEDELAY);
-    this->hidden->write_delay =
-        (envr) ? SDL_atoi(envr) : DISKDEFAULT_WRITEDELAY;
+    SDL_memset(impl, '\0', sizeof (SDL_AudioDriverImpl));
 
     /* Set the function pointers */
-    this->OpenAudio = DISKAUD_OpenAudio;
-    this->WaitAudio = DISKAUD_WaitAudio;
-    this->PlayAudio = DISKAUD_PlayAudio;
-    this->GetAudioBuf = DISKAUD_GetAudioBuf;
-    this->CloseAudio = DISKAUD_CloseAudio;
+    impl->OpenAudio = DISKAUD_OpenAudio;
+    impl->WaitAudio = DISKAUD_WaitAudio;
+    impl->PlayAudio = DISKAUD_PlayAudio;
+    impl->GetAudioBuf = DISKAUD_GetAudioBuf;
+    impl->CloseAudio = DISKAUD_CloseAudio;
 
-    this->free = DISKAUD_DeleteDevice;
-
-    return this;
+    return 1;
 }
 
 AudioBootStrap DISKAUD_bootstrap = {
     DISKAUD_DRIVER_NAME, "direct-to-disk audio",
-    DISKAUD_Available, DISKAUD_CreateDevice
+    DISKAUD_Available, DISKAUD_Init
 };
 
 /* This function waits until it is possible to write a full sound buffer */
@@ -163,33 +136,57 @@ DISKAUD_CloseAudio(_THIS)
         SDL_RWclose(this->hidden->output);
         this->hidden->output = NULL;
     }
+    SDL_free(this->hidden);
+    this->hidden = NULL;
 }
 
 static int
-DISKAUD_OpenAudio(_THIS, SDL_AudioSpec * spec)
+DISKAUD_OpenAudio(_THIS, const char *devname, int iscapture)
 {
+    const char *envr = SDL_getenv(DISKENVR_WRITEDELAY);
     const char *fname = DISKAUD_GetOutputFilename();
+
+    /* !!! FIXME: use device name for non-default filename? */
+    if (devname != NULL) {
+        SDL_SetError("Disk audio device name must be NULL");
+        return 0;
+    }
+
+    this->hidden = (struct SDL_PrivateAudioData *)
+            SDL_malloc(sizeof (*this->hidden));
+    if (this->hidden == NULL) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    SDL_memset(this->hidden, 0, sizeof (*this->hidden));
 
     /* Open the audio device */
     this->hidden->output = SDL_RWFromFile(fname, "wb");
     if (this->hidden->output == NULL) {
-        return (-1);
+        DISKAUD_CloseAudio(this);
+        return 0;
     }
-#if HAVE_STDIO_H
-    fprintf(stderr, "WARNING: You are using the SDL disk writer"
-            " audio driver!\n Writing to file [%s].\n", fname);
-#endif
 
     /* Allocate mixing buffer */
-    this->hidden->mixlen = spec->size;
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        return (-1);
+        DISKAUD_CloseAudio(this);
+        return 0;
     }
-    SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
+    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
+
+    this->hidden->mixlen = this->spec.size;
+    this->hidden->write_delay =
+        (envr) ? SDL_atoi(envr) : DISKDEFAULT_WRITEDELAY;
+
+#if HAVE_STDIO_H
+    fprintf(stderr,
+            "WARNING: You are using the SDL disk writer audio driver!\n"
+            " Writing to file [%s].\n", fname);
+#endif
 
     /* We're ready to rock and roll. :-) */
-    return (0);
+    return 1;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

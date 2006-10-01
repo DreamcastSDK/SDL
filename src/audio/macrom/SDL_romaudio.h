@@ -35,9 +35,5 @@ struct SDL_PrivateAudioData
     SndChannelPtr channel;
 };
 
-/* Old variable names */
-#define channel		(this->hidden->channel)
-#define audio_buf	(this->hidden->audio_buf)
-
 #endif /* _SDL_romaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */

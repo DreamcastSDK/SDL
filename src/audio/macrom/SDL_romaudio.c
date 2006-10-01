@@ -52,69 +52,46 @@
 
 /* Audio driver functions */
 
-static void Mac_CloseAudio(_THIS);
-static int Mac_OpenAudio(_THIS, SDL_AudioSpec * spec);
-static void Mac_LockAudio(_THIS);
-static void Mac_UnlockAudio(_THIS);
+static void SNDMGR_CloseAudio(_THIS);
+static int SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture);
+static void SNDMGR_LockAudio(_THIS);
+static void SNDMGR_UnlockAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 
 
 static int
-Audio_Available(void)
+SNDMGR_Available(void)
 {
     return (1);
 }
 
-static void
-Audio_DeleteDevice(SDL_AudioDevice * device)
+
+static int
+SNDMGR_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_free(device->hidden);
-    SDL_free(device);
-}
-
-static SDL_AudioDevice *
-Audio_CreateDevice(int devindex)
-{
-    SDL_AudioDevice *this;
-
-    /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
-    if (this) {
-        SDL_memset(this, 0, (sizeof *this));
-        this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc((sizeof *this->hidden));
-    }
-    if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory();
-        if (this) {
-            SDL_free(this);
-        }
-        return (0);
-    }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
     /* Set the function pointers */
-    this->OpenAudio = Mac_OpenAudio;
-    this->CloseAudio = Mac_CloseAudio;
-    this->LockAudio = Mac_LockAudio;
-    this->UnlockAudio = Mac_UnlockAudio;
-    this->free = Audio_DeleteDevice;
+    impl->OpenAudio = SNDMGR_OpenAudio;
+    impl->CloseAudio = SNDMGR_CloseAudio;
+    impl->LockAudio = SNDMGR_LockAudio;
+    impl->UnlockAudio = SNDMGR_UnlockAudio;
 
 #ifdef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
-    this->LockAudio = NULL;
-    this->UnlockAudio = NULL;
+    impl->LockAudio = NULL;
+    impl->UnlockAudio = NULL;
 #endif
-    return this;
+
+    return 1;
 }
 
 AudioBootStrap SNDMGR_bootstrap = {
     "sndmgr", SDL_MACOS_NAME " SoundManager",
-    Audio_Available, Audio_CreateDevice
+    SNDMGR_Available, SNDMGR_Init
 };
 
 #pragma options align=power
 
+static volatile int audio_is_opened = 0;
 static volatile SInt32 audio_is_locked = 0;
 static volatile SInt32 need_to_mix = 0;
 
@@ -152,13 +129,13 @@ mix_buffer(SDL_AudioDevice * audio, UInt8 * buffer)
 }
 
 static void
-Mac_LockAudio(_THIS)
+SNDMGR_LockAudio(_THIS)
 {
     IncrementAtomic((SInt32 *) & audio_is_locked);
 }
 
 static void
-Mac_UnlockAudio(_THIS)
+SNDMGR_UnlockAudio(_THIS)
 {
     SInt32 oldval;
 
@@ -221,14 +198,39 @@ callBackProc(SndChannel * chan, SndCommand * cmd_passed)
 }
 
 static int
-Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
+SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
 {
-
+    SDL_AudioSpec *spec = &this->spec;
+    SndChannelPtr channel = NULL;
     SndCallBackUPP callback;
     int sample_bits;
     int i;
     long initOptions;
 
+    if (audio_is_opened) {
+        SDL_SetError("SoundManager driver doesn't support multiple opens");
+        return 0;
+    }
+
+    if (iscapture) {
+        SDL_SetError("SoundManager driver doesn't support recording");
+        return 0;
+    }
+
+    /* !!! FIXME: ignore devname? */
+
+    /* Initialize all variables that we clean on shutdown */
+    this->hidden = (struct SDL_PrivateAudioData *)
+                        SDL_malloc((sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+
+    /* !!! FIXME: check devname and iscapture... */
+
+    /* !!! FIXME: iterate through format matrix... */
     /* Very few conversions are required, but... */
     switch (spec->format) {
     case AUDIO_S8:
@@ -244,7 +246,7 @@ Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
         spec->format = AUDIO_F32MSB;
         break;
     }
-    SDL_CalculateAudioSpec(spec);
+    SDL_CalculateAudioSpec(&this->spec);
 
     /* initialize bufferCmd header */
     memset(&header, 0, sizeof(header));
@@ -282,8 +284,9 @@ Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
     for (i = 0; i < 2; i++) {
         buffer[i] = (UInt8 *) malloc(sizeof(UInt8) * spec->size);
         if (buffer[i] == NULL) {
+            SNDMGR_CloseAudio(this);
             SDL_OutOfMemory();
-            return (-1);
+            return 0;
         }
         memset(buffer[i], 0, spec->size);
     }
@@ -291,9 +294,11 @@ Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
     /* Create the sound manager channel */
     channel = (SndChannelPtr) SDL_malloc(sizeof(*channel));
     if (channel == NULL) {
+        SNDMGR_CloseAudio(this);
         SDL_OutOfMemory();
-        return (-1);
+        return 0;
     }
+    this->hidden->channel = channel;
     if (spec->channels >= 2) {
         initOptions = initStereo;
     } else {
@@ -302,10 +307,9 @@ Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
     channel->userInfo = (long) this;
     channel->qLength = 128;
     if (SndNewChannel(&channel, sampledSynth, initOptions, callback) != noErr) {
+        SNDMGR_CloseAudio(this);
         SDL_SetError("Unable to create audio channel");
-        SDL_free(channel);
-        channel = NULL;
-        return (-1);
+        return 0;
     }
 
     /* start playback */
@@ -317,20 +321,21 @@ Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
         SndDoCommand(channel, &cmd, 0);
     }
 
+    audio_is_opened = 1;
     return 1;
 }
 
 static void
-Mac_CloseAudio(_THIS)
+SNDMGR_CloseAudio(_THIS)
 {
 
     int i;
 
     running = 0;
 
-    if (channel) {
-        SndDisposeChannel(channel, true);
-        channel = NULL;
+    if (this->hidden->channel) {
+        SndDisposeChannel(this->hidden->channel, true);
+        this->hidden->channel = NULL;
     }
 
     for (i = 0; i < 2; ++i) {
@@ -339,6 +344,9 @@ Mac_CloseAudio(_THIS)
             buffer[i] = NULL;
         }
     }
+    SDL_free(this->hidden);
+    this->hidden = NULL;
+    audio_is_opened = 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
