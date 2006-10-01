@@ -29,13 +29,23 @@
 
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
-
-/* Define the SDL audio driver structure */
 #define _THIS	SDL_AudioDevice *_this
-#ifndef _STATUS
-#define _STATUS	SDL_status *status
-#endif
-struct SDL_AudioDevice
+
+/* !!! FIXME: rename these from "Audio" to "Device" ... */
+typedef struct SDL_AudioDriverImpl
+{
+    int (*OpenAudio) (_THIS, const char *devname, int iscapture);
+    void (*ThreadInit) (_THIS); /* Called by audio thread at start */
+    void (*WaitAudio) (_THIS);
+    void (*PlayAudio) (_THIS);
+    Uint8 *(*GetAudioBuf) (_THIS);
+    void (*WaitDone) (_THIS);
+    void (*CloseAudio) (_THIS);
+    void (*LockAudio) (_THIS);
+    void (*UnlockAudio) (_THIS);
+} SDL_AudioDriverImpl;
+
+typedef struct SDL_AudioDriver
 {
     /* * * */
     /* The name of this audio driver */
@@ -45,20 +55,16 @@ struct SDL_AudioDevice
     /* The description of this audio driver */
     const char *desc;
 
-    /* * * */
-    /* Public driver functions */
-    int (*OpenAudio) (_THIS, SDL_AudioSpec * spec);
-    void (*ThreadInit) (_THIS); /* Called by audio thread at start */
-    void (*WaitAudio) (_THIS);
-    void (*PlayAudio) (_THIS);
-    Uint8 *(*GetAudioBuf) (_THIS);
-    void (*WaitDone) (_THIS);
-    void (*CloseAudio) (_THIS);
+    SDL_AudioDriverImpl impl;
+} SDL_AudioDriver;
 
+
+/* Define the SDL audio driver structure */
+struct SDL_AudioDevice
+{
     /* * * */
-    /* Lock / Unlock functions added for the Mac port */
-    void (*LockAudio) (_THIS);
-    void (*UnlockAudio) (_THIS);
+    /* Lowlevel audio implementation */
+    const SDL_AudioDriver *driver;
 
     /* * * */
     /* Data common to all devices */
@@ -99,7 +105,7 @@ typedef struct AudioBootStrap
     const char *name;
     const char *desc;
     int (*available) (void);
-    SDL_AudioDevice *(*create) (int devindex);
+    int (*init) (SDL_AudioDriverImpl *impl);
 } AudioBootStrap;
 
 #if SDL_AUDIO_DRIVER_BSD
@@ -173,9 +179,6 @@ extern AudioBootStrap MMEAUDIO_bootstrap;
 #if SDL_AUDIO_DRIVER_DART
 extern AudioBootStrap DART_bootstrap;
 #endif
-
-/* This is the current audio device */
-extern SDL_AudioDevice *current_audio;
 
 #endif /* _SDL_sysaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */

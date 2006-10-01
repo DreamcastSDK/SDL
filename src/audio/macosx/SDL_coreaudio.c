@@ -31,63 +31,36 @@
 
 /* Audio driver functions */
 
-static int Core_OpenAudio(_THIS, SDL_AudioSpec * spec);
-static void Core_WaitAudio(_THIS);
-static void Core_PlayAudio(_THIS);
-static Uint8 *Core_GetAudioBuf(_THIS);
-static void Core_CloseAudio(_THIS);
+static int COREAUDIO_OpenAudio(_THIS, const char *devname, int iscapture);
+static void COREAUDIO_WaitAudio(_THIS);
+static void COREAUDIO_PlayAudio(_THIS);
+static Uint8 *COREAUDIO_GetAudioBuf(_THIS);
+static void COREAUDIO_CloseAudio(_THIS);
 
 /* Audio driver bootstrap functions */
 
 static int
-Audio_Available(void)
+COREAUDIO_Available(void)
 {
     return (1);
 }
 
-static void
-Audio_DeleteDevice(SDL_AudioDevice * device)
+static int
+COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_free(device->hidden);
-    SDL_free(device);
-}
-
-static SDL_AudioDevice *
-Audio_CreateDevice(int devindex)
-{
-    SDL_AudioDevice *this;
-
-    /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
-    if (this) {
-        SDL_memset(this, 0, (sizeof *this));
-        this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc((sizeof *this->hidden));
-    }
-    if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory();
-        if (this) {
-            SDL_free(this);
-        }
-        return (0);
-    }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
     /* Set the function pointers */
-    this->OpenAudio = Core_OpenAudio;
-    this->WaitAudio = Core_WaitAudio;
-    this->PlayAudio = Core_PlayAudio;
-    this->GetAudioBuf = Core_GetAudioBuf;
-    this->CloseAudio = Core_CloseAudio;
+    impl->OpenAudio = COREAUDIO_OpenAudio;
+    impl->WaitAudio = COREAUDIO_WaitAudio;
+    impl->PlayAudio = COREAUDIO_PlayAudio;
+    impl->GetAudioBuf = COREAUDIO_GetAudioBuf;
+    impl->CloseAudio = COREAUDIO_CloseAudio;
 
-    this->free = Audio_DeleteDevice;
-
-    return this;
+    return 1;
 }
 
 AudioBootStrap COREAUDIO_bootstrap = {
     "coreaudio", "Mac OS X CoreAudio",
-    Audio_Available, Audio_CreateDevice
+    COREAUDIO_Available, COREAUDIO_Init
 };
 
 /* The CoreAudio callback */
@@ -118,22 +91,26 @@ audioCallback(void *inRefCon,
     remaining = ioData->mDataByteSize;
     ptr = ioData->mData;
     while (remaining > 0) {
-        if (bufferOffset >= bufferSize) {
+        if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
             /* Generate the data */
-            SDL_memset(buffer, this->spec.silence, bufferSize);
+            SDL_memset(this->hidden->buffer, this->spec.silence,
+                       this->hidden->bufferSize);
             SDL_mutexP(this->mixer_lock);
-            (*this->spec.callback) (this->spec.userdata, buffer, bufferSize);
+            (*this->spec.callback) (this->spec.userdata, this->hidden->buffer,
+                                    this->hidden->bufferSize);
             SDL_mutexV(this->mixer_lock);
-            bufferOffset = 0;
+            this->hidden->bufferOffset = 0;
         }
 
-        len = bufferSize - bufferOffset;
+        len = this->hidden->bufferSize - this->hidden->bufferOffset;
         if (len > remaining)
             len = remaining;
-        SDL_memcpy(ptr, (char *) buffer + bufferOffset, len);
+        SDL_memcpy(ptr,
+                    (char *) this->hidden->buffer + this->hidden->bufferOffset,
+                    len);
         ptr = (char *) ptr + len;
         remaining -= len;
-        bufferOffset += len;
+        this->hidden->bufferOffset += len;
     }
 
     return 0;
@@ -141,86 +118,104 @@ audioCallback(void *inRefCon,
 
 /* Dummy functions -- we don't use thread-based audio */
 void
-Core_WaitAudio(_THIS)
+COREAUDIO_WaitAudio(_THIS)
 {
     return;
 }
 
 void
-Core_PlayAudio(_THIS)
+COREAUDIO_PlayAudio(_THIS)
 {
     return;
 }
 
 Uint8 *
-Core_GetAudioBuf(_THIS)
+COREAUDIO_GetAudioBuf(_THIS)
 {
     return (NULL);
 }
 
 void
-Core_CloseAudio(_THIS)
+COREAUDIO_CloseAudio(_THIS)
 {
     OSStatus result;
     struct AudioUnitInputCallback callback;
 
+    if (this->hidden == NULL) {
+        return;
+    }
+
     /* stop processing the audio unit */
-    result = AudioOutputUnitStop(outputAudioUnit);
+    result = AudioOutputUnitStop(this->hidden->outputAudioUnit);
     if (result != noErr) {
-        SDL_SetError("Core_CloseAudio: AudioOutputUnitStop");
+        SDL_SetError("COREAUDIO_CloseAudio: AudioOutputUnitStop");
         return;
     }
 
     /* Remove the input callback */
     callback.inputProc = 0;
     callback.inputProcRefCon = 0;
-    result = AudioUnitSetProperty(outputAudioUnit,
+    result = AudioUnitSetProperty(this->hidden->outputAudioUnit,
                                   kAudioUnitProperty_SetInputCallback,
                                   kAudioUnitScope_Input,
                                   0, &callback, sizeof(callback));
     if (result != noErr) {
         SDL_SetError
-            ("Core_CloseAudio: AudioUnitSetProperty (kAudioUnitProperty_SetInputCallback)");
+            ("COREAUDIO_CloseAudio: AudioUnitSetProperty (kAudioUnitProperty_SetInputCallback)");
         return;
     }
 
-    result = CloseComponent(outputAudioUnit);
+    result = CloseComponent(this->hidden->outputAudioUnit);
     if (result != noErr) {
-        SDL_SetError("Core_CloseAudio: CloseComponent");
+        SDL_SetError("COREAUDIO_CloseAudio: CloseComponent");
         return;
     }
 
-    SDL_free(buffer);
+    SDL_free(this->hidden->buffer);
+    SDL_free(this->hidden);
+    this->hidden = NULL;
 }
 
 #define CHECK_RESULT(msg) \
     if (result != noErr) { \
+        COREAUDIO_CloseAudio(this); \
         SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
         return -1; \
     }
 
 
 int
-Core_OpenAudio(_THIS, SDL_AudioSpec * spec)
+COREAUDIO_OpenAudio(_THIS, const char *devname, int iscapture)
 {
     OSStatus result = noErr;
     Component comp;
     ComponentDescription desc;
     struct AudioUnitInputCallback callback;
     AudioStreamBasicDescription strdesc;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(spec->format);
+    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     int valid_datatype = 0;
+
+    /* Initialize all variables that we clean on shutdown */
+    this->hidden = (struct SDL_PrivateAudioData *)
+                        SDL_malloc((sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        SDL_OutOfMemory();
+        return (0);
+    }
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+
+    /* !!! FIXME: check devname and iscapture... */
 
     /* Setup a AudioStreamBasicDescription with the requested format */
     memset(&strdesc, '\0', sizeof(AudioStreamBasicDescription));
     strdesc.mFormatID = kAudioFormatLinearPCM;
     strdesc.mFormatFlags = kLinearPCMFormatFlagIsPacked;
-    strdesc.mChannelsPerFrame = spec->channels;
-    strdesc.mSampleRate = spec->freq;
+    strdesc.mChannelsPerFrame = this->spec.channels;
+    strdesc.mSampleRate = this->spec.freq;
     strdesc.mFramesPerPacket = 1;
 
     while ((!valid_datatype) && (test_format)) {
-        spec->format = test_format;
+        this->spec.format = test_format;
         /* Just a list of valid SDL formats, so people don't pass junk here. */
         switch (test_format) {
         case AUDIO_U8:
@@ -234,13 +229,13 @@ Core_OpenAudio(_THIS, SDL_AudioSpec * spec)
         case AUDIO_F32LSB:
         case AUDIO_F32MSB:
             valid_datatype = 1;
-            strdesc.mBitsPerChannel = SDL_AUDIO_BITSIZE(spec->format);
-            if (SDL_AUDIO_ISBIGENDIAN(spec->format))
+            strdesc.mBitsPerChannel = SDL_AUDIO_BITSIZE(this->spec.format);
+            if (SDL_AUDIO_ISBIGENDIAN(this->spec.format))
                 strdesc.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
-            if (SDL_AUDIO_ISFLOAT(spec->format))
+            if (SDL_AUDIO_ISFLOAT(this->spec.format))
                 strdesc.mFormatFlags |= kLinearPCMFormatFlagIsFloat;
-            else if (SDL_AUDIO_ISSIGNED(spec->format))
+            else if (SDL_AUDIO_ISSIGNED(this->spec.format))
                 strdesc.mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
             break;
         }
@@ -248,7 +243,7 @@ Core_OpenAudio(_THIS, SDL_AudioSpec * spec)
 
     if (!valid_datatype) {      /* shouldn't happen, but just in case... */
         SDL_SetError("Unsupported audio format");
-        return (-1);
+        return 0;
     }
 
     strdesc.mBytesPerFrame =
@@ -266,18 +261,19 @@ Core_OpenAudio(_THIS, SDL_AudioSpec * spec)
 
     comp = FindNextComponent(NULL, &desc);
     if (comp == NULL) {
+        COREAUDIO_CloseAudio(this);
         SDL_SetError
             ("Failed to start CoreAudio: FindNextComponent returned NULL");
-        return -1;
+        return 0;
     }
 
     /* Open & initialize the default output audio unit */
-    result = OpenAComponent(comp, &outputAudioUnit);
+    result = OpenAComponent(comp, &this->hidden->outputAudioUnit);
     CHECK_RESULT("OpenAComponent")
-        result = AudioUnitInitialize(outputAudioUnit);
+        result = AudioUnitInitialize(this->hidden->outputAudioUnit);
     CHECK_RESULT("AudioUnitInitialize")
         /* Set the input format of the audio unit. */
-        result = AudioUnitSetProperty(outputAudioUnit,
+        result = AudioUnitSetProperty(this->hidden->outputAudioUnit,
                                       kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Input,
                                       0, &strdesc, sizeof(strdesc));
@@ -285,20 +281,20 @@ Core_OpenAudio(_THIS, SDL_AudioSpec * spec)
         /* Set the audio callback */
         callback.inputProc = audioCallback;
     callback.inputProcRefCon = this;
-    result = AudioUnitSetProperty(outputAudioUnit,
+    result = AudioUnitSetProperty(this->hidden->outputAudioUnit,
                                   kAudioUnitProperty_SetInputCallback,
                                   kAudioUnitScope_Input,
                                   0, &callback, sizeof(callback));
     CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_SetInputCallback)")
         /* Calculate the final parameters for this audio specification */
-        SDL_CalculateAudioSpec(spec);
+        SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate a sample buffer */
-    bufferOffset = bufferSize = this->spec.size;
-    buffer = SDL_malloc(bufferSize);
+    this->hidden->bufferOffset = this->hidden->bufferSize = this->spec.size;
+    this->hidden->buffer = SDL_malloc(this->hidden->bufferSize);
 
     /* Finally, start processing of the audio unit */
-    result = AudioOutputUnitStart(outputAudioUnit);
+    result = AudioOutputUnitStart(this->hidden->outputAudioUnit);
     CHECK_RESULT("AudioOutputUnitStart")
         /* We're running! */
         return (1);
