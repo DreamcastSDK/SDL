@@ -289,47 +289,27 @@ SDL_UnlockAudio_Default(SDL_AudioDevice * audio)
 static SDL_AudioFormat
 SDL_ParseAudioFormat(const char *string)
 {
-    SDL_AudioFormat format = 0;
-
-    switch (*string) {
-    case 'U':
-        ++string;
-        format |= 0x0000;
-        break;
-    case 'S':
-        ++string;
-        format |= 0x8000;
-        break;
-    default:
-        return 0;
-    }
-    switch (SDL_atoi(string)) {
-    case 8:
-        string += 1;
-        format |= 8;
-        break;
-    case 16:
-        string += 2;
-        format |= 16;
-        if (SDL_strcmp(string, "LSB") == 0
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            || SDL_strcmp(string, "SYS") == 0
-#endif
-            ) {
-            format |= 0x0000;
-        }
-        if (SDL_strcmp(string, "MSB") == 0
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-            || SDL_strcmp(string, "SYS") == 0
-#endif
-            ) {
-            format |= 0x1000;
-        }
-        break;
-    default:
-        return 0;
-    }
-    return format;
+    #define CHECK_FMT_STRING(x) if (strcmp(string, #x) == 0) return AUDIO_##x
+    CHECK_FMT_STRING(U8);
+    CHECK_FMT_STRING(S8);
+    CHECK_FMT_STRING(U16LSB);
+    CHECK_FMT_STRING(S16LSB);
+    CHECK_FMT_STRING(U16MSB);
+    CHECK_FMT_STRING(S16MSB);
+    CHECK_FMT_STRING(U16SYS);
+    CHECK_FMT_STRING(S16SYS);
+    CHECK_FMT_STRING(U16);
+    CHECK_FMT_STRING(S16);
+    CHECK_FMT_STRING(S32LSB);
+    CHECK_FMT_STRING(S32MSB);
+    CHECK_FMT_STRING(S32SYS);
+    CHECK_FMT_STRING(S32);
+    CHECK_FMT_STRING(F32LSB);
+    CHECK_FMT_STRING(F32MSB);
+    CHECK_FMT_STRING(F32SYS);
+    CHECK_FMT_STRING(F32);
+    #undef CHECK_FMT_STRING
+    return 0;
 }
 
 int
