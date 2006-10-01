@@ -21,11 +21,16 @@
 */
 #include "SDL_config.h"
 
+/* This should work on PowerPC and Intel Mac OS X, and Carbonized Mac OS 9. */
+
 #if defined(__APPLE__) && defined(__MACH__)
+#  define SDL_MACOS_NAME "Mac OS X"
 #  include <Carbon/Carbon.h>
 #elif TARGET_API_MAC_CARBON && (UNIVERSAL_INTERFACES_VERSION > 0x0335)
+#  define SDL_MACOS_NAME "Mac OS 9"
 #  include <Carbon.h>
 #else
+#  define SDL_MACOS_NAME "Mac OS 9"
 #  include <Sound.h>            /* SoundManager interface */
 #  include <Gestalt.h>
 #  include <DriverServices.h>
@@ -104,12 +109,9 @@ Audio_CreateDevice(int devindex)
 }
 
 AudioBootStrap SNDMGR_bootstrap = {
-    "sndmgr", "MacOS SoundManager 3.0",
+    "sndmgr", SDL_MACOS_NAME " SoundManager",
     Audio_Available, Audio_CreateDevice
 };
-
-#if defined(TARGET_API_MAC_CARBON) || defined(USE_RYANS_SOUNDCODE)
-/* This works correctly on Mac OS X */
 
 #pragma options align=power
 
@@ -339,191 +341,4 @@ Mac_CloseAudio(_THIS)
     }
 }
 
-#else /* !TARGET_API_MAC_CARBON && !USE_RYANS_SOUNDCODE */
-
-static void
-Mac_LockAudio(_THIS)
-{
-    /* no-op. */
-}
-
-static void
-Mac_UnlockAudio(_THIS)
-{
-    /* no-op. */
-}
-
-
-/* This function is called by Sound Manager when it has exhausted one of
-   the buffers, so we'll zero it to silence and fill it with audio if
-   we're not paused.
-*/
-static pascal void
-sndDoubleBackProc(SndChannelPtr chan, SndDoubleBufferPtr newbuf)
-{
-    SDL_AudioDevice *audio = (SDL_AudioDevice *) newbuf->dbUserInfo[0];
-
-    /* If audio is quitting, don't do anything */
-    if (!audio->enabled) {
-        return;
-    }
-    memset(newbuf->dbSoundData, 0, audio->spec.size);
-    newbuf->dbNumFrames = audio->spec.samples;
-    if (!audio->paused) {
-        if (audio->convert.needed) {
-            audio->spec.callback(audio->spec.userdata,
-                                 (Uint8 *) audio->convert.buf,
-                                 audio->convert.len);
-            SDL_ConvertAudio(&audio->convert);
-#if 0
-            if (audio->convert.len_cvt != audio->spec.size) {
-                /* Uh oh... probably crashes here */ ;
-            }
-#endif
-            SDL_memcpy(newbuf->dbSoundData, audio->convert.buf,
-                       audio->convert.len_cvt);
-        } else {
-            audio->spec.callback(audio->spec.userdata,
-                                 (Uint8 *) newbuf->dbSoundData,
-                                 audio->spec.size);
-        }
-    }
-    newbuf->dbFlags |= dbBufferReady;
-}
-
-static int
-DoubleBufferAudio_Available(void)
-{
-    int available;
-    NumVersion sndversion;
-    long response;
-
-    available = 0;
-    sndversion = SndSoundManagerVersion();
-    if (sndversion.majorRev >= 3) {
-        if (Gestalt(gestaltSoundAttr, &response) == noErr) {
-            if ((response & (1 << gestaltSndPlayDoubleBuffer))) {
-                available = 1;
-            }
-        }
-    } else {
-        if (Gestalt(gestaltSoundAttr, &response) == noErr) {
-            if ((response & (1 << gestaltHasASC))) {
-                available = 1;
-            }
-        }
-    }
-    return (available);
-}
-
-static void
-Mac_CloseAudio(_THIS)
-{
-    int i;
-
-    if (channel != NULL) {
-        /* Clean up the audio channel */
-        SndDisposeChannel(channel, true);
-        channel = NULL;
-    }
-    for (i = 0; i < 2; ++i) {
-        if (audio_buf[i]) {
-            SDL_free(audio_buf[i]);
-            audio_buf[i] = NULL;
-        }
-    }
-}
-
-static int
-Mac_OpenAudio(_THIS, SDL_AudioSpec * spec)
-{
-    SndDoubleBufferHeader2 audio_dbh;
-    int i;
-    long initOptions;
-    int sample_bits;
-    SndDoubleBackUPP doubleBackProc;
-
-    /* Check to make sure double-buffered audio is available */
-    if (!DoubleBufferAudio_Available()) {
-        SDL_SetError("Sound manager doesn't support double-buffering");
-        return (-1);
-    }
-
-    /* Very few conversions are required, but... */
-    switch (spec->format) {
-    case AUDIO_S8:
-        spec->format = AUDIO_U8;
-        break;
-    case AUDIO_U16LSB:
-        spec->format = AUDIO_S16LSB;
-        break;
-    case AUDIO_U16MSB:
-        spec->format = AUDIO_S16MSB;
-        break;
-    }
-    SDL_CalculateAudioSpec(spec);
-
-    /* initialize the double-back header */
-    SDL_memset(&audio_dbh, 0, sizeof(audio_dbh));
-    doubleBackProc = NewSndDoubleBackProc(sndDoubleBackProc);
-    sample_bits = spec->size / spec->samples / spec->channels * 8;
-
-    audio_dbh.dbhNumChannels = spec->channels;
-    audio_dbh.dbhSampleSize = sample_bits;
-    audio_dbh.dbhCompressionID = 0;
-    audio_dbh.dbhPacketSize = 0;
-    audio_dbh.dbhSampleRate = spec->freq << 16;
-    audio_dbh.dbhDoubleBack = doubleBackProc;
-    audio_dbh.dbhFormat = 0;
-
-    /* Note that we install the 16bitLittleEndian Converter if needed. */
-    if (spec->format == 0x8010) {
-        audio_dbh.dbhCompressionID = fixedCompression;
-        audio_dbh.dbhFormat = k16BitLittleEndianFormat;
-    }
-
-    /* allocate the 2 double-back buffers */
-    for (i = 0; i < 2; ++i) {
-        audio_buf[i] = SDL_calloc(1, sizeof(SndDoubleBuffer) + spec->size);
-        if (audio_buf[i] == NULL) {
-            SDL_OutOfMemory();
-            return (-1);
-        }
-        audio_buf[i]->dbNumFrames = spec->samples;
-        audio_buf[i]->dbFlags = dbBufferReady;
-        audio_buf[i]->dbUserInfo[0] = (long) this;
-        audio_dbh.dbhBufferPtr[i] = audio_buf[i];
-    }
-
-    /* Create the sound manager channel */
-    channel = (SndChannelPtr) SDL_malloc(sizeof(*channel));
-    if (channel == NULL) {
-        SDL_OutOfMemory();
-        return (-1);
-    }
-    if (spec->channels >= 2) {
-        initOptions = initStereo;
-    } else {
-        initOptions = initMono;
-    }
-    channel->userInfo = 0;
-    channel->qLength = 128;
-    if (SndNewChannel(&channel, sampledSynth, initOptions, 0L) != noErr) {
-        SDL_SetError("Unable to create audio channel");
-        SDL_free(channel);
-        channel = NULL;
-        return (-1);
-    }
-
-    /* Start playback */
-    if (SndPlayDoubleBuffer(channel, (SndDoubleBufferHeaderPtr) & audio_dbh)
-        != noErr) {
-        SDL_SetError("Unable to play double buffered audio");
-        return (-1);
-    }
-
-    return 1;
-}
-
-#endif /* TARGET_API_MAC_CARBON || USE_RYANS_SOUNDCODE */
 /* vi: set ts=4 sw=4 expandtab: */
