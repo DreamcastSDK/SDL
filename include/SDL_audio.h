@@ -228,6 +228,13 @@ typedef Uint32 SDL_AudioDeviceID;
 /*
  * Get the number of available devices exposed by the current driver.
  *  Only valid after a successfully initializing the audio subsystem.
+ *  Returns -1 if an explicit list of devices can't be determined; this is
+ *  not an error. For example, if SDL is set up to talk to a remote audio
+ *  server, it can't list every one available on the Internet, but it will
+ *  still allow a specific host to be specified to SDL_OpenAudioDevice().
+ * In many common cases, when this function returns a value <= 0, it can still
+ *  successfully open the default device (NULL for first argument of
+ *  SDL_OpenAudioDevice()).
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAudioDevices(int iscapture);
 
@@ -238,16 +245,25 @@ extern DECLSPEC int SDLCALL SDL_GetNumAudioDevices(int iscapture);
  *  The values returned by this function reflect the latest call to
  *  SDL_GetNumAudioDevices(); recall that function to redetect available
  *  hardware.
+ *
+ * The string returned by this function is UTF-8 encoded, read-only, and
+ *  managed internally. You are not to free it. If you need to keep the
+ *  string for any length of time, you should make your own copy of it, as it
+ *  will be invalid next time any of several other SDL functions is called.
  */
 extern DECLSPEC const char *SDLCALL SDL_GetAudioDevice(int index,
                                                        int iscapture);
 
 
 /*
- * Open a specific audio device. Passing in a device name of NULL is
- *  equivalent to SDL_OpenAudio(). Returns 0 on error, a valid device ID
- *  on success. SDL_OpenAudio(), unlike this function, always acts on device
- *  ID 1.
+ * Open a specific audio device. Passing in a device name of NULL requests
+ *  the most reasonable default (and is equivalent to calling SDL_OpenAudio()).
+ * The device name is a UTF-8 string reported by SDL_GetAudioDevice(), but
+ *  some drivers allow arbitrary and driver-specific strings, such as a
+ *  hostname/IP address for a remote audio server, or a filename in the
+ *  diskaudio driver.
+ * Returns 0 on error, a valid device ID that is >= 2 on success.
+ *  SDL_OpenAudio(), unlike this function, always acts on device ID 1.
  */
 extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(const char
                                                               *device,
