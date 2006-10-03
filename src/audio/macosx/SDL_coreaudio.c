@@ -29,6 +29,7 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_coreaudio.h"
 
+#define DEBUG_COREAUDIO 1
 
 typedef struct COREAUDIO_DeviceList
 {
@@ -88,10 +89,12 @@ build_device_list(int iscapture, COREAUDIO_DeviceList **devices, int *devCount)
         return;
 
     for (i = 0; i < max; i++) {
+        CFStringRef cfstr = NULL;
         char *ptr = NULL;
         AudioDeviceID dev = devs[i];
         AudioBufferList *buflist = NULL;
         int usable = 0;
+        CFIndex len = 0;
 
         result = AudioDeviceGetPropertyInfo(dev, 0, iscapture,
                                       kAudioDevicePropertyStreamConfiguration,
@@ -122,32 +125,43 @@ build_device_list(int iscapture, COREAUDIO_DeviceList **devices, int *devCount)
         if (!usable)
             continue;
 
-        /* !!! FIXME: use CFStrings, instead, and convert to UTF-8. */
-        result = AudioDeviceGetPropertyInfo(dev, 0, iscapture,
-                                           kAudioDevicePropertyDeviceName,
-                                           &size, &outWritable);
-
-        if (result != kAudioHardwareNoError)
-            continue;
-
-        ptr = (char *) SDL_malloc(size + 1);
-        if (ptr == NULL)
-            continue;
-
+        size = sizeof (CFStringRef);
         result = AudioDeviceGetProperty(dev, 0, iscapture,
-                                       kAudioDevicePropertyDeviceName,
-                                       &size, ptr);
+                                        kAudioObjectPropertyName,
+                                        &size, &cfstr);
 
         if (result != kAudioHardwareNoError)
             continue;
 
-        while ((size > 0) && (ptr[size-1] == ' '))
-            size--; /* I have a USB device with whitespace at the end... */
+        len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr),
+                                                kCFStringEncodingUTF8);
 
-        if (size == 0) {
+        ptr = (char *) SDL_malloc(len + 1);
+        usable = ( (ptr != NULL) &&
+                (CFStringGetCString(cfstr,ptr,len+1,kCFStringEncodingUTF8)) );
+
+        CFRelease(cfstr);
+
+        if (usable) {
+            len = strlen(ptr);
+            /* Some devices have whitespace at the end...trim it. */
+            while ((len > 0) && (ptr[len-1] == ' ')) {
+                len--;
+            }
+            usable = (len > 0);
+        }
+
+        if (!usable) {
             SDL_free(ptr);
         } else {
-            ptr[size] = '\0';
+            ptr[len] = '\0';
+
+            #if DEBUG_COREAUDIO
+            printf("COREAUDIO: Found %s device #%d: '%s' (devid %d)\n",
+                    ((iscapture) ? "capture" : "output"),
+                    (int) *devCount, ptr, (int) dev);
+            #endif
+
             (*devices)[*devCount].id = dev;
             (*devices)[*devCount].name = ptr;
             (*devCount)++;
@@ -216,8 +230,8 @@ AudioBootStrap COREAUDIO_bootstrap = {
 static void
 COREAUDIO_Deinitialize(void)
 {
-    free_device_list(0, &outputDevices, &outputDeviceCount);
-    free_device_list(1, &inputDevices, &inputDeviceCount);
+    free_device_list(&outputDevices, &outputDeviceCount);
+    free_device_list(&inputDevices, &inputDeviceCount);
 }
 
 

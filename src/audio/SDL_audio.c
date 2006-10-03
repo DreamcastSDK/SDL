@@ -854,7 +854,7 @@ SDL_AudioQuit(void)
     }
 
     /* Free the driver data */
-    current_audio.Deinitialize();
+    current_audio.impl.Deinitialize();
     SDL_memset(&current_audio, '\0', sizeof (current_audio));
     SDL_memset(open_devices, '\0', sizeof (open_devices));
 }
