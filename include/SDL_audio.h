@@ -251,8 +251,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumAudioDevices(int iscapture);
  *  string for any length of time, you should make your own copy of it, as it
  *  will be invalid next time any of several other SDL functions is called.
  */
-extern DECLSPEC const char *SDLCALL SDL_GetAudioDevice(int index,
-                                                       int iscapture);
+extern DECLSPEC const char *SDLCALL SDL_GetAudioDeviceName(int index,
+                                                           int iscapture);
 
 
 /*

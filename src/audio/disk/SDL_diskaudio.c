@@ -47,11 +47,11 @@
 #define DISKDEFAULT_WRITEDELAY   150
 
 /* Audio driver functions */
-static int DISKAUD_OpenAudio(_THIS, const char *devname, int iscapture);
-static void DISKAUD_WaitAudio(_THIS);
-static void DISKAUD_PlayAudio(_THIS);
-static Uint8 *DISKAUD_GetAudioBuf(_THIS);
-static void DISKAUD_CloseAudio(_THIS);
+static int DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture);
+static void DISKAUD_WaitDevice(_THIS);
+static void DISKAUD_PlayDevice(_THIS);
+static Uint8 *DISKAUD_GetDeviceBuf(_THIS);
+static void DISKAUD_CloseDevice(_THIS);
 
 static const char *
 DISKAUD_GetOutputFilename(void)
@@ -80,11 +80,11 @@ DISKAUD_Init(SDL_AudioDriverImpl *impl)
     SDL_memset(impl, '\0', sizeof (SDL_AudioDriverImpl));
 
     /* Set the function pointers */
-    impl->OpenAudio = DISKAUD_OpenAudio;
-    impl->WaitAudio = DISKAUD_WaitAudio;
-    impl->PlayAudio = DISKAUD_PlayAudio;
-    impl->GetAudioBuf = DISKAUD_GetAudioBuf;
-    impl->CloseAudio = DISKAUD_CloseAudio;
+    impl->OpenDevice = DISKAUD_OpenDevice;
+    impl->WaitDevice = DISKAUD_WaitDevice;
+    impl->PlayDevice = DISKAUD_PlayDevice;
+    impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
+    impl->CloseDevice = DISKAUD_CloseDevice;
 
     return 1;
 }
@@ -96,13 +96,13 @@ AudioBootStrap DISKAUD_bootstrap = {
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-DISKAUD_WaitAudio(_THIS)
+DISKAUD_WaitDevice(_THIS)
 {
     SDL_Delay(this->hidden->write_delay);
 }
 
 static void
-DISKAUD_PlayAudio(_THIS)
+DISKAUD_PlayDevice(_THIS)
 {
     int written;
 
@@ -120,13 +120,13 @@ DISKAUD_PlayAudio(_THIS)
 }
 
 static Uint8 *
-DISKAUD_GetAudioBuf(_THIS)
+DISKAUD_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 static void
-DISKAUD_CloseAudio(_THIS)
+DISKAUD_CloseDevice(_THIS)
 {
     if (this->hidden->mixbuf != NULL) {
         SDL_FreeAudioMem(this->hidden->mixbuf);
@@ -141,7 +141,7 @@ DISKAUD_CloseAudio(_THIS)
 }
 
 static int
-DISKAUD_OpenAudio(_THIS, const char *devname, int iscapture)
+DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     const char *envr = SDL_getenv(DISKENVR_WRITEDELAY);
     const char *fname = DISKAUD_GetOutputFilename();
@@ -163,14 +163,14 @@ DISKAUD_OpenAudio(_THIS, const char *devname, int iscapture)
     /* Open the audio device */
     this->hidden->output = SDL_RWFromFile(fname, "wb");
     if (this->hidden->output == NULL) {
-        DISKAUD_CloseAudio(this);
+        DISKAUD_CloseDevice(this);
         return 0;
     }
 
     /* Allocate mixing buffer */
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        DISKAUD_CloseAudio(this);
+        DISKAUD_CloseDevice(this);
         return 0;
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

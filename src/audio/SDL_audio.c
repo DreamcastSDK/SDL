@@ -230,7 +230,7 @@ SDL_RunAudio(void *devicep)
                 continue;
             }
         } else {
-            stream = current_audio.impl.GetAudioBuf(device);
+            stream = current_audio.impl.GetDeviceBuf(device);
             if (stream == NULL) {
                 stream = device->fake_stream;
             }
@@ -250,7 +250,7 @@ SDL_RunAudio(void *devicep)
         /* Convert the audio if necessary */
         if (device->convert.needed) {
             SDL_ConvertAudio(&device->convert);
-            stream = current_audio.impl.GetAudioBuf(device);
+            stream = current_audio.impl.GetDeviceBuf(device);
             if (stream == NULL) {
                 stream = device->fake_stream;
             }
@@ -259,14 +259,14 @@ SDL_RunAudio(void *devicep)
 
         /* Ready current buffer for play and change current buffer */
         if (stream != device->fake_stream) {
-            current_audio.impl.PlayAudio(device);
+            current_audio.impl.PlayDevice(device);
         }
 
         /* Wait for an audio buffer to become available */
         if (stream == device->fake_stream) {
             SDL_Delay((device->spec.samples * 1000) / device->spec.freq);
         } else {
-            current_audio.impl.WaitAudio(device);
+            current_audio.impl.WaitDevice(device);
         }
     }
 
@@ -275,11 +275,11 @@ SDL_RunAudio(void *devicep)
         current_audio.impl.WaitDone(device);
     }
 #if SDL_AUDIO_DRIVER_AHI
-    D(bug("WaitAudio...Done\n"));
+    D(bug("WaitDevice...Done\n"));
 
-    audio->CloseAudio(audio);
+    audio->CloseDevice(audio);
 
-    D(bug("CloseAudio..Done, subtask exiting...\n"));
+    D(bug("CloseDevice..Done, subtask exiting...\n"));
     audio_configured = 0;
 #endif
 #ifdef __OS2__
@@ -291,7 +291,7 @@ SDL_RunAudio(void *devicep)
 }
 
 static void
-SDL_LockAudio_Default(SDL_AudioDevice * audio)
+SDL_LockDevice_Default(SDL_AudioDevice * audio)
 {
     if (audio->thread && (SDL_ThreadID() == audio->threadid)) {
         return;
@@ -300,7 +300,7 @@ SDL_LockAudio_Default(SDL_AudioDevice * audio)
 }
 
 static void
-SDL_UnlockAudio_Default(SDL_AudioDevice * audio)
+SDL_UnlockDevice_Default(SDL_AudioDevice * audio)
 {
     if (audio->thread && (SDL_ThreadID() == audio->threadid)) {
         return;
@@ -438,9 +438,9 @@ SDL_AudioInit(const char *driver_name)
         }
     }
 
-    if (!current_audio.impl.LockAudio && !current_audio.impl.UnlockAudio) {
-        current_audio.impl.LockAudio = SDL_LockAudio_Default;
-        current_audio.impl.UnlockAudio = SDL_UnlockAudio_Default;
+    if (!current_audio.impl.LockDevice && !current_audio.impl.UnlockDevice) {
+        current_audio.impl.LockDevice = SDL_LockDevice_Default;
+        current_audio.impl.UnlockDevice = SDL_UnlockDevice_Default;
     }
 
     return (0);
@@ -467,19 +467,19 @@ SDL_GetNumAudioDevices(int iscapture)
 
 
 const char *
-SDL_GetAudioDevice(int index, int iscapture)
+SDL_GetAudioDeviceName(int index, int iscapture)
 {
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
         SDL_SetError("Audio subsystem is not initialized");
         return NULL;
     }
 
-    if ((index < 0) && (!current_audio.impl.GetAudioDevice)) {
+    if ((index < 0) && (!current_audio.impl.GetDeviceName)) {
         SDL_SetError("No such device");
         return NULL;
     }
 
-    return current_audio.impl.GetAudioDevice(index, iscapture);
+    return current_audio.impl.GetDeviceName(index, iscapture);
 }
 
 
@@ -501,7 +501,7 @@ close_audio_device(SDL_AudioDevice *device)
     }
 #if !SDL_AUDIO_DRIVER_AHI   /* !!! FIXME: get rid of this #if. */
     if (device->opened) {
-        current_audio.impl.CloseAudio(device);
+        current_audio.impl.CloseDevice(device);
         device->opened = 0;
     }
 #endif
@@ -632,7 +632,7 @@ open_audio_device(const char *devname, int iscapture,
 /* !!! FIXME: Get this #if out of the core. */
 /* AmigaOS opens audio inside the main loop */
 #if !SDL_AUDIO_DRIVER_AHI
-    if (!current_audio.impl.OpenAudio(device, devname, iscapture)) {
+    if (!current_audio.impl.OpenDevice(device, devname, iscapture)) {
         close_audio_device(device);
         return 0;
     }
@@ -824,11 +824,11 @@ SDL_PauseAudio(int pause_on)
 void
 SDL_LockAudioDevice(SDL_AudioDeviceID devid)
 {
-    if (current_audio.impl.LockAudio != NULL) {
+    if (current_audio.impl.LockDevice != NULL) {
         SDL_AudioDevice *device = get_audio_device(devid);
         /* Obtain a lock on the mixing buffers */
         if (device) {
-            current_audio.impl.LockAudio(device);
+            current_audio.impl.LockDevice(device);
         }
     }
 }
@@ -842,11 +842,11 @@ SDL_LockAudio(void)
 void
 SDL_UnlockAudioDevice(SDL_AudioDeviceID devid)
 {
-    if (current_audio.impl.UnlockAudio != NULL) {
+    if (current_audio.impl.UnlockDevice != NULL) {
         SDL_AudioDevice *device = get_audio_device(devid);
         /* Obtain a lock on the mixing buffers */
         if (device) {
-            current_audio.impl.UnlockAudio(device);
+            current_audio.impl.UnlockDevice(device);
         }
     }
 }

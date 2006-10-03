@@ -37,11 +37,11 @@
 #define DUMMYAUD_DRIVER_NAME         "dummy"
 
 /* Audio driver functions */
-static int DUMMYAUD_OpenAudio(_THIS, const char *devname, int iscapture);
-static void DUMMYAUD_WaitAudio(_THIS);
-static void DUMMYAUD_PlayAudio(_THIS);
-static Uint8 *DUMMYAUD_GetAudioBuf(_THIS);
-static void DUMMYAUD_CloseAudio(_THIS);
+static int DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture);
+static void DUMMYAUD_WaitDevice(_THIS);
+static void DUMMYAUD_PlayDevice(_THIS);
+static Uint8 *DUMMYAUD_GetDeviceBuf(_THIS);
+static void DUMMYAUD_CloseDevice(_THIS);
 
 /* Audio driver bootstrap functions */
 static int
@@ -60,11 +60,11 @@ static int
 DUMMYAUD_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
-    impl->OpenAudio = DUMMYAUD_OpenAudio;
-    impl->WaitAudio = DUMMYAUD_WaitAudio;
-    impl->PlayAudio = DUMMYAUD_PlayAudio;
-    impl->GetAudioBuf = DUMMYAUD_GetAudioBuf;
-    impl->CloseAudio = DUMMYAUD_CloseAudio;
+    impl->OpenDevice = DUMMYAUD_OpenDevice;
+    impl->WaitDevice = DUMMYAUD_WaitDevice;
+    impl->PlayDevice = DUMMYAUD_PlayDevice;
+    impl->GetDeviceBuf = DUMMYAUD_GetDeviceBuf;
+    impl->CloseDevice = DUMMYAUD_CloseDevice;
 
     return 1;
 }
@@ -76,7 +76,7 @@ AudioBootStrap DUMMYAUD_bootstrap = {
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-DUMMYAUD_WaitAudio(_THIS)
+DUMMYAUD_WaitDevice(_THIS)
 {
     /* Don't block on first calls to simulate initial fragment filling. */
     if (this->hidden->initial_calls)
@@ -86,19 +86,19 @@ DUMMYAUD_WaitAudio(_THIS)
 }
 
 static void
-DUMMYAUD_PlayAudio(_THIS)
+DUMMYAUD_PlayDevice(_THIS)
 {
     /* no-op...this is a null driver. */
 }
 
 static Uint8 *
-DUMMYAUD_GetAudioBuf(_THIS)
+DUMMYAUD_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 static void
-DUMMYAUD_CloseAudio(_THIS)
+DUMMYAUD_CloseDevice(_THIS)
 {
     if (this->hidden->mixbuf != NULL) {
         SDL_FreeAudioMem(this->hidden->mixbuf);
@@ -109,7 +109,7 @@ DUMMYAUD_CloseAudio(_THIS)
 }
 
 static int
-DUMMYAUD_OpenAudio(_THIS, const char *devname, int iscapture)
+DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     float bytes_per_sec = 0.0f;
 
@@ -126,7 +126,7 @@ DUMMYAUD_OpenAudio(_THIS, const char *devname, int iscapture)
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        DUMMYAUD_CloseAudio(this);
+        DUMMYAUD_CloseDevice(this);
         return 0;
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

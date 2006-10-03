@@ -52,13 +52,12 @@
 
 /* Audio driver functions */
 
-static void SNDMGR_CloseAudio(_THIS);
-static int SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture);
-static void SNDMGR_LockAudio(_THIS);
-static void SNDMGR_UnlockAudio(_THIS);
+static void SNDMGR_CloseDevice(_THIS);
+static int SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture);
+static void SNDMGR_LockDevice(_THIS);
+static void SNDMGR_UnlockDevice(_THIS);
 
 /* Audio driver bootstrap functions */
-
 
 static int
 SNDMGR_Available(void)
@@ -71,14 +70,14 @@ static int
 SNDMGR_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
-    impl->OpenAudio = SNDMGR_OpenAudio;
-    impl->CloseAudio = SNDMGR_CloseAudio;
-    impl->LockAudio = SNDMGR_LockAudio;
-    impl->UnlockAudio = SNDMGR_UnlockAudio;
+    impl->OpenDevice = SNDMGR_OpenDevice;
+    impl->CloseDevice = SNDMGR_CloseDevice;
+    impl->LockDevice = SNDMGR_LockDevice;
+    impl->UnlockDevice = SNDMGR_UnlockDevice;
 
 #ifdef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
-    impl->LockAudio = NULL;
-    impl->UnlockAudio = NULL;
+    impl->LockDevice = NULL;
+    impl->UnlockDevice = NULL;
 #endif
 
     return 1;
@@ -129,13 +128,13 @@ mix_buffer(SDL_AudioDevice * audio, UInt8 * buffer)
 }
 
 static void
-SNDMGR_LockAudio(_THIS)
+SNDMGR_LockDevice(_THIS)
 {
     IncrementAtomic((SInt32 *) & audio_is_locked);
 }
 
 static void
-SNDMGR_UnlockAudio(_THIS)
+SNDMGR_UnlockDevice(_THIS)
 {
     SInt32 oldval;
 
@@ -198,7 +197,7 @@ callBackProc(SndChannel * chan, SndCommand * cmd_passed)
 }
 
 static int
-SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
+SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     SDL_AudioSpec *spec = &this->spec;
     SndChannelPtr channel = NULL;
@@ -284,7 +283,7 @@ SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
     for (i = 0; i < 2; i++) {
         buffer[i] = (UInt8 *) malloc(sizeof(UInt8) * spec->size);
         if (buffer[i] == NULL) {
-            SNDMGR_CloseAudio(this);
+            SNDMGR_CloseDevice(this);
             SDL_OutOfMemory();
             return 0;
         }
@@ -294,7 +293,7 @@ SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
     /* Create the sound manager channel */
     channel = (SndChannelPtr) SDL_malloc(sizeof(*channel));
     if (channel == NULL) {
-        SNDMGR_CloseAudio(this);
+        SNDMGR_CloseDevice(this);
         SDL_OutOfMemory();
         return 0;
     }
@@ -307,7 +306,7 @@ SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
     channel->userInfo = (long) this;
     channel->qLength = 128;
     if (SndNewChannel(&channel, sampledSynth, initOptions, callback) != noErr) {
-        SNDMGR_CloseAudio(this);
+        SNDMGR_CloseDevice(this);
         SDL_SetError("Unable to create audio channel");
         return 0;
     }
@@ -326,7 +325,7 @@ SNDMGR_OpenAudio(_THIS, const char *devname, int iscapture)
 }
 
 static void
-SNDMGR_CloseAudio(_THIS)
+SNDMGR_CloseDevice(_THIS)
 {
 
     int i;

@@ -205,12 +205,12 @@ find_device_id(const char *devname, int iscapture, AudioDeviceID *id)
 /* Audio driver functions */
 
 static int COREAUDIO_DetectDevices(int iscapture);
-static const char *COREAUDIO_GetAudioDevice(int index, int iscapture);
-static int COREAUDIO_OpenAudio(_THIS, const char *devname, int iscapture);
-static void COREAUDIO_WaitAudio(_THIS);
-static void COREAUDIO_PlayAudio(_THIS);
-static Uint8 *COREAUDIO_GetAudioBuf(_THIS);
-static void COREAUDIO_CloseAudio(_THIS);
+static const char *COREAUDIO_GetDeviceName(int index, int iscapture);
+static int COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture);
+static void COREAUDIO_WaitDevice(_THIS);
+static void COREAUDIO_PlayDevice(_THIS);
+static Uint8 *COREAUDIO_GetDeviceBuf(_THIS);
+static void COREAUDIO_CloseDevice(_THIS);
 static void COREAUDIO_Deinitialize(void);
 
 /* Audio driver bootstrap functions */
@@ -226,12 +226,12 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
     impl->DetectDevices = COREAUDIO_DetectDevices;
-    impl->GetAudioDevice = COREAUDIO_GetAudioDevice;
-    impl->OpenAudio = COREAUDIO_OpenAudio;
-    impl->WaitAudio = COREAUDIO_WaitAudio;
-    impl->PlayAudio = COREAUDIO_PlayAudio;
-    impl->GetAudioBuf = COREAUDIO_GetAudioBuf;
-    impl->CloseAudio = COREAUDIO_CloseAudio;
+    impl->GetDeviceName = COREAUDIO_GetDeviceName;
+    impl->OpenDevice = COREAUDIO_OpenDevice;
+    impl->WaitDevice = COREAUDIO_WaitDevice;
+    impl->PlayDevice = COREAUDIO_PlayDevice;
+    impl->GetDeviceBuf = COREAUDIO_GetDeviceBuf;
+    impl->CloseDevice = COREAUDIO_CloseDevice;
     impl->Deinitialize = COREAUDIO_Deinitialize;
 
     return 1;
@@ -259,7 +259,7 @@ COREAUDIO_DetectDevices(int iscapture)
 
 
 static const char *
-COREAUDIO_GetAudioDevice(int index, int iscapture)
+COREAUDIO_GetDeviceName(int index, int iscapture)
 {
     if ((iscapture) && (index < inputDeviceCount)) {
         return inputDevices[index].name;
@@ -357,25 +357,25 @@ inputCallback(void *inRefCon,
 
 /* Dummy functions -- we don't use thread-based audio */
 void
-COREAUDIO_WaitAudio(_THIS)
+COREAUDIO_WaitDevice(_THIS)
 {
     return;
 }
 
 void
-COREAUDIO_PlayAudio(_THIS)
+COREAUDIO_PlayDevice(_THIS)
 {
     return;
 }
 
 Uint8 *
-COREAUDIO_GetAudioBuf(_THIS)
+COREAUDIO_GetDeviceBuf(_THIS)
 {
     return (NULL);
 }
 
 void
-COREAUDIO_CloseAudio(_THIS)
+COREAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
         OSStatus result = noErr;
@@ -407,7 +407,7 @@ COREAUDIO_CloseAudio(_THIS)
 
 #define CHECK_RESULT(msg) \
     if (result != noErr) { \
-        COREAUDIO_CloseAudio(this); \
+        COREAUDIO_CloseDevice(this); \
         SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
         return 0; \
     }
@@ -556,7 +556,7 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
 
 
 int
-COREAUDIO_OpenAudio(_THIS, const char *devname, int iscapture)
+COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     AudioStreamBasicDescription strdesc;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);

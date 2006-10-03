@@ -12,7 +12,7 @@ static void print_devices(int iscapture)
         int i;
         printf("%s devices:\n", typestr);
         for (i = 0; i < n; i++) {
-            printf("  %s\n", SDL_GetAudioDevice(i, iscapture));
+            printf("  %s\n", SDL_GetAudioDeviceName(i, iscapture));
         }
         printf("\n");
     }
