@@ -35,16 +35,16 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_AudioDriverImpl
 {
     int (*DetectDevices)(int iscapture);
-    const char *(*GetAudioDevice)(int index, int iscapture);
-    int (*OpenAudio) (_THIS, const char *devname, int iscapture);
+    const char *(*GetDeviceName)(int index, int iscapture);
+    int (*OpenDevice) (_THIS, const char *devname, int iscapture);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
-    void (*WaitAudio) (_THIS);
-    void (*PlayAudio) (_THIS);
-    Uint8 *(*GetAudioBuf) (_THIS);
+    void (*WaitDevice) (_THIS);
+    void (*PlayDevice) (_THIS);
+    Uint8 *(*GetDeviceBuf) (_THIS);
     void (*WaitDone) (_THIS);
-    void (*CloseAudio) (_THIS);
-    void (*LockAudio) (_THIS);
-    void (*UnlockAudio) (_THIS);
+    void (*CloseDevice) (_THIS);
+    void (*LockDevice) (_THIS);
+    void (*UnlockDevice) (_THIS);
     void (*Deinitialize) (void);
 } SDL_AudioDriverImpl;
 
