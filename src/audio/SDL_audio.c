@@ -442,6 +442,7 @@ SDL_AudioInit(const char *driver_name)
         current_audio.impl.LockAudio = SDL_LockAudio_Default;
         current_audio.impl.UnlockAudio = SDL_UnlockAudio_Default;
     }
+
     return (0);
 }
 
@@ -851,9 +852,9 @@ SDL_AudioQuit(void)
     for (i = 0; i < SDL_arraysize(open_devices); i++) {
         SDL_CloseAudioDevice(i);
     }
-    /* Free the driver data */
 
-/* !!! FIXME!    current_audio.free(&current_audio); */
+    /* Free the driver data */
+    current_audio.Deinitialize();
     SDL_memset(&current_audio, '\0', sizeof (current_audio));
     SDL_memset(open_devices, '\0', sizeof (open_devices));
 }

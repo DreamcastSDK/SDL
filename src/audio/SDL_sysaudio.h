@@ -43,6 +43,7 @@ typedef struct SDL_AudioDriverImpl
     void (*CloseAudio) (_THIS);
     void (*LockAudio) (_THIS);
     void (*UnlockAudio) (_THIS);
+    void (*Deinitialize) (void);
 } SDL_AudioDriverImpl;
 
 typedef struct SDL_AudioDriver

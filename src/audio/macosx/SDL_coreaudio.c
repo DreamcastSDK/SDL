@@ -179,6 +179,7 @@ static void COREAUDIO_WaitAudio(_THIS);
 static void COREAUDIO_PlayAudio(_THIS);
 static Uint8 *COREAUDIO_GetAudioBuf(_THIS);
 static void COREAUDIO_CloseAudio(_THIS);
+static void COREAUDIO_Deinitialize(void);
 
 /* Audio driver bootstrap functions */
 
@@ -201,6 +202,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->PlayAudio = COREAUDIO_PlayAudio;
     impl->GetAudioBuf = COREAUDIO_GetAudioBuf;
     impl->CloseAudio = COREAUDIO_CloseAudio;
+    impl->Deinitialize = COREAUDIO_Deinitialize;
 
     return 1;
 }
@@ -209,6 +211,15 @@ AudioBootStrap COREAUDIO_bootstrap = {
     "coreaudio", "Mac OS X CoreAudio",
     COREAUDIO_Available, COREAUDIO_Init
 };
+
+
+static void
+COREAUDIO_Deinitialize(void)
+{
+    free_device_list(0, &outputDevices, &outputDeviceCount);
+    free_device_list(1, &inputDevices, &inputDeviceCount);
+}
+
 
 /* The CoreAudio callback */
 static OSStatus
