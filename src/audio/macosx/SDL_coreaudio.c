@@ -223,8 +223,11 @@ outputCallback(void *inRefCon,
     UInt32 remaining, len;
     void *ptr;
 
+    /*
+     * !!! FIXME: I'm not sure if you can ever have more than one
+     *            buffer, or what this signifies, or what to do with it...
+     */
     if (ioDataList->mNumberBuffers != 1) {
-        fprintf(stderr, "!!! FIXME SDL!\n");
         return noErr;
     }
 
@@ -405,10 +408,6 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
     const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
     const AudioUnitScope scope = ((iscapture) ? kAudioUnitScope_Output :
                                                 kAudioUnitScope_Input);
-
-    /* !!! FIXME: move something like this to higher level. */
-    if ( (devname == NULL) && (SDL_getenv("SDL_AUDIO_DEVNAME")) )
-        devname = SDL_getenv("SDL_AUDIO_DEVNAME");
 
     if (!find_device_by_name(this, devname, iscapture)) {
         SDL_SetError("Couldn't find requested CoreAudio device");

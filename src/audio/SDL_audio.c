@@ -572,6 +572,11 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
 
+    /* If app doesn't care about a specific device, let the user override. */
+    if (devname == NULL) {
+        devname = SDL_getenv("SDL_AUDIO_DEVICE_NAME");
+    }
+
     device = (SDL_AudioDevice *) SDL_AllocAudioMem(sizeof (SDL_AudioDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
