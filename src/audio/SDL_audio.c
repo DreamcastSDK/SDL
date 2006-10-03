@@ -455,6 +455,34 @@ SDL_GetCurrentAudioDriver()
     return current_audio.name;
 }
 
+
+int
+SDL_GetNumAudioDevices(int iscapture)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO) || !current_audio.impl.DetectDevices) {
+        return -1;
+    }
+    return current_audio.impl.DetectDevices(iscapture);
+}
+
+
+const char *
+SDL_GetAudioDevice(int index, int iscapture)
+{
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        SDL_SetError("Audio subsystem is not initialized");
+        return NULL;
+    }
+
+    if ((index < 0) && (!current_audio.impl.GetAudioDevice)) {
+        SDL_SetError("No such device");
+        return NULL;
+    }
+
+    return current_audio.impl.GetAudioDevice(index, iscapture);
+}
+
+
 static void
 close_audio_device(SDL_AudioDevice *device)
 {

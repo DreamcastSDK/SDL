@@ -34,6 +34,8 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 /* !!! FIXME: rename these from "Audio" to "Device" ... */
 typedef struct SDL_AudioDriverImpl
 {
+    int (*DetectDevices)(int iscapture);
+    const char *(*GetAudioDevice)(int index, int iscapture);
     int (*OpenAudio) (_THIS, const char *devname, int iscapture);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
     void (*WaitAudio) (_THIS);

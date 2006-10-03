@@ -29,7 +29,7 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_coreaudio.h"
 
-#define DEBUG_COREAUDIO 1
+#define DEBUG_COREAUDIO 0
 
 typedef struct COREAUDIO_DeviceList
 {
@@ -169,6 +169,22 @@ build_device_list(int iscapture, COREAUDIO_DeviceList **devices, int *devCount)
     }
 }
 
+static inline void
+build_device_lists(void)
+{
+    build_device_list(0, &outputDevices, &outputDeviceCount);
+    build_device_list(1, &inputDevices, &inputDeviceCount);
+}
+
+
+static inline void
+free_device_lists(void)
+{
+    free_device_list(&outputDevices, &outputDeviceCount);
+    free_device_list(&inputDevices, &inputDeviceCount);
+}
+
+
 static int
 find_device_id(const char *devname, int iscapture, AudioDeviceID *id)
 {
@@ -188,6 +204,8 @@ find_device_id(const char *devname, int iscapture, AudioDeviceID *id)
 
 /* Audio driver functions */
 
+static int COREAUDIO_DetectDevices(int iscapture);
+static const char *COREAUDIO_GetAudioDevice(int index, int iscapture);
 static int COREAUDIO_OpenAudio(_THIS, const char *devname, int iscapture);
 static void COREAUDIO_WaitAudio(_THIS);
 static void COREAUDIO_PlayAudio(_THIS);
@@ -206,11 +224,9 @@ COREAUDIO_Available(void)
 static int
 COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    /* !!! FIXME: should these _really_ be static? */
-    build_device_list(0, &outputDevices, &outputDeviceCount);
-    build_device_list(1, &inputDevices, &inputDeviceCount);
-
     /* Set the function pointers */
+    impl->DetectDevices = COREAUDIO_DetectDevices;
+    impl->GetAudioDevice = COREAUDIO_GetAudioDevice;
     impl->OpenAudio = COREAUDIO_OpenAudio;
     impl->WaitAudio = COREAUDIO_WaitAudio;
     impl->PlayAudio = COREAUDIO_PlayAudio;
@@ -227,11 +243,39 @@ AudioBootStrap COREAUDIO_bootstrap = {
 };
 
 
+static int
+COREAUDIO_DetectDevices(int iscapture)
+{
+    if (iscapture) {
+        build_device_list(1, &inputDevices, &inputDeviceCount);
+        return inputDeviceCount;
+    } else {
+        build_device_list(0, &outputDevices, &outputDeviceCount);
+        return outputDeviceCount;
+    }
+
+    return 0;  /* shouldn't ever hit this. */
+}
+
+
+static const char *
+COREAUDIO_GetAudioDevice(int index, int iscapture)
+{
+    if ((iscapture) && (index < inputDeviceCount)) {
+        return inputDevices[index].name;
+    } else if ((!iscapture) && (index < outputDeviceCount)) {
+        return outputDevices[index].name;
+    }
+
+    SDL_SetError("No such device");
+    return NULL;
+}
+
+
 static void
 COREAUDIO_Deinitialize(void)
 {
-    free_device_list(&outputDevices, &outputDeviceCount);
-    free_device_list(&inputDevices, &inputDeviceCount);
+    free_device_lists();
 }
 
 
