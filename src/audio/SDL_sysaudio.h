@@ -31,7 +31,6 @@
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS	SDL_AudioDevice *_this
 
-/* !!! FIXME: rename these from "Audio" to "Device" ... */
 typedef struct SDL_AudioDriverImpl
 {
     int (*DetectDevices)(int iscapture);
