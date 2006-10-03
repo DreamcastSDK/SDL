@@ -235,6 +235,9 @@ extern DECLSPEC int SDLCALL SDL_GetNumAudioDevices(int iscapture);
  * Get the human-readable name of a specific audio device.
  *  Must be a value between 0 and (number of audio devices-1).
  *  Only valid after a successfully initializing the audio subsystem.
+ *  The values returned by this function reflect the latest call to
+ *  SDL_GetNumAudioDevices(); recall that function to redetect available
+ *  hardware.
  */
 extern DECLSPEC const char *SDLCALL SDL_GetAudioDevice(int index,
                                                        int iscapture);
