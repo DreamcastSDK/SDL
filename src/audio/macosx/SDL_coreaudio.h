@@ -31,10 +31,12 @@
 
 struct SDL_PrivateAudioData
 {
-    AudioUnit outputAudioUnit;
+    AudioUnit audioUnit;
     void *buffer;
     UInt32 bufferOffset;
     UInt32 bufferSize;
+    AudioDeviceID deviceID;
+    int isCapture;
 };
 
 #endif /* _SDL_coreaudio_h */
