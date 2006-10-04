@@ -67,7 +67,6 @@ extern AudioBootStrap Paud_bootstrap;
 extern AudioBootStrap BAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
 extern AudioBootStrap SNDMGR_bootstrap;
-extern AudioBootStrap AHI_bootstrap;
 extern AudioBootStrap MINTAUDIO_GSXB_bootstrap;
 extern AudioBootStrap MINTAUDIO_MCSN_bootstrap;
 extern AudioBootStrap MINTAUDIO_STFA_bootstrap;
@@ -128,9 +127,6 @@ static AudioBootStrap *bootstrap[] = {
 #if SDL_AUDIO_DRIVER_SNDMGR
     &SNDMGR_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_AHI
-    &AHI_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_MINT
     &MINTAUDIO_GSXB_bootstrap,
     &MINTAUDIO_MCSN_bootstrap,
@@ -155,10 +151,6 @@ static AudioBootStrap *bootstrap[] = {
 #endif
     NULL
 };
-
-#if SDL_AUDIO_DRIVER_AHI
-static int audio_configured = 0;
-#endif
 
 static SDL_AudioDevice *get_audio_device(SDL_AudioDeviceID id)
 {
@@ -252,23 +244,6 @@ SDL_RunAudio(void *devicep)
     void (SDLCALL * fill) (void *userdata, Uint8 * stream, int len);
     int silence;
 
-/* !!! FIXME: can we push this into the Amiga driver? */
-#if SDL_AUDIO_DRIVER_AHI
-#error this is probably broken.
-    int started = 0;
-
-/* AmigaOS NEEDS that the audio driver is opened in the thread that uses it! */
-
-    D(bug("Task audio started audio struct:<%lx>...\n", audiop));
-
-    D(bug("Before Openaudio..."));
-    if (audio->OpenAudio(audio, &audio->spec) == -1) {
-        D(bug("Open audio failed...\n"));
-        return (-1);
-    }
-    D(bug("OpenAudio...OK\n"));
-#endif
-
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
     current_audio.impl.ThreadInit(device);
@@ -276,14 +251,6 @@ SDL_RunAudio(void *devicep)
     /* Set up the mixing function */
     fill = device->spec.callback;
     udata = device->spec.userdata;
-
-#if SDL_AUDIO_DRIVER_AHI
-    audio_configured = 1;
-
-    D(bug("Audio configured... Checking for conversion\n"));
-    SDL_mutexP(audio->mixer_lock);
-    D(bug("Semaphore obtained...\n"));
-#endif
 
     if (device->convert.needed) {
         if (device->convert.src_format == AUDIO_U8) {
@@ -296,11 +263,6 @@ SDL_RunAudio(void *devicep)
         silence = device->spec.silence;
         stream_len = device->spec.size;
     }
-
-#if SDL_AUDIO_DRIVER_AHI
-    SDL_mutexV(device->mixer_lock);
-    D(bug("Entering audio loop...\n"));
-#endif
 
     /* Loop, filling the audio buffers */
     while (device->enabled) {
@@ -355,15 +317,6 @@ SDL_RunAudio(void *devicep)
 
     /* Wait for the audio to drain.. */
     current_audio.impl.WaitDone(device);
-
-/* !!! FIXME: get this out of core. */
-#if SDL_AUDIO_DRIVER_AHI
-    D(bug("WaitDevice...Done\n"));
-    current_audio.impl.CloseDevice(device);
-    device->opened = 0;
-    D(bug("CloseDevice..Done, subtask exiting...\n"));
-    audio_configured = 0;
-#endif
 
     return (0);
 }
@@ -748,34 +701,11 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-/* !!! FIXME: Get this #if out of the core. */
-/* AmigaOS opens audio inside the main loop */
-#if !SDL_AUDIO_DRIVER_AHI
     if (!current_audio.impl.OpenDevice(device, devname, iscapture)) {
         close_audio_device(device);
         return 0;
     }
     device->opened = 1;
-#else
-#   error needs to be fixed for new internal API. Email Ryan for details.
-
-    D(bug("Locking semaphore..."));
-    SDL_mutexP(audio->mixer_lock);
-
-
-    audio->thread = SDL_CreateThread(SDL_RunAudio, audio);
-    D(bug("Created thread...\n"));
-
-    if (audio->thread == NULL) {
-        SDL_mutexV(audio->mixer_lock);
-        SDL_CloseAudio();
-        SDL_SetError("Couldn't create audio thread");
-        return 0;
-    }
-
-    while (!audio_configured)
-        SDL_Delay(100);
-#endif
 
     /* If the audio driver changes the buffer size, accept it */
     if (device->spec.samples != desired.samples) {
@@ -834,8 +764,6 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
 
-/* !!! FIXME: get this out of core. */
-#if !SDL_AUDIO_DRIVER_AHI
     /* Start the audio thread if necessary */
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         /* Start the audio thread */
@@ -852,12 +780,6 @@ open_audio_device(const char *devname, int iscapture,
             return 0;
         }
     }
-
-#else
-    SDL_mutexV(audio->mixer_lock);
-    D(bug("SDL_OpenAudio USCITA...\n"));
-
-#endif
 
     return id+1;
 }
