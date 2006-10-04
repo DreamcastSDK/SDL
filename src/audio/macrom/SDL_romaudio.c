@@ -70,14 +70,16 @@ static int
 SNDMGR_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
+    impl->DetectDevices = SNDMGR_DetectDevices;
+    impl->GetDeviceName = SNDMGR_GetDeviceName;
     impl->OpenDevice = SNDMGR_OpenDevice;
     impl->CloseDevice = SNDMGR_CloseDevice;
+    impl->ProvidesOwnCallbackThread = 1;
+    impl->OnlyHasDefaultOutputDevice = 1;
+
+#ifndef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
     impl->LockDevice = SNDMGR_LockDevice;
     impl->UnlockDevice = SNDMGR_UnlockDevice;
-
-#ifdef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
-    impl->LockDevice = NULL;
-    impl->UnlockDevice = NULL;
 #endif
 
     return 1;
@@ -90,7 +92,6 @@ AudioBootStrap SNDMGR_bootstrap = {
 
 #pragma options align=power
 
-static volatile int audio_is_opened = 0;
 static volatile SInt32 audio_is_locked = 0;
 static volatile SInt32 need_to_mix = 0;
 
@@ -98,6 +99,7 @@ static UInt8 *buffer[2];
 static volatile UInt32 running = 0;
 static CmpSoundHeader header;
 static volatile Uint32 fill_me = 0;
+
 
 static void
 mix_buffer(SDL_AudioDevice * audio, UInt8 * buffer)
@@ -206,18 +208,6 @@ SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
     int i;
     long initOptions;
 
-    if (audio_is_opened) {
-        SDL_SetError("SoundManager driver doesn't support multiple opens");
-        return 0;
-    }
-
-    if (iscapture) {
-        SDL_SetError("SoundManager driver doesn't support recording");
-        return 0;
-    }
-
-    /* !!! FIXME: ignore devname? */
-
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
                         SDL_malloc((sizeof *this->hidden));
@@ -320,14 +310,12 @@ SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
         SndDoCommand(channel, &cmd, 0);
     }
 
-    audio_is_opened = 1;
     return 1;
 }
 
 static void
 SNDMGR_CloseDevice(_THIS)
 {
-
     int i;
 
     running = 0;
@@ -345,7 +333,6 @@ SNDMGR_CloseDevice(_THIS)
     }
     SDL_free(this->hidden);
     this->hidden = NULL;
-    audio_is_opened = 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
