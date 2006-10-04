@@ -292,10 +292,7 @@ outputCallback(void *inRefCon,
     UInt32 remaining, len;
     void *ptr;
 
-    /*
-     * !!! FIXME: I'm not sure if you can ever have more than one
-     *            buffer, or what this signifies, or what to do with it...
-     */
+    /* Is there ever more than one buffer, and what do you do with it? */
     if (ioDataList->mNumberBuffers != 1) {
         return noErr;
     }

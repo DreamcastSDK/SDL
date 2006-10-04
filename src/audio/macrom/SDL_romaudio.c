@@ -215,8 +215,6 @@ SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-    /* !!! FIXME: check devname and iscapture... */
-
     /* !!! FIXME: iterate through format matrix... */
     /* Very few conversions are required, but... */
     switch (spec->format) {
