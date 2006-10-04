@@ -370,47 +370,10 @@ SDL_AudioInit(const char *driver_name)
     SDL_memset(&current_audio, '\0', sizeof (current_audio));
     SDL_memset(open_devices, '\0', sizeof (open_devices));
 
-    /* !!! FIXME: build a priority list of available drivers... */
-
     /* Select the proper audio driver */
     if (driver_name == NULL) {
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
-
-/* !!! FIXME: move this esound shite into the esound driver... */
-#if SDL_AUDIO_DRIVER_ESD
-    if ((driver_name == NULL) && (SDL_getenv("ESPEAKER") != NULL)) {
-        /* Ahem, we know that if ESPEAKER is set, user probably wants
-           to use ESD, but don't start it if it's not already running.
-           This probably isn't the place to do this, but... Shh! :)
-         */
-        for (i = 0; bootstrap[i]; ++i) {
-            if (SDL_strcasecmp(bootstrap[i]->name, "esd") == 0) {
-#ifdef HAVE_PUTENV
-                const char *esd_no_spawn;
-
-                /* Don't start ESD if it's not running */
-                esd_no_spawn = getenv("ESD_NO_SPAWN");
-                if (esd_no_spawn == NULL) {
-                    putenv("ESD_NO_SPAWN=1");
-                }
-#endif
-                if (bootstrap[i]->available()) {
-                    SDL_memset(&current_audio, 0, sizeof (current_audio));
-                    current_audio.name = bootstrap[i]->name;
-                    current_audio.desc = bootstrap[i]->desc;
-                    initialized = bootstrap[i]->init(&current_audio.impl);
-                    break;
-                }
-#ifdef HAVE_UNSETENV
-                if (esd_no_spawn == NULL) {
-                    unsetenv("ESD_NO_SPAWN");
-                }
-#endif
-            }
-        }
-    }
-#endif /* SDL_AUDIO_DRIVER_ESD */
 
     if (!initialized) {
         if (driver_name != NULL) {

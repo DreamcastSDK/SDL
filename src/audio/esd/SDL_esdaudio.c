@@ -126,10 +126,14 @@ LoadESDLibrary(void)
 static int
 Audio_Available(void)
 {
-    int connection;
-    int available;
+    const char *esd_no_spawn = SDL_getenv("ESD_NO_SPAWN");
+    int connection = 0;
+    int available = 0;
 
-    available = 0;
+    if (esd_no_spawn == NULL) {
+        SDL_putenv("ESD_NO_SPAWN=1"); /* Don't start ESD if it's not running */
+    }
+
     if (LoadESDLibrary() < 0) {
         return available;
     }
@@ -139,7 +143,7 @@ Audio_Available(void)
         SDL_NAME(esd_close) (connection);
     }
     UnloadESDLibrary();
-    return (available);
+    return available;
 }
 
 static void
