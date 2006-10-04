@@ -231,6 +231,9 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = COREAUDIO_CloseDevice;
     impl->Deinitialize = COREAUDIO_Deinitialize;
     impl->ProvidesOwnCallbackThread = 1;
+
+    build_device_lists();  /* do an initial check for devices... */
+
     return 1;
 }
 
