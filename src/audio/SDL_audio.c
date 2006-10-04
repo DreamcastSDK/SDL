@@ -132,6 +132,16 @@ static SDL_AudioDevice *get_audio_device(SDL_AudioDeviceID id)
 }
 
 
+/* stubs for audio drivers that don't need a specific entry point... */
+/* !!! FIXME: fill in more of these. */
+
+static void SDL_DeinitializeAudio_Default(void)
+{
+    /* no-op. */
+}
+
+
+
 /* The general mixing thread function */
 int SDLCALL
 SDL_RunAudio(void *devicep)
@@ -441,6 +451,10 @@ SDL_AudioInit(const char *driver_name)
     if (!current_audio.impl.LockDevice && !current_audio.impl.UnlockDevice) {
         current_audio.impl.LockDevice = SDL_LockDevice_Default;
         current_audio.impl.UnlockDevice = SDL_UnlockDevice_Default;
+    }
+
+    if (!current_audio.impl.Deinitialize) {
+        current_audio.impl.Deinitialize = SDL_DeinitializeAudio_Default;
     }
 
     return (0);

@@ -47,6 +47,7 @@ typedef struct SDL_AudioDriverImpl
     void (*Deinitialize) (void);
 } SDL_AudioDriverImpl;
 
+
 typedef struct SDL_AudioDriver
 {
     /* * * */

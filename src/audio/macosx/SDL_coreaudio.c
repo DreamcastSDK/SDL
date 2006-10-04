@@ -356,25 +356,25 @@ inputCallback(void *inRefCon,
 
 
 /* Dummy functions -- we don't use thread-based audio */
-void
+static void
 COREAUDIO_WaitDevice(_THIS)
 {
     return;
 }
 
-void
+static void
 COREAUDIO_PlayDevice(_THIS)
 {
     return;
 }
 
-Uint8 *
+static Uint8 *
 COREAUDIO_GetDeviceBuf(_THIS)
 {
     return (NULL);
 }
 
-void
+static void
 COREAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
@@ -555,7 +555,7 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
 }
 
 
-int
+static int
 COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     AudioStreamBasicDescription strdesc;
