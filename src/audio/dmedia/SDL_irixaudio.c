@@ -102,7 +102,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap DMEDIA_bootstrap = {
     "AL", "IRIX DMedia audio",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 

@@ -92,7 +92,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap MMEAUDIO_bootstrap = {
     "waveout", "Tru64 MME WaveOut",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 static void

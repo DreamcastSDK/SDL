@@ -181,7 +181,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap MINTAUDIO_MCSN_bootstrap = {
     MINT_AUDIO_DRIVER_NAME, "MiNT MCSN audio driver",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 static void

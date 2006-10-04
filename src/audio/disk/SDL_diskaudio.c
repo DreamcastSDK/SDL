@@ -64,13 +64,7 @@ DISKAUD_GetOutputFilename(void)
 static int
 DISKAUD_Available(void)
 {
-    /* !!! FIXME: check this at a higher level... */
-    /* only ever use this driver if explicitly requested. */
-    const char *envr = SDL_getenv("SDL_AUDIODRIVER");
-    if (envr && (SDL_strcasecmp(envr, DISKAUD_DRIVER_NAME) == 0)) {
-        return (1);
-    }
-    return (0);
+    return 1;  /* always available. */
 }
 
 static int
@@ -91,7 +85,7 @@ DISKAUD_Init(SDL_AudioDriverImpl *impl)
 
 AudioBootStrap DISKAUD_bootstrap = {
     DISKAUD_DRIVER_NAME, "direct-to-disk audio",
-    DISKAUD_Available, DISKAUD_Init
+    DISKAUD_Available, DISKAUD_Init, 1
 };
 
 /* This function waits until it is possible to write a full sound buffer */

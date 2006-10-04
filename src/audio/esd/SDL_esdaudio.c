@@ -187,7 +187,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap ESD_bootstrap = {
     ESD_DRIVER_NAME, "Enlightened Sound Daemon",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

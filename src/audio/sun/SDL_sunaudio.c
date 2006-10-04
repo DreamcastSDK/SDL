@@ -116,7 +116,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap SUNAUDIO_bootstrap = {
     "audio", "UNIX /dev/audio interface",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 #ifdef DEBUG_AUDIO

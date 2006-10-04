@@ -121,7 +121,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap Paud_bootstrap = {
     Paud_DRIVER_NAME, "AIX Paudio",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

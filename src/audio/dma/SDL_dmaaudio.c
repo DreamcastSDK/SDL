@@ -117,7 +117,7 @@ DMA_Init(SDL_AudioDriverImpl *impl)
 
 AudioBootStrap DMA_bootstrap = {
     DMA_DRIVER_NAME, "OSS /dev/dsp DMA audio",
-    DMA_Available, DMA_Init
+    DMA_Available, DMA_Init, 0
 };
 
 

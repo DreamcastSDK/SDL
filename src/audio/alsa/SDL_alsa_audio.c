@@ -330,7 +330,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap ALSA_bootstrap = {
     DRIVER_NAME, "ALSA 0.9 PCM audio",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

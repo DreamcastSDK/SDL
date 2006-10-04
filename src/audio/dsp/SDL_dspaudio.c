@@ -103,7 +103,7 @@ DSP_Init(SDL_AudioDriverImpl *impl)
 
 AudioBootStrap DSP_bootstrap = {
     DSP_DRIVER_NAME, "OSS /dev/dsp standard audio",
-    DSP_Available, DSP_Init
+    DSP_Available, DSP_Init, 0
 };
 
 

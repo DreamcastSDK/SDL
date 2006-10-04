@@ -180,7 +180,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap DSOUND_bootstrap = {
     "dsound", "Win95/98/2000 DirectSound",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 static void
