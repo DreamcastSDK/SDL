@@ -54,10 +54,15 @@ static Uint8 *DISKAUD_GetDeviceBuf(_THIS);
 static void DISKAUD_CloseDevice(_THIS);
 
 static const char *
-DISKAUD_GetOutputFilename(void)
+DISKAUD_GetOutputFilename(const char *devname)
 {
-    const char *envr = SDL_getenv(DISKENVR_OUTFILE);
-    return ((envr != NULL) ? envr : DISKDEFAULT_OUTFILE);
+    if (devname == NULL) {
+        devname = SDL_getenv(DISKENVR_OUTFILE);
+        if (devname == NULL) {
+            devname = DISKDEFAULT_OUTFILE;
+        }
+    }
+    return devname;
 }
 
 /* Audio driver bootstrap functions */
@@ -122,29 +127,25 @@ DISKAUD_GetDeviceBuf(_THIS)
 static void
 DISKAUD_CloseDevice(_THIS)
 {
-    if (this->hidden->mixbuf != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
+    if (this->hidden != NULL) {
+        if (this->hidden->mixbuf != NULL) {
+            SDL_FreeAudioMem(this->hidden->mixbuf);
+            this->hidden->mixbuf = NULL;
+        }
+        if (this->hidden->output != NULL) {
+            SDL_RWclose(this->hidden->output);
+            this->hidden->output = NULL;
+        }
+        SDL_free(this->hidden);
+        this->hidden = NULL;
     }
-    if (this->hidden->output != NULL) {
-        SDL_RWclose(this->hidden->output);
-        this->hidden->output = NULL;
-    }
-    SDL_free(this->hidden);
-    this->hidden = NULL;
 }
 
 static int
 DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     const char *envr = SDL_getenv(DISKENVR_WRITEDELAY);
-    const char *fname = DISKAUD_GetOutputFilename();
-
-    /* !!! FIXME: use device name for non-default filename? */
-    if (devname != NULL) {
-        SDL_SetError("Disk audio device name must be NULL");
-        return 0;
-    }
+    const char *fname = DISKAUD_GetOutputFilename(devname);
 
     this->hidden = (struct SDL_PrivateAudioData *)
             SDL_malloc(sizeof (*this->hidden));
