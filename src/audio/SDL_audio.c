@@ -31,8 +31,6 @@
 #define _THIS	SDL_AudioDevice *this
 
 static SDL_AudioDriver current_audio;
-
-/* !!! FIXME: don't use a static array, but it's Good Enough For Now... */
 static SDL_AudioDevice *open_devices[16];
 
 /* !!! FIXME: These are wordy and unlocalized... */
@@ -713,7 +711,6 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-    /* !!! FIXME: remove static array... */
     if (id == SDL_arraysize(open_devices)) {
         SDL_SetError("Too many open audio devices");
         close_audio_device(device);
