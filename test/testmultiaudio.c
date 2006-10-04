@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
-        fprintf(stderr, "Don't see more than one device!\n");
+        fprintf(stderr, "Don't see any specific audio devices!\n");
     } else {
         if (argv[1] == NULL) {
             argv[1] = "sample.wav";
