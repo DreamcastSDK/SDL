@@ -28,12 +28,6 @@
 #include "SDL_audiomem.h"
 #include "SDL_sysaudio.h"
 
-#ifdef __OS2__
-/* We'll need the DosSetPriority() API! */
-#define INCL_DOSPROCESS
-#include <os2.h>
-#endif
-
 #define _THIS	SDL_AudioDevice *this
 
 static SDL_AudioDriver current_audio;
