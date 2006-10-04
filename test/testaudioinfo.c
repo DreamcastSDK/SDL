@@ -5,12 +5,15 @@ static void print_devices(int iscapture)
     const char *typestr = ((iscapture) ? "capture" : "output");
     int n = SDL_GetNumAudioDevices(iscapture);
 
-    if (n == 0)
-        printf("No %s devices.\n\n", typestr);
+    printf("%s devices:\n", typestr);
+
+    if (n == -1)
+        printf("  Driver can't detect specific devices.\n\n", typestr);
+    else if (n == 0)
+        printf("  No %s devices found.\n\n", typestr);
     else
     {
         int i;
-        printf("%s devices:\n", typestr);
         for (i = 0; i < n; i++) {
             printf("  %s\n", SDL_GetAudioDeviceName(i, iscapture));
         }
