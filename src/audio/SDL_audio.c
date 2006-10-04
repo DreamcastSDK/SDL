@@ -375,38 +375,37 @@ SDL_AudioInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
 
-    if (!initialized) {
-        if (driver_name != NULL) {
-            for (i = 0; bootstrap[i]; ++i) {
-                if (SDL_strcasecmp(bootstrap[i]->name, driver_name) == 0) {
-                    if (bootstrap[i]->available()) {
-                        SDL_memset(&current_audio, 0, sizeof (current_audio));
-                        current_audio.name = bootstrap[i]->name;
-                        current_audio.desc = bootstrap[i]->desc;
-                        initialized = bootstrap[i]->init(&current_audio.impl);
-                    }
-                    break;
-                }
-            }
-        } else {
-            for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
-                if ((!bootstrap[i]->demand) && (bootstrap[i]->available())) {
+    if (driver_name != NULL) {
+        for (i = 0; bootstrap[i]; ++i) {
+            if (SDL_strcasecmp(bootstrap[i]->name, driver_name) == 0) {
+                if (bootstrap[i]->available()) {
                     SDL_memset(&current_audio, 0, sizeof (current_audio));
                     current_audio.name = bootstrap[i]->name;
                     current_audio.desc = bootstrap[i]->desc;
                     initialized = bootstrap[i]->init(&current_audio.impl);
                 }
+                break;
             }
         }
-        if (!initialized) {
-            if (driver_name) {
-                SDL_SetError("%s not available", driver_name);
-            } else {
-                SDL_SetError("No available audio device");
+    } else {
+        for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
+            if ((!bootstrap[i]->demand_only) && (bootstrap[i]->available())) {
+                SDL_memset(&current_audio, 0, sizeof (current_audio));
+                current_audio.name = bootstrap[i]->name;
+                current_audio.desc = bootstrap[i]->desc;
+                initialized = bootstrap[i]->init(&current_audio.impl);
             }
-            SDL_memset(&current_audio, 0, sizeof (current_audio));
-            return (-1);  /* No driver was available, so fail. */
         }
+    }
+
+    if (!initialized) {
+        if (driver_name) {
+            SDL_SetError("%s not available", driver_name);
+        } else {
+            SDL_SetError("No available audio device");
+        }
+        SDL_memset(&current_audio, 0, sizeof (current_audio));
+        return (-1);  /* No driver was available, so fail. */
     }
 
     finalize_audio_entry_points();
