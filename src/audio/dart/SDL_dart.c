@@ -107,8 +107,8 @@ DART_OpenAudio(_THIS, SDL_AudioSpec * spec)
     iDeviceOrd = AmpOpenParms.usDeviceID;
 
     // Determine the audio parameters from the AudioSpec
-    if (spec->channels > 2)
-        spec->channels = 2;     // !!! FIXME: more than stereo support in OS/2?
+    if (spec->channels > 4)
+        spec->channels = 4;
 
     while ((!valid_datatype) && (test_format)) {
         spec->format = test_format;
