@@ -160,7 +160,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap MINTAUDIO_DMA8_bootstrap = {
     MINT_AUDIO_DRIVER_NAME, "MiNT DMA 8 bits audio driver",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 static void

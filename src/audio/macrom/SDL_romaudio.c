@@ -70,8 +70,6 @@ static int
 SNDMGR_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
-    impl->DetectDevices = SNDMGR_DetectDevices;
-    impl->GetDeviceName = SNDMGR_GetDeviceName;
     impl->OpenDevice = SNDMGR_OpenDevice;
     impl->CloseDevice = SNDMGR_CloseDevice;
     impl->ProvidesOwnCallbackThread = 1;
@@ -87,7 +85,7 @@ SNDMGR_Init(SDL_AudioDriverImpl *impl)
 
 AudioBootStrap SNDMGR_bootstrap = {
     "sndmgr", SDL_MACOS_NAME " SoundManager",
-    SNDMGR_Available, SNDMGR_Init
+    SNDMGR_Available, SNDMGR_Init, 0
 };
 
 #pragma options align=power

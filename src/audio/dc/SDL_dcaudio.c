@@ -92,7 +92,7 @@ DCAUD_CreateDevice(int devindex)
 
 AudioBootStrap DCAUD_bootstrap = {
     "dcaudio", "Dreamcast AICA audio",
-    DCAUD_Available, DCAUD_CreateDevice
+    DCAUD_Available, DCAUD_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

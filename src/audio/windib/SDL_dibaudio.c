@@ -97,7 +97,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap WAVEOUT_bootstrap = {
     "waveout", "Win95/98/NT/2000 WaveOut",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 

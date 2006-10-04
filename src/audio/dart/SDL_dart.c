@@ -484,7 +484,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap DART_bootstrap = {
     "dart", "OS/2 Direct Audio RouTines (DART)",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

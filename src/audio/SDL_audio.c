@@ -480,7 +480,7 @@ SDL_AudioInit(const char *driver_name)
             }
         } else {
             for (i = 0; (!initialized) && (bootstrap[i]); ++i) {
-                if (bootstrap[i]->available()) {
+                if ((!bootstrap[i]->demand) && (bootstrap[i]->available())) {
                     SDL_memset(&current_audio, 0, sizeof (current_audio));
                     current_audio.name = bootstrap[i]->name;
                     current_audio.desc = bootstrap[i]->desc;

@@ -199,7 +199,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap ARTS_bootstrap = {
     ARTS_DRIVER_NAME, "Analog Realtime Synthesizer",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

@@ -212,7 +212,8 @@ NTO_CreateAudioDevice(int devindex)
 AudioBootStrap QNXNTOAUDIO_bootstrap = {
     DRIVER_NAME, "QNX6 QSA-NTO Audio",
     NTO_AudioAvailable,
-    NTO_CreateAudioDevice
+    NTO_CreateAudioDevice,
+    0
 };
 
 /* This function waits until it is possible to write a full sound buffer */

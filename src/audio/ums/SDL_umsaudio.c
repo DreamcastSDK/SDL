@@ -152,7 +152,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap UMS_bootstrap = {
     UMS_DRIVER_NAME, "AIX UMS audio",
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 static Uint8 *

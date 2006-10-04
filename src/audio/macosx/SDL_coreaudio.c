@@ -218,7 +218,7 @@ static void COREAUDIO_Deinitialize(void);
 static int
 COREAUDIO_Available(void)
 {
-    return (1);
+    return 1;  /* always available on Mac OS X. */
 }
 
 static int
@@ -228,9 +228,6 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->DetectDevices = COREAUDIO_DetectDevices;
     impl->GetDeviceName = COREAUDIO_GetDeviceName;
     impl->OpenDevice = COREAUDIO_OpenDevice;
-    impl->WaitDevice = COREAUDIO_WaitDevice;
-    impl->PlayDevice = COREAUDIO_PlayDevice;
-    impl->GetDeviceBuf = COREAUDIO_GetDeviceBuf;
     impl->CloseDevice = COREAUDIO_CloseDevice;
     impl->Deinitialize = COREAUDIO_Deinitialize;
     impl->ProvidesOwnCallbackThread = 1;
@@ -239,7 +236,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 
 AudioBootStrap COREAUDIO_bootstrap = {
     "coreaudio", "Mac OS X CoreAudio",
-    COREAUDIO_Available, COREAUDIO_Init
+    COREAUDIO_Available, COREAUDIO_Init, 0
 };
 
 
@@ -354,25 +351,6 @@ inputCallback(void *inRefCon,
     return noErr;
 }
 
-
-/* Dummy functions -- we don't use thread-based audio */
-static void
-COREAUDIO_WaitDevice(_THIS)
-{
-    return;
-}
-
-static void
-COREAUDIO_PlayDevice(_THIS)
-{
-    return;
-}
-
-static Uint8 *
-COREAUDIO_GetDeviceBuf(_THIS)
-{
-    return (NULL);
-}
 
 static void
 COREAUDIO_CloseDevice(_THIS)

@@ -136,7 +136,7 @@ Audio_CreateDevice(int devindex)
 
 AudioBootStrap BSD_AUDIO_bootstrap = {
     BSD_AUDIO_DRIVER_NAME, BSD_AUDIO_DRIVER_DESC,
-    Audio_Available, Audio_CreateDevice
+    Audio_Available, Audio_CreateDevice, 0
 };
 
 /* This function waits until it is possible to write a full sound buffer */
