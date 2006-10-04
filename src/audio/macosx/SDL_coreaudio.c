@@ -233,7 +233,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = COREAUDIO_GetDeviceBuf;
     impl->CloseDevice = COREAUDIO_CloseDevice;
     impl->Deinitialize = COREAUDIO_Deinitialize;
-
+    impl->ProvidesOwnCallbackThread = 1;
     return 1;
 }
 
@@ -382,7 +382,7 @@ COREAUDIO_CloseDevice(_THIS)
         AURenderCallbackStruct callback;
         const AudioUnitElement output_bus = 0;
         const AudioUnitElement input_bus = 1;
-        const int iscapture = this->hidden->isCapture;
+        const int iscapture = this->iscapture;
         const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
         const AudioUnitScope scope = ((iscapture) ? kAudioUnitScope_Output :
                                                     kAudioUnitScope_Input);
@@ -570,8 +570,6 @@ COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
         return (0);
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
-    this->hidden->isCapture = iscapture;
 
     /* Setup a AudioStreamBasicDescription with the requested format */
     memset(&strdesc, '\0', sizeof(AudioStreamBasicDescription));

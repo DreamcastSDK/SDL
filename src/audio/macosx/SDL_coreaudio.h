@@ -36,7 +36,6 @@ struct SDL_PrivateAudioData
     UInt32 bufferOffset;
     UInt32 bufferSize;
     AudioDeviceID deviceID;
-    int isCapture;
 };
 
 #endif /* _SDL_coreaudio_h */

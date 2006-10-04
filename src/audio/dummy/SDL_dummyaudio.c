@@ -65,6 +65,7 @@ DUMMYAUD_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = DUMMYAUD_PlayDevice;
     impl->GetDeviceBuf = DUMMYAUD_GetDeviceBuf;
     impl->CloseDevice = DUMMYAUD_CloseDevice;
+    impl->OnlyHasDefaultOutputDevice = 1;
 
     return 1;
 }

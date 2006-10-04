@@ -156,6 +156,11 @@ Audio_CreateDevice(int devindex)
     this->UnlockAudio = Mint_UnlockAudio;
     this->free = Audio_DeleteDevice;
 
+    /* Uses interrupt driven audio, without thread */
+    #if SDL_THREADS_DISABLED
+    this->SkipMixerLock = 1;
+    #endif
+
     return this;
 }
 
