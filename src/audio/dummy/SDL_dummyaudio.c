@@ -30,7 +30,6 @@
 #include "SDL_audio.h"
 #include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
-#include "../SDL_audiodev_c.h"
 #include "SDL_dummyaudio.h"
 
 /* The tag name used by DUMMY audio */
