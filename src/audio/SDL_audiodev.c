@@ -46,13 +46,62 @@
 #define _PATH_DEV_AUDIO	"/dev/audio"
 #endif
 
+static inline void
+test_device(const char *fname, int flags, int (*test)(int fd),
+            char ***devices, int *devCount)
+{
+    struct stat sb;
+    if ( (stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode)) ) {
+        int audio_fd = open(fname, flags, 0);
+        if ( (audio_fd >= 0) && (test(audio_fd)) ) {
+            void *p = SDL_realloc(*devices, ((*devCount)+1) * sizeof (char *));
+            if (p != NULL) {
+                size_t len = strlen(fname) + 1;
+                char *str = (char *) SDL_malloc(len);
+                *devices = (char **) p;
+                if (str != NULL) {
+                    SDL_strlcpy(str, fname, len);
+                    (*devices)[(*devCount)++] = str;
+                }
+            }
+            close(audio_fd);
+        }
+    }
+}
 
-int
-SDL_OpenAudioPath(char *path, int maxlen, int flags, int classic)
+void
+SDL_FreeUnixAudioDevices(char ***devices, int *devCount)
+{
+    int i = *devCount;
+    if ((i > 0) && (*devices != NULL)) {
+        while (i--) {
+            SDL_free( (*devices)[*devCount] );
+        }
+    }
+
+    if (*devices != NULL) {
+        SDL_free(*devices);
+    }
+
+    *devices = NULL;
+    *devCount = 0;
+}
+
+static int
+test_stub(int fd)
+{
+    return 1;
+}
+
+void
+SDL_EnumUnixAudioDevices(int flags, int classic, int (*test)(int fd),
+                         char ***devices, int *devCount)
 {
     const char *audiodev;
-    int audio_fd;
     char audiopath[1024];
+
+    if (test == NULL)
+        test = test_stub;
 
     /* Figure out what our audio device is */
     if (((audiodev = SDL_getenv("SDL_PATH_DSP")) == NULL) &&
@@ -72,31 +121,16 @@ SDL_OpenAudioPath(char *path, int maxlen, int flags, int classic)
             }
         }
     }
-    audio_fd = open(audiodev, flags, 0);
+    test_device(audiodev, flags, test, devices, devCount);
 
-    /* If the first open fails, look for other devices */
-    if ((audio_fd < 0) && (SDL_strlen(audiodev) < (sizeof(audiopath) - 3))) {
-        int exists, instance;
-        struct stat sb;
-
-        instance = 1;
-        do {                    /* Don't use errno ENOENT - it may not be thread-safe */
+    if (SDL_strlen(audiodev) < (sizeof(audiopath) - 3)) {
+        int instance = 0;
+        while (instance++ <= 64) {
             SDL_snprintf(audiopath, SDL_arraysize(audiopath),
-                         "%s%d", audiodev, instance++);
-            exists = 0;
-            if (stat(audiopath, &sb) == 0) {
-                exists = 1;
-                audio_fd = open(audiopath, flags, 0);
-            }
+                         "%s%d", audiodev, instance);
+            test_device(audiopath, flags, test, devices, devCount);
         }
-        while (exists && (audio_fd < 0));
-        audiodev = audiopath;
     }
-    if (path != NULL) {
-        SDL_strlcpy(path, audiodev, maxlen);
-        path[maxlen - 1] = '\0';
-    }
-    return (audio_fd);
 }
 
 #endif /* Audio driver selection */

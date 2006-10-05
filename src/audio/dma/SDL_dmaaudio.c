@@ -59,7 +59,8 @@
 #define DMA_DRIVER_NAME         "dma"
 
 /* Open the audio device for playback, and don't block if busy */
-#define OPEN_FLAGS	(O_RDWR|O_NONBLOCK)
+#define OPEN_FLAGS_INPUT    (O_RDWR|O_NONBLOCK)
+#define OPEN_FLAGS_OUTPUT   (O_RDWR|O_NONBLOCK)
 
 /* Audio driver functions */
 static int DMA_DetectDevices(int iscapture);
@@ -69,34 +70,72 @@ static void DMA_WaitDevice(_THIS);
 static void DMA_PlayDevice(_THIS);
 static Uint8 *DMA_GetDeviceBuf(_THIS);
 static void DMA_CloseDevice(_THIS);
+static void DMA_Deinitialize(void);
 
 /* Audio driver bootstrap functions */
+
+static char **outputDevices = NULL;
+static int outputDeviceCount = 0;
+static char **inputDevices = NULL;
+static int inputDeviceCount = 0;
+
+static int
+test_for_mmap(int fd)
+{
+    int caps = 0;
+    struct audio_buf_info info;
+    if ((ioctl(fd, SNDCTL_DSP_GETCAPS, &caps) == 0) &&
+        (caps & DSP_CAP_TRIGGER) && (caps & DSP_CAP_MMAP) &&
+        (ioctl(fd, SNDCTL_DSP_GETOSPACE, &info) == 0))
+    {
+        size_t len = info.fragstotal * info.fragsize;
+        Uint8 *buf = (Uint8 *) mmap(NULL, len, PROT_WRITE, MAP_SHARED, fd, 0);
+        if (buf != MAP_FAILED) {
+            munmap(buf, len);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+static inline void
+free_device_list(char ***devs, int *count)
+{
+    SDL_FreeUnixAudioDevices(devs, count);
+}
+
+static inline void
+build_device_list(int iscapture, char ***devs, int *count)
+{
+    const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
+    free_device_list(devs, count);
+    SDL_EnumUnixAudioDevices(flags, 0, test_for_mmap, devs, count);
+}
+
+static inline void
+build_device_lists(void)
+{
+    build_device_list(0, &outputDevices, &outputDeviceCount);
+    build_device_list(1, &inputDevices, &inputDeviceCount);
+}
+
+
+static inline void
+free_device_lists(void)
+{
+    free_device_list(&outputDevices, &outputDeviceCount);
+    free_device_list(&inputDevices, &inputDeviceCount);
+}
 
 static int
 DMA_Available(void)
 {
-    /*
-     * !!! FIXME: maybe change this to always available, and move this to
-     * !!! FIXME:  to device enumeration and opening?
-     */
-    int available;
-    int fd;
-
-    available = 0;
-
-    fd = SDL_OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);
-    if (fd >= 0) {
-        int caps;
-        struct audio_buf_info info;
-
-        if ((ioctl(fd, SNDCTL_DSP_GETCAPS, &caps) == 0) &&
-            (caps & DSP_CAP_TRIGGER) && (caps & DSP_CAP_MMAP) &&
-            (ioctl(fd, SNDCTL_DSP_GETOSPACE, &info) == 0)) {
-            available = 1;
-        }
-        close(fd);
-    }
-    return (available);
+    int available = 0;
+    build_device_lists();
+    available = ((outputDeviceCount > 0) || (inputDeviceCount > 0));
+    free_device_lists();
+    return available;
 }
 
 
@@ -111,7 +150,9 @@ DMA_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = DMA_PlayDevice;
     impl->GetDeviceBuf = DMA_GetDeviceBuf;
     impl->CloseDevice = DMA_CloseDevice;
+    impl->Deinitialize = DMA_Deinitialize;
 
+    build_device_lists();
     return 1;
 }
 
@@ -120,18 +161,36 @@ AudioBootStrap DMA_bootstrap = {
     DMA_Available, DMA_Init, 0
 };
 
+static void DMA_Deinitialize(void)
+{
+    free_device_lists();
+}
 
 static int
 DMA_DetectDevices(int iscapture)
 {
-    return -1;  /* !!! FIXME */
+    if (iscapture) {
+        build_device_list(1, &inputDevices, &inputDeviceCount);
+        return inputDeviceCount;
+    } else {
+        build_device_list(0, &outputDevices, &outputDeviceCount);
+        return outputDeviceCount;
+    }
+
+    return 0;  /* shouldn't ever hit this. */
 }
 
 
 static const char *
 DMA_GetDeviceName(int index, int iscapture)
 {
-    SDL_SetError("No such device");  /* !!! FIXME */
+    if ((iscapture) && (index < inputDeviceCount)) {
+        return inputDevices[index];
+    } else if ((!iscapture) && (index < outputDeviceCount)) {
+        return outputDevices[index];
+    }
+
+    SDL_SetError("No such device");
     return NULL;
 }
 
@@ -198,12 +257,23 @@ DMA_ReopenAudio(_THIS, const char *audiodev, int format, int stereo)
 static int
 open_device_internal(_THIS, const char *devname, int iscapture)
 {
-    char audiodev[1024];
+    const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     int format;
     int stereo;
     int value;
     SDL_AudioFormat test_format;
     struct audio_buf_info info;
+
+    /* We don't care what the devname is...we'll try to open anything. */
+    /*  ...but default to first name in the list... */
+    if (devname == NULL) {
+        if ( ((iscapture) && (inputDeviceCount == 0)) ||
+             ((!iscapture) && (outputDeviceCount == 0)) ) {
+            SDL_SetError("No such audio device");
+            return 0;
+        }
+        devname = ((iscapture) ? inputDevices[0] : outputDevices[0]);
+    }
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -214,13 +284,11 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-    /* !!! FIXME: handle devname */
-    /* !!! FIXME: handle iscapture */
 
     /* Open the audio device */
-    audio_fd = SDL_OpenAudioPath(audiodev, sizeof(audiodev), OPEN_FLAGS, 0);
+    audio_fd = open(devname, flags, 0);
     if (audio_fd < 0) {
-        SDL_SetError("Couldn't open %s: %s", audiodev, strerror(errno));
+        SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
         return 0;
     }
     dma_buf = NULL;
@@ -304,7 +372,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
        after setting the format, we must re-open the audio device
        once we know what format and channels are supported
      */
-    if (DMA_ReopenAudio(this, audiodev, format, stereo) < 0) {
+    if (DMA_ReopenAudio(this, devname, format, stereo) < 0) {
         /* Error is set by DMA_ReopenAudio() */
         return 0;
     }
