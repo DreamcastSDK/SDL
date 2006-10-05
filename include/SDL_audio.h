@@ -153,7 +153,7 @@ typedef struct SDL_AudioCVT
 
 /* Function prototypes */
 
-/* These functions return the list of built in video drivers, in the 
+/* These functions return the list of built in audio drivers, in the
  * order that they are normally initialized by default.
  */
 extern DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
