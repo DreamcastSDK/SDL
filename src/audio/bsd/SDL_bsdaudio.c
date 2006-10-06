@@ -269,46 +269,18 @@ OBSD_Status(_THIS)
             "waiting		:   %s\n"
             "active		:   %s\n"
             "",
-            info.
-            play.
-            buffer_size,
-            info.
-            play.
-            sample_rate,
-            info.
-            play.
-            channels,
-            info.
-            play.
-            precision,
-            info.
-            play.
-            encoding,
-            info.
-            play.
-            seek,
-            info.
-            play.
-            samples,
-            info.
-            play.
-            eof,
-            info.
-            play.
-            pause
-            ?
-            "yes"
-            :
-            "no",
-            info.
-            play.
-            error
-            ?
-            "yes"
-            :
-            "no",
-            info.
-            play.waiting ? "yes" : "no", info.play.active ? "yes" : "no");
+            info.play.buffer_size,
+            info.play.sample_rate,
+            info.play.channels,
+            info.play.precision,
+            info.play.encoding,
+            info.play.seek,
+            info.play.samples,
+            info.play.eof,
+            info.play.pause ? "yes" : "no",
+            info.play.error ? "yes" : "no",
+            info.play.waiting ? "yes" : "no",
+            info.play.active ? "yes" : "no");
 
     fprintf(stderr, "\n"
             "[audio info]\n"

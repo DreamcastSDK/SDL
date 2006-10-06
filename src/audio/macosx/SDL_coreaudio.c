@@ -201,47 +201,11 @@ find_device_id(const char *devname, int iscapture, AudioDeviceID *id)
     return 0;
 }
 
-
-/* Audio driver functions */
-
-static int COREAUDIO_DetectDevices(int iscapture);
-static const char *COREAUDIO_GetDeviceName(int index, int iscapture);
-static int COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture);
-static void COREAUDIO_WaitDevice(_THIS);
-static void COREAUDIO_PlayDevice(_THIS);
-static Uint8 *COREAUDIO_GetDeviceBuf(_THIS);
-static void COREAUDIO_CloseDevice(_THIS);
-static void COREAUDIO_Deinitialize(void);
-
-/* Audio driver bootstrap functions */
-
 static int
 COREAUDIO_Available(void)
 {
     return 1;  /* always available on Mac OS X. */
 }
-
-static int
-COREAUDIO_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->DetectDevices = COREAUDIO_DetectDevices;
-    impl->GetDeviceName = COREAUDIO_GetDeviceName;
-    impl->OpenDevice = COREAUDIO_OpenDevice;
-    impl->CloseDevice = COREAUDIO_CloseDevice;
-    impl->Deinitialize = COREAUDIO_Deinitialize;
-    impl->ProvidesOwnCallbackThread = 1;
-
-    build_device_lists();  /* do an initial check for devices... */
-
-    return 1;
-}
-
-AudioBootStrap COREAUDIO_bootstrap = {
-    "coreaudio", "Mac OS X CoreAudio",
-    COREAUDIO_Available, COREAUDIO_Init, 0
-};
-
 
 static int
 COREAUDIO_DetectDevices(int iscapture)
@@ -600,5 +564,26 @@ COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 
     return 1;  /* good to go. */
 }
+
+static int
+COREAUDIO_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->DetectDevices = COREAUDIO_DetectDevices;
+    impl->GetDeviceName = COREAUDIO_GetDeviceName;
+    impl->OpenDevice = COREAUDIO_OpenDevice;
+    impl->CloseDevice = COREAUDIO_CloseDevice;
+    impl->Deinitialize = COREAUDIO_Deinitialize;
+    impl->ProvidesOwnCallbackThread = 1;
+
+    build_device_lists();  /* do an initial check for devices... */
+
+    return 1;
+}
+
+AudioBootStrap COREAUDIO_bootstrap = {
+    "coreaudio", "Mac OS X CoreAudio",
+    COREAUDIO_Available, COREAUDIO_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

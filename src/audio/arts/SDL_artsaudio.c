@@ -39,14 +39,6 @@
 /* The tag name used by artsc audio */
 #define ARTS_DRIVER_NAME         "arts"
 
-/* Audio driver functions */
-static int ARTS_OpenDevice(_THIS, const char *devname, int iscapture);
-static void ARTS_WaitDevice(_THIS);
-static void ARTS_PlayDevice(_THIS);
-static Uint8 *ARTS_GetDeviceBuf(_THIS);
-static void ARTS_CloseDevice(_THIS);
-static void ARTS_WaitDone(_THIS);
-
 #ifdef SDL_AUDIO_DRIVER_ARTS_DYNAMIC
 
 static const char *arts_library = SDL_AUDIO_DRIVER_ARTS_DYNAMIC;
@@ -158,28 +150,6 @@ ARTS_Available(void)
 
     return available;
 }
-
-
-static int
-ARTS_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->OpenDevice = ARTS_OpenDevice;
-    impl->PlayDevice = ARTS_PlayDevice;
-    impl->WaitDevice = ARTS_WaitDevice;
-    impl->GetDeviceBuf = ARTS_GetDeviceBuf;
-    impl->CloseDevice = ARTS_CloseDevice;
-    impl->WaitDone = ARTS_WaitDone;
-    impl->OnlyHasDefaultOutputDevice = 1;
-
-    return 1;
-}
-
-
-AudioBootStrap ARTS_bootstrap = {
-    ARTS_DRIVER_NAME, "Analog RealTime Synthesizer",
-    ARTS_Available, ARTS_Init, 0
-};
 
 
 /* This function waits until it is possible to write a full sound buffer */
@@ -369,5 +339,27 @@ ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
     /* We're ready to rock and roll. :-) */
     return 1;
 }
+
+
+static int
+ARTS_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->OpenDevice = ARTS_OpenDevice;
+    impl->PlayDevice = ARTS_PlayDevice;
+    impl->WaitDevice = ARTS_WaitDevice;
+    impl->GetDeviceBuf = ARTS_GetDeviceBuf;
+    impl->CloseDevice = ARTS_CloseDevice;
+    impl->WaitDone = ARTS_WaitDone;
+    impl->OnlyHasDefaultOutputDevice = 1;
+
+    return 1;
+}
+
+
+AudioBootStrap ARTS_bootstrap = {
+    ARTS_DRIVER_NAME, "Analog RealTime Synthesizer",
+    ARTS_Available, ARTS_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */
