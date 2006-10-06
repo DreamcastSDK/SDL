@@ -40,11 +40,12 @@
 #define ARTS_DRIVER_NAME         "arts"
 
 /* Audio driver functions */
-static int ARTS_OpenAudio(_THIS, SDL_AudioSpec * spec);
-static void ARTS_WaitAudio(_THIS);
-static void ARTS_PlayAudio(_THIS);
-static Uint8 *ARTS_GetAudioBuf(_THIS);
-static void ARTS_CloseAudio(_THIS);
+static int ARTS_OpenDevice(_THIS, const char *devname, int iscapture);
+static void ARTS_WaitDevice(_THIS);
+static void ARTS_PlayDevice(_THIS);
+static Uint8 *ARTS_GetDeviceBuf(_THIS);
+static void ARTS_CloseDevice(_THIS);
+static void ARTS_WaitDone(_THIS);
 
 #ifdef SDL_AUDIO_DRIVER_ARTS_DYNAMIC
 
@@ -52,6 +53,7 @@ static const char *arts_library = SDL_AUDIO_DRIVER_ARTS_DYNAMIC;
 static void *arts_handle = NULL;
 static int arts_loaded = 0;
 
+/* !!! FIXME: I hate this SDL_NAME clutter...it makes everything so messy! */
 static int (*SDL_NAME(arts_init)) (void);
 static void (*SDL_NAME(arts_free)) (void);
 static arts_stream_t(*SDL_NAME(arts_play_stream)) (int rate, int bits,
@@ -64,20 +66,25 @@ static int (*SDL_NAME(arts_stream_get)) (arts_stream_t s,
 static int (*SDL_NAME(arts_write)) (arts_stream_t s, const void *buffer,
                                     int count);
 static void (*SDL_NAME(arts_close_stream)) (arts_stream_t s);
+static void (*SDL_NAME(arts_close_stream)) (arts_stream_t s);
+static const char *(*SDL_NAME(arts_error_text)) (int errorcode);
 
+#define SDL_ARTS_SYM(x) { #x, (void **) (char *) &SDL_NAME(x) }
 static struct
 {
     const char *name;
     void **func;
 } arts_functions[] = {
-    {
-    "arts_init", (void **) &SDL_NAME(arts_init)}, {
-    "arts_free", (void **) &SDL_NAME(arts_free)}, {
-    "arts_play_stream", (void **) &SDL_NAME(arts_play_stream)}, {
-    "arts_stream_set", (void **) &SDL_NAME(arts_stream_set)}, {
-    "arts_stream_get", (void **) &SDL_NAME(arts_stream_get)}, {
-    "arts_write", (void **) &SDL_NAME(arts_write)}, {
-"arts_close_stream", (void **) &SDL_NAME(arts_close_stream)},};
+    SDL_ARTS_SYM(arts_init),
+    SDL_ARTS_SYM(arts_free),
+    SDL_ARTS_SYM(arts_play_stream),
+    SDL_ARTS_SYM(arts_stream_set),
+    SDL_ARTS_SYM(arts_stream_get),
+    SDL_ARTS_SYM(arts_write),
+    SDL_ARTS_SYM(arts_close_stream),
+    SDL_ARTS_SYM(arts_error_text),
+};
+#undef SDL_ARTS_SYM
 
 static void
 UnloadARTSLibrary()
@@ -94,20 +101,23 @@ LoadARTSLibrary(void)
 {
     int i, retval = -1;
 
-    arts_handle = SDL_LoadObject(arts_library);
-    if (arts_handle) {
-        arts_loaded = 1;
-        retval = 0;
-        for (i = 0; i < SDL_arraysize(arts_functions); ++i) {
-            *arts_functions[i].func =
-                SDL_LoadFunction(arts_handle, arts_functions[i].name);
-            if (!*arts_functions[i].func) {
-                retval = -1;
-                UnloadARTSLibrary();
-                break;
+    if (!arts_loaded) {
+        arts_handle = SDL_LoadObject(arts_library);
+        if (arts_handle) {
+            arts_loaded = 1;
+            retval = 0;
+            for (i = 0; i < SDL_arraysize(arts_functions); ++i) {
+                *arts_functions[i].func =
+                    SDL_LoadFunction(arts_handle, arts_functions[i].name);
+                if (!*arts_functions[i].func) {
+                    retval = -1;
+                    UnloadARTSLibrary();
+                    break;
+                }
             }
         }
     }
+
     return retval;
 }
 
@@ -130,114 +140,90 @@ LoadARTSLibrary(void)
 /* Audio driver bootstrap functions */
 
 static int
-Audio_Available(void)
+ARTS_Available(void)
 {
     int available = 0;
 
-    if (LoadARTSLibrary() < 0) {
-        return available;
-    }
-    if (SDL_NAME(arts_init) () == 0) {
+    if (LoadARTSLibrary() == 0) {
+        if (SDL_NAME(arts_init) () == 0) {
 #define ARTS_CRASH_HACK         /* Play a stream so aRts doesn't crash */
 #ifdef ARTS_CRASH_HACK
-        arts_stream_t stream2;
-        stream2 = SDL_NAME(arts_play_stream) (44100, 16, 2, "SDL");
-        SDL_NAME(arts_write) (stream2, "", 0);
-        SDL_NAME(arts_close_stream) (stream2);
+            arts_stream_t stream;
+            stream = SDL_NAME(arts_play_stream) (44100, 16, 2, "SDL");
+            SDL_NAME(arts_write) (stream, "", 0);
+            SDL_NAME(arts_close_stream) (stream);
 #endif
-        available = 1;
-        SDL_NAME(arts_free) ();
+            available = 1;
+            SDL_NAME(arts_free) ();
+        }
+        UnloadARTSLibrary();
     }
-    UnloadARTSLibrary();
 
     return available;
 }
 
-static void
-Audio_DeleteDevice(SDL_AudioDevice * device)
+
+static int
+ARTS_Init(SDL_AudioDriverImpl *impl)
 {
-    SDL_free(device->hidden);
-    SDL_free(device);
-    UnloadARTSLibrary();
-}
-
-static SDL_AudioDevice *
-Audio_CreateDevice(int devindex)
-{
-    SDL_AudioDevice *this;
-
-    /* Initialize all variables that we clean on shutdown */
-    LoadARTSLibrary();
-    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
-    if (this) {
-        SDL_memset(this, 0, (sizeof *this));
-        this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc((sizeof *this->hidden));
-    }
-    if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory();
-        if (this) {
-            SDL_free(this);
-        }
-        return (0);
-    }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-    stream = 0;
-
     /* Set the function pointers */
-    this->OpenAudio = ARTS_OpenAudio;
-    this->WaitAudio = ARTS_WaitAudio;
-    this->PlayAudio = ARTS_PlayAudio;
-    this->GetAudioBuf = ARTS_GetAudioBuf;
-    this->CloseAudio = ARTS_CloseAudio;
+    impl->OpenDevice = ARTS_OpenDevice;
+    impl->PlayDevice = ARTS_PlayDevice;
+    impl->WaitDevice = ARTS_WaitDevice;
+    impl->GetDeviceBuf = ARTS_GetDeviceBuf;
+    impl->CloseDevice = ARTS_CloseDevice;
+    impl->WaitDone = ARTS_WaitDone;
+    impl->OnlyHasDefaultOutputDevice = 1;
 
-    this->free = Audio_DeleteDevice;
-
-    return this;
+    return 1;
 }
+
 
 AudioBootStrap ARTS_bootstrap = {
-    ARTS_DRIVER_NAME, "Analog Realtime Synthesizer",
-    Audio_Available, Audio_CreateDevice, 0
+    ARTS_DRIVER_NAME, "Analog RealTime Synthesizer",
+    ARTS_Available, ARTS_Init, 0
 };
+
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-ARTS_WaitAudio(_THIS)
+ARTS_WaitDevice(_THIS)
 {
     Sint32 ticks;
 
     /* Check to see if the thread-parent process is still alive */
     {
         static int cnt = 0;
-        /* Note that this only works with thread implementations 
+        /* Note that this only works with thread implementations
            that use a different process id for each thread.
          */
-        if (parent && (((++cnt) % 10) == 0)) {  /* Check every 10 loops */
-            if (kill(parent, 0) < 0) {
+        /* Check every 10 loops */
+        if (this->hidden->parent && (((++cnt) % 10) == 0)) {
+            if (kill(this->hidden->parent, 0) < 0) {
                 this->enabled = 0;
             }
         }
     }
 
     /* Use timer for general audio synchronization */
-    ticks = ((Sint32) (next_frame - SDL_GetTicks())) - FUDGE_TICKS;
+    ticks = ((Sint32) (this->hidden->next_frame-SDL_GetTicks())) - FUDGE_TICKS;
     if (ticks > 0) {
         SDL_Delay(ticks);
     }
 }
 
 static void
-ARTS_PlayAudio(_THIS)
+ARTS_PlayDevice(_THIS)
 {
-    int written;
-
     /* Write the audio data */
-    written = SDL_NAME(arts_write) (stream, mixbuf, mixlen);
+    int written = SDL_NAME(arts_write) (
+                        this->hidden->stream,
+                        this->hidden->mixbuf,
+                        this->hidden->mixlen);
 
     /* If timer synchronization is enabled, set the next write frame */
-    if (frame_ticks) {
-        next_frame += frame_ticks;
+    if (this->hidden->frame_ticks) {
+        this->hidden->next_frame += this->hidden->frame_ticks;
     }
 
     /* If we couldn't write, assume fatal error for now */
@@ -249,41 +235,66 @@ ARTS_PlayAudio(_THIS)
 #endif
 }
 
-static Uint8 *
-ARTS_GetAudioBuf(_THIS)
+static void
+ARTS_WaitDone(_THIS)
 {
-    return (mixbuf);
+    /* !!! FIXME: camp here until buffer drains... SDL_Delay(???); */
 }
+
+
+static Uint8 *
+ARTS_GetDeviceBuf(_THIS)
+{
+    return (this->hidden->mixbuf);
+}
+
 
 static void
-ARTS_CloseAudio(_THIS)
+ARTS_CloseDevice(_THIS)
 {
-    if (mixbuf != NULL) {
-        SDL_FreeAudioMem(mixbuf);
-        mixbuf = NULL;
+    if (this->hidden != NULL) {
+        if (this->hidden->mixbuf != NULL) {
+            SDL_FreeAudioMem(this->hidden->mixbuf);
+            this->hidden->mixbuf = NULL;
+        }
+        if (this->hidden->stream) {
+            SDL_NAME(arts_close_stream) (this->hidden->stream);
+            this->hidden->stream = 0;
+        }
+        SDL_NAME(arts_free) ();
+        SDL_free(this->hidden);
+        this->hidden = NULL;
     }
-    if (stream) {
-        SDL_NAME(arts_close_stream) (stream);
-        stream = 0;
-    }
-    SDL_NAME(arts_free) ();
+    UnloadARTSLibrary();
 }
 
+
 static int
-ARTS_OpenAudio(_THIS, SDL_AudioSpec * spec)
+ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
 {
+    int rc = 0;
     int bits, frag_spec;
     SDL_AudioFormat test_format, format;
 
-    /* Reset the timer synchronization flag */
-    frame_ticks = 0.0;
+    /* Initialize all variables that we clean on shutdown */
+    this->hidden = (struct SDL_PrivateAudioData *)
+                        SDL_malloc((sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-    mixbuf = NULL;
+    if (LoadARTSLibrary() < 0) {
+        ARTS_CloseDevice(this);
+        SDL_SetError("ARTS: failed to load library: %s", SDL_GetError());
+        return 0;
+    }
 
     /* Try for a closest match on audio format */
     format = 0;
     bits = 0;
-    for (test_format = SDL_FirstAudioFormat(spec->format);
+    for (test_format = SDL_FirstAudioFormat(this->spec.format);
          !format && test_format;) {
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Trying format 0x%4.4x\n", test_format);
@@ -306,51 +317,62 @@ ARTS_OpenAudio(_THIS, SDL_AudioSpec * spec)
         }
     }
     if (format == 0) {
+        ARTS_CloseDevice(this);
         SDL_SetError("Couldn't find any hardware audio formats");
-        return (-1);
+        return 0;
     }
-    spec->format = test_format;
+    this->spec.format = test_format;
 
-    if (SDL_NAME(arts_init) () != 0) {
-        SDL_SetError("Unable to initialize ARTS");
-        return (-1);
+    if ((rc = SDL_NAME(arts_init) ()) != 0) {
+        ARTS_CloseDevice(this);
+        SDL_SetError( "Unable to initialize ARTS: %s",
+                      SDL_NAME(arts_error_text)(rc) );
+        return 0;
     }
-    stream =
-        SDL_NAME(arts_play_stream) (spec->freq, bits, spec->channels, "SDL");
+    this->hidden->stream = SDL_NAME(arts_play_stream) (
+                                            this->spec.freq,
+                                            bits, this->spec.channels,
+                                            "SDL");
 
     /* Calculate the final parameters for this audio specification */
-    SDL_CalculateAudioSpec(spec);
+    SDL_CalculateAudioSpec(&this->spec);
 
     /* Determine the power of two of the fragment size */
-    for (frag_spec = 0; (0x01 << frag_spec) < spec->size; ++frag_spec);
-    if ((0x01 << frag_spec) != spec->size) {
+    for (frag_spec = 0; (0x01 << frag_spec) < this->spec.size; ++frag_spec);
+    if ((0x01 << frag_spec) != this->spec.size) {
+        ARTS_CloseDevice(this);
         SDL_SetError("Fragment size must be a power of two");
-        return (-1);
+        return 0;
     }
     frag_spec |= 0x00020000;    /* two fragments, for low latency */
 
 #ifdef ARTS_P_PACKET_SETTINGS
-    SDL_NAME(arts_stream_set) (stream, ARTS_P_PACKET_SETTINGS, frag_spec);
+    SDL_NAME(arts_stream_set) (this->hidden->stream,
+                                ARTS_P_PACKET_SETTINGS, frag_spec);
 #else
-    SDL_NAME(arts_stream_set) (stream, ARTS_P_PACKET_SIZE,
+    SDL_NAME(arts_stream_set) (this->hidden->stream, ARTS_P_PACKET_SIZE,
                                frag_spec & 0xffff);
-    SDL_NAME(arts_stream_set) (stream, ARTS_P_PACKET_COUNT, frag_spec >> 16);
+    SDL_NAME(arts_stream_set) (this->hidden->stream, ARTS_P_PACKET_COUNT,
+                               frag_spec >> 16);
 #endif
-    spec->size = SDL_NAME(arts_stream_get) (stream, ARTS_P_PACKET_SIZE);
+    this->spec.size = SDL_NAME(arts_stream_get) (this->hidden->stream,
+                                                 ARTS_P_PACKET_SIZE);
 
     /* Allocate mixing buffer */
-    mixlen = spec->size;
-    mixbuf = (Uint8 *) SDL_AllocAudioMem(mixlen);
-    if (mixbuf == NULL) {
-        return (-1);
+    this->hidden->mixlen = this->spec.size;
+    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+    if (this->hidden->mixbuf == NULL) {
+        ARTS_CloseDevice(this);
+        SDL_OutOfMemory();
+        return 0;
     }
-    SDL_memset(mixbuf, spec->silence, spec->size);
+    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
     /* Get the parent process id (we're the parent of the audio thread) */
-    parent = getpid();
+    this->hidden->parent = getpid();
 
     /* We're ready to rock and roll. :-) */
-    return (0);
+    return 1;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

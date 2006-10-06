@@ -49,13 +49,5 @@ struct SDL_PrivateAudioData
 };
 #define FUDGE_TICKS	10      /* The scheduler overhead ticks per frame */
 
-/* Old variable names */
-#define stream			(this->hidden->stream)
-#define parent			(this->hidden->parent)
-#define mixbuf			(this->hidden->mixbuf)
-#define mixlen			(this->hidden->mixlen)
-#define frame_ticks		(this->hidden->frame_ticks)
-#define next_frame		(this->hidden->next_frame)
-
 #endif /* _SDL_artscaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */
