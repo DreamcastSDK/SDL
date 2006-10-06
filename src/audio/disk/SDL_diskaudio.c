@@ -45,13 +45,6 @@
 #define DISKENVR_WRITEDELAY      "SDL_DISKAUDIODELAY"
 #define DISKDEFAULT_WRITEDELAY   150
 
-/* Audio driver functions */
-static int DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture);
-static void DISKAUD_WaitDevice(_THIS);
-static void DISKAUD_PlayDevice(_THIS);
-static Uint8 *DISKAUD_GetDeviceBuf(_THIS);
-static void DISKAUD_CloseDevice(_THIS);
-
 static const char *
 DISKAUD_GetOutputFilename(const char *devname)
 {
@@ -70,27 +63,6 @@ DISKAUD_Available(void)
 {
     return 1;  /* always available. */
 }
-
-static int
-DISKAUD_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Initialize all variables that we clean on shutdown */
-    SDL_memset(impl, '\0', sizeof (SDL_AudioDriverImpl));
-
-    /* Set the function pointers */
-    impl->OpenDevice = DISKAUD_OpenDevice;
-    impl->WaitDevice = DISKAUD_WaitDevice;
-    impl->PlayDevice = DISKAUD_PlayDevice;
-    impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
-    impl->CloseDevice = DISKAUD_CloseDevice;
-
-    return 1;
-}
-
-AudioBootStrap DISKAUD_bootstrap = {
-    DISKAUD_DRIVER_NAME, "direct-to-disk audio",
-    DISKAUD_Available, DISKAUD_Init, 1
-};
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -182,5 +154,26 @@ DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     /* We're ready to rock and roll. :-) */
     return 1;
 }
+
+static int
+DISKAUD_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Initialize all variables that we clean on shutdown */
+    SDL_memset(impl, '\0', sizeof (SDL_AudioDriverImpl));
+
+    /* Set the function pointers */
+    impl->OpenDevice = DISKAUD_OpenDevice;
+    impl->WaitDevice = DISKAUD_WaitDevice;
+    impl->PlayDevice = DISKAUD_PlayDevice;
+    impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
+    impl->CloseDevice = DISKAUD_CloseDevice;
+
+    return 1;
+}
+
+AudioBootStrap DISKAUD_bootstrap = {
+    DISKAUD_DRIVER_NAME, "direct-to-disk audio",
+    DISKAUD_Available, DISKAUD_Init, 1
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

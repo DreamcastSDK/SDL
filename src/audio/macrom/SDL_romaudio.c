@@ -50,43 +50,12 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_romaudio.h"
 
-/* Audio driver functions */
-
-static void SNDMGR_CloseDevice(_THIS);
-static int SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture);
-static void SNDMGR_LockDevice(_THIS);
-static void SNDMGR_UnlockDevice(_THIS);
-
-/* Audio driver bootstrap functions */
-
 static int
 SNDMGR_Available(void)
 {
     return (1);
 }
 
-
-static int
-SNDMGR_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->OpenDevice = SNDMGR_OpenDevice;
-    impl->CloseDevice = SNDMGR_CloseDevice;
-    impl->ProvidesOwnCallbackThread = 1;
-    impl->OnlyHasDefaultOutputDevice = 1;
-
-#ifndef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
-    impl->LockDevice = SNDMGR_LockDevice;
-    impl->UnlockDevice = SNDMGR_UnlockDevice;
-#endif
-
-    return 1;
-}
-
-AudioBootStrap SNDMGR_bootstrap = {
-    "sndmgr", SDL_MACOS_NAME " SoundManager",
-    SNDMGR_Available, SNDMGR_Init, 0
-};
 
 #pragma options align=power
 
@@ -330,5 +299,27 @@ SNDMGR_CloseDevice(_THIS)
     SDL_free(this->hidden);
     this->hidden = NULL;
 }
+
+static int
+SNDMGR_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->OpenDevice = SNDMGR_OpenDevice;
+    impl->CloseDevice = SNDMGR_CloseDevice;
+    impl->ProvidesOwnCallbackThread = 1;
+    impl->OnlyHasDefaultOutputDevice = 1;
+
+#ifndef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
+    impl->LockDevice = SNDMGR_LockDevice;
+    impl->UnlockDevice = SNDMGR_UnlockDevice;
+#endif
+
+    return 1;
+}
+
+AudioBootStrap SNDMGR_bootstrap = {
+    "sndmgr", SDL_MACOS_NAME " SoundManager",
+    SNDMGR_Available, SNDMGR_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

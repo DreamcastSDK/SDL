@@ -35,15 +35,18 @@
 /* The tag name used by DUMMY audio */
 #define DUMMYAUD_DRIVER_NAME         "dummy"
 
-/* Audio driver functions */
-static int DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture);
-
-/* Audio driver bootstrap functions */
 static int
 DUMMYAUD_Available(void)
 {
     return 1;  /* always available. */
 }
+
+static int
+DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
+{
+    return 1;   /* always succeeds. */
+}
+
 
 static int
 DUMMYAUD_Init(SDL_AudioDriverImpl *impl)
@@ -59,11 +62,5 @@ AudioBootStrap DUMMYAUD_bootstrap = {
     DUMMYAUD_DRIVER_NAME, "SDL dummy audio driver",
     DUMMYAUD_Available, DUMMYAUD_Init, 1
 };
-
-static int
-DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
-{
-    return 1;   /* always succeeds. */
-}
 
 /* vi: set ts=4 sw=4 expandtab: */

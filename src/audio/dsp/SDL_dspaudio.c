@@ -58,16 +58,6 @@
 #define OPEN_FLAGS_OUTPUT    (O_WRONLY|O_NONBLOCK)
 #define OPEN_FLAGS_INPUT    (O_RDONLY|O_NONBLOCK)
 
-/* Audio driver functions */
-static int DSP_DetectDevices(int iscapture);
-static const char *DSP_GetDeviceName(int index, int iscapture);
-static int DSP_OpenDevice(_THIS, const char *devname, int iscapture);
-static void DSP_WaitDevice(_THIS);
-static void DSP_PlayDevice(_THIS);
-static Uint8 *DSP_GetDeviceBuf(_THIS);
-static void DSP_CloseDevice(_THIS);
-static void DSP_Deinitialize(void);
-
 /* Audio driver bootstrap functions */
 
 static char **outputDevices = NULL;
@@ -114,29 +104,6 @@ DSP_Available(void)
     free_device_lists();
     return available;
 }
-
-
-static int
-DSP_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->DetectDevices = DSP_DetectDevices;
-    impl->GetDeviceName = DSP_GetDeviceName;
-    impl->OpenDevice = DSP_OpenDevice;
-    impl->PlayDevice = DSP_PlayDevice;
-    impl->GetDeviceBuf = DSP_GetDeviceBuf;
-    impl->CloseDevice = DSP_CloseDevice;
-    impl->Deinitialize = DSP_Deinitialize;
-
-    build_device_lists();
-    return 1;
-}
-
-
-AudioBootStrap DSP_bootstrap = {
-    DSP_DRIVER_NAME, "OSS /dev/dsp standard audio",
-    DSP_Available, DSP_Init, 0
-};
 
 
 static void DSP_Deinitialize(void)
@@ -401,5 +368,27 @@ DSP_CloseDevice(_THIS)
         this->hidden = NULL;
     }
 }
+
+static int
+DSP_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->DetectDevices = DSP_DetectDevices;
+    impl->GetDeviceName = DSP_GetDeviceName;
+    impl->OpenDevice = DSP_OpenDevice;
+    impl->PlayDevice = DSP_PlayDevice;
+    impl->GetDeviceBuf = DSP_GetDeviceBuf;
+    impl->CloseDevice = DSP_CloseDevice;
+    impl->Deinitialize = DSP_Deinitialize;
+
+    build_device_lists();
+    return 1;
+}
+
+
+AudioBootStrap DSP_bootstrap = {
+    DSP_DRIVER_NAME, "OSS /dev/dsp standard audio",
+    DSP_Available, DSP_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

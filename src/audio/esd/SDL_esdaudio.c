@@ -45,13 +45,6 @@
 /* The tag name used by ESD audio */
 #define ESD_DRIVER_NAME		"esd"
 
-/* Audio driver functions */
-static int ESD_OpenDevice(_THIS, const char *devname, int iscapture);
-static void ESD_WaitDevice(_THIS);
-static void ESD_PlayDevice(_THIS);
-static Uint8 *ESD_GetDeviceBuf(_THIS);
-static void ESD_CloseDevice(_THIS);
-
 #ifdef SDL_AUDIO_DRIVER_ESD_DYNAMIC
 
 static const char *esd_library = SDL_AUDIO_DRIVER_ESD_DYNAMIC;
@@ -122,8 +115,6 @@ LoadESDLibrary(void)
 
 #endif /* SDL_AUDIO_DRIVER_ESD_DYNAMIC */
 
-/* Audio driver bootstrap functions */
-
 static int
 ESD_Available(void)
 {
@@ -143,26 +134,6 @@ ESD_Available(void)
     return available;
 }
 
-
-static int
-ESD_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->OpenDevice = ESD_OpenDevice;
-    impl->PlayDevice = ESD_PlayDevice;
-    impl->WaitDevice = ESD_WaitDevice;
-    impl->GetDeviceBuf = ESD_GetDeviceBuf;
-    impl->CloseDevice = ESD_CloseDevice;
-    impl->OnlyHasDefaultOutputDevice = 1;
-
-    return 1;
-}
-
-
-AudioBootStrap ESD_bootstrap = {
-    ESD_DRIVER_NAME, "Enlightened Sound Daemon",
-    ESD_Available, ESD_Init, 0
-};
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -359,5 +330,26 @@ ESD_OpenDevice(_THIS, const char *devname, int iscapture)
     /* We're ready to rock and roll. :-) */
     return 1;
 }
+
+
+static int
+ESD_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->OpenDevice = ESD_OpenDevice;
+    impl->PlayDevice = ESD_PlayDevice;
+    impl->WaitDevice = ESD_WaitDevice;
+    impl->GetDeviceBuf = ESD_GetDeviceBuf;
+    impl->CloseDevice = ESD_CloseDevice;
+    impl->OnlyHasDefaultOutputDevice = 1;
+
+    return 1;
+}
+
+
+AudioBootStrap ESD_bootstrap = {
+    ESD_DRIVER_NAME, "Enlightened Sound Daemon",
+    ESD_Available, ESD_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

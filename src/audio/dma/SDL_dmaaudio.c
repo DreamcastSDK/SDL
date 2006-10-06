@@ -62,18 +62,6 @@
 #define OPEN_FLAGS_INPUT    (O_RDWR|O_NONBLOCK)
 #define OPEN_FLAGS_OUTPUT   (O_RDWR|O_NONBLOCK)
 
-/* Audio driver functions */
-static int DMA_DetectDevices(int iscapture);
-static const char *DMA_GetDeviceName(int index, int iscapture);
-static int DMA_OpenDevice(_THIS, const char *devname, int iscapture);
-static void DMA_WaitDevice(_THIS);
-static void DMA_PlayDevice(_THIS);
-static Uint8 *DMA_GetDeviceBuf(_THIS);
-static void DMA_CloseDevice(_THIS);
-static void DMA_Deinitialize(void);
-
-/* Audio driver bootstrap functions */
-
 static char **outputDevices = NULL;
 static int outputDeviceCount = 0;
 static char **inputDevices = NULL;
@@ -137,29 +125,6 @@ DMA_Available(void)
     free_device_lists();
     return available;
 }
-
-
-static int
-DMA_Init(SDL_AudioDriverImpl *impl)
-{
-    /* Set the function pointers */
-    impl->DetectDevices = DMA_DetectDevices;
-    impl->GetDeviceName = DMA_GetDeviceName;
-    impl->OpenDevice = DMA_OpenDevice;
-    impl->WaitDevice = DMA_WaitDevice;
-    impl->PlayDevice = DMA_PlayDevice;
-    impl->GetDeviceBuf = DMA_GetDeviceBuf;
-    impl->CloseDevice = DMA_CloseDevice;
-    impl->Deinitialize = DMA_Deinitialize;
-
-    build_device_lists();
-    return 1;
-}
-
-AudioBootStrap DMA_bootstrap = {
-    DMA_DRIVER_NAME, "OSS /dev/dsp DMA audio",
-    DMA_Available, DMA_Init, 0
-};
 
 static void DMA_Deinitialize(void)
 {
@@ -556,5 +521,27 @@ DMA_CloseDevice(_THIS)
         this->hidden = NULL;
     }
 }
+
+static int
+DMA_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->DetectDevices = DMA_DetectDevices;
+    impl->GetDeviceName = DMA_GetDeviceName;
+    impl->OpenDevice = DMA_OpenDevice;
+    impl->WaitDevice = DMA_WaitDevice;
+    impl->PlayDevice = DMA_PlayDevice;
+    impl->GetDeviceBuf = DMA_GetDeviceBuf;
+    impl->CloseDevice = DMA_CloseDevice;
+    impl->Deinitialize = DMA_Deinitialize;
+
+    build_device_lists();
+    return 1;
+}
+
+AudioBootStrap DMA_bootstrap = {
+    DMA_DRIVER_NAME, "OSS /dev/dsp DMA audio",
+    DMA_Available, DMA_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */
