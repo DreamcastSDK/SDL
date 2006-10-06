@@ -51,7 +51,6 @@ static void ARTS_WaitDone(_THIS);
 
 static const char *arts_library = SDL_AUDIO_DRIVER_ARTS_DYNAMIC;
 static void *arts_handle = NULL;
-static int arts_loaded = 0;
 
 /* !!! FIXME: I hate this SDL_NAME clutter...it makes everything so messy! */
 static int (*SDL_NAME(arts_init)) (void);
@@ -89,10 +88,9 @@ static struct
 static void
 UnloadARTSLibrary()
 {
-    if (arts_loaded) {
+    if (arts_handle != NULL) {
         SDL_UnloadObject(arts_handle);
         arts_handle = NULL;
-        arts_loaded = 0;
     }
 }
 
@@ -101,10 +99,9 @@ LoadARTSLibrary(void)
 {
     int i, retval = -1;
 
-    if (!arts_loaded) {
+    if (arts_handle == NULL) {
         arts_handle = SDL_LoadObject(arts_library);
-        if (arts_handle) {
-            arts_loaded = 1;
+        if (arts_handle != NULL) {
             retval = 0;
             for (i = 0; i < SDL_arraysize(arts_functions); ++i) {
                 *arts_functions[i].func =
