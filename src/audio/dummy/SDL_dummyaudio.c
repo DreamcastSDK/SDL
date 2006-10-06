@@ -37,10 +37,6 @@
 
 /* Audio driver functions */
 static int DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture);
-static void DUMMYAUD_WaitDevice(_THIS);
-static void DUMMYAUD_PlayDevice(_THIS);
-static Uint8 *DUMMYAUD_GetDeviceBuf(_THIS);
-static void DUMMYAUD_CloseDevice(_THIS);
 
 /* Audio driver bootstrap functions */
 static int
