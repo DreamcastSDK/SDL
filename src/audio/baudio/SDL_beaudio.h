@@ -34,8 +34,5 @@ struct SDL_PrivateAudioData
     BSoundPlayer *audio_obj;
 };
 
-/* Old variable names */
-#define audio_obj	(_this->hidden->audio_obj)
-
 #endif /* _SDL_lowaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */

@@ -46,11 +46,5 @@ struct SDL_PrivateAudioData
     int mixlen;
 };
 
-/* Old variable names */
-#define pcm_handle		(this->hidden->pcm_handle)
-#define parent			(this->hidden->parent)
-#define mixbuf			(this->hidden->mixbuf)
-#define mixlen			(this->hidden->mixlen)
-
 #endif /* _ALSA_PCM_audio_h */
 /* vi: set ts=4 sw=4 expandtab: */

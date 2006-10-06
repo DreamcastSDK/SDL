@@ -21,8 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_lowaudio_h
-#define _SDL_lowaudio_h
+#ifndef _SDL_dart_h
+#define _SDL_dart_h
 
 #define INCL_TYPES
 #define INCL_DOSSEMAPHORES
@@ -61,5 +61,6 @@ struct SDL_PrivateAudioData
     HEV hevAudioBufferPlayed;   // Event semaphore to indicate that an audio buffer has been played by DART
 };
 
-#endif /* _SDL_lowaudio_h */
+#endif /* _SDL_dart_h */
+
 /* vi: set ts=4 sw=4 expandtab: */
