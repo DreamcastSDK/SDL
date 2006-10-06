@@ -218,9 +218,26 @@ DMA_ReopenAudio(_THIS, const char *audiodev, int format, int stereo)
 }
 
 
+static void
+DMA_CloseDevice(_THIS)
+{
+    if (this->hidden != NULL) {
+        if (dma_buf != NULL) {
+            munmap(dma_buf, dma_len);
+            dma_buf = NULL;
+        }
+        if (audio_fd >= 0) {
+            close(audio_fd);
+            audio_fd = -1;
+        }
+        SDL_free(this->hidden);
+        this->hidden = NULL;
+    }
+}
+
 
 static int
-open_device_internal(_THIS, const char *devname, int iscapture)
+DMA_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     int format;
@@ -249,10 +266,10 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-
     /* Open the audio device */
     audio_fd = open(devname, flags, 0);
     if (audio_fd < 0) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
         return 0;
     }
@@ -261,6 +278,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
 
     /* Get a list of supported hardware formats */
     if (ioctl(audio_fd, SNDCTL_DSP_GETFMTS, &value) < 0) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't get audio format list");
         return 0;
     }
@@ -312,6 +330,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
         }
     }
     if (format == 0) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't find any hardware audio formats");
         return 0;
     }
@@ -320,6 +339,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     /* Set the audio format */
     value = format;
     if ((ioctl(audio_fd, SNDCTL_DSP_SETFMT, &value) < 0) || (value != format)) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't set audio format");
         return 0;
     }
@@ -338,12 +358,14 @@ open_device_internal(_THIS, const char *devname, int iscapture)
        once we know what format and channels are supported
      */
     if (DMA_ReopenAudio(this, devname, format, stereo) < 0) {
+        DMA_CloseDevice(this);
         /* Error is set by DMA_ReopenAudio() */
         return 0;
     }
 
     /* Memory map the audio buffer */
     if (ioctl(audio_fd, SNDCTL_DSP_GETOSPACE, &info) < 0) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't get OSPACE parameters");
         return 0;
     }
@@ -355,6 +377,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     dma_buf = (Uint8 *) mmap(NULL, dma_len, PROT_WRITE, MAP_SHARED,
                              audio_fd, 0);
     if (dma_buf == MAP_FAILED) {
+        DMA_CloseDevice(this);
         SDL_SetError("DMA memory map failed");
         dma_buf = NULL;
         return 0;
@@ -376,6 +399,7 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     ioctl(audio_fd, SNDCTL_DSP_SETTRIGGER, &value);
     value = PCM_ENABLE_OUTPUT;
     if (ioctl(audio_fd, SNDCTL_DSP_SETTRIGGER, &value) < 0) {
+        DMA_CloseDevice(this);
         SDL_SetError("Couldn't trigger audio output");
         return 0;
     }
@@ -386,17 +410,6 @@ open_device_internal(_THIS, const char *devname, int iscapture)
     /* We're ready to rock and roll. :-) */
     return 1;
 }
-
-static int
-DMA_OpenDevice(_THIS, const char *devname, int iscapture)
-{
-    int retval = open_device_internal(this, devname, iscapture);
-    if (!retval)
-        DMA_CloseDevice(this);  /* !!! FIXME: do this at higher level. */
-    return retval;
-}
-
-
 
 
 /* This function waits until it is possible to write a full sound buffer */
@@ -505,22 +518,6 @@ DMA_GetDeviceBuf(_THIS)
     return (dma_buf + (filling * this->spec.size));
 }
 
-static void
-DMA_CloseDevice(_THIS)
-{
-    if (this->hidden != NULL) {
-        if (dma_buf != NULL) {
-            munmap(dma_buf, dma_len);
-            dma_buf = NULL;
-        }
-        if (audio_fd >= 0) {
-            close(audio_fd);
-            audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
-    }
-}
 
 static int
 DMA_Init(SDL_AudioDriverImpl *impl)
