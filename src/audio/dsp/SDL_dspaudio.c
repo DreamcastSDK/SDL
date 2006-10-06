@@ -140,6 +140,24 @@ DSP_GetDeviceName(int index, int iscapture)
 }
 
 
+static void
+DSP_CloseDevice(_THIS)
+{
+    if (this->hidden != NULL) {
+        if (this->hidden->mixbuf != NULL) {
+            SDL_FreeAudioMem(this->hidden->mixbuf);
+            this->hidden->mixbuf = NULL;
+        }
+        if (this->hidden->audio_fd >= 0) {
+            close(this->hidden->audio_fd);
+            this->hidden->audio_fd = -1;
+        }
+        SDL_free(this->hidden);
+        this->hidden = NULL;
+    }
+}
+
+
 static int
 DSP_OpenDevice(_THIS, const char *devname, int iscapture)
 {
@@ -350,23 +368,6 @@ static Uint8 *
 DSP_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
-}
-
-static void
-DSP_CloseDevice(_THIS)
-{
-    if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
-        if (this->hidden->audio_fd >= 0) {
-            close(this->hidden->audio_fd);
-            this->hidden->audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
-    }
 }
 
 static int
