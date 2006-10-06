@@ -270,8 +270,8 @@ static int
 ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     int rc = 0;
-    int bits, frag_spec;
-    SDL_AudioFormat test_format, format;
+    int bits = 0, frag_spec = 0;
+    SDL_AudioFormat test_format = 0, format = 0;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -289,8 +289,6 @@ ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
     }
 
     /* Try for a closest match on audio format */
-    format = 0;
-    bits = 0;
     for (test_format = SDL_FirstAudioFormat(this->spec.format);
          !format && test_format;) {
 #ifdef DEBUG_AUDIO
