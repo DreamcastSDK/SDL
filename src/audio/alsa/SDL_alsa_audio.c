@@ -90,6 +90,12 @@ static void *alsa_handle = NULL;
 static int
 load_alsa_sym(const char *fn, void **addr)
 {
+    /*
+     * !!! FIXME:
+     * Eventually, this will deal with fallbacks, version changes, and
+     *  missing symbols we can workaround. But for now, it doesn't.
+     */
+
 #if HAVE_DLVSYM
     *addr = dlvsym(alsa_handle, fn, "ALSA_0.9");
     if (*addr == NULL)
@@ -97,6 +103,7 @@ load_alsa_sym(const char *fn, void **addr)
     {
         *addr = dlsym(alsa_handle, fn);
         if (*addr == NULL) {
+            SDL_SetError("dlsym('%s') failed: %s", fn, strerror(errno));
             return 0;
         }
     }
@@ -140,6 +147,7 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_nonblock);
     return 0;
 }
+#undef SDL_ALSA_SYM
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 
@@ -377,6 +385,7 @@ ALSA_CloseDevice(_THIS)
         }
         SDL_free(this->hidden);
         this->hidden = NULL;
+        UnloadALSALibrary();
     }
 }
 
@@ -399,6 +408,11 @@ ALSA_OpenDevice(_THIS, const char *devname, int iscapture)
         return 0;
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+
+    if (LoadALSALibrary() < 0) {
+        ALSA_CloseDevice(this);
+        return 0;
+    }
 
     /* Open the audio device */
     /* Name of device should depend on # channels in spec */
