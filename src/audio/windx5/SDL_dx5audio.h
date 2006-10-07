@@ -21,8 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_lowaudio_h
-#define _SDL_lowaudio_h
+#ifndef _SDL_dx5audio_h
+#define _SDL_dx5audio_h
 
 #include "directx.h"
 
@@ -53,6 +53,6 @@ struct SDL_PrivateAudioData
 #define locked_buf		(this->hidden->locked_buf)
 #define audio_event		(this->hidden->audio_event)
 
-#endif /* _SDL_lowaudio_h */
+#endif /* _SDL_dx5audio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -21,8 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_lowaudio_h
-#define _SDL_lowaudio_h
+#ifndef _SDL_sunaudio_h
+#define _SDL_sunaudio_h
 
 #include "../SDL_sysaudio.h"
 
@@ -53,5 +53,6 @@ struct SDL_PrivateAudioData
 #define fragsize		(this->hidden->fragsize)
 #define frequency		(this->hidden->frequency)
 
-#endif /* _SDL_lowaudio_h */
+#endif /* _SDL_sunaudio_h */
+
 /* vi: set ts=4 sw=4 expandtab: */

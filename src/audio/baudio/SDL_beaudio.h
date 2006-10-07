@@ -21,8 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_lowaudio_h
-#define _SDL_lowaudio_h
+#ifndef _SDL_beaudio_h
+#define _SDL_beaudio_h
 
 #include "../SDL_sysaudio.h"
 
@@ -34,5 +34,6 @@ struct SDL_PrivateAudioData
     BSoundPlayer *audio_obj;
 };
 
-#endif /* _SDL_lowaudio_h */
+#endif /* _SDL_beaudio_h */
+
 /* vi: set ts=4 sw=4 expandtab: */
