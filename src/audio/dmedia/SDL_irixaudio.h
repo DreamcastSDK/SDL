@@ -33,15 +33,9 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The handle for the audio device */
-    ALport audio_port;
-
-    Uint8 *mixbuf;              /* The app mixing buffer */
+    ALport audio_port;    /* The handle for the audio device */
+    Uint8 *mixbuf;        /* The app mixing buffer */
 };
-
-/* Old variable names */
-#define audio_port		(this->hidden->audio_port)
-#define mixbuf			(this->hidden->mixbuf)
 
 #endif /* _SDL_lowaudio_h */
 /* vi: set ts=4 sw=4 expandtab: */
