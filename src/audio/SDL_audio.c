@@ -55,7 +55,7 @@ extern AudioBootStrap ESD_bootstrap;
 extern AudioBootStrap NAS_bootstrap;
 extern AudioBootStrap DSOUND_bootstrap;
 extern AudioBootStrap WAVEOUT_bootstrap;
-extern AudioBootStrap Paud_bootstrap;
+extern AudioBootStrap PAUDIO_bootstrap;
 extern AudioBootStrap BAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
 extern AudioBootStrap SNDMGR_bootstrap;
@@ -107,8 +107,8 @@ static AudioBootStrap *bootstrap[] = {
 #if SDL_AUDIO_DRIVER_WAVEOUT
     &WAVEOUT_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_PAUD
-    &Paud_bootstrap,
+#if SDL_AUDIO_DRIVER_PAUDIO
+    &PAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_BAUDIO
     &BAUDIO_bootstrap,
