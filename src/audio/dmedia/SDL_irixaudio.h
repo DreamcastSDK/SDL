@@ -21,8 +21,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_lowaudio_h
-#define _SDL_lowaudio_h
+#ifndef _SDL_irixaudio_h
+#define _SDL_irixaudio_h
 
 #include <dmedia/audio.h>
 
@@ -37,5 +37,6 @@ struct SDL_PrivateAudioData
     Uint8 *mixbuf;        /* The app mixing buffer */
 };
 
-#endif /* _SDL_lowaudio_h */
+#endif /* _SDL_irixaudio_h */
+
 /* vi: set ts=4 sw=4 expandtab: */
