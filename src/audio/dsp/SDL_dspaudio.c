@@ -189,6 +189,7 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     /* Open the audio device */
     this->hidden->audio_fd = open(devname, flags, 0);
     if (this->hidden->audio_fd < 0) {
+        DSP_CloseDevice(this);
         SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
         return 0;
     }
@@ -196,12 +197,12 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
 
     /* Make the file descriptor use blocking writes with fcntl() */
     {
-        long flags;
-        flags = fcntl(this->hidden->audio_fd, F_GETFL);
-        flags &= ~O_NONBLOCK;
-        if (fcntl(this->hidden->audio_fd, F_SETFL, flags) < 0) {
-            SDL_SetError("Couldn't set audio blocking mode");
+        long ctlflags;
+        ctlflags = fcntl(this->hidden->audio_fd, F_GETFL);
+        ctlflags &= ~O_NONBLOCK;
+        if (fcntl(this->hidden->audio_fd, F_SETFL, ctlflags) < 0) {
             DSP_CloseDevice(this);
+            SDL_SetError("Couldn't set audio blocking mode");
             return 0;
         }
     }
@@ -209,8 +210,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     /* Get a list of supported hardware formats */
     if (ioctl(this->hidden->audio_fd, SNDCTL_DSP_GETFMTS, &value) < 0) {
         perror("SNDCTL_DSP_GETFMTS");
-        SDL_SetError("Couldn't get audio format list");
         DSP_CloseDevice(this);
+        SDL_SetError("Couldn't get audio format list");
         return 0;
     }
 
@@ -267,8 +268,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
         }
     }
     if (format == 0) {
-        SDL_SetError("Couldn't find any hardware audio formats");
         DSP_CloseDevice(this);
+        SDL_SetError("Couldn't find any hardware audio formats");
         return 0;
     }
     this->spec.format = test_format;
@@ -278,8 +279,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     if ( (ioctl(this->hidden->audio_fd, SNDCTL_DSP_SETFMT, &value) < 0) ||
          (value != format) ) {
         perror("SNDCTL_DSP_SETFMT");
-        SDL_SetError("Couldn't set audio format");
         DSP_CloseDevice(this);
+        SDL_SetError("Couldn't set audio format");
         return 0;
     }
 
@@ -287,8 +288,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     value = this->spec.channels;
     if (ioctl(this->hidden->audio_fd, SNDCTL_DSP_CHANNELS, &value) < 0) {
         perror("SNDCTL_DSP_CHANNELS");
-        SDL_SetError("Cannot set the number of channels");
         DSP_CloseDevice(this);
+        SDL_SetError("Cannot set the number of channels");
         return 0;
     }
     this->spec.channels = value;
@@ -297,8 +298,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     value = this->spec.freq;
     if (ioctl(this->hidden->audio_fd, SNDCTL_DSP_SPEED, &value) < 0) {
         perror("SNDCTL_DSP_SPEED");
-        SDL_SetError("Couldn't set audio frequency");
         DSP_CloseDevice(this);
+        SDL_SetError("Couldn't set audio frequency");
         return 0;
     }
     this->spec.freq = value;
@@ -309,8 +310,8 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     /* Determine the power of two of the fragment size */
     for (frag_spec = 0; (0x01U << frag_spec) < this->spec.size; ++frag_spec);
     if ((0x01U << frag_spec) != this->spec.size) {
-        SDL_SetError("Fragment size must be a power of two");
         DSP_CloseDevice(this);
+        SDL_SetError("Fragment size must be a power of two");
         return 0;
     }
     frag_spec |= 0x00020000;    /* two fragments, for low latency */
@@ -339,6 +340,7 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         DSP_CloseDevice(this);
+        SDL_OutOfMemory();
         return 0;
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
