@@ -448,6 +448,22 @@ NTO_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;
 }
 
+
+static int
+NTO_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->OpenDevice = NTO_OpenDevice;
+    impl->ThreadInit = NTO_ThreadInit;
+    impl->WaitDevice = NTO_WaitDevice;
+    impl->PlayDevice = NTO_PlayDevice;
+    impl->GetDeviceBuf = NTO_GetDeviceBuf;
+    impl->CloseDevice = NTO_CloseDevice;
+    impl->OnlyHasDefaultOutputDevice = 1;  /* !!! FIXME: add device enum! */
+
+    return 1;
+}
+
 AudioBootStrap QNXNTOAUDIO_bootstrap = {
     DRIVER_NAME, "QNX6 QSA-NTO Audio",
     NTO_AudioAvailable, NTO_Init, 0
