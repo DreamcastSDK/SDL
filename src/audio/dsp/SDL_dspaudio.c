@@ -58,8 +58,6 @@
 #define OPEN_FLAGS_OUTPUT    (O_WRONLY|O_NONBLOCK)
 #define OPEN_FLAGS_INPUT    (O_RDONLY|O_NONBLOCK)
 
-/* Audio driver bootstrap functions */
-
 static char **outputDevices = NULL;
 static int outputDeviceCount = 0;
 static char **inputDevices = NULL;
@@ -106,7 +104,8 @@ DSP_Available(void)
 }
 
 
-static void DSP_Deinitialize(void)
+static void
+DSP_Deinitialize(void)
 {
     free_device_lists();
 }
@@ -186,7 +185,6 @@ DSP_OpenDevice(_THIS, const char *devname, int iscapture)
         return 0;
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-    this->hidden->audio_fd = -1;
 
     /* Open the audio device */
     this->hidden->audio_fd = open(devname, flags, 0);

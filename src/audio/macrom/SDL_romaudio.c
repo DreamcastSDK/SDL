@@ -309,9 +309,11 @@ SNDMGR_Init(SDL_AudioDriverImpl *impl)
     impl->ProvidesOwnCallbackThread = 1;
     impl->OnlyHasDefaultOutputDevice = 1;
 
-#ifndef __MACOSX__               /* Mac OS X uses threaded audio, so normal thread code is okay */
+/* Mac OS X uses threaded audio, so normal thread code is okay */
+#ifndef __MACOSX__
     impl->LockDevice = SNDMGR_LockDevice;
     impl->UnlockDevice = SNDMGR_UnlockDevice;
+    impl->SkipMixerLock = 1;
 #endif
 
     return 1;
