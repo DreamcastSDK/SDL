@@ -36,22 +36,15 @@
 #include "../SDL_audio_c.h"
 #include "SDL_nasaudio.h"
 
-/* The tag name used by artsc audio */
+/* The tag name used by nas audio */
 #define NAS_DRIVER_NAME         "nas"
 
 static struct SDL_PrivateAudioData *this2 = NULL;
 
-/* Audio driver functions */
-static int NAS_OpenAudio(_THIS, SDL_AudioSpec * spec);
-static void NAS_WaitAudio(_THIS);
-static void NAS_PlayAudio(_THIS);
-static Uint8 *NAS_GetAudioBuf(_THIS);
-static void NAS_CloseAudio(_THIS);
-
-/* Audio driver bootstrap functions */
+/* !!! FIXME: dynamic loading? */
 
 static int
-Audio_Available(void)
+NAS_Available(void)
 {
     AuServer *aud = AuOpenServer("", 0, NULL, 0, NULL, NULL);
     if (!aud)
@@ -61,54 +54,9 @@ Audio_Available(void)
     return 1;
 }
 
-static void
-Audio_DeleteDevice(SDL_AudioDevice * device)
-{
-    SDL_free(device->hidden);
-    SDL_free(device);
-}
-
-static SDL_AudioDevice *
-Audio_CreateDevice(int devindex)
-{
-    SDL_AudioDevice *this;
-
-    /* Initialize all variables that we clean on shutdown */
-    this = (SDL_AudioDevice *) SDL_malloc(sizeof(SDL_AudioDevice));
-    if (this) {
-        SDL_memset(this, 0, (sizeof *this));
-        this->hidden = (struct SDL_PrivateAudioData *)
-            SDL_malloc((sizeof *this->hidden));
-    }
-    if ((this == NULL) || (this->hidden == NULL)) {
-        SDL_OutOfMemory();
-        if (this) {
-            SDL_free(this);
-        }
-        return (0);
-    }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
-    /* Set the function pointers */
-    this->OpenAudio = NAS_OpenAudio;
-    this->WaitAudio = NAS_WaitAudio;
-    this->PlayAudio = NAS_PlayAudio;
-    this->GetAudioBuf = NAS_GetAudioBuf;
-    this->CloseAudio = NAS_CloseAudio;
-
-    this->free = Audio_DeleteDevice;
-
-    return this;
-}
-
-AudioBootStrap NAS_bootstrap = {
-    NAS_DRIVER_NAME, "Network Audio System",
-    Audio_Available, Audio_CreateDevice, 0
-};
-
 /* This function waits until it is possible to write a full sound buffer */
 static void
-NAS_WaitAudio(_THIS)
+NAS_WaitDevice(_THIS)
 {
     while (this->hidden->buf_free < this->hidden->mixlen) {
         AuEvent ev;
@@ -118,11 +66,14 @@ NAS_WaitAudio(_THIS)
 }
 
 static void
-NAS_PlayAudio(_THIS)
+NAS_PlayDevice(_THIS)
 {
-    while (this->hidden->mixlen > this->hidden->buf_free) {     /* We think the buffer is full? Yikes! Ask the server for events,
-                                                                   in the hope that some of them is LowWater events telling us more
-                                                                   of the buffer is free now than what we think. */
+    while (this->hidden->mixlen > this->hidden->buf_free) {
+        /*
+         * We think the buffer is full? Yikes! Ask the server for events,
+         *  in the hope that some of them is LowWater events telling us more
+         *  of the buffer is free now than what we think.
+         */
         AuEvent ev;
         AuNextEvent(this->hidden->aud, AuTrue, &ev);
         AuDispatchEvent(this->hidden->aud, &ev);
@@ -141,21 +92,25 @@ NAS_PlayAudio(_THIS)
 }
 
 static Uint8 *
-NAS_GetAudioBuf(_THIS)
+NAS_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 static void
-NAS_CloseAudio(_THIS)
+NAS_CloseDevice(_THIS)
 {
-    if (this->hidden->mixbuf != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-    }
-    if (this->hidden->aud) {
-        AuCloseServer(this->hidden->aud);
-        this->hidden->aud = 0;
+    if (this->hidden != NULL) {
+        if (this->hidden->mixbuf != NULL) {
+            SDL_FreeAudioMem(this->hidden->mixbuf);
+            this->hidden->mixbuf = NULL;
+        }
+        if (this->hidden->aud) {
+            AuCloseServer(this->hidden->aud);
+            this->hidden->aud = 0;
+        }
+        SDL_free(this->hidden);
+        this->hidden = NULL;
     }
 }
 
@@ -232,46 +187,53 @@ find_device(_THIS, int nch)
 }
 
 static int
-NAS_OpenAudio(_THIS, SDL_AudioSpec * spec)
+NAS_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     AuElement elms[3];
     int buffer_size;
     SDL_AudioFormat test_format, format;
 
-    this->hidden->mixbuf = NULL;
+    /* Initialize all variables that we clean on shutdown */
+    this->hidden = (struct SDL_PrivateAudioData *)
+                        SDL_malloc((sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
     /* Try for a closest match on audio format */
     format = 0;
-    for (test_format = SDL_FirstAudioFormat(spec->format);
+    for (test_format = SDL_FirstAudioFormat(this->spec.format);
          !format && test_format;) {
         format = sdlformat_to_auformat(test_format);
-
         if (format == AuNone) {
             test_format = SDL_NextAudioFormat();
         }
     }
     if (format == 0) {
-        SDL_SetError("Couldn't find any hardware audio formats");
-        return (-1);
+        NAS_CloseDevice(this);
+        SDL_SetError("NAS: Couldn't find any hardware audio formats");
+        return 0;
     }
-    spec->format = test_format;
+    this->spec.format = test_format;
 
     this->hidden->aud = AuOpenServer("", 0, NULL, 0, NULL, NULL);
     if (this->hidden->aud == 0) {
-        SDL_SetError("Couldn't open connection to NAS server");
-        return (-1);
+        NAS_CloseDevice(this);
+        SDL_SetError("NAS: Couldn't open connection to NAS server");
+        return 0;
     }
 
-    this->hidden->dev = find_device(this, spec->channels);
+    this->hidden->dev = find_device(this, this->spec.channels);
     if ((this->hidden->dev == AuNone)
         || (!(this->hidden->flow = AuCreateFlow(this->hidden->aud, NULL)))) {
-        AuCloseServer(this->hidden->aud);
-        this->hidden->aud = 0;
-        SDL_SetError("Couldn't find a fitting playback device on NAS server");
-        return (-1);
+        NAS_CloseDevice(this);
+        SDL_SetError("NAS: Couldn't find a fitting device on NAS server");
+        return 0;
     }
 
-    buffer_size = spec->freq;
+    buffer_size = this->spec.freq;
     if (buffer_size < 4096)
         buffer_size = 4096;
 
@@ -279,16 +241,15 @@ NAS_OpenAudio(_THIS, SDL_AudioSpec * spec)
         buffer_size = 32768;    /* So that the buffer won't get unmanageably big. */
 
     /* Calculate the final parameters for this audio specification */
-    SDL_CalculateAudioSpec(spec);
+    SDL_CalculateAudioSpec(&this->spec);
 
     this2 = this->hidden;
 
-    AuMakeElementImportClient(elms, spec->freq, format, spec->channels,
+    AuMakeElementImportClient(elms,this->spec.freq,format,this->spec.channels,
                               AuTrue, buffer_size, buffer_size / 4, 0, NULL);
-    AuMakeElementExportDevice(elms + 1, 0, this->hidden->dev, spec->freq,
+    AuMakeElementExportDevice(elms + 1, 0, this->hidden->dev, this->spec.freq,
                               AuUnlimitedSamples, 0, NULL);
-    AuSetElements(this->hidden->aud, this->hidden->flow, AuTrue, 2, elms,
-                  NULL);
+    AuSetElements(this->hidden->aud, this->hidden->flow, AuTrue, 2, elms, NULL);
     AuRegisterEventHandler(this->hidden->aud, AuEventHandlerIDMask, 0,
                            this->hidden->flow, event_handler,
                            (AuPointer) NULL);
@@ -296,18 +257,36 @@ NAS_OpenAudio(_THIS, SDL_AudioSpec * spec)
     AuStartFlow(this->hidden->aud, this->hidden->flow, NULL);
 
     /* Allocate mixing buffer */
-    this->hidden->mixlen = spec->size;
+    this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
+        NAS_CloseDevice(this);
+        SDL_OutOfMemory();
         return (-1);
     }
-    SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
-
-    /* Get the parent process id (we're the parent of the audio thread) */
-    this->hidden->parent = getpid();
+    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
     /* We're ready to rock and roll. :-) */
-    return (0);
+    return 1;
 }
+
+static int
+NAS_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Set the function pointers */
+    impl->OpenDevice = NAS_OpenDevice;
+    impl->PlayDevice = NAS_PlayDevice;
+    impl->WaitDevice = NAS_WaitDevice;
+    impl->GetDeviceBuf = NAS_GetDeviceBuf;
+    impl->CloseDevice = NAS_CloseDevice;
+    impl->OnlyHasDefaultOutputDevice = 1;  /* !!! FIXME: is this true? */
+
+    return 1;
+}
+
+AudioBootStrap NAS_bootstrap = {
+    NAS_DRIVER_NAME, "Network Audio System",
+    NAS_Available, NAS_Init, 0
+};
 
 /* vi: set ts=4 sw=4 expandtab: */

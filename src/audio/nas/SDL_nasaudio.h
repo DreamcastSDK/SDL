@@ -46,9 +46,6 @@ struct SDL_PrivateAudioData
     AuFlowID flow;
     AuDeviceID dev;
 
-    /* The parent process id, to detect when application quits */
-    pid_t parent;
-
     /* Raw mixing buffer */
     Uint8 *mixbuf;
     int mixlen;
@@ -60,4 +57,5 @@ struct SDL_PrivateAudioData
     int buf_free;
 };
 #endif /* _SDL_nasaudio_h */
+
 /* vi: set ts=4 sw=4 expandtab: */
