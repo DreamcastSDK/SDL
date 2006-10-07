@@ -145,7 +145,7 @@ callBackProc(SndChannel * chan, SndCommand * cmd_passed)
     cmd.param2 = (long) &header;
     SndDoCommand(chan, &cmd, 0);
 
-    memset(buffer[fill_me], 0, audio->spec.size);
+    SDL_memset(buffer[fill_me], 0, audio->spec.size);
 
     /*
      * if audio device isn't locked, mix the next buffer to be queued in
@@ -203,7 +203,7 @@ SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
     SDL_CalculateAudioSpec(&this->spec);
 
     /* initialize bufferCmd header */
-    memset(&header, 0, sizeof(header));
+    SDL_memset(&header, 0, sizeof(header));
     callback = (SndCallBackUPP) NewSndCallBackUPP(callBackProc);
     sample_bits = spec->size / spec->samples / spec->channels * 8;
 
@@ -236,13 +236,13 @@ SNDMGR_OpenDevice(_THIS, const char *devname, int iscapture)
 
     /* allocate 2 buffers */
     for (i = 0; i < 2; i++) {
-        buffer[i] = (UInt8 *) malloc(sizeof(UInt8) * spec->size);
+        buffer[i] = (UInt8 *) SDL_malloc(sizeof(UInt8) * spec->size);
         if (buffer[i] == NULL) {
             SNDMGR_CloseDevice(this);
             SDL_OutOfMemory();
             return 0;
         }
-        memset(buffer[i], 0, spec->size);
+        SDL_memset(buffer[i], 0, spec->size);
     }
 
     /* Create the sound manager channel */

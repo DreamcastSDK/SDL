@@ -84,7 +84,7 @@ MME_OpenDevice(_THIS, const char *devname, int iscapture)
         return 0;
     }
 
-    memset(this->hidden->shm, '\0', sizeof (*this->hidden->shm));
+    SDL_memset(this->hidden->shm, '\0', sizeof (*this->hidden->shm));
     this->hidden->shm->sound = 0;
     this->hidden->shm->wFmt.wf.wFormatTag = WAVE_FORMAT_PCM;
 
