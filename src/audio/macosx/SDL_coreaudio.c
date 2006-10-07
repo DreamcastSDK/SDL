@@ -333,7 +333,7 @@ COREAUDIO_CloseDevice(_THIS)
         result = AudioOutputUnitStop(this->hidden->audioUnit);
 
         /* Remove the input callback */
-        memset(&callback, '\0', sizeof (AURenderCallbackStruct));
+        SDL_memset(&callback, '\0', sizeof (AURenderCallbackStruct));
         result = AudioUnitSetProperty(this->hidden->audioUnit,
                                       kAudioUnitProperty_SetRenderCallback,
                                       scope, bus, &callback, sizeof (callback));
@@ -425,7 +425,7 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
         return 0;
     }
 
-    memset(&desc, '\0', sizeof(ComponentDescription));
+    SDL_memset(&desc, '\0', sizeof(ComponentDescription));
     desc.componentType = kAudioUnitType_Output;
     desc.componentSubType = kAudioUnitSubType_HALOutput;
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
@@ -470,7 +470,7 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
     CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_StreamFormat)");
 
     /* Set the audio callback */
-    memset(&callback, '\0', sizeof (AURenderCallbackStruct));
+    SDL_memset(&callback, '\0', sizeof (AURenderCallbackStruct));
     callback.inputProc = ((iscapture) ? inputCallback : outputCallback);
     callback.inputProcRefCon = this;
     result = AudioUnitSetProperty(this->hidden->audioUnit,
@@ -514,7 +514,7 @@ COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
     /* Setup a AudioStreamBasicDescription with the requested format */
-    memset(&strdesc, '\0', sizeof(AudioStreamBasicDescription));
+    SDL_memset(&strdesc, '\0', sizeof(AudioStreamBasicDescription));
     strdesc.mFormatID = kAudioFormatLinearPCM;
     strdesc.mFormatFlags = kLinearPCMFormatFlagIsPacked;
     strdesc.mChannelsPerFrame = this->spec.channels;

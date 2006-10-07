@@ -117,7 +117,7 @@ BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     }
 
     /* Parse the audio format and fill the Be raw audio format */
-    memset(&format, '\0', sizeof(media_raw_audio_format));
+    SDL_memset(&format, '\0', sizeof(media_raw_audio_format));
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
     format.frame_rate = (float) this->spec.freq;
     format.channel_count = this->spec.channels;  /* !!! FIXME: support > 2? */
