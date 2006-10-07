@@ -513,7 +513,14 @@ AC_HELP_STRING([--enable-nas], [support the NAS audio API [[default=yes]]]),
     if test x$enable_audio = xyes -a x$enable_nas = xyes; then
         AC_MSG_CHECKING(for NAS audio support)
         have_nas=no
-        if test -r /usr/X11R6/include/audio/audiolib.h; then
+        AC_CHECK_HEADER(audio/audiolib.h, have_nas_hdr=yes)
+        AC_CHECK_LIB(audio, AuOpenServer, have_nas_lib=yes)
+
+        if test x$have_nas_hdr = xyes -a x$have_nas_lib = xyes; then
+            have_nas=yes
+            NAS_LIBS="-laudio"
+
+        elif test -r /usr/X11R6/include/audio/audiolib.h; then
             have_nas=yes
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
