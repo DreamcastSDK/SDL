@@ -110,7 +110,7 @@ NAS_CloseDevice(_THIS)
             this->hidden->aud = 0;
         }
         SDL_free(this->hidden);
-        this->hidden = NULL;
+        this2 = this->hidden = NULL;
     }
 }
 
