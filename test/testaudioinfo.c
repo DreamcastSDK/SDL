@@ -28,8 +28,8 @@ int main(int argc, char **argv)
     if (n == 0) {
         printf("No built-in audio drivers\n\n");
     } else {
-        printf("Built-in audio drivers:\n");
         int i;
+        printf("Built-in audio drivers:\n");
         for (i = 0; i < n; ++i) {
             printf("  %s\n", SDL_GetAudioDriver(i));
         }
