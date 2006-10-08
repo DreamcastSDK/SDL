@@ -39,7 +39,7 @@ extern "C"
 }
 
 
-static int BEAUDIO_Available(void)
+static int BEOSAUDIO_Available(void)
 {
     return 1;  /* Always available on BeOS. */
 }
@@ -79,7 +79,7 @@ FillSound(void *device, void *stream, size_t len,
 }
 
 static void
-BEAUDIO_CloseDevice(_THIS)
+BEOSAUDIO_CloseDevice(_THIS)
 {
     if (_this->hidden != NULL) {
         if (_this->hidden->audio_obj) {
@@ -90,18 +90,15 @@ BEAUDIO_CloseDevice(_THIS)
 
         delete _this->hidden;
         _this->hidden = NULL;
-
-        /* Quit the Be Application, if there's nothing left to do */
-        SDL_QuitBeApp();
     }
 }
 
 static int
-BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     int valid_datatype = 0;
     media_raw_audio_format format;
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
+    SDL_AudioFormat test_format = SDL_FirstAudioFormat(_this->spec.format);
 
     /* Initialize all variables that we clean on shutdown */
     _this->hidden = new SDL_PrivateAudioData;
@@ -111,19 +108,14 @@ BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(_this->hidden, 0, (sizeof *_this->hidden));
 
-    /* Initialize the Be Application, if it's not already started */
-    if (SDL_InitBeApp() < 0) {
-        return 0;
-    }
-
     /* Parse the audio format and fill the Be raw audio format */
     SDL_memset(&format, '\0', sizeof(media_raw_audio_format));
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
-    format.frame_rate = (float) this->spec.freq;
-    format.channel_count = this->spec.channels;  /* !!! FIXME: support > 2? */
+    format.frame_rate = (float) _this->spec.freq;
+    format.channel_count = _this->spec.channels;  /* !!! FIXME: support > 2? */
     while ((!valid_datatype) && (test_format)) {
         valid_datatype = 1;
-        this->spec.format = test_format;
+        _this->spec.format = test_format;
         switch (test_format) {
             case AUDIO_S8:
                 format.format = media_raw_audio_format::B_AUDIO_CHAR;
@@ -167,15 +159,16 @@ BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
         }
     }
 
-    format.buffer_size = this->spec.samples;
+    format.buffer_size = _this->spec.samples;
 
     if (!valid_datatype) {  /* shouldn't happen, but just in case... */
+        BEOSAUDIO_CloseDevice(_this);
         SDL_SetError("Unsupported audio format");
         return 0;
     }
 
     /* Calculate the final parameters for this audio specification */
-    SDL_CalculateAudioSpec(&this->spec);
+    SDL_CalculateAudioSpec(&_this->spec);
 
     /* Subscribe to the audio stream (creates a new thread) */
     sigset_t omask;
@@ -187,6 +180,7 @@ BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     if (_this->hidden->audio_obj->Start() == B_NO_ERROR) {
         _this->hidden->audio_obj->SetHasData(true);
     } else {
+        BEOSAUDIO_CloseDevice(_this);
         SDL_SetError("Unable to start Be audio");
         return 0;
     }
@@ -195,22 +189,35 @@ BEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;
 }
 
-static int
-BEAUDIO_Init(SDL_AudioDriverImpl *impl)
+static void
+BEOSAUDIO_Deinitialize(void)
 {
+    SDL_QuitBeApp();
+}
+
+static int
+BEOSAUDIO_Init(SDL_AudioDriverImpl *impl)
+{
+    /* Initialize the Be Application, if it's not already started */
+    if (SDL_InitBeApp() < 0) {
+        return 0;
+    }
+
     /* Set the function pointers */
-    impl->OpenDevice = DSP_OpenDevice;
-    impl->CloseDevice = DSP_CloseDevice;
+    impl->OpenDevice = BEOSAUDIO_OpenDevice;
+    impl->CloseDevice = BEOSAUDIO_CloseDevice;
+    impl->Deinitialize = BEOSAUDIO_Deinitialize;
     impl->ProvidesOwnCallbackThread = 1;
     impl->OnlyHasDefaultOutputDevice = 1;
 
     return 1;
 }
 
-
-AudioBootStrap BEAUDIO_bootstrap = {
+extern "C" { extern AudioBootStrap BEOSAUDIO_bootstrap; }
+AudioBootStrap BEOSAUDIO_bootstrap = {
     "baudio", "BeOS BSoundPlayer",
-    BEAUDIO_Available, BEAUDIO_Init, 0
+    BEOSAUDIO_Available, BEOSAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */
+
