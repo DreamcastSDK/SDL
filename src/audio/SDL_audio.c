@@ -614,7 +614,7 @@ open_audio_device(const char *devname, int iscapture,
         for (i = 0; i < SDL_arraysize(open_devices); i++) {
             if ((open_devices[i]) && (open_devices[i]->iscapture)) {
                 SDL_SetError("Audio device already open");
-                return;
+                return 0;
             }
         }
     }
@@ -629,7 +629,7 @@ open_audio_device(const char *devname, int iscapture,
         for (i = 0; i < SDL_arraysize(open_devices); i++) {
             if ((open_devices[i]) && (!open_devices[i]->iscapture)) {
                 SDL_SetError("Audio device already open");
-                return;
+                return 0;
             }
         }
     }
