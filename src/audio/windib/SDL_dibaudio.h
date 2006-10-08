@@ -40,13 +40,6 @@ struct SDL_PrivateAudioData
     int next_buffer;
 };
 
-/* Old variable names */
-#define sound			(this->hidden->sound)
-#define audio_sem 		(this->hidden->audio_sem)
-#define mixbuf			(this->hidden->mixbuf)
-#define wavebuf			(this->hidden->wavebuf)
-#define next_buffer		(this->hidden->next_buffer)
-
 #endif /* _SDL_dibaudio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
