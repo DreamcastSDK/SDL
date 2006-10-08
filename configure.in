@@ -2242,7 +2242,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckBeGL
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_BAUDIO)
+            AC_DEFINE(SDL_AUDIO_DRIVER_BEOSAUDIO)
             SOURCES="$SOURCES $srcdir/src/audio/baudio/*.cc"
             have_audio=yes
         fi
