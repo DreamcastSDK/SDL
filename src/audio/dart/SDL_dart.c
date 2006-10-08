@@ -74,10 +74,9 @@ DARTEventFunc(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer, ULONG ulFlags)
 static int
 DART_OpenDevice(_THIS, const char *devname, int iscapture)
 {
-    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
+    SDL_AudioFormat test_format = SDL_FirstAudioFormat(_this->spec.format);
     int valid_datatype = 0;
     MCI_AMP_OPEN_PARMS AmpOpenParms;
-    MCI_GENERIC_PARMS GenericParms;
     int iDeviceOrd = 0;         // Default device to be used
     int bOpenShared = 1;        // Try opening it shared
     int iBits = 16;             // Default is 16 bits signed
@@ -90,13 +89,13 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
     int rc;
 
     /* Initialize all variables that we clean on shutdown */
-    this->hidden = (struct SDL_PrivateAudioData *)
-                        SDL_malloc((sizeof *this->hidden));
-    if (this->hidden == NULL) {
+    _this->hidden = (struct SDL_PrivateAudioData *)
+                        SDL_malloc((sizeof *_this->hidden));
+    if (_this->hidden == NULL) {
         SDL_OutOfMemory();
         return 0;
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_memset(_this->hidden, 0, (sizeof *_this->hidden));
 
     // First thing is to try to open a given DART device!
     SDL_memset(&AmpOpenParms, 0, sizeof(MCI_AMP_OPEN_PARMS));
@@ -110,7 +109,8 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
 
     rc = mciSendCommand(0, MCI_OPEN, iOpenMode, (PVOID) & AmpOpenParms, 0);
     if (rc != MCIERR_SUCCESS) {  // No audio available??
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
+        SDL_SetError("DART: Couldn't open audio device.");
         return 0;
     }
 
@@ -119,11 +119,11 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
     _this->hidden->iCurrDeviceOrd = iDeviceOrd = AmpOpenParms.usDeviceID;
 
     // Determine the audio parameters from the AudioSpec
-    if (this->spec.channels > 4)
-        this->spec.channels = 4;
+    if (_this->spec.channels > 4)
+        _this->spec.channels = 4;
 
     while ((!valid_datatype) && (test_format)) {
-        this->spec.format = test_format;
+        _this->spec.format = test_format;
         valid_datatype = 1;
         switch (test_format) {
         case AUDIO_U8:
@@ -149,16 +149,16 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
 
     if (!valid_datatype) {      // shouldn't happen, but just in case...
         // Close DART, and exit with error code!
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_SetError("Unsupported audio format");
         return 0;
     }
 
-    _this->hidden->iCurrFreq = iFreq = this->spec.freq;
-    _this->hidden->iCurrChannels = iChannels = this->spec.channels;
+    _this->hidden->iCurrFreq = iFreq = _this->spec.freq;
+    _this->hidden->iCurrChannels = iChannels = _this->spec.channels;
     /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&this->spec);
-    _this->hidden->iCurrBufSize = iBufSize = this->spec.size;
+    SDL_CalculateAudioSpec(&_this->spec);
+    _this->hidden->iCurrBufSize = iBufSize = _this->spec.size;
 
     // Now query this device if it supports the given freq/bits/channels!
     SDL_memset(&(_this->hidden->MixSetupParms), 0,
@@ -175,7 +175,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
                         &(_this->hidden->MixSetupParms), 0);
     if (rc != MCIERR_SUCCESS) { // The device cannot handle this format!
         // Close DART, and exit with error code!
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_SetError("Audio device doesn't support requested audio format");
         return 0;
     }
@@ -185,7 +185,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
                         &(_this->hidden->MixSetupParms), 0);
     if (rc != MCIERR_SUCCESS) { // The device could not be opened!
         // Close DART, and exit with error code!
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_SetError("Audio device could not be set up");
         return 0;
     }
@@ -196,7 +196,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
         (MCI_MIX_BUFFER *) SDL_malloc(sizeof(MCI_MIX_BUFFER) * iNumBufs);
     if (!(_this->hidden->pMixBuffers)) {        // Not enough memory!
         // Close DART, and exit with error code!
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_OutOfMemory();
         return 0;
     }
@@ -213,7 +213,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
         || (iNumBufs != _this->hidden->BufferParms.ulNumBuffers)
         || (_this->hidden->BufferParms.ulBufferSize == 0)) {    // Could not allocate memory!
         // Close DART, and exit with error code!
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_SetError("DART could not allocate buffers");
         return 0;
     }
@@ -228,7 +228,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
             // Check if this buffer was really allocated by DART
             if ((!(_this->hidden->pMixBuffers[i].pBuffer))
                 || (!pBufferDesc)) {    // Wrong buffer!
-                DART_CloseDevice(this);
+                DART_CloseDevice(_this);
                 SDL_SetError("Error at internal buffer check");
                 return 0;
             }
@@ -251,7 +251,7 @@ DART_OpenDevice(_THIS, const char *devname, int iscapture)
     if (DosCreateEventSem
         (NULL, &(_this->hidden->hevAudioBufferPlayed), 0, FALSE) != NO_ERROR)
     {
-        DART_CloseDevice(this);
+        DART_CloseDevice(_this);
         SDL_SetError("Could not create event semaphore");
         return 0;
     }
