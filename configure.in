@@ -2042,7 +2042,7 @@ case "$host" in
                 have_audio=yes
             ;;
             aix)
-                AC_DEFINE(SDL_AUDIO_DRIVER_PAUD)
+                AC_DEFINE(SDL_AUDIO_DRIVER_PAUDIO)
                 SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
                 have_audio=yes
             ;;
