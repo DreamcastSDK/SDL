@@ -62,41 +62,6 @@
 
 static unsigned long cookie_snd = 0;
 
-static int
-MINTXBIOS_Available(void)
-{
-    unsigned long dummy = 0;
-    /*SDL_MintAudio_mint_present = (Getcookie(C_MiNT, &dummy) == C_FOUND); */
-    SDL_MintAudio_mint_present = SDL_FALSE;
-
-    /* We can't use XBIOS in interrupt with Magic, don't know about thread */
-    if (Getcookie(C_MagX, &dummy) == C_FOUND) {
-        return (0);
-    }
-
-    /* Cookie _SND present ? if not, assume ST machine */
-    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
-        cookie_snd = SND_PSG;
-    }
-
-    /* Check if we have 16 bits audio */
-    if ((cookie_snd & SND_16BIT) == 0) {
-        DEBUG_PRINT((DEBUG_NAME "no 16 bits sound\n"));
-        return (0);
-    }
-
-    /* Check if audio is lockable */
-    if (Locksnd() != 1) {
-        DEBUG_PRINT((DEBUG_NAME "audio locked by other application\n"));
-        return (0);
-    }
-
-    Unlocksnd();
-
-    DEBUG_PRINT((DEBUG_NAME "XBIOS audio available!\n"));
-    return (1);
-}
-
 static void
 MINTXBIOS_LockDevice(_THIS)
 {
@@ -481,6 +446,36 @@ MINTXBIOS_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 MINTXBIOS_Init(SDL_AudioDriverImpl *impl)
 {
+    unsigned long dummy = 0;
+    /*SDL_MintAudio_mint_present = (Getcookie(C_MiNT, &dummy) == C_FOUND); */
+    SDL_MintAudio_mint_present = SDL_FALSE;
+
+    /* We can't use XBIOS in interrupt with Magic, don't know about thread */
+    if (Getcookie(C_MagX, &dummy) == C_FOUND) {
+        return (0);
+    }
+
+    /* Cookie _SND present ? if not, assume ST machine */
+    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
+        cookie_snd = SND_PSG;
+    }
+
+    /* Check if we have 16 bits audio */
+    if ((cookie_snd & SND_16BIT) == 0) {
+        SDL_SetError(DEBUG_NAME "no 16-bit sound");
+        return (0);
+    }
+
+    /* Check if audio is lockable */
+    if (Locksnd() != 1) {
+        SDL_SetError(DEBUG_NAME "audio locked by other application");
+        return (0);
+    }
+
+    Unlocksnd();
+
+    DEBUG_PRINT((DEBUG_NAME "XBIOS audio available!\n"));
+
     /* Set the function pointers */
     impl->OpenDevice = MINTXBIOS_OpenDevice;
     impl->CloseDevice = MINTXBIOS_CloseDevice;
@@ -494,8 +489,7 @@ MINTXBIOS_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap MINTAUDIO_XBIOS_bootstrap = {
-    MINT_AUDIO_DRIVER_NAME, "MiNT XBIOS audio driver",
-    MINTXBIOS_Available, MINTXBIOS_Init, 0
+    MINT_AUDIO_DRIVER_NAME, "MiNT XBIOS audio driver", MINTXBIOS_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

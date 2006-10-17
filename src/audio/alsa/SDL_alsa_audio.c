@@ -151,12 +151,10 @@ static int load_alsa_syms(void)
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 
-static int library_load_count = 0;
-
 static void
 UnloadALSALibrary(void)
 {
-    if ((alsa_handle != NULL) && (--library_load_count == 0)) {
+    if (alsa_handle != NULL) {
         dlclose(alsa_handle);
         alsa_handle = NULL;
     }
@@ -166,10 +164,9 @@ static int
 LoadALSALibrary(void)
 {
     int retval = 0;
-    if (library_load_count++ == 0) {
+    if (alsa_handle == NULL) {
         alsa_handle = dlopen(alsa_library, RTLD_NOW);
         if (alsa_handle == NULL) {
-            library_load_count--;
             retval = -1;
             SDL_SetError("ALSA: dlopen('%s') failed: %s\n",
                           alsa_library, strerror(errno));
@@ -215,20 +212,6 @@ get_audio_device(int channels)
     }
     return device;
 }
-
-
-static int
-ALSA_Available(void)
-{
-    int available = 0;
-
-    if (LoadALSALibrary() >= 0) {
-        available = 1;
-        UnloadALSALibrary();
-    }
-    return (available);
-}
-
 
 
 /* This function waits until it is possible to write a full sound buffer */
@@ -377,7 +360,6 @@ ALSA_CloseDevice(_THIS)
         }
         SDL_free(this->hidden);
         this->hidden = NULL;
-        UnloadALSALibrary();
     }
 }
 
@@ -400,11 +382,6 @@ ALSA_OpenDevice(_THIS, const char *devname, int iscapture)
         return 0;
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
-    if (LoadALSALibrary() < 0) {
-        ALSA_CloseDevice(this);
-        return 0;
-    }
 
     /* Open the audio device */
     /* Name of device should depend on # channels in spec */
@@ -599,15 +576,26 @@ ALSA_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;
 }
 
+static void
+ALSA_Deinitialize(void)
+{
+    UnloadALSALibrary();
+}
+
 static int
 ALSA_Init(SDL_AudioDriverImpl *impl)
 {
+    if (LoadALSALibrary() < 0) {
+        return 0;
+    }
+
     /* Set the function pointers */
     impl->OpenDevice = ALSA_OpenDevice;
     impl->WaitDevice = ALSA_WaitDevice;
     impl->GetDeviceBuf = ALSA_GetDeviceBuf;
     impl->PlayDevice = ALSA_PlayDevice;
     impl->CloseDevice = ALSA_CloseDevice;
+    impl->Deinitialize = ALSA_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;  /* !!! FIXME: Add device enum! */
 
     return 1;
@@ -615,8 +603,7 @@ ALSA_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap ALSA_bootstrap = {
-    DRIVER_NAME, "ALSA 0.9 PCM audio",
-    ALSA_Available, ALSA_Init, 0
+    DRIVER_NAME, "ALSA 0.9 PCM audio", ALSA_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

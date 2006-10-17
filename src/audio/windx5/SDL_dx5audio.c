@@ -88,37 +88,6 @@ DSOUND_Load(void)
 }
 
 
-
-
-static int
-DSOUND_Available(void)
-{
-    int dsound_ok = 1;
-    OSVERSIONINFO ver;
-
-    /*
-     * Unfortunately, the sound drivers on NT have higher latencies than the
-     *  audio buffers used by many SDL applications, so there are gaps in the
-     *  audio - it sounds terrible.  Punt for now.
-     */
-    SDL_memset(&ver, '\0', sizeof (OSVERSIONINFO));
-    ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-    GetVersionEx(&ver);
-    if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
-        if (ver.dwMajorVersion <= 4) {
-            dsound_ok = 0;  /* NT4.0 or earlier. Disable dsound support. */
-        }
-    }
-
-    if (dsound_ok) {
-        dsound_ok = DSOUND_Load();  /* make sure we really have DX5. */
-        DSOUND_Unload();
-    }
-
-    return (dsound_ok);
-}
-
-
 static void
 SetDSerror(const char *function, int code)
 {
@@ -506,8 +475,23 @@ DSOUND_Deinitialize(void)
 static int
 DSOUND_Init(SDL_AudioDriverImpl *impl)
 {
-    /* Load DirectX */
-    if (DSOUND_Load() < 0) {
+    OSVERSIONINFO ver;
+
+    /*
+     * Unfortunately, the sound drivers on NT have higher latencies than the
+     *  audio buffers used by many SDL applications, so there are gaps in the
+     *  audio - it sounds terrible.  Punt for now.
+     */
+    SDL_memset(&ver, '\0', sizeof (OSVERSIONINFO));
+    ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    GetVersionEx(&ver);
+    if (ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
+        if (ver.dwMajorVersion <= 4) {
+            return 0;  /* NT4.0 or earlier. Disable dsound support. */
+        }
+    }
+
+    if (!DSOUND_Load()) {
         return 0;
     }
 
@@ -526,8 +510,7 @@ DSOUND_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DSOUND_bootstrap = {
-    "dsound", WINDOWS_OS_NAME "DirectSound",
-    DSOUND_Available, DSOUND_Init, 0
+    "dsound", WINDOWS_OS_NAME "DirectSound", DSOUND_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

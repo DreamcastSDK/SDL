@@ -25,21 +25,9 @@
 
 /* Output audio to nowhere... */
 
-#include "SDL_rwops.h"
-#include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_dummyaudio.h"
-
-/* The tag name used by DUMMY audio */
-#define DUMMYAUD_DRIVER_NAME         "dummy"
-
-static int
-DUMMYAUD_Available(void)
-{
-    return 1;  /* always available. */
-}
 
 static int
 DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
@@ -47,20 +35,17 @@ DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;   /* always succeeds. */
 }
 
-
 static int
 DUMMYAUD_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = DUMMYAUD_OpenDevice;
     impl->OnlyHasDefaultOutputDevice = 1;
-
     return 1;
 }
 
 AudioBootStrap DUMMYAUD_bootstrap = {
-    DUMMYAUD_DRIVER_NAME, "SDL dummy audio driver",
-    DUMMYAUD_Available, DUMMYAUD_Init, 1
+    "dummy", "SDL dummy audio driver", DUMMYAUD_Init, 1
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

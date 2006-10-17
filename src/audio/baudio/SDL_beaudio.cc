@@ -39,12 +39,6 @@ extern "C"
 }
 
 
-static int BEOSAUDIO_Available(void)
-{
-    return 1;  /* Always available on BeOS. */
-}
-
-
 /* !!! FIXME: have the callback call the higher level to avoid code dupe. */
 /* The BeOS callback for handling the audio buffer */
 static void
@@ -215,8 +209,7 @@ BEOSAUDIO_Init(SDL_AudioDriverImpl *impl)
 
 extern "C" { extern AudioBootStrap BEOSAUDIO_bootstrap; }
 AudioBootStrap BEOSAUDIO_bootstrap = {
-    "baudio", "BeOS BSoundPlayer",
-    BEOSAUDIO_Available, BEOSAUDIO_Init, 0
+    "baudio", "BeOS BSoundPlayer", BEOSAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

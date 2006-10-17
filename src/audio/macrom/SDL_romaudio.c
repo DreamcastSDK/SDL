@@ -50,13 +50,6 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_romaudio.h"
 
-static int
-SNDMGR_Available(void)
-{
-    return (1);
-}
-
-
 #pragma options align=power
 
 static volatile SInt32 audio_is_locked = 0;
@@ -320,8 +313,7 @@ SNDMGR_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap SNDMGR_bootstrap = {
-    "sndmgr", SDL_MACOS_NAME " SoundManager",
-    SNDMGR_Available, SNDMGR_Init, 0
+    "sndmgr", SDL_MACOS_NAME " SoundManager", SNDMGR_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

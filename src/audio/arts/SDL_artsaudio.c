@@ -126,32 +126,6 @@ LoadARTSLibrary(void)
 
 #endif /* SDL_AUDIO_DRIVER_ARTS_DYNAMIC */
 
-/* Audio driver bootstrap functions */
-
-static int
-ARTS_Available(void)
-{
-    int available = 0;
-
-    if (LoadARTSLibrary() == 0) {
-        if (SDL_NAME(arts_init) () == 0) {
-#define ARTS_CRASH_HACK         /* Play a stream so aRts doesn't crash */
-#ifdef ARTS_CRASH_HACK
-            arts_stream_t stream;
-            stream = SDL_NAME(arts_play_stream) (44100, 16, 2, "SDL");
-            SDL_NAME(arts_write) (stream, "", 0);
-            SDL_NAME(arts_close_stream) (stream);
-#endif
-            available = 1;
-            SDL_NAME(arts_free) ();
-        }
-        UnloadARTSLibrary();
-    }
-
-    return available;
-}
-
-
 /* This function waits until it is possible to write a full sound buffer */
 static void
 ARTS_WaitDevice(_THIS)
@@ -232,7 +206,6 @@ ARTS_CloseDevice(_THIS)
         SDL_free(this->hidden);
         this->hidden = NULL;
     }
-    UnloadARTSLibrary();
 }
 
 
@@ -251,12 +224,6 @@ ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
         return 0;
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
-
-    if (LoadARTSLibrary() < 0) {
-        ARTS_CloseDevice(this);
-        SDL_SetError("ARTS: failed to load library: %s", SDL_GetError());
-        return 0;
-    }
 
     /* Try for a closest match on audio format */
     for (test_format = SDL_FirstAudioFormat(this->spec.format);
@@ -341,9 +308,33 @@ ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
 }
 
 
+static void
+ARTS_Deinitialize(void)
+{
+    UnloadARTSLibrary();
+}
+
+
 static int
 ARTS_Init(SDL_AudioDriverImpl *impl)
 {
+    if (LoadARTSLibrary() < 0) {
+        return 0;
+    } else {
+        if (SDL_NAME(arts_init) () != 0) {
+            UnloadARTSLibrary();
+            SDL_SetError("ARTS: arts_init failed (no audio server?)");
+            return 0;
+        }
+
+        /* Play a stream so aRts doesn't crash */
+        arts_stream_t stream;
+        stream = SDL_NAME(arts_play_stream) (44100, 16, 2, "SDL");
+        SDL_NAME(arts_write) (stream, "", 0);
+        SDL_NAME(arts_close_stream) (stream);
+        SDL_NAME(arts_free) ();
+    }
+
     /* Set the function pointers */
     impl->OpenDevice = ARTS_OpenDevice;
     impl->PlayDevice = ARTS_PlayDevice;
@@ -351,6 +342,7 @@ ARTS_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = ARTS_GetDeviceBuf;
     impl->CloseDevice = ARTS_CloseDevice;
     impl->WaitDone = ARTS_WaitDone;
+    impl->Deinitialize = ARTS_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;
 
     return 1;
@@ -358,8 +350,7 @@ ARTS_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap ARTS_bootstrap = {
-    ARTS_DRIVER_NAME, "Analog RealTime Synthesizer",
-    ARTS_Available, ARTS_Init, 0
+    ARTS_DRIVER_NAME, "Analog RealTime Synthesizer", ARTS_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

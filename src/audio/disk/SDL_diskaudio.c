@@ -57,13 +57,6 @@ DISKAUD_GetOutputFilename(const char *devname)
     return devname;
 }
 
-/* Audio driver bootstrap functions */
-static int
-DISKAUD_Available(void)
-{
-    return 1;  /* always available. */
-}
-
 /* This function waits until it is possible to write a full sound buffer */
 static void
 DISKAUD_WaitDevice(_THIS)
@@ -158,9 +151,6 @@ DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 DISKAUD_Init(SDL_AudioDriverImpl *impl)
 {
-    /* Initialize all variables that we clean on shutdown */
-    SDL_memset(impl, '\0', sizeof (SDL_AudioDriverImpl));
-
     /* Set the function pointers */
     impl->OpenDevice = DISKAUD_OpenDevice;
     impl->WaitDevice = DISKAUD_WaitDevice;
@@ -172,8 +162,7 @@ DISKAUD_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DISKAUD_bootstrap = {
-    DISKAUD_DRIVER_NAME, "direct-to-disk audio",
-    DISKAUD_Available, DISKAUD_Init, 1
+    DISKAUD_DRIVER_NAME, "direct-to-disk audio", DISKAUD_Init, 1
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

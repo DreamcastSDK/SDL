@@ -129,26 +129,6 @@ NTO_InitAudioParams(snd_pcm_channel_params_t * cpars)
     cpars->buf.block.frags_max = DEFAULT_CPARAMS_FRAGS_MAX;
 }
 
-static int
-NTO_Available(void)
-{
-    /*  See if we can open a nonblocking channel.
-       Return value '1' means we can.
-       Return value '0' means we cannot. */
-
-    int available = 0;
-    snd_pcm_t *handle = NULL;
-    int rval = snd_pcm_open_preferred(&handle, NULL, NULL, OPEN_FLAGS);
-    if (rval >= 0) {
-        available = 1;
-        if ((rval = snd_pcm_close(handle)) < 0) {
-            available = 0;
-        }
-    }
-
-    return (available);
-}
-
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -452,6 +432,18 @@ NTO_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 NTO_Init(SDL_AudioDriverImpl *impl)
 {
+    /*  See if we can open a nonblocking channel. */
+    snd_pcm_t *handle = NULL;
+    int rval = snd_pcm_open_preferred(&handle, NULL, NULL, OPEN_FLAGS);
+    if (rval < 0) {
+        SDL_SetError("NTO: couldn't open preferred audio device");
+        return 0;
+    }
+    if ((rval = snd_pcm_close(handle)) < 0) {
+        SDL_SetError("NTO: couldn't close test audio device");
+        return 0;
+    }
+
     /* Set the function pointers */
     impl->OpenDevice = NTO_OpenDevice;
     impl->ThreadInit = NTO_ThreadInit;
@@ -465,8 +457,7 @@ NTO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap QNXNTOAUDIO_bootstrap = {
-    DRIVER_NAME, "QNX6 QSA-NTO Audio",
-    NTO_AudioAvailable, NTO_Init, 0
+    DRIVER_NAME, "QNX6 QSA-NTO Audio", NTO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

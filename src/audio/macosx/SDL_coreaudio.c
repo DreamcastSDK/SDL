@@ -201,11 +201,6 @@ find_device_id(const char *devname, int iscapture, AudioDeviceID *id)
     return 0;
 }
 
-static int
-COREAUDIO_Available(void)
-{
-    return 1;  /* always available on Mac OS X. */
-}
 
 static int
 COREAUDIO_DetectDevices(int iscapture)
@@ -582,8 +577,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap COREAUDIO_bootstrap = {
-    "coreaudio", "Mac OS X CoreAudio",
-    COREAUDIO_Available, COREAUDIO_Init, 0
+    "coreaudio", "Mac OS X CoreAudio", COREAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -61,40 +61,6 @@
 
 static unsigned long cookie_snd, cookie_mch;
 
-
-static int
-MINTDMA8_Available(void)
-{
-    /* Cookie _MCH present ? if not, assume ST machine */
-    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
-        cookie_mch = MCH_ST;
-    }
-
-    /* Cookie _SND present ? if not, assume ST machine */
-    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
-        cookie_snd = SND_PSG;
-    }
-
-    /* Check if we have 8 bits audio */
-    if ((cookie_snd & SND_8BIT) == 0) {
-        DEBUG_PRINT((DEBUG_NAME "no 8 bits sound\n"));
-        return (0);
-    }
-
-    /* Check if audio is lockable */
-    if (cookie_snd & SND_16BIT) {
-        if (Locksnd() != 1) {
-            DEBUG_PRINT((DEBUG_NAME "audio locked by other application\n"));
-            return (0);
-        }
-
-        Unlocksnd();
-    }
-
-    DEBUG_PRINT((DEBUG_NAME "8 bits audio available!\n"));
-    return (1);
-}
-
 static void
 MINTDMA8_LockDevice(_THIS)
 {
@@ -330,6 +296,34 @@ MINTDMA8_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 MINTDMA8_Init(SDL_AudioDriverImpl *impl)
 {
+    /* Cookie _MCH present ? if not, assume ST machine */
+    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
+        cookie_mch = MCH_ST;
+    }
+
+    /* Cookie _SND present ? if not, assume ST machine */
+    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
+        cookie_snd = SND_PSG;
+    }
+
+    /* Check if we have 8 bits audio */
+    if ((cookie_snd & SND_8BIT) == 0) {
+        SDL_SetError(DEBUG_NAME "no 8 bits sound");
+        return 0;
+    }
+
+    /* Check if audio is lockable */
+    if (cookie_snd & SND_16BIT) {
+        if (Locksnd() != 1) {
+            SDL_SetError(DEBUG_NAME "audio locked by other application");
+            return 0;
+        }
+
+        Unlocksnd();
+    }
+
+    DEBUG_PRINT((DEBUG_NAME "8 bits audio available!\n"));
+
     /* Set the function pointers */
     impl->OpenDevice = MINTDMA8_OpenDevice;
     impl->CloseDevice = MINTDMA8_CloseDevice;
@@ -343,8 +337,7 @@ MINTDMA8_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap MINTAUDIO_DMA8_bootstrap = {
-    MINT_AUDIO_DRIVER_NAME, "MiNT DMA 8 bits audio driver",
-    MINTDMA8_Available, MINTDMA8_Init, 0
+    MINT_AUDIO_DRIVER_NAME, "MiNT DMA 8 bits audio driver", MINTDMA8_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */
