@@ -373,6 +373,7 @@ SDL_AudioInit(const char *driver_name)
         driver_name = SDL_getenv("SDL_AUDIODRIVER");
     }
 
+    /* !!! FIXME: what's the point of separating available() and init()? */
     if (driver_name != NULL) {
         for (i = 0; bootstrap[i]; ++i) {
             if (SDL_strcasecmp(bootstrap[i]->name, driver_name) == 0) {
