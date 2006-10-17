@@ -221,17 +221,9 @@ static int
 ALSA_Available(void)
 {
     int available = 0;
-    int status;
-    snd_pcm_t *handle;
 
     if (LoadALSALibrary() >= 0) {
-        int status = ALSA_snd_pcm_open(&handle, get_audio_device(2),
-                                       SND_PCM_STREAM_PLAYBACK,
-                                       SND_PCM_NONBLOCK);
-        if (status >= 0) {
-            available = 1;
-            ALSA_snd_pcm_close(handle);
-        }
+        available = 1;
         UnloadALSALibrary();
     }
     return (available);
