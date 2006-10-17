@@ -427,11 +427,6 @@ DART_CloseDevice(_THIS)
     }
 }
 
-static int
-DART_Available(void)
-{
-    return 1;  /* Always available on OS/2 Warp */
-}
 
 static int
 DART_Init(SDL_AudioDriverImpl *impl)
@@ -451,8 +446,7 @@ DART_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap DART_bootstrap = {
-    "dart", "OS/2 Direct Audio RouTines (DART)",
-    DART_Available, DART_Init, 0
+    "dart", "OS/2 Direct Audio RouTines (DART)", DART_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

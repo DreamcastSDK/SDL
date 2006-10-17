@@ -67,43 +67,6 @@ static unsigned long cookie_snd, cookie_gsxb;
 static void MINTGSXB_GsxbInterrupt(void);
 static void MINTGSXB_GsxbNullInterrupt(void);
 
-
-static int
-MINTGSXB_Available(void)
-{
-    /* Cookie _SND present ? if not, assume ST machine */
-    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
-        cookie_snd = SND_PSG;
-    }
-
-    /* Check if we have 16 bits audio */
-    if ((cookie_snd & SND_16BIT) == 0) {
-        DEBUG_PRINT((DEBUG_NAME "no 16 bits sound\n"));
-        return (0);
-    }
-
-    /* Cookie GSXB present ? */
-    cookie_gsxb = (Getcookie(C_GSXB, &cookie_gsxb) == C_FOUND);
-
-    /* Is it GSXB ? */
-    if (((cookie_snd & SND_GSXB) == 0) || (cookie_gsxb == 0)) {
-        DEBUG_PRINT((DEBUG_NAME "no GSXB audio\n"));
-        return (0);
-    }
-
-    /* Check if audio is lockable */
-    if (Locksnd() != 1) {
-        DEBUG_PRINT((DEBUG_NAME "audio locked by other application\n"));
-        return (0);
-    }
-
-    Unlocksnd();
-
-    DEBUG_PRINT((DEBUG_NAME "GSXB audio available!\n"));
-    return (1);
-}
-
-
 static void
 MINTGSXB_LockDevice(_THIS)
 {
@@ -427,6 +390,36 @@ MINTGSXB_GsxbNullInterrupt(void)
 static int
 MINTGSXB_Init(SDL_AudioDriverImpl *impl)
 {
+    /* Cookie _SND present ? if not, assume ST machine */
+    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
+        cookie_snd = SND_PSG;
+    }
+
+    /* Check if we have 16 bits audio */
+    if ((cookie_snd & SND_16BIT) == 0) {
+        SDL_SetError(DEBUG_NAME "no 16-bit sound");
+        return 0;
+    }
+
+    /* Cookie GSXB present ? */
+    cookie_gsxb = (Getcookie(C_GSXB, &cookie_gsxb) == C_FOUND);
+
+    /* Is it GSXB ? */
+    if (((cookie_snd & SND_GSXB) == 0) || (cookie_gsxb == 0)) {
+        SDL_SetError(DEBUG_NAME "no GSXB audio");
+        return 0;
+    }
+
+    /* Check if audio is lockable */
+    if (Locksnd() != 1) {
+        SDL_SetError(DEBUG_NAME "audio locked by other application");
+        return 0;
+    }
+
+    Unlocksnd();
+
+    DEBUG_PRINT((DEBUG_NAME "GSXB audio available!\n"));
+
     /* Set the function pointers */
     impl->OpenDevice = MINTGSXB_OpenDevice;
     impl->CloseDevice = MINTGSXB_CloseDevice;
@@ -440,8 +433,7 @@ MINTGSXB_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap MINTAUDIO_GSXB_bootstrap = {
-    MINT_AUDIO_DRIVER_NAME, "MiNT GSXB audio driver",
-    MINTGSXB_Available, MINTGSXB_Init, 0
+    MINT_AUDIO_DRIVER_NAME, "MiNT GSXB audio driver", MINTGSXB_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

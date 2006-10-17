@@ -104,17 +104,6 @@ free_device_lists(void)
 }
 
 
-static int
-BSDAUDIO_Available(void)
-{
-    int available = 0;
-    build_device_lists();
-    available = ((outputDeviceCount > 0) || (inputDeviceCount > 0));
-    free_device_lists();
-    return available;
-}
-
-
 static void
 BSDAUDIO_Deinitialize(void)
 {
@@ -443,14 +432,14 @@ static int
 BSDAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
-    impl->DetectDevices = DSP_DetectDevices;
-    impl->GetDeviceName = DSP_GetDeviceName;
-    impl->OpenDevice = DSP_OpenDevice;
-    impl->PlayDevice = DSP_PlayDevice;
-    impl->WaitDevice = DSP_WaitDevice;
-    impl->GetDeviceBuf = DSP_GetDeviceBuf;
-    impl->CloseDevice = DSP_CloseDevice;
-    impl->Deinitialize = DSP_Deinitialize;
+    impl->DetectDevices = BSDAUDIO_DetectDevices;
+    impl->GetDeviceName = BSDAUDIO_GetDeviceName;
+    impl->OpenDevice = BSDAUDIO_OpenDevice;
+    impl->PlayDevice = BSDAUDIO_PlayDevice;
+    impl->WaitDevice = BSDAUDIO_WaitDevice;
+    impl->GetDeviceBuf = BSDAUDIO_GetDeviceBuf;
+    impl->CloseDevice = BSDAUDIO_CloseDevice;
+    impl->Deinitialize = BSDAUDIO_Deinitialize;
 
     build_device_lists();
     return 1;
@@ -458,8 +447,7 @@ BSDAUDIO_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap BSD_AUDIO_bootstrap = {
-    BSD_AUDIO_DRIVER_NAME, BSD_AUDIO_DRIVER_DESC,
-    BSDAUDIO_Available, BSDAUDIO_Init, 0
+    BSD_AUDIO_DRIVER_NAME, BSD_AUDIO_DRIVER_DESC, BSDAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

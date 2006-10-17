@@ -115,25 +115,6 @@ LoadESDLibrary(void)
 
 #endif /* SDL_AUDIO_DRIVER_ESD_DYNAMIC */
 
-static int
-ESD_Available(void)
-{
-    int available = 0;
-    if (LoadESDLibrary() == 0) {
-        int connection;
-        if (SDL_getenv("ESD_NO_SPAWN") == NULL) {
-            SDL_putenv("ESD_NO_SPAWN=1"); /* Don't start ESD if it's not running */
-        }
-        connection = SDL_NAME(esd_open_sound) (NULL);
-        if (connection >= 0) {
-            available = 1;
-            SDL_NAME(esd_close) (connection);
-        }
-        UnloadESDLibrary();
-    }
-    return available;
-}
-
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -210,7 +191,6 @@ ESD_CloseDevice(_THIS)
         SDL_free(this->hidden);
         this->hidden = NULL;
     }
-    UnloadESDLibrary();
 }
 
 /* Try to get the name of the program */
@@ -256,12 +236,6 @@ ESD_OpenDevice(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
     this->hidden->audio_fd = -1;
-
-    if (LoadESDLibrary() < 0) {
-        ESD_CloseDevice(this);
-        SDL_SetError("ESD: failed to load library: %s", SDL_GetError());
-        return 0;
-    }
 
     /* Convert audio spec to the ESD audio format */
     /* Try for a closest match on audio format */
@@ -331,16 +305,41 @@ ESD_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;
 }
 
+static void
+ESD_Deinitialize(void)
+{
+    UnloadESDLibrary();
+}
 
 static int
 ESD_Init(SDL_AudioDriverImpl *impl)
 {
+    if (LoadESDLibrary() < 0) {
+        return 0;
+    } else {
+        int connection = 0;
+
+        /* Don't start ESD if it's not running */
+        if (SDL_getenv("ESD_NO_SPAWN") == NULL) {
+            SDL_putenv("ESD_NO_SPAWN=1");
+        }
+
+        connection = SDL_NAME(esd_open_sound) (NULL);
+        if (connection < 0) {
+            UnloadESDLibrary();
+            SDL_SetError("ESD: esd_open_sound failed (no audio server?)");
+            return 0;
+        }
+        SDL_NAME(esd_close) (connection);
+    }
+
     /* Set the function pointers */
     impl->OpenDevice = ESD_OpenDevice;
     impl->PlayDevice = ESD_PlayDevice;
     impl->WaitDevice = ESD_WaitDevice;
     impl->GetDeviceBuf = ESD_GetDeviceBuf;
     impl->CloseDevice = ESD_CloseDevice;
+    impl->Deinitialize = ESD_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;
 
     return 1;
@@ -348,8 +347,7 @@ ESD_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap ESD_bootstrap = {
-    ESD_DRIVER_NAME, "Enlightened Sound Daemon",
-    ESD_Available, ESD_Init, 0
+    ESD_DRIVER_NAME, "Enlightened Sound Daemon", ESD_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

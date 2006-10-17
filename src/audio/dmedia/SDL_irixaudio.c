@@ -45,12 +45,6 @@
 #define alSetWidth(x,y) ALsetwidth(x,y)
 #endif
 
-static int
-IRIXAUDIO_Available(void)
-{
-    return 1;
-}
-
 void static
 IRIXAUDIO_WaitDevice(_THIS)
 {
@@ -236,8 +230,7 @@ IRIXAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap IRIXAUDIO_bootstrap = {
-    "AL", "IRIX DMedia audio",
-    IRIXAUDIO_Available, IRIXAUDIO_Init, 0
+    "AL", "IRIX DMedia audio", IRIXAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -97,12 +97,10 @@ static int load_nas_syms(void)
 
 #ifdef SDL_AUDIO_DRIVER_NAS_DYNAMIC
 
-static int library_load_count = 0;
-
 static void
 UnloadNASLibrary(void)
 {
-    if ((nas_handle != NULL) && (--library_load_count == 0)) {
+    if (nas_handle != NULL) {
         SDL_UnloadObject(nas_handle);
         nas_handle = NULL;
     }
@@ -112,7 +110,7 @@ static int
 LoadNASLibrary(void)
 {
     int retval = 0;
-    if (library_load_count++ == 0) {
+    if (nas_handle == NULL) {
         nas_handle = SDL_LoadObject(nas_library);
         if (nas_handle == NULL) {
             /* Copy error string so we can use it in a new SDL_SetError(). */
@@ -120,8 +118,6 @@ LoadNASLibrary(void)
             size_t len = SDL_strlen(origerr) + 1;
             char *err = (char *) alloca(len);
             SDL_strlcpy(err, origerr, len);
-
-            library_load_count--;
             retval = -1;
             SDL_SetError("NAS: SDL_LoadObject('%s') failed: %s\n",
                           nas_library, err);
@@ -150,21 +146,6 @@ LoadNASLibrary(void)
 }
 
 #endif /* SDL_AUDIO_DRIVER_NAS_DYNAMIC */
-
-static int
-NAS_Available(void)
-{
-    int available = 0;
-    if (LoadNASLibrary() >= 0) {
-        AuServer *aud = NAS_AuOpenServer("", 0, NULL, 0, NULL, NULL);
-        if (aud != NULL) {
-            available = 1;
-            NAS_AuCloseServer(aud);
-        }
-        UnloadNASLibrary();
-    }
-    return available;
-}
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -223,7 +204,6 @@ NAS_CloseDevice(_THIS)
         }
         SDL_free(this->hidden);
         this2 = this->hidden = NULL;
-        UnloadNASLibrary();
     }
 }
 
@@ -316,11 +296,6 @@ NAS_OpenDevice(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-    if (LoadNASLibrary() < 0) {
-        NAS_CloseDevice(this);
-        return 0;
-    }
-
     /* Try for a closest match on audio format */
     format = 0;
     for (test_format = SDL_FirstAudioFormat(this->spec.format);
@@ -390,23 +365,40 @@ NAS_OpenDevice(_THIS, const char *devname, int iscapture)
     return 1;
 }
 
+static void
+NAS_Deinitialize(void)
+{
+    UnloadNASLibrary();
+}
+
 static int
 NAS_Init(SDL_AudioDriverImpl *impl)
 {
+    if (LoadNASLibrary() < 0) {
+        return 0;
+    } else {
+        AuServer *aud = NAS_AuOpenServer("", 0, NULL, 0, NULL, NULL);
+        if (aud == NULL) {
+            SDL_SetError("NAS: AuOpenServer() failed (no audio server?)");
+            return 0;
+        }
+        NAS_AuCloseServer(aud);
+    }
+
     /* Set the function pointers */
     impl->OpenDevice = NAS_OpenDevice;
     impl->PlayDevice = NAS_PlayDevice;
     impl->WaitDevice = NAS_WaitDevice;
     impl->GetDeviceBuf = NAS_GetDeviceBuf;
     impl->CloseDevice = NAS_CloseDevice;
+    impl->Deinitialize = NAS_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;  /* !!! FIXME: is this true? */
 
     return 1;
 }
 
 AudioBootStrap NAS_bootstrap = {
-    NAS_DRIVER_NAME, "Network Audio System",
-    NAS_Available, NAS_Init, 0
+    NAS_DRIVER_NAME, "Network Audio System", NAS_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

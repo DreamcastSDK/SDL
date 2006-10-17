@@ -93,17 +93,6 @@ free_device_lists(void)
 }
 
 
-static int
-DSP_Available(void)
-{
-    int available = 0;
-    build_device_lists();
-    available = ((outputDeviceCount > 0) || (inputDeviceCount > 0));
-    free_device_lists();
-    return available;
-}
-
-
 static void
 DSP_Deinitialize(void)
 {
@@ -388,8 +377,7 @@ DSP_Init(SDL_AudioDriverImpl *impl)
 
 
 AudioBootStrap DSP_bootstrap = {
-    DSP_DRIVER_NAME, "OSS /dev/dsp standard audio",
-    DSP_Available, DSP_Init, 0
+    DSP_DRIVER_NAME, "OSS /dev/dsp standard audio", DSP_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

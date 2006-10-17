@@ -43,12 +43,6 @@
 #define WINDOWS_OS_NAME "Win32"
 #endif
 
-static int
-WINWAVEOUT_Available(void)
-{
-    return 1;   /* Always available on win32/pocketpc systems... */
-}
-
 /* The Win32 callback for filling the WAVE device */
 static void CALLBACK
 FillSound(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
@@ -336,8 +330,7 @@ WINWAVEOUT_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap WINWAVEOUT_bootstrap = {
-    "waveout", WINDOWS_OS_NAME " WaveOut",
-    WINWAVEOUT_Available, WINWAVEOUT_Init, 0
+    "waveout", WINDOWS_OS_NAME " WaveOut", WINWAVEOUT_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

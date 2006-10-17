@@ -31,12 +31,6 @@
 
 static BOOL inUse[NUM_BUFFERS];
 
-static int
-MME_Available(void)
-{
-    return 1;
-}
-
 static void
 SetMMerror(char *function, MMRESULT code)
 {
@@ -260,8 +254,7 @@ MME_Init(SDL_AudioDriverImpl *impl)
 
 /* !!! FIXME: Windows "windib" driver is called waveout, too */
 AudioBootStrap MMEAUDIO_bootstrap = {
-    "waveout", "Tru64 MME WaveOut",
-    MME_Available, MME_Init, 0
+    "waveout", "Tru64 MME WaveOut", MME_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

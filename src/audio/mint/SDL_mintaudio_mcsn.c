@@ -65,58 +65,6 @@ static unsigned long cookie_snd = 0;
 static unsigned long cookie_mch = 0;
 static cookie_mcsn_t *cookie_mcsn = NULL;
 
-static int
-MINTMCSN_Available(void)
-{
-    unsigned long dummy = 0;
-
-    SDL_MintAudio_mint_present = (Getcookie(C_MiNT, &dummy) == C_FOUND);
-
-    /* We can't use XBIOS in interrupt with Magic, don't know about thread */
-    if (Getcookie(C_MagX, &dummy) == C_FOUND) {
-        return (0);
-    }
-
-    /* Cookie _MCH present ? if not, assume ST machine */
-    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
-        cookie_mch = MCH_ST;
-    }
-
-    /* Cookie _SND present ? if not, assume ST machine */
-    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
-        cookie_snd = SND_PSG;
-    }
-
-    /* Check if we have 16 bits audio */
-    if ((cookie_snd & SND_16BIT) == 0) {
-        DEBUG_PRINT((DEBUG_NAME "no 16 bits sound\n"));
-        return (0);
-    }
-
-    /* Cookie MCSN present ? */
-    if (Getcookie(C_McSn, (long *) &cookie_mcsn) != C_FOUND) {
-        DEBUG_PRINT((DEBUG_NAME "no MCSN audio\n"));
-        return (0);
-    }
-
-    /* Check if interrupt at end of replay */
-    if (cookie_mcsn->pint == 0) {
-        DEBUG_PRINT((DEBUG_NAME "no interrupt at end of replay\n"));
-        return (0);
-    }
-
-    /* Check if audio is lockable */
-    if (Locksnd() != 1) {
-        DEBUG_PRINT((DEBUG_NAME "audio locked by other application\n"));
-        return (0);
-    }
-
-    Unlocksnd();
-
-    DEBUG_PRINT((DEBUG_NAME "MCSN audio available!\n"));
-    return (1);
-}
-
 static void
 MINTMCSN_LockDevice(_THIS)
 {
@@ -381,6 +329,53 @@ MINTMCSN_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 MINTMCSN_Init(SDL_AudioDriverImpl *impl)
 {
+    unsigned long dummy = 0;
+
+    SDL_MintAudio_mint_present = (Getcookie(C_MiNT, &dummy) == C_FOUND);
+
+    /* We can't use XBIOS in interrupt with Magic, don't know about thread */
+    if (Getcookie(C_MagX, &dummy) == C_FOUND) {
+        return 0;
+    }
+
+    /* Cookie _MCH present ? if not, assume ST machine */
+    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
+        cookie_mch = MCH_ST;
+    }
+
+    /* Cookie _SND present ? if not, assume ST machine */
+    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
+        cookie_snd = SND_PSG;
+    }
+
+    /* Check if we have 16 bits audio */
+    if ((cookie_snd & SND_16BIT) == 0) {
+        SDL_SetError(DEBUG_NAME "no 16-bit sound");
+        return 0;
+    }
+
+    /* Cookie MCSN present ? */
+    if (Getcookie(C_McSn, (long *) &cookie_mcsn) != C_FOUND) {
+        SDL_SetError(DEBUG_NAME "no MCSN audio");
+        return 0;
+    }
+
+    /* Check if interrupt at end of replay */
+    if (cookie_mcsn->pint == 0) {
+        SDL_SetError(DEBUG_NAME "no interrupt at end of replay");
+        return 0;
+    }
+
+    /* Check if audio is lockable */
+    if (Locksnd() != 1) {
+        SDL_SetError(DEBUG_NAME "audio locked by other application");
+        return 0;
+    }
+
+    Unlocksnd();
+
+    DEBUG_PRINT((DEBUG_NAME "MCSN audio available!\n"));
+
     /* Set the function pointers */
     impl->OpenDevice = MINTMCSN_OpenDevice;
     impl->CloseDevice = MINTMCSN_CloseDevice;
@@ -394,8 +389,7 @@ MINTMCSN_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap MINTAUDIO_MCSN_bootstrap = {
-    MINT_AUDIO_DRIVER_NAME, "MiNT MCSN audio driver",
-    MINTMCSN_Available, MINTMCSN_Init, 0
+    MINT_AUDIO_DRIVER_NAME, "MiNT MCSN audio driver", MINTMCSN_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

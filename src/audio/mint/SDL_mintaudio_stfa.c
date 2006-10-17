@@ -70,31 +70,6 @@ static const int freqs[16] = {
     30720, 32336, 43885, 49152
 };
 
-static int
-MINTSTFA_Available(void)
-{
-    /* Cookie _MCH present ? if not, assume ST machine */
-    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
-        cookie_mch = MCH_ST;
-    }
-
-    /* Cookie _SND present ? if not, assume ST machine */
-    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
-        cookie_snd = SND_PSG;
-    }
-
-    /* Cookie STFA present ? */
-    if (Getcookie(C_STFA, (long *) &cookie_stfa) != C_FOUND) {
-        DEBUG_PRINT((DEBUG_NAME "no STFA audio\n"));
-        return (0);
-    }
-
-    SDL_MintAudio_stfa = cookie_stfa;
-
-    DEBUG_PRINT((DEBUG_NAME "STFA audio available!\n"));
-    return (1);
-}
-
 static void
 MINTSTFA_LockDevice(_THIS)
 {
@@ -288,6 +263,26 @@ MINTSTFA_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 MINTSTFA_Init(SDL_AudioDriverImpl *impl)
 {
+    /* Cookie _MCH present ? if not, assume ST machine */
+    if (Getcookie(C__MCH, &cookie_mch) == C_NOTFOUND) {
+        cookie_mch = MCH_ST;
+    }
+
+    /* Cookie _SND present ? if not, assume ST machine */
+    if (Getcookie(C__SND, &cookie_snd) == C_NOTFOUND) {
+        cookie_snd = SND_PSG;
+    }
+
+    /* Cookie STFA present ? */
+    if (Getcookie(C_STFA, (long *) &cookie_stfa) != C_FOUND) {
+        SDL_SetError(DEBUG_NAME "no STFA audio");
+        return (0);
+    }
+
+    SDL_MintAudio_stfa = cookie_stfa;
+
+    DEBUG_PRINT((DEBUG_NAME "STFA audio available!\n"));
+
     /* Set the function pointers */
     impl->OpenDevice = MINTSTFA_OpenDevice;
     impl->CloseDevice = MINTSTFA_CloseDevice;
@@ -301,8 +296,7 @@ MINTSTFA_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap MINTAUDIO_STFA_bootstrap = {
-    MINT_AUDIO_DRIVER_NAME, "MiNT STFA audio driver",
-    MINTSTFA_Available, MINTSTFA_Init, 0
+    MINT_AUDIO_DRIVER_NAME, "MiNT STFA audio driver", MINTSTFA_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -225,12 +225,6 @@ DCAUD_OpenDevice(_THIS, SDL_AudioSpec * spec)
 }
 
 static int
-DCAUD_Available(void)
-{
-    return 1;  /* Dreamcast hardware is always available.  :) */
-}
-
-static int
 DCAUD_Init(SDL_AudioDriverImpl *impl)
 {
     /* Set the function pointers */
@@ -245,8 +239,7 @@ DCAUD_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DCAUD_bootstrap = {
-    "dcaudio", "Dreamcast AICA audio",
-    DCAUD_Available, DCAUD_Init, 0
+    "dcaudio", "Dreamcast AICA audio", DCAUD_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

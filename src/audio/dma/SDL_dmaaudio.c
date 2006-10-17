@@ -116,15 +116,6 @@ free_device_lists(void)
     free_device_list(&inputDevices, &inputDeviceCount);
 }
 
-static int
-DMA_Available(void)
-{
-    int available = 0;
-    build_device_lists();
-    available = ((outputDeviceCount > 0) || (inputDeviceCount > 0));
-    free_device_lists();
-    return available;
-}
 
 static void DMA_Deinitialize(void)
 {
@@ -537,8 +528,7 @@ DMA_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DMA_bootstrap = {
-    DMA_DRIVER_NAME, "OSS /dev/dsp DMA audio",
-    DMA_Available, DMA_Init, 0
+    DMA_DRIVER_NAME, "OSS /dev/dsp DMA audio", DMA_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

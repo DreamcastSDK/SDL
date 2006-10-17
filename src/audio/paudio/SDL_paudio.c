@@ -126,23 +126,6 @@ OpenAudioPath(char *path, int maxlen, int flags, int classic)
     return -1;
 }
 
-
-static int
-PAUDIO_Available(void)
-{
-    int fd;
-    int available;
-
-    available = 0;
-    fd = OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);
-    if (fd >= 0) {
-        available = 1;
-        close(fd);
-    }
-    return (available);
-}
-
-
 /* This function waits until it is possible to write a full sound buffer */
 static void
 PAUDIO_WaitDevice(_THIS)
@@ -543,6 +526,13 @@ PAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 static int
 PAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
+    int fd = OpenAudioPath(NULL, 0, OPEN_FLAGS, 0);
+    if (fd < 0) {
+        SDL_SetError("PAUDIO: Couldn't open audio device");
+        return 0;
+    }
+    close(fd);
+
     /* Set the function pointers */
     impl->OpenDevice = DSP_OpenDevice;
     impl->PlayDevice = DSP_PlayDevice;
@@ -555,8 +545,7 @@ PAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap PAUDIO_bootstrap = {
-    PAUDIO_DRIVER_NAME, "AIX Paudio",
-    PAUDIO_Available, PAUDIO_Init, 0
+    PAUDIO_DRIVER_NAME, "AIX Paudio", PAUDIO_Init, 0
 };
 
 /* vi: set ts=4 sw=4 expandtab: */
