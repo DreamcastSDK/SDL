@@ -125,3 +125,16 @@ SDL_HapticOpen(int device_index)
    }
    return haptic;
 }
+
+
+void
+SDL_HapticQuit(void)
+{
+   SDL_numhaptics = 0;
+
+   SDL_SYS_HapticQuit();
+   if (SDL_haptics != NULL) {
+      SDL_free(SDL_haptics);
+      SDL_haptics = NULL;
+   }
+}

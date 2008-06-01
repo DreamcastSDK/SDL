@@ -19,16 +19,51 @@
     Sam Lantinga
     slouken@libsdl.org
 */
+#include "SDL_config.h"
+
+#ifdef defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
 
 #include "SDL_haptic.h"
+#include "../SDL_haptic_c.h"
+#include "../SDL_syshaptic.h"
 
-struct _SDL_Haptic;
 
-extern int SDL_HapticInit(void);
-extern int SDL_NumHaptics(void);
-extern const char * SDL_HapticName(int device_index);
-extern struct _SDL_Haptic * SDL_HapticOpen(int device_index);
-extern int SDL_HapticOpened(int device_index);
-extern int SDL_HapticIndex(struct _SDL_Haptic *haptic);
-extern void SDL_HapticClose(struct _SDL_Haptic *haptic);
-extern void SDL_HapticQuit(void);
+int
+SDL_SYS_HapticInit(void)
+{
+   SDL_numhaptics = 0;
+   return (0);
+}
+
+
+const char *
+SDL_SYS_HapticName(int index)
+{
+   SDL_SetError("Logic error: No haptic (force feedback) devices available");
+   return (NULL);
+}
+
+
+int
+SDL_SYS_HapticOpen(SDL_Haptic * haptic)
+{
+   SDL_SetError("Logic error: No joysticks available");
+   return (-1);
+}
+
+
+void
+SDL_SYS_HapticClose(SDL_Haptic * haptic)
+{
+   return;
+}
+
+
+void
+SDL_SYS_HapticQuit(void)
+{
+   return;
+}
+
+
+#endif /* SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED */
