@@ -2580,6 +2580,11 @@ if test x$enable_joystick = xyes; then
     SOURCES="$SOURCES $srcdir/src/joystick/dummy/*.c"
   fi
 fi
+if test x$enable_haptic = xyes; then
+  if test x$have_haptic != xyes; then
+    SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
+  fi
+fi
 if test x$have_cdrom != xyes; then
     if test x$enable_cdrom = xyes; then
         AC_DEFINE(SDL_CDROM_DISABLED)

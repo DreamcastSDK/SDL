@@ -182,4 +182,17 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 }
 
 
+/* Clean up after system specific haptic stuff */
+void
+SDL_SYS_HapticQuit(void)
+{
+   int i;
+
+   for (i=0; SDL_hapticlist[i].fname != NULL; i++) {
+      SDL_free(SDL_hapticlist[i].fname);
+   }
+   SDL_hapticlist[0].fname = NULL;
+}
+
+
 #endif /* SDL_HAPTIC_LINUX */
