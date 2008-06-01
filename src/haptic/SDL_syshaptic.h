@@ -27,8 +27,8 @@
 
 struct _SDL_Haptic
 {  
-   Uint8 index;
-   const char* name;
+   Uint8 index; /* stores index it is attached to */
+   const char* name; /* stores the name of the device */
 
    int neffects; /* maximum amount of effects */
    unsigned int supported; /* supported effects */
@@ -39,6 +39,8 @@ struct _SDL_Haptic
 
 
 extern int SDL_SYS_HapticInit(void);
-
 extern const char * SDL_SYS_HapticName(int index);
+extern int SDL_SYS_HapticOpen(SDL_Haptic * haptic);
+extern void SDL_SYS_HapticClose(SDL_Haptic * haptic);
+extern void SDL_SYS_HapticQuit(void);
 

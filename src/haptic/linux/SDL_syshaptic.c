@@ -37,28 +37,37 @@
 #include <string.h>
 
 
-#include <stdio.h>
-
-
 #define MAX_HAPTICS  32
 
 
+/*
+ * List of available haptic devices.
+ */
 static struct
 {
    char *fname;
    SDL_Haptic *haptic;
 } SDL_hapticlist[MAX_HAPTICS];
 
+
+/*
+ * Haptic system hardware data.
+ */
 struct haptic_hwdata
 {
    int fd;
 };
 
 
+
 #define test_bit(nr, addr) \
    (((1UL << ((nr) & 31)) & (((const unsigned int *) addr)[(nr) >> 5])) != 0)
 #define EV_TEST(ev,f) \
    if (test_bit((ev), features)) ret |= (f);
+/*
+ * Test whether a device has haptic properties.
+ * Returns available properties or 0 if there are none.
+ */
 static int
 EV_IsHaptic(int fd)
 {
@@ -139,6 +148,9 @@ SDL_SYS_HapticInit(void)
 }
 
 
+/*
+ * Return the name of a haptic device, does not need to be opened.
+ */
 const char *
 SDL_SYS_HapticName(int index)
 {
@@ -162,6 +174,9 @@ SDL_SYS_HapticName(int index)
 }
 
 
+/*
+ * Opens a haptic device for usage.
+ */
 int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
@@ -179,6 +194,15 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 
    return 0;
    */
+}
+
+
+/*
+ * Closes the haptic device.
+ */
+void
+SDL_SYS_HapticClose(SDL_Haptic * haptic)
+{
 }
 
 

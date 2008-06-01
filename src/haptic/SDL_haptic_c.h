@@ -29,6 +29,6 @@ extern int SDL_NumHaptics(void);
 extern const char * SDL_HapticName(int device_index);
 extern struct _SDL_Haptic * SDL_HapticOpen(int device_index);
 extern int SDL_HapticOpened(int device_index);
-extern int SDL_HapticIndex(struct _SDL_Haptic *haptic);
-extern void SDL_HapticClose(struct _SDL_Haptic *haptic);
+extern int SDL_HapticIndex(SDL_Haptic * haptic);
+extern void SDL_HapticClose(SDL_Haptic * haptic);
 extern void SDL_HapticQuit(void);
