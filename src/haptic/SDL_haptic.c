@@ -83,7 +83,7 @@ SDL_HapticName(int device_index)
 
 
 /*
- * Opens a Haptic device
+ * Opens a Haptic device.
  */
 SDL_Haptic *
 SDL_HapticOpen(int device_index)
@@ -127,6 +127,19 @@ SDL_HapticOpen(int device_index)
 }
 
 
+/*
+ * Closes a SDL_Haptic device.
+ */
+void
+SDL_HapticClose(SDL_Haptic * haptic)
+{
+   (void)haptic;
+   /* TODO */
+}
+
+/*
+ * Cleans up after the subsystem.
+ */
 void
 SDL_HapticQuit(void)
 {
