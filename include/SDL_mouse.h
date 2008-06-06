@@ -203,6 +203,11 @@ extern DECLSPEC int SDLCALL SDL_ShowCursor(int toggle);
    Button 2:	Middle mouse button
    Button 3:	Right mouse button
  */
+
+extern DECLSPEC int SDLCALL SDL_GetNumOfMice(void);
+
+extern DECLSPEC char* SDLCALL SDL_GetMouseName(int index);
+
 #define SDL_BUTTON(X)		(1 << ((X)-1))
 #define SDL_BUTTON_LEFT		1
 #define SDL_BUTTON_MIDDLE	2

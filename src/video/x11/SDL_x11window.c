@@ -153,6 +153,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     XSizeHints *sizehints;
     XWMHints *wmhints;
     XClassHint *classhints;
+    extern XEventClass SDL_XEvents[];
+    extern int SDL_NumOfXEvents;
 
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
 /* FIXME
@@ -481,20 +483,24 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         Uint32 fevent = 0;
         pXGetICValues(((SDL_WindowData *) window->driverdata)->ic,
                       XNFilterEvents, &fevent, NULL);
+        XMapWindow(data->display,w);
         XSelectInput(data->display, w,
                      (FocusChangeMask | EnterWindowMask | LeaveWindowMask |
                       ExposureMask | ButtonPressMask | ButtonReleaseMask |
                       PointerMotionMask | KeyPressMask | KeyReleaseMask |
                       PropertyChangeMask | StructureNotifyMask |
                       KeymapStateMask | fevent));
+    XSelectExtensionEvent(data->display, w, SDL_XEvents, SDL_NumOfXEvents);
     }
 #else
+    XMapWindow(data->display,w);
     XSelectInput(data->display, w,
                  (FocusChangeMask | EnterWindowMask | LeaveWindowMask |
                   ExposureMask | ButtonPressMask | ButtonReleaseMask |
                   PointerMotionMask | KeyPressMask | KeyReleaseMask |
                   PropertyChangeMask | StructureNotifyMask |
                   KeymapStateMask));
+    XSelectExtensionEvent(data->display, w, SDL_XEvents, SDL_NumOfXEvents);
 #endif
 
     return 0;

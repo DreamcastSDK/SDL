@@ -28,11 +28,45 @@
 void
 X11_InitMouse(_THIS)
 {
+    extern XDevice **SDL_XDevices;
+    XDevice **newDevices;
+    int i,j,index=0, numOfDevices;
+    extern int SDL_NumOfXDevices;
+    XDeviceInfo *DevList;
+    XAnyClassPtr deviceClass;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    SDL_Mouse mouse;
+   
+    DevList=XListInputDevices(data->display, &numOfDevices);
 
-    SDL_zero(mouse);
-    data->mouse = SDL_AddMouse(&mouse, -1);
+    for(i=0;i<numOfDevices;++i)
+    {
+        if((DevList[i].use!=IsXPointer && DevList[i].use!=IsXKeyboard))
+        {
+            deviceClass=DevList[i].inputclassinfo;
+            for(j=0;j<DevList[i].num_classes;++j)
+            {
+                if(deviceClass->class==ValuatorClass)
+                {
+                    newDevices= (XDevice**) SDL_realloc(SDL_XDevices, (index+1)*sizeof(*newDevices));
+                    if(!newDevices)
+                    {
+                        SDL_OutOfMemory();
+                        return -1;
+                    }
+                    SDL_XDevices=newDevices;
+                    SDL_XDevices[index]=XOpenDevice(data->display,DevList[i].id);
+                    SDL_Mouse mouse;
+                    SDL_zero(mouse);
+                    SDL_SetIndexId(DevList[i].id,index);
+                    data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name);
+                    break;
+                }
+                deviceClass=(XAnyClassPtr)((char*)deviceClass + deviceClass->length);
+            }
+        }
+    }
+    XFreeDeviceList(DevList);
+    SDL_NumOfXDevices=index;
 }
 
 void
@@ -40,7 +74,7 @@ X11_QuitMouse(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    SDL_DelMouse(data->mouse);
+    SDL_MouseQuit();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

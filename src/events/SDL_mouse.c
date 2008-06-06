@@ -31,6 +31,8 @@
 static int SDL_num_mice;
 static int SDL_current_mouse;
 static SDL_Mouse **SDL_mice;
+int *SDL_IdIndex;
+int SDL_highestId;
 
 
 /* Public functions */
@@ -50,11 +52,11 @@ SDL_GetMouse(int index)
 }
 
 int
-SDL_AddMouse(const SDL_Mouse * mouse, int index)
+SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name)
 {
     SDL_Mouse **mice;
     int selected_mouse;
-
+    char* temp_name;
     /* Add the mouse to the list of mice */
     if (index < 0 || index >= SDL_num_mice || SDL_mice[index]) {
         mice =
@@ -74,8 +76,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index)
         return -1;
     }
     *SDL_mice[index] = *mouse;
-
-    /* Create the default cursor for the mouse */
+    SDL_mice[index]->name=SDL_malloc(strlen(name)*sizeof(char));
+    strcpy(SDL_mice[index]->name,name);
     SDL_mice[index]->cursor_shown = SDL_TRUE;
     selected_mouse = SDL_SelectMouse(index);
     SDL_mice[index]->cur_cursor = NULL;
@@ -98,6 +100,7 @@ SDL_DelMouse(int index)
     }
 
     mouse->def_cursor = NULL;
+    SDL_free(mouse->name);
     while (mouse->cursors) {
         SDL_FreeCursor(mouse->cursors);
     }
@@ -266,8 +269,9 @@ SDL_GetRelativeMouseState(int *x, int *y)
 }
 
 void
-SDL_SetMouseFocus(int index, SDL_WindowID windowID)
+SDL_SetMouseFocus(int id, SDL_WindowID windowID)
 {
+    int index = SDL_GetIndexById(id);
     SDL_Mouse *mouse = SDL_GetMouse(index);
     int i;
     SDL_bool focus;
@@ -315,8 +319,9 @@ SDL_SetMouseFocus(int index, SDL_WindowID windowID)
 }
 
 int
-SDL_SendMouseMotion(int index, int relative, int x, int y)
+SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
 {
+    int index=SDL_GetIndexById(id);
     SDL_Mouse *mouse = SDL_GetMouse(index);
     int posted;
     int xrel;
@@ -352,6 +357,7 @@ SDL_SendMouseMotion(int index, int relative, int x, int y)
     }
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
+    mouse->z=z;
 
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
@@ -368,6 +374,7 @@ SDL_SendMouseMotion(int index, int relative, int x, int y)
         event.motion.state = mouse->buttonstate;
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
+        event.motion.z = mouse->z;
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         event.motion.windowID = mouse->focus;
@@ -377,8 +384,9 @@ SDL_SendMouseMotion(int index, int relative, int x, int y)
 }
 
 int
-SDL_SendMouseButton(int index, Uint8 state, Uint8 button)
+SDL_SendMouseButton(int id, Uint8 state, Uint8 button)
 {
+    int index=SDL_GetIndexById(id);
     SDL_Mouse *mouse = SDL_GetMouse(index);
     int posted;
     Uint8 type;
@@ -398,10 +406,10 @@ SDL_SendMouseButton(int index, Uint8 state, Uint8 button)
         mouse->buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
-        if (!(mouse->buttonstate & SDL_BUTTON(button))) {
-            /* Ignore this event, no state change */
-            return 0;
-        }
+        //if (!(mouse->buttonstate & SDL_BUTTON(button))) {
+        //    /* Ignore this event, no state change */
+        //    return 0;
+        //}*/
         type = SDL_MOUSEBUTTONUP;
         mouse->buttonstate &= ~SDL_BUTTON(button);
         break;
@@ -463,7 +471,7 @@ SDL_WarpMouseInWindow(SDL_WindowID windowID, int x, int y)
         mouse->WarpMouse(mouse, windowID, x, y);
     } else {
         SDL_SetMouseFocus(SDL_current_mouse, windowID);
-        SDL_SendMouseMotion(SDL_current_mouse, 0, x, y);
+        SDL_SendMouseMotion(SDL_current_mouse, 0, x, y,0);
     }
 }
 
@@ -648,5 +656,55 @@ SDL_ShowCursor(int toggle)
     }
     return shown;
 }
+
+void SDL_SetIndexId(int id, int index)
+{
+    if(id>SDL_highestId)
+    {
+        int *indexes;
+        indexes =
+            (int*) SDL_realloc(SDL_IdIndex,
+                                       (id + 1) * sizeof(int));
+        if (!indexes) {
+            SDL_OutOfMemory();
+            return -1;
+        }
+        SDL_IdIndex=indexes;
+        SDL_IdIndex[id]=index;
+        SDL_highestId=id;
+    }
+    else
+    {
+        SDL_IdIndex[id]=index;
+    }
+}
+
+int SDL_GetIndexById(int id)
+{
+    if(id>SDL_highestId)
+    {
+        return -1;
+    }
+    else
+    {
+        return SDL_IdIndex[id];
+    }
+}
+
+int SDL_GetNumOfMice(void)
+{
+    return SDL_num_mice;
+}
+
+char* SDL_GetMouseName(int index)
+{
+    SDL_Mouse* mouse = SDL_GetMouse(index);
+    if(!mouse)
+    {
+        return NULL;
+    }
+    return mouse->name;
+}
+
 
 /* vi: set ts=4 sw=4 expandtab: */

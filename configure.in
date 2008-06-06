@@ -1055,7 +1055,7 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT, "$x11ext_lib")
             else
                 enable_x11_shared=no
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $X_LIBS -lX11 -lXext"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $X_LIBS -lX11 -lXext -lXi"
             fi
             have_video=yes
 
