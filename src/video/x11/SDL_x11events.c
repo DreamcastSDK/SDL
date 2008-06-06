@@ -29,13 +29,16 @@
 #include "SDL_x11video.h"
 #include "../../events/SDL_events_c.h"
 
+//XEventClass *SDL_XEvents;
+//int SDL_numOfEvents;
+
 static void
 X11_DispatchEvent(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data;
     XEvent xevent;
-    int i;
+    int i,z;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     XNextEvent(videodata->display, &xevent);
@@ -91,9 +94,10 @@ X11_DispatchEvent(_THIS)
 #endif
             if ((xevent.xcrossing.mode != NotifyGrab) &&
                 (xevent.xcrossing.mode != NotifyUngrab)) {
-                SDL_SetMouseFocus(videodata->mouse, data->windowID);
-                SDL_SendMouseMotion(videodata->mouse, 0, xevent.xcrossing.x,
-                                    xevent.xcrossing.y);
+			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
+                SDL_SetMouseFocus(move->deviceid, data->windowID);
+                SDL_SendMouseMotion(move->deviceid, 0, move->x,
+                                    move->y,move->axis_data[2]);
             }
         }
         break;
@@ -111,9 +115,10 @@ X11_DispatchEvent(_THIS)
             if ((xevent.xcrossing.mode != NotifyGrab) &&
                 (xevent.xcrossing.mode != NotifyUngrab) &&
                 (xevent.xcrossing.detail != NotifyInferior)) {
-                SDL_SendMouseMotion(videodata->mouse, 0,
-                                    xevent.xcrossing.x, xevent.xcrossing.y);
-                SDL_SetMouseFocus(videodata->mouse, 0);
+			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
+                SDL_SendMouseMotion(move->deviceid, 0,
+                                    move->x, move->y,move->axis_data[2]);
+                SDL_SetMouseFocus(move->deviceid, 0);
             }
         }
         break;
@@ -167,26 +172,30 @@ X11_DispatchEvent(_THIS)
         break;
 
         /* Mouse motion? */
-    case MotionNotify:{
+    case 103:{ //MotionNotify
 #ifdef DEBUG_MOTION
             printf("X11 motion: %d,%d\n", xevent.xmotion.x, xevent.xmotion.y);
 #endif
-            SDL_SendMouseMotion(videodata->mouse, 0, xevent.xmotion.x,
-                                xevent.xmotion.y);
+			XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
+            SDL_SendMouseMotion(move->deviceid, 0, move->x,
+                                move->y,move->axis_data[2]);
         }
         break;
+    /*case MotionNotify:{
 
         /* Mouse button press? */
-    case ButtonPress:{
-            SDL_SendMouseButton(videodata->mouse, SDL_PRESSED,
-                                xevent.xbutton.button);
+    case 101:{//ButtonPress
+			XDeviceButtonPressedEvent* pressed=(XDeviceButtonPressedEvent*)&xevent;
+            SDL_SendMouseButton(pressed->deviceid, SDL_PRESSED,
+                                pressed->button);
         }
         break;
 
         /* Mouse button release? */
-    case ButtonRelease:{
-            SDL_SendMouseButton(videodata->mouse, SDL_RELEASED,
-                                xevent.xbutton.button);
+    case 102:{//ButtonRelease
+			XDeviceButtonReleasedEvent* released=(XDeviceButtonReleasedEvent*)&xevent;
+            SDL_SendMouseButton(released->deviceid, SDL_RELEASED,
+                                released->button);
         }
         break;
 
