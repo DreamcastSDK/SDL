@@ -136,8 +136,7 @@ WINWAVEOUT_WaitDone(_THIS)
         if (left > 0) {
             SDL_Delay(100);
         }
-    }
-    while (left > 0);
+    } while (left > 0);
 }
 
 void

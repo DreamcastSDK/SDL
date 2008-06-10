@@ -545,9 +545,8 @@ detect_imps2(int fd)
                 if (select(fd + 1, &fdset, 0, 0, &tv) < 1) {
                     break;
                 }
-            }
-            while ((read(fd, &ch, sizeof(ch)) == sizeof(ch)) &&
-                   ((ch == 0xFA) || (ch == 0xAA)));
+            } while ((read(fd, &ch, sizeof(ch)) == sizeof(ch)) &&
+                     ((ch == 0xFA) || (ch == 0xAA)));
 
             /* Experimental values (Logitech wheelmouse) */
 #ifdef DEBUG_MOUSE
@@ -1113,8 +1112,7 @@ FB_PumpEvents(_THIS)
                 }
             }
         }
-    }
-    while (posted);
+    } while (posted);
 }
 
 void
