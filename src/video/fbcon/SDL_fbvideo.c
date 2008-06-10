@@ -323,15 +323,13 @@ read_fbmodes_line(FILE * f, char *line, int length)
             blank = 1;
         else
             blank = 0;
-    }
-    while (blank);
+    } while (blank);
     /* remove whitespace at the begining of the string */
     i = 0;
     do {
         line[i] = c[i];
         i++;
-    }
-    while (c[i] != 0);
+    } while (c[i] != 0);
     return 1;
 }
 
@@ -347,8 +345,7 @@ read_fbmodes_mode(FILE * f, struct fb_var_screeninfo *vinfo)
             return 0;
         if (SDL_strncmp(line, "geometry", 8) == 0)
             break;
-    }
-    while (1);
+    } while (1);
 
     SDL_sscanf(line, "geometry %d %d %d %d %d", &vinfo->xres, &vinfo->yres,
                &vinfo->xres_virtual, &vinfo->yres_virtual,
@@ -394,8 +391,7 @@ read_fbmodes_mode(FILE * f, struct fb_var_screeninfo *vinfo)
             if (SDL_strncmp(option, "true", 4) == 0)
                 vinfo->vmode |= FB_VMODE_DOUBLE;
         }
-    }
-    while (SDL_strncmp(line, "endmode", 7) != 0);
+    } while (SDL_strncmp(line, "endmode", 7) != 0);
 
     return 1;
 }

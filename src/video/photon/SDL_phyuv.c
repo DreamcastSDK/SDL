@@ -161,8 +161,7 @@ ph_CreateYUVOverlay(_THIS, int width, int height, Uint32 format,
             break;
         }
         i++;
-    }
-    while (1);
+    } while (1);
 
 
     if (vidport == -1) {
