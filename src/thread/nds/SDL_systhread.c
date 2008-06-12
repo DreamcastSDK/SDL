@@ -22,7 +22,7 @@
 
 #ifdef SAVE_RCSID
 static char rcsid =
- "@(#) $Id: SDL_systhread.c,v 1.2 2001/04/26 16:50:18 hercules Exp $";
+    "@(#) $Id: SDL_systhread.c,v 1.2 2001/04/26 16:50:18 hercules Exp $";
 #endif
 
 /* Thread management routines for SDL */
@@ -31,29 +31,33 @@ static char rcsid =
 #include "SDL_thread.h"
 #include "SDL_systhread.h"
 
-int SDL_SYS_CreateThread(SDL_Thread *thread, void *args)
+int
+SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 {
-	SDL_SetError("Threads are not supported on this platform");
-	return(-1);
+    SDL_SetError("Threads are not supported on this platform");
+    return (-1);
 }
 
-void SDL_SYS_SetupThread(void)
+void
+SDL_SYS_SetupThread(void)
 {
-	return;
+    return;
 }
 
-Uint32 SDL_ThreadID(void)
+Uint32
+SDL_ThreadID(void)
 {
-	return(0);
+    return (0);
 }
 
-void SDL_SYS_WaitThread(SDL_Thread *thread)
+void
+SDL_SYS_WaitThread(SDL_Thread * thread)
 {
-	return;
+    return;
 }
 
-void SDL_SYS_KillThread(SDL_Thread *thread)
+void
+SDL_SYS_KillThread(SDL_Thread * thread)
 {
-	return;
+    return;
 }
-
