@@ -147,9 +147,9 @@ SDL_COMPILE_TIME_ASSERT(uint16, sizeof(Uint16) == 2);
 SDL_COMPILE_TIME_ASSERT(sint16, sizeof(Sint16) == 2);
 SDL_COMPILE_TIME_ASSERT(uint32, sizeof(Uint32) == 4);
 SDL_COMPILE_TIME_ASSERT(sint32, sizeof(Sint32) == 4);
-#ifndef __NINTENDODS__ /* TODO: figure out why the following happens:
-include/SDL_stdinc.h:150: error: size of array 'SDL_dummy_uint64' is negative
-include/SDL_stdinc.h:151: error: size of array 'SDL_dummy_sint64' is negative */
+#ifndef __NINTENDODS__          /* TODO: figure out why the following happens:
+                                   include/SDL_stdinc.h:150: error: size of array 'SDL_dummy_uint64' is negative
+                                   include/SDL_stdinc.h:151: error: size of array 'SDL_dummy_sint64' is negative */
 SDL_COMPILE_TIME_ASSERT(uint64, sizeof(Uint64) == 8);
 SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
 #endif
@@ -166,7 +166,7 @@ SDL_COMPILE_TIME_ASSERT(sint64, sizeof(Sint64) == 8);
 #endif
 
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
-#ifndef __NINTENDODS__  /* TODO: include/SDL_stdinc.h:174: error: size of array 'SDL_dummy_enum' is negative */
+#ifndef __NINTENDODS__          /* TODO: include/SDL_stdinc.h:174: error: size of array 'SDL_dummy_enum' is negative */
 typedef enum
 {
     DUMMY_ENUM_VALUE
@@ -432,7 +432,7 @@ extern DECLSPEC size_t SDLCALL SDL_strlen(const char *string);
 #define SDL_wcslen      wcslen
 #else
 #if !defined(wchar_t) && defined(__NINTENDODS__)
-#define wchar_t short /* TODO: figure out why libnds doesn't have this */
+#define wchar_t short           /* TODO: figure out why libnds doesn't have this */
 #endif
 extern DECLSPEC size_t SDLCALL SDL_wcslen(const wchar_t * string);
 #endif

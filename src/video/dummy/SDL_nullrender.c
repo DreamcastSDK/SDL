@@ -174,12 +174,18 @@ SDL_DUMMY_RenderPresent(SDL_Renderer * renderer)
         (SDL_DUMMY_RenderData *) renderer->driverdata;
 
     /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) {
+    /*if (SDL_getenv("SDL_VIDEO_DUMMY_SAVE_FRAMES")) */  {
         char file[128];
         SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
                      renderer->window, ++frame_number);
         SDL_SaveBMP(data->screens[data->current_screen], file);
     }
+    /*{
+        int i;
+        for (i = 0; i < 256 * 192; ++i)
+            ((Uint16 *)0x6800000)[i]
+                = ((Uint16 *)(data->screens[data->current_screen]->pixels))[i];
+    }*/
 
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2) {

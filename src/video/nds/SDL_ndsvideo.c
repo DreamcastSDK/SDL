@@ -63,7 +63,7 @@ static int
 NDS_Available(void)
 {
     const char *envr = SDL_getenv("SDL_VIDEODRIVER");
-	printf("NDS_Available()\n");
+    printf("NDS_Available()\n");
     return (1);
 }
 
@@ -77,7 +77,7 @@ static SDL_VideoDevice *
 NDS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-	printf("NDS_CreateDevice(%d)\n", devindex);
+    printf("NDS_CreateDevice(%d)\n", devindex);
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -95,7 +95,7 @@ NDS_CreateDevice(int devindex)
     device->SetDisplayMode = NDS_SetDisplayMode;
     device->PumpEvents = NDS_PumpEvents;
 
-    device->num_displays = 2; /* DS = dual screens */
+    device->num_displays = 2;   /* DS = dual screens */
 
     device->free = NDS_DeleteDevice;
 
@@ -114,7 +114,8 @@ NDS_VideoInit(_THIS)
     int i;
 
     /* simple 256x192x16x60 for now */
-    mode.w = 256;  mode.h = 192;
+    mode.w = 256;
+    mode.h = 192;
     mode.format = SDL_PIXELFORMAT_ARGB1555;
     mode.refresh_rate = 60;
     mode.driverdata = NULL;
@@ -125,43 +126,49 @@ NDS_VideoInit(_THIS)
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
 
-	/* hackish stuff to get things up and running for now, and for a console */
-	powerON(POWER_ALL);
-	videoSetMode(MODE_FB0);
-	videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE); /* debug text on sub */
-	vramSetBankA(VRAM_A_LCD);
-	vramSetBankC(VRAM_C_SUB_BG);
-	irqInit();
-	irqEnable(IRQ_VBLANK);
+    /* hackish stuff to get things up and running for now, and for a console */
+    powerON(POWER_ALL);
+    videoSetMode(MODE_FB0);
+    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */
+        vramSetBankA(VRAM_A_LCD);
+    vramSetBankC(VRAM_C_SUB_BG);
+        irqInit();
+    irqEnable(IRQ_VBLANK);
     /* set up console for debug text 'n stuff */
-    SUB_BG0_CR = BG_MAP_BASE(31); BG_PALETTE_SUB[255] = RGB15(31,31,31);
-	consoleInitDefault((u16*)SCREEN_BASE_BLOCK_SUB(31),
-	                   (u16*)CHAR_BASE_BLOCK_SUB(0), 16);
-    for(i = 0; i < 256*192; ++i) {
-		((u16*)VRAM_A)[i] = i;
-	}
-	for(i = 0; i < 60; ++i) swiWaitForVBlank();
-    /*NDS_SetDisplayMode(_this, &mode);*/
+    SUB_BG0_CR = BG_MAP_BASE(31);
+    BG_PALETTE_SUB[255] = RGB15(31, 31, 31);
+    consoleInitDefault((u16 *) SCREEN_BASE_BLOCK_SUB(31),
+                       (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);
+    for (i = 0; i < 256 * 192; ++i) {
+        ((u16 *) VRAM_A)[i] = i;
+    }
+    for (i = 0; i < 60; ++i)
+        swiWaitForVBlank();
+    
+    /*NDS_SetDisplayMode(_this, &mode); */
     return 0;
 }
 
 static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
-	/* right now this function is just hard-coded for 256x192 ARGB1555 */
+    /* right now this function is just hard-coded for 256x192 ARGB1555 */
 #if 0
-	videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE); /* display on main core */
-    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE); /* debug text on sub */
+    videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE);       /* display on main core */
+    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */
     vramSetMainBanks(VRAM_A_MAIN_BG_0x06000000, VRAM_B_LCD,
                      VRAM_C_SUB_BG, VRAM_D_LCD);
 
     /* maps well to the 256x192 screen anyway.  note: need VRAM_B for bigger */
     BG3_CR = BG_BMP16_256x256;
     /* affine transformation matrix.  nothing too fancy here */
-	BG3_XDX = 0x100;    BG3_XDY = 0;
-	BG3_YDX = 0;        BG3_YDY = 0x100;
-	/* x/y position */
-	BG3_CX = 0;         BG3_CY = 0;
+    BG3_XDX = 0x100;
+    BG3_XDY = 0;
+    BG3_YDX = 0;
+    BG3_YDY = 0x100;
+    /* x/y position */
+    BG3_CX = 0;
+    BG3_CY = 0;
 #endif
     return 0;
 }
