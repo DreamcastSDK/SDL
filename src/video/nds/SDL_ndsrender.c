@@ -61,6 +61,49 @@ typedef struct
     int ultimate_answer;
 } SDL_NDS_RenderData;
 
+
+
+/* this is mainly hackish testing/debugging stuff to get cleaned up soon
+   anything named sdlds_blah shouldn't make it into the stable version
+ */
+
+u16
+sdlds_rgb2bgr(u16 c) {
+/* hack to get the colors right until I actually add BGR555 to the headers */
+    u16 Rmask = 0x7C00, Bmask = 0x001F, GAmask = 0x83E0, r, b;
+    r = (c & Rmask) >> 10;
+    b = (c & Bmask) << 10;
+    return (c & GAmask) | r | b;
+}
+
+void
+sdlds_surf2vram(SDL_Surface * s)
+{
+
+    int i;
+	/*for (i = 0; i < 30; ++i) swiWaitForVBlank();*/
+    for (i = 0; i < 256 * 192; ++i) {
+        ((u16 *) VRAM_A)[i] = sdlds_rgb2bgr(((u16 *) (s->pixels))[i+160]);
+    }
+}
+
+void
+sdlds_print_pixfmt_info(SDL_PixelFormat *f) {
+	if(!f) return;
+	printf("bpp: %d\nRGBA: %x %x %x %x\n",
+	       f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+}
+
+void
+sdlds_print_surface_info(SDL_Surface *s) {
+	if(!s) return;
+	printf("flags: %x\nsize: %dx%d, pitch: %d\nlocked: %d, refcount: %d\n",
+	       s->flags, s->w, s->h, s->pitch, s->locked, s->refcount);
+	sdlds_print_pixfmt_info(s->format);
+}
+
+
+
 SDL_Renderer *
 SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -69,12 +112,18 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_Renderer *renderer;
     SDL_NDS_RenderData *data;
     int i, n;
-    int bpp = 16;
+    int bpp = 15;
+/*/
     Uint32 Rmask = 0x7C00, Gmask = 0x03E0, Bmask = 0x001F, Amask = 0x8000;
+/*/
+    Uint32 Rmask = 0x001F, Gmask = 0x03E0, Bmask = 0x7C00, Amask = 0x8000;
+//*/
 
+#if 0
     printf("SDL_NDS_CreateRenderer(window, 0x%x)\n", flags);
-    printf(" window: (%d,%d), %dx%d\n", window->x, window->y, window->w,
-           window->h);
+    printf(" window: (%d,%d), %dx%d\n",
+           window->x, window->y, window->w, window->h);
+#endif
 
     /* hard coded this to ARGB1555 for now
        if (!SDL_PixelFormatEnumToMasks
@@ -119,8 +168,7 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     for (i = 0; i < n; ++i) {
         data->screens[i] =
-            SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask,
-                                 Amask);
+            SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask, Amask);
         if (!data->screens[i]) {
             SDL_NDS_DestroyRenderer(renderer);
             return NULL;
@@ -130,18 +178,7 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data->current_screen = 0;
     data->ultimate_answer = 42;
-#if 0
-#define blarg (data->screens[0])
-    printf("hello?\n");
-    if (!data || !(data->screens) || !blarg) {
-        printf("they're null.\n");
-    } else {
-        printf("not null.\n");
-        printf("%d\n%d\n%d\n%d\n%x\n%x\n%x\n%x\n", blarg->w, blarg->h, blarg->pitch, blarg->format->BitsPerPixel, blarg->format->Rmask, blarg->format->Gmask, blarg->format->Bmask, (u32) (blarg->pixels));     /* ARGH WHY DOESN'T THIS PRINT AT ALL? */
-        printf("hurr\n");
-    }
-#undef blarg
-#endif
+
     return renderer;
 }
 
@@ -159,16 +196,6 @@ SDL_NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b,
     return SDL_FillRect(target, &real_rect, color);
 }
 
-/* this is mainly for testing stuff to put a surface where I can see it */
-void
-sdlds_surf2vram(SDL_Surface * s)
-{
-    int i;
-    for (i = 0; i < 256 * 192; ++i) {
-        ((u16 *) VRAM_A)[i] = ((u16 *) (s->pixels))[i];
-    }
-}
-
 static int
 SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * srcrect, const SDL_Rect * dstrect)
@@ -176,6 +203,7 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+#if 0
     printf("SDL_NDS_RenderCopy(renderer, texture, srcrect, dstrect)\n");
     printf(" renderer: %s\n", renderer->info.name);
     printf(" texture: %dx%d\n", texture->w, texture->h);
@@ -183,7 +211,7 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
            srcrect->h);
     printf(" dstrect: (%d,%d), %dx%d\n", dstrect->x, dstrect->y, dstrect->w,
            dstrect->h);
-
+#endif
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_Surface *target = data->screens[data->current_screen];
         void *pixels =
@@ -198,69 +226,38 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         SDL_Surface *target = data->screens[data->current_screen];
         SDL_Rect real_srcrect = *srcrect;
         SDL_Rect real_dstrect = *dstrect;
-        printf("Rmask %x Gmask %x Bmask %x Amask %x\n"
-               "width %d, height %d, pitch %d\nbpp %d, pixels %x\n",
-               surface->format->Rmask, surface->format->Gmask,
-               surface->format->Bmask, surface->format->Amask,
-               surface->w, surface->h, surface->pitch,
-               surface->format->BitsPerPixel, (u32) (surface->pixels));
+        /*sdlds_print_surface_info(surface);
+        sdlds_print_surface_info(target);*/
         sdlds_surf2vram(surface);
         return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
     }
 #if 0
-/* previous attempt to copy it directly to vram */
+    /* copy it directly to vram */
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
     int sx = srcrect->x, sy = srcrect->y, sw = srcrect->w, sh = srcrect->h;
     int dx = dstrect->x, dy = dstrect->y, dw = dstrect->w, dh = dstrect->h;
     int si, sj, di, dj;
-    /*printf("DEBUG: still alive!\n"); */
     for (sj = 0, dj = 0; sj < sh && dj < dh; ++sj, ++dj) {
         for (si = 0, di = 0; si < sw && di < dw; ++si, ++di) {
-            ((uint16 *) VRAM_A)[(dj + dy) * 256 + di + dx]
-                = ((Uint16 *) surface->pixels)[(sj + sy) * (surface->w) + si +
-                                               sx];
+            VRAM_A[(dj + dy) * 256 + di + dx] =
+              ((Uint16 *) surface->pixels)[(sj + sy) * (surface->w) + si + sx];
         }
     }
-    /*printf("DEBUG: still alive!\n"); */
-}
-
-return 0;
+    return 0;
 #endif
 }
+
 
 static void
 SDL_NDS_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
-
+#if 0
     printf("SDL_NDS_RenderPresent(renderer)\n");
     printf(" renderer: %s\n", renderer->info.name);
-    /* Send the data to the display */
-
-#if 0
-/*testing to see if rectangles drawn get copied right*/
-    {
-        SDL_Rect ra;
-        ra.x = 0;
-        ra.y = 0;
-        ra.w = 256;
-        ra.h = 192;
-        SDL_FillRect(data->screens[data->current_screen], &ra, 0x250);
-        ra.x = 32;
-        ra.y = 32;
-        ra.w = 192;
-        ra.h = 128;
-        SDL_FillRect(data->screens[data->current_screen], &ra,
-                      SDL_MapRGBA(data->screens[data->current_screen]->format,
-                                  255, 255, 255, 255));
-    }
-/*okay so this works but why not when I do it in the main()?
-  for some reason the screen I get from screen=SDL_SetVideoMode(...)
-  doesn't get copied to renderer->driverdata? */
-    for (i = 0; i < 30; ++i)
-        swiWaitForVBlank();     /* delay for debug purpose */
 #endif
-    sdlds_surf2vram(data->screens[data->current_screen]);
+    /* Send the data to the display */
+    /*sdlds_surf2vram(data->screens[data->current_screen]);*/
 
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2) {
