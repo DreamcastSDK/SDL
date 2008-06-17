@@ -63,7 +63,7 @@ static int
 NDS_Available(void)
 {
     const char *envr = SDL_getenv("SDL_VIDEODRIVER");
-    printf("NDS_Available()\n");
+    /*printf("NDS_Available()\n");*/
     return (1);
 }
 
@@ -77,7 +77,7 @@ static SDL_VideoDevice *
 NDS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-    printf("NDS_CreateDevice(%d)\n", devindex);
+    /*printf("NDS_CreateDevice(%d)\n", devindex);*/
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -116,7 +116,7 @@ NDS_VideoInit(_THIS)
     /* simple 256x192x16x60 for now */
     mode.w = 256;
     mode.h = 192;
-    mode.format = SDL_PIXELFORMAT_ARGB1555;
+    mode.format = SDL_PIXELFORMAT_RGB555;
     mode.refresh_rate = 60;
     mode.driverdata = NULL;
 
@@ -142,8 +142,6 @@ NDS_VideoInit(_THIS)
     for (i = 0; i < 256 * 192; ++i) {
         ((u16 *) VRAM_A)[i] = i;
     }
-    for (i = 0; i < 60; ++i)
-        swiWaitForVBlank();
     
     /*NDS_SetDisplayMode(_this, &mode); */
     return 0;

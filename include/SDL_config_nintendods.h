@@ -111,6 +111,6 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 #define SDL_TIMERS_DISABLED	1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_DUMMY	1
+#define SDL_VIDEO_DRIVER_NDS	1
 
 #endif /* _SDL_config_nintendods_h */
