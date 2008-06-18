@@ -27,6 +27,8 @@
 #include "SDL_audio.h"
 #include "SDL_audio_c.h"
 
+#define DEBUG_CONVERT
+
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
 SDL_ConvertMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
@@ -1237,7 +1239,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     int i, j;
 
 #ifdef DEBUG_CONVERT
-    fprintf(stderr, "Converting audio rate via proper resampling (mono)\n");
+    printf("Converting audio rate via proper resampling (mono)\n");
 #endif
 
 #define zerostuff_mono(type) { \
@@ -1256,7 +1258,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 #define discard_mono(type) { \
         const type *src = (const type *) (cvt->buf); \
         type *dst = (type *) (cvt->buf); \
-        for (i = 0; i < cvt->len_cvt / sizeof (type); ++i) { \
+        for (i = 0; i < cvt->len_cvt / cvt->len_div / sizeof (type); ++i) { \
             dst[0] = src[0]; \
             src += cvt->len_div; \
             ++dst; \
@@ -1264,6 +1266,9 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 
 	// Step 1: Zero stuff the conversion buffer
+#ifdef DEBUG_CONVERT
+	printf("Zero-stuffing by a factor of %u\n", cvt->len_mult);
+#endif
     switch (SDL_AUDIO_BITSIZE(format)) {
     case 8:
         zerostuff_mono(Uint8);
@@ -1281,6 +1286,9 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 	// Step 2: Use either a windowed sinc FIR filter or IIR lowpass filter to remove all alias frequencies
 	
 	// Step 3: Discard unnecessary samples
+#ifdef DEBUG_CONVERT
+	printf("Discarding samples by a factor of %u\n", cvt->len_div);
+#endif
     switch (SDL_AUDIO_BITSIZE(format)) {
     case 8:
         discard_mono(Uint8);
@@ -1418,11 +1426,51 @@ int SDL_BuildIIRLowpass(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	coeff[4] = -2.0f * cosw0 * scale;
 	coeff[5] = (1.0f - alpha) * scale;
 	
-	/* Convert coefficients to fixed point, using the range (-2.0, 2.0) */
+	/* Copy the coefficients to the struct. If necessary, convert coefficients to fixed point, using the range (-2.0, 2.0) */
+	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
+		float *cvt_coeff = (float *)cvt->coeff;
+		int i;
+		for(i = 0; i < 6; ++i) {
+			cvt_coeff[i] = coeff[i];
+		}
+	} else {
+	}
 	
 	/* Initialize the state buffer to all zeroes, and set initial position */
 	memset(cvt->state_buf, 0, 4 * SDL_AUDIO_BITSIZE(format) / 4);
 	cvt->state_pos = 0;
+}
+
+/* Apply the lowpass IIR filter to the given SDL_AudioCVT struct */
+int SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
+	int i, n;
+	
+	n = cvt->len_cvt / (SDL_AUDIO_BITSIZE(format) / 4);
+	
+	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
+		float *coeff = (float *)cvt->coeff;
+		float *state = (float *)cvt->state_buf;
+		float *buf = (float *)cvt->buf;
+		float temp;
+
+		
+		for(i = 0; i < n; ++i) {
+			/* y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] - a1 * y[n-1] - a[2] * y[n-2] */
+			temp = buf[n];
+			if( cvt->state_pos ) {
+				buf[n] = coeff[0] * buf[n] + coeff[1] * state[0] + coeff[2] * state[1] - coeff[4] * state[2] - coeff[5] * state[3];
+				state[1] = temp;
+				state[3] = buf[n];
+				cvt->state_pos = 0;
+			} else {
+				buf[n] = coeff[0] * buf[n] + coeff[1] * state[1] + coeff[2] * state[0] - coeff[4] * state[3] - coeff[5] * state[2];
+				state[0] = temp;
+				state[2] = buf[n];
+				cvt->state_pos = 1;
+			}
+		}
+	} else {
+	}
 }
 
 /* Apply the windowed sinc FIR filter to the given SDL_AudioCVT struct */
@@ -1437,7 +1485,7 @@ int SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	   significantly fewer multiplications and additions.
 	*/
 #define filter_sinc(type, shift_bits) { \
-			type *sinc = (type *)cvt->sinc; \
+			type *sinc = (type *)cvt->coeff; \
 			type *state = (type *)cvt->state_buf; \
 			type *buf = (type *)cvt->buf; \
 			for(i = 0; i < n; ++i) { \
@@ -1449,17 +1497,33 @@ int SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 				} \
 			} \
 		}
-			
-	switch (SDL_AUDIO_BITSIZE(format)) {
-		case 8:
-			filter_sinc(Uint8, 4);
-			break;
-		case 16:
-			filter_sinc(Uint16, 8);
-			break;
-		case 32:
-			filter_sinc(Uint32, 16);
-			break;
+	
+	/* If it's floating point, we don't need to do any shifting */
+	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
+		float *sinc = (float *)cvt->coeff;
+		float *state = (float *)cvt->state_buf;
+		float *buf = (float *)cvt->buf;
+		
+		for(i = 0; i < n; ++i) {
+			state[cvt->state_pos++] = buf[i];
+			if(cvt->state_pos == m) cvt->state_pos = 0;
+			buf[i] = 0.0f;
+			for(j = 0; j < m; ++j) {
+				buf[i] += state[j] * sinc[j];
+			}
+		}
+	} else {
+		switch (SDL_AUDIO_BITSIZE(format)) {
+			case 8:
+				filter_sinc(Uint8, 4);
+				break;
+			case 16:
+				filter_sinc(Uint16, 8);
+				break;
+			case 32:
+				filter_sinc(Uint32, 16);
+				break;
+		}
 	}
 	
 #undef filter_sinc
@@ -1482,7 +1546,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	unsigned int i;
 
 	/* Check that the buffer is allocated */
-	if( cvt->sinc == NULL ) {
+	if( cvt->coeff == NULL ) {
 		return -1;
 	}
 
@@ -1519,7 +1583,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	
 #define convert_fixed(type, size) { \
 		norm_fact = size / norm_sum; \
-		type *dst = (type *)cvt->sinc; \
+		type *dst = (type *)cvt->coeff; \
 		for( i = 0; i <= m; ++i ) { \
 			dst[i] = (type)(fSinc[i] * norm_fact); \
 		} \
@@ -1527,7 +1591,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	
 	/* If we're using floating point, we only need to normalize */
 	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
-		float *fDest = (float *)cvt->sinc;
+		float *fDest = (float *)cvt->coeff;
 		norm_fact = 1.0f / norm_sum;
 		for(i = 0; i <= m; ++i) {
 			fDest[i] = fSinc[i] * norm_fact;
@@ -1553,6 +1617,17 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	/* Clean up */
 #undef convert_fixed
 	free(fSinc);
+}
+
+/* This is used to reduce the resampling ratio */
+inline int SDL_GCD(int a, int b) {
+	int temp;
+	while(b != 0) {
+		temp = a % b;
+		a = b;
+		b = temp;
+	}
+	return a;
 }
 
 
@@ -1644,7 +1719,14 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
     /* Do rate conversion */
-    cvt->rate_incr = 0.0;
+	int rate_gcd;
+	rate_gcd = SDL_GCD(src_rate, dst_rate);
+	cvt->len_mult = dst_rate / rate_gcd;
+	cvt->len_div = src_rate / rate_gcd;
+	cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
+	cvt->filters[cvt->filter_index++] = SDL_Resample;
+	
+    /*cvt->rate_incr = 0.0;
     if ((src_rate / 100) != (dst_rate / 100)) {
         Uint32 hi_rate, lo_rate;
         int len_mult;
@@ -1693,16 +1775,16 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             }
             len_mult = 2;
             len_ratio = 2.0;
-        }
+        }*/
         /* If hi_rate = lo_rate*2^x then conversion is easy */
-        while (((lo_rate * 2) / 100) <= (hi_rate / 100)) {
+        /*while (((lo_rate * 2) / 100) <= (hi_rate / 100)) {
             cvt->filters[cvt->filter_index++] = rate_cvt;
             cvt->len_mult *= len_mult;
             lo_rate *= 2;
             cvt->len_ratio *= len_ratio;
-        }
+        }*/
         /* We may need a slow conversion here to finish up */
-        if ((lo_rate / 100) != (hi_rate / 100)) {
+        /*if ((lo_rate / 100) != (hi_rate / 100)) {*/
 #if 1
             /* The problem with this is that if the input buffer is
                say 1K, and the conversion rate is say 1.1, then the
@@ -1722,8 +1804,8 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             }
             cvt->filters[cvt->filter_index++] = SDL_RateSLOW;
 #endif
-        }
-    }
+/*        }
+    }*/
 
     /* Set up the filter information */
     if (cvt->filter_index != 0) {
