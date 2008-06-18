@@ -512,35 +512,6 @@
 		BECDF6B70761BA81005FE872 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 2EECDF2E0086C3A07F000001 /* SDLMain.m */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildStyle section */
-		F512D95E02A6E0AB01D28762 /* Development */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				OPTIMIZATION_CFLAGS = "-O0";
-				ZERO_LINK = YES;
-			};
-			name = Development;
-		};
-		F512D95F02A6E0AB01D28762 /* Deployment */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DEBUGGING_SYMBOLS = NO;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				ZERO_LINK = NO;
-			};
-			name = Deployment;
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXContainerItemProxy section */
 		BECDF6C50761BA81005FE872 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -742,8 +713,8 @@
 		BECDF66C0761BA81005FE872 /* SDL.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECDF6B30761BA81005FE872 /* libSDL.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECDF6BA0761BA81005FE872 /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		BECDF6BE0761BA81005FE872 /* Standard DMG */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "Standard DMG"; sourceTree = BUILT_PRODUCTS_DIR; };
-		BECDF6C30761BA81005FE872 /* Developer Extras Package */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = "Developer Extras Package"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BECDF6BE0761BA81005FE872 /* Standard DMG */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Standard DMG"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BECDF6C30761BA81005FE872 /* Developer Extras Package */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Developer Extras Package"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F51789D101769A2401D3D55B /* SDL_sysjoystick.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = SDL_sysjoystick.c; sourceTree = "<group>"; };
 		F59C70FF00D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710000D5CB5801000001 /* Welcome.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = Welcome.txt; sourceTree = "<group>"; };
@@ -1609,73 +1580,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				EXPORTED_SYMBOLS_FILE = ../../src/main/macosx/exports/SDL.x;
-				FRAMEWORK_SEARCH_PATHS = "";
-				FRAMEWORK_VERSION = A;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					ENABLE_QUARTZ,
-					PTHREAD_NO_RECURSIVE_MUTEX,
-					SDL_USE_PTHREADS,
-					TARGET_API_MAC_CARBON,
-					TARGET_API_MAC_OSX,
-					MACOSX,
-					HAVE_OPENGL,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/Carbon.framework/Headers,
-					../../src,
-					../../include,
-					../../src/audio,
-					../../src/cdrom,
-					../../src/endian,
-					../../src/events,
-					../../src/file,
-					../../src/hermes,
-					../../src/joystick,
-					../../src/main,
-					../../src/thread,
-					../../src/timer,
-					../../src/video,
-				);
-				INFOPLIST_FILE = "Info-Framework__Upgraded_.plist";
-				INSTALL_PATH = "@executable_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-seg1addr",
-					0x30000000,
-					"-framework",
-					IOKit,
-					"-framework",
-					Cocoa,
-					"-framework",
-					OpenGL,
-					"-framework",
-					Carbon,
-					"-framework",
-					QuickTime,
-					"-framework",
-					AudioToolbox,
-					"-framework",
-					AudioUnit,
-					"-framework",
-					CoreAudio,
-				);
-				PRODUCT_NAME = SDL;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wall",
-					"-Wno-four-char-constants",
-				);
-				WRAPPER_EXTENSION = framework;
-			};
 			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it. If you need it back, set the \"Exported Symbols File\" option to:\n../../src/main/macosx/exports/SDL.x\n(You may need to regenerate the exports list. There is a Makefile in that directory that you can run from the command line to rebuild it.)\nLong term, we want to utilize gcc 4.0's new visibility feature (analogous to declspec on Windows). Other platforms would benefit from this change too. The downside is that we still use gcc 3.3 for the PowerPC build here so only our x86 builds will cull the symbols if we go down this route (and don't use the exports file).\n\n";
 			dependencies = (
 			);
@@ -1697,50 +1601,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					ENABLE_QUARTZ,
-					PTHREAD_NO_RECURSIVE_MUTEX,
-					SDL_USE_PTHREADS,
-					DISABLE_JOYSTICK,
-					DISABLE_CDROM,
-					TARGET_API_MAC_CARBON,
-					TARGET_API_MAC_OSX,
-					MACOSX,
-					HAVE_OPENGL,
-				);
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/Carbon.framework/Headers/,
-					../../src,
-					../../include,
-					../../src/audio,
-					../../src/cdrom,
-					../../src/endian,
-					../../src/events,
-					../../src/file,
-					../../src/joystick,
-					../../src/thread,
-					../../src/timer,
-					../../src/video,
-				);
-				LIBRARY_STYLE = STATIC;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOL_FLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = SDL;
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			comments = "This produces libsdl.a, which is the static build of SDL. You will have to link to the Cocoa and OpenGL frameworks in your application.";
 			dependencies = (
 			);
@@ -1763,73 +1623,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				EXPORTED_SYMBOLS_FILE = ../../src/main/macosx/exports/SDL.x;
-				FRAMEWORK_SEARCH_PATHS = "";
-				FRAMEWORK_VERSION = A;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					ENABLE_QUARTZ,
-					PTHREAD_NO_RECURSIVE_MUTEX,
-					SDL_USE_PTHREADS,
-					TARGET_API_MAC_CARBON,
-					TARGET_API_MAC_OSX,
-					MACOSX,
-					HAVE_OPENGL,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/Carbon.framework/Headers,
-					../../src,
-					../../include,
-					../../src/audio,
-					../../src/cdrom,
-					../../src/endian,
-					../../src/events,
-					../../src/file,
-					../../src/hermes,
-					../../src/joystick,
-					../../src/main,
-					../../src/thread,
-					../../src/timer,
-					../../src/video,
-				);
-				INFOPLIST_FILE = "Info-Framework__Upgraded_.plist";
-				INSTALL_PATH = "@executable_path/../Frameworks";
-				LIBRARY_SEARCH_PATHS = "";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-seg1addr",
-					0x30000000,
-					"-framework",
-					IOKit,
-					"-framework",
-					Cocoa,
-					"-framework",
-					OpenGL,
-					"-framework",
-					Carbon,
-					"-framework",
-					QuickTime,
-					"-framework",
-					AudioToolbox,
-					"-framework",
-					AudioUnit,
-					"-framework",
-					CoreAudio,
-				);
-				PRODUCT_NAME = SDL;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wall",
-					"-Wno-four-char-constants",
-				);
-				WRAPPER_EXTENSION = framework;
-			};
 			comments = "We recommend installing to /Library/Frameworks\nAn alternative is $(HOME)/Library/Frameworks for per-user if permissions are an issue.\n\nAdd the framework to the Groups & Files panel (under Linked Frameworks is a good place) and enable the check box for the targets that need to link to it. You can also manually add \"-framework SDL\" to your linker flags if you don't like the check box system.\n\nAdd /Library/Frameworks/SDL.framework/Headers to your header search path\nAdd /Library/Frameworks to your library search path\n(Adjust the two above if installed in $(HOME)/Library/Frameworks. You can also list both paths if you want robustness.)\n\nWe used to use an exports file. It was becoming a maintenance issue we kept neglecting, so we have removed it. If you need it back, set the \"Exported Symbols File\" option to:\n../../src/main/macosx/exports/SDL.x\n(You may need to regenerate the exports list. There is a Makefile in that directory that you can run from the command line to rebuild it.)\nLong term, we want to utilize gcc 4.0's new visibility feature (analogous to declspec on Windows). Other platforms would benefit from this change too. The downside is that we still use gcc 3.3 for the PowerPC build here so only our x86 builds will cull the symbols if we go down this route (and don't use the exports file).\n\n";
 			dependencies = (
 			);
@@ -1851,50 +1644,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					ENABLE_QUARTZ,
-					PTHREAD_NO_RECURSIVE_MUTEX,
-					SDL_USE_PTHREADS,
-					DISABLE_JOYSTICK,
-					DISABLE_CDROM,
-					TARGET_API_MAC_CARBON,
-					TARGET_API_MAC_OSX,
-					MACOSX,
-					HAVE_OPENGL,
-				);
-				HEADER_SEARCH_PATHS = (
-					/System/Library/Frameworks/Carbon.framework/Headers/,
-					../../src,
-					../../include,
-					../../src/audio,
-					../../src/cdrom,
-					../../src/endian,
-					../../src/events,
-					../../src/file,
-					../../src/joystick,
-					../../src/thread,
-					../../src/timer,
-					../../src/video,
-				);
-				LIBRARY_STYLE = STATIC;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOL_FLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = SDL;
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			comments = "This produces libsdl.a, which is the static build of SDL. You will have to link to the Cocoa and OpenGL frameworks in your application.";
 			dependencies = (
 			);
@@ -1915,25 +1664,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_OPTIMIZATION_LEVEL = 3;
-				LIBRARY_STYLE = STATIC;
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOL_FLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = SDLmain;
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			comments = "This produces libSDLmain.a, which contains only SDL_main.m, the hook to get the app running correctly before your SDL code executes.";
 			dependencies = (
 			);
@@ -1951,19 +1681,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "Standard Package";
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			dependencies = (
 				BECDF6C60761BA81005FE872 /* PBXTargetDependency */,
 			);
@@ -1981,19 +1698,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "Devel Package";
-				REZ_EXECUTABLE = YES;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-				);
-			};
 			dependencies = (
 			);
 			name = "Developer Extras Package";
@@ -2008,13 +1712,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 0073178E0858DB0500B2BC32 /* Build configuration list for PBXProject "SDL" */;
-			buildSettings = {
-				MACOSX_DEPLOYMENT_TARGET = 10.1;
-			};
-			buildStyles = (
-				F512D95E02A6E0AB01D28762 /* Development */,
-				F512D95F02A6E0AB01D28762 /* Deployment */,
-			);
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* SDLFramework */;
 			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
@@ -2634,16 +2332,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
@@ -2670,16 +2372,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
@@ -2706,16 +2412,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
@@ -2739,16 +2449,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_FOR_TARGET_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				OTHER_CFLAGS = "$(OTHER_CFLAGS_$(CURRENT_ARCH))";
 				OTHER_CFLAGS_i386 = "";
 				OTHER_CFLAGS_ppc = "";
@@ -2764,16 +2478,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				OTHER_CFLAGS = "$(OTHER_CFLAGS_$(CURRENT_ARCH))";
 				OTHER_CFLAGS_i386 = "";
 				OTHER_CFLAGS_ppc = "";
@@ -2789,16 +2507,20 @@
 					"SDL_VIDEO_DRIVER_DGA=1",
 					"SDL_VIDEO_DRIVER_X11=1",
 					"SDL_VIDEO_DRIVER_X11_DGAMOUSE=1",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC=\"/usr/X11R6/lib/libX11.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\"/usr/X11R6/lib/libXext.6.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\"/usr/X11R6/lib/libXrandr.2.dylib\"",
-					"SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\"/usr/X11R6/lib/libXrender.1.dylib\"",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3)",
+					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 					"SDL_VIDEO_DRIVER_X11_VIDMODE=1",
 					"SDL_VIDEO_DRIVER_X11_XINERAMA=1",
 					"SDL_VIDEO_DRIVER_X11_XME=1",
 					"SDL_VIDEO_DRIVER_X11_XRANDR=1",
 					"SDL_VIDEO_DRIVER_X11_XV=1",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_1 = "SDL_VIDEO_DRIVER_X11_DYNAMIC=\\\"/usr/X11R6/lib/libX11.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_2 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT=\\\"/usr/X11R6/lib/libXext.6.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_3 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR=\\\"/usr/X11R6/lib/libXrandr.2.dylib\\\"";
+				GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4 = "SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER=\\\"/usr/X11R6/lib/libXrender.1.dylib\\\"";
 				OTHER_CFLAGS = "$(OTHER_CFLAGS_$(CURRENT_ARCH))";
 				OTHER_CFLAGS_i386 = "";
 				OTHER_CFLAGS_ppc = "";
