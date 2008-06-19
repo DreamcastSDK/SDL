@@ -49,7 +49,7 @@ src/events/SDL_mouse.c \
 src/events/SDL_quit.c \
 src/events/SDL_windowevents.c \
 src/file/SDL_rwops.c \
-src/joystick/dummy/SDL_sysjoystick.c \
+src/joystick/nds/SDL_sysjoystick.c \
 src/joystick/SDL_joystick.c \
 src/stdlib/SDL_getenv.c \
 src/stdlib/SDL_iconv.c \
@@ -64,9 +64,6 @@ src/thread/nds/SDL_syssem.c \
 src/thread/nds/SDL_systhread.c \
 src/timer/dummy/SDL_systimer.c \
 src/timer/SDL_timer.c \
-src/video/dummy/SDL_nullevents.c \
-src/video/dummy/SDL_nullrender.c \
-src/video/dummy/SDL_nullvideo.c \
 src/video/nds/SDL_ndsevents.c \
 src/video/nds/SDL_ndsrender.c \
 src/video/nds/SDL_ndsvideo.c \
@@ -130,6 +127,8 @@ $(TARGET): copy_config \
 
 install: $(TARGET)
 	@cp libSDL.a $(DEVKITPRO)/libnds/lib/
+	@mkdir -p $(DEVKITPRO)/libnds/include/SDL/
+	@cp include/*.h $(DEVKITPRO)/libnds/include/SDL/
 
 copy_config:
 	@cp include/SDL_config.h.default include/SDL_config.h
