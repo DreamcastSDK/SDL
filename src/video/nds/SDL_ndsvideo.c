@@ -63,7 +63,7 @@ static int
 NDS_Available(void)
 {
     const char *envr = SDL_getenv("SDL_VIDEODRIVER");
-    /*printf("NDS_Available()\n");*/
+    /*printf("NDS_Available()\n"); */
     return (1);
 }
 
@@ -77,7 +77,7 @@ static SDL_VideoDevice *
 NDS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-    /*printf("NDS_CreateDevice(%d)\n", devindex);*/
+    /*printf("NDS_CreateDevice(%d)\n", devindex); */
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -113,10 +113,10 @@ NDS_VideoInit(_THIS)
     SDL_DisplayMode mode;
     int i;
 
-    /* simple 256x192x16x60 for now */
+    /* simple 256x192x15x60 for now */
     mode.w = 256;
     mode.h = 192;
-    mode.format = SDL_PIXELFORMAT_RGB555;
+    mode.format = SDL_PIXELFORMAT_BGR555;
     mode.refresh_rate = 60;
     mode.driverdata = NULL;
 
@@ -139,10 +139,7 @@ NDS_VideoInit(_THIS)
     BG_PALETTE_SUB[255] = RGB15(31, 31, 31);
     consoleInitDefault((u16 *) SCREEN_BASE_BLOCK_SUB(31),
                        (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);
-    for (i = 0; i < 256 * 192; ++i) {
-        ((u16 *) VRAM_A)[i] = i;
-    }
-    
+
     /*NDS_SetDisplayMode(_this, &mode); */
     return 0;
 }
@@ -150,7 +147,7 @@ NDS_VideoInit(_THIS)
 static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
-    /* right now this function is just hard-coded for 256x192 ARGB1555 */
+    /* right now this function is just hard-coded for 256x192 ABGR1555 */
 #if 0
     videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE);       /* display on main core */
     videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */

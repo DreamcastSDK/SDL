@@ -98,7 +98,7 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 #define SDL_CDROM_DISABLED	1
 
 /* Enable various input drivers */
-#define SDL_JOYSTICK_DISABLED	1
+#define SDL_JOYSTICK_NDS	1
 
 /* DS has no dynamic linking afaik */
 #define SDL_LOADSO_DISABLED	1

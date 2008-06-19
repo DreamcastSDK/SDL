@@ -68,8 +68,9 @@ typedef struct
  */
 
 u16
-sdlds_rgb2bgr(u16 c) {
-/* hack to get the colors right until I actually add BGR555 to the headers */
+sdlds_rgb2bgr(u16 c)
+{
+/* hack to get the proper colors until I actually get BGR555 to work right */
     u16 Rmask = 0x7C00, Bmask = 0x001F, GAmask = 0x83E0, r, b;
     r = (c & Rmask) >> 10;
     b = (c & Bmask) << 10;
@@ -79,27 +80,29 @@ sdlds_rgb2bgr(u16 c) {
 void
 sdlds_surf2vram(SDL_Surface * s)
 {
-
-    int i;
-	/*for (i = 0; i < 30; ++i) swiWaitForVBlank();*/
-    for (i = 0; i < 256 * 192; ++i) {
-        ((u16 *) VRAM_A)[i] = sdlds_rgb2bgr(((u16 *) (s->pixels))[i+160]);
+    if (s->w == 256) {
+        dmaCopy((u8 *) (s->pixels) + 156 * sizeof(u16),
+                VRAM_A, 256 * 192 * sizeof(u16));
     }
 }
 
 void
-sdlds_print_pixfmt_info(SDL_PixelFormat *f) {
-	if(!f) return;
-	printf("bpp: %d\nRGBA: %x %x %x %x\n",
-	       f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+sdlds_print_pixfmt_info(SDL_PixelFormat * f)
+{
+    if (!f)
+        return;
+    printf("bpp: %d\nRGBA: %x %x %x %x\n",
+           f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
 }
 
 void
-sdlds_print_surface_info(SDL_Surface *s) {
-	if(!s) return;
-	printf("flags: %x\nsize: %dx%d, pitch: %d\nlocked: %d, refcount: %d\n",
-	       s->flags, s->w, s->h, s->pitch, s->locked, s->refcount);
-	sdlds_print_pixfmt_info(s->format);
+sdlds_print_surface_info(SDL_Surface * s)
+{
+    if (!s)
+        return;
+    printf("flags: %x\nsize: %dx%d, pitch: %d\nlocked: %d, refcount: %d\n",
+           s->flags, s->w, s->h, s->pitch, s->locked, s->refcount);
+    sdlds_print_pixfmt_info(s->format);
 }
 
 
@@ -113,11 +116,10 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_NDS_RenderData *data;
     int i, n;
     int bpp = 15;
-/*/
-    Uint32 Rmask = 0x7C00, Gmask = 0x03E0, Bmask = 0x001F, Amask = 0x8000;
-/*/
+    Uint32 Rmask, Gmask, Bmask, Amask;
+/*  Uint32 Rmask = 0x7C00, Gmask = 0x03E0, Bmask = 0x001F, Amask = 0x8000;
     Uint32 Rmask = 0x001F, Gmask = 0x03E0, Bmask = 0x7C00, Amask = 0x8000;
-//*/
+*/
 
 #if 0
     printf("SDL_NDS_CreateRenderer(window, 0x%x)\n", flags);
@@ -125,12 +127,12 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
            window->x, window->y, window->w, window->h);
 #endif
 
-    /* hard coded this to ARGB1555 for now
-       if (!SDL_PixelFormatEnumToMasks
-       (displayMode->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
-       SDL_SetError("Unknown display format");
-       return NULL;
-       } */
+    /* hard coded this to BGR555 for now */
+    if (!SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_BGR555, &bpp,
+                                    &Rmask, &Gmask, &Bmask, &Amask)) {
+        SDL_SetError("Unknown display format");
+        return NULL;
+    }
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
@@ -168,12 +170,14 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     for (i = 0; i < n; ++i) {
         data->screens[i] =
-            SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask, Amask);
+            SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask,
+                                 Amask);
         if (!data->screens[i]) {
             SDL_NDS_DestroyRenderer(renderer);
             return NULL;
         }
         SDL_SetSurfacePalette(data->screens[i], display->palette);
+        sdlds_print_surface_info(data->screens[i]);
     }
 
     data->current_screen = 0;
@@ -227,7 +231,7 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         SDL_Rect real_srcrect = *srcrect;
         SDL_Rect real_dstrect = *dstrect;
         /*sdlds_print_surface_info(surface);
-        sdlds_print_surface_info(target);*/
+           sdlds_print_surface_info(target); */
         sdlds_surf2vram(surface);
         return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
     }
@@ -240,7 +244,8 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     for (sj = 0, dj = 0; sj < sh && dj < dh; ++sj, ++dj) {
         for (si = 0, di = 0; si < sw && di < dw; ++si, ++di) {
             VRAM_A[(dj + dy) * 256 + di + dx] =
-              ((Uint16 *) surface->pixels)[(sj + sy) * (surface->w) + si + sx];
+                ((Uint16 *) surface->pixels)[(sj + sy) * (surface->w) + si +
+                                             sx];
         }
     }
     return 0;
@@ -252,13 +257,17 @@ static void
 SDL_NDS_RenderPresent(SDL_Renderer * renderer)
 {
     SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
+    int i;
 #if 0
     printf("SDL_NDS_RenderPresent(renderer)\n");
     printf(" renderer: %s\n", renderer->info.name);
 #endif
     /* Send the data to the display */
-    /*sdlds_surf2vram(data->screens[data->current_screen]);*/
 
+    /* hack to fix the pixel format until I figure out why BGR doesn't work */
+    for (i = 0; i < 256 * 192; ++i) {
+        VRAM_A[i] = sdlds_rgb2bgr(VRAM_A[i]);
+    }
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2) {
         data->current_screen = (data->current_screen + 1) % 2;
