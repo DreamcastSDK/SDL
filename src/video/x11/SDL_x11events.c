@@ -32,6 +32,10 @@
 //XEventClass *SDL_XEvents;
 //int SDL_numOfEvents;
 
+extern int motion;
+extern int button_pressed;
+extern int button_released;
+
 static void
 X11_DispatchEvent(_THIS)
 {
@@ -39,6 +43,9 @@ X11_DispatchEvent(_THIS)
     SDL_WindowData *data;
     XEvent xevent;
     int i,z;
+    //extern int motion;
+    //extern int button_pressed;
+    //extern int button_released;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     XNextEvent(videodata->display, &xevent);
@@ -171,34 +178,6 @@ X11_DispatchEvent(_THIS)
         }
         break;
 
-        /* Mouse motion? */
-    case 103:{ //MotionNotify
-#ifdef DEBUG_MOTION
-            printf("X11 motion: %d,%d\n", xevent.xmotion.x, xevent.xmotion.y);
-#endif
-			XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
-            SDL_SendMouseMotion(move->deviceid, 0, move->x,
-                                move->y,move->axis_data[2]);
-        }
-        break;
-    /*case MotionNotify:{
-
-        /* Mouse button press? */
-    case 101:{//ButtonPress
-			XDeviceButtonPressedEvent* pressed=(XDeviceButtonPressedEvent*)&xevent;
-            SDL_SendMouseButton(pressed->deviceid, SDL_PRESSED,
-                                pressed->button);
-        }
-        break;
-
-        /* Mouse button release? */
-    case 102:{//ButtonRelease
-			XDeviceButtonReleasedEvent* released=(XDeviceButtonReleasedEvent*)&xevent;
-            SDL_SendMouseButton(released->deviceid, SDL_RELEASED,
-                                released->button);
-        }
-        break;
-
         /* Key press? */
     case KeyPress:{
             KeyCode keycode = xevent.xkey.keycode;
@@ -310,13 +289,43 @@ X11_DispatchEvent(_THIS)
         break;
 
     default:{
-#ifdef DEBUG_XEVENTS
-            printf("Unhandled event %d\n", xevent.type);
+            if(xevent.type==motion)//MotionNotify
+            {
+#ifdef DEBUG_MOTION
+                printf("X11 motion: %d,%d\n", xevent.xmotion.x, xevent.xmotion.y);
 #endif
+			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
+                SDL_SendMouseMotion(move->deviceid, 0, move->x,
+                                move->y,move->axis_data[2]);
+            }
+    /*
+
+        Mouse button press? */
+            else if(xevent.type==button_pressed)//ButtonPress
+            {
+			    XDeviceButtonPressedEvent* pressed=(XDeviceButtonPressedEvent*)&xevent;
+                SDL_SendMouseButton(pressed->deviceid, SDL_PRESSED,
+                                pressed->button);
+            }
+
+        /* Mouse button release? */
+            else if(xevent.type==button_released)//ButtonRelease
+            {
+			    XDeviceButtonReleasedEvent* released=(XDeviceButtonReleasedEvent*)&xevent;
+                SDL_SendMouseButton(released->deviceid, SDL_RELEASED,
+                                released->button);
+            }
+            else
+            {
+#ifdef DEBUG_XEVENTS
+                printf("Unhandled event %d\n", xevent.type);
+#endif
+            }
         }
         break;
     }
 }
+
 
 /* Ack!  XPending() actually performs a blocking read if no events available */
 int

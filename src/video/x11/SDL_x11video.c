@@ -34,6 +34,7 @@ XDevice **SDL_XDevices;
 int SDL_NumOfXDevices;
 XEventClass SDL_XEvents[256];
 int SDL_NumOfXEvents;
+int motion, button_pressed, button_released;
 
 /* Initialization/Query functions */
 static int X11_VideoInit(_THIS);
@@ -262,9 +263,17 @@ X11_VideoInit(_THIS)
 
 	/* button events */
 	DeviceButtonPress(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
+	if (xEvent) 
+    {
+        SDL_XEvents[index++] = xEvent;
+        button_pressed=c_not_needed;
+    }
 	DeviceButtonRelease(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
+	if (xEvent)
+    {
+        SDL_XEvents[index++] = xEvent;
+        button_released=c_not_needed;
+    }
 
 	/* proximity events */
 	ProximityIn(SDL_XDevices[i],c_not_needed,xEvent);
@@ -274,7 +283,12 @@ X11_VideoInit(_THIS)
 
 	/* motion events */
 	DeviceMotionNotify(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
+	if (xEvent) 
+    {
+        SDL_XEvents[index++] = xEvent;
+        motion=c_not_needed;
+        //printf("motion: %d", c_not_needed);
+    }
 
 	/* device state */
 	DeviceStateNotify(SDL_XDevices[i],c_not_needed,xEvent);

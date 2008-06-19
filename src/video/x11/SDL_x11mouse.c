@@ -37,7 +37,7 @@ X11_InitMouse(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
    
     DevList=XListInputDevices(data->display, &numOfDevices);
-
+    SDL_XDevices=(XDevice**) SDL_malloc(sizeof(XDevice));
     for(i=0;i<numOfDevices;++i)
     {
         if((DevList[i].use!=IsXPointer && DevList[i].use!=IsXKeyboard))
