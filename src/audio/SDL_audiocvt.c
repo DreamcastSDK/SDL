@@ -42,21 +42,24 @@
 			dest = ((y >> 16) & 0xffff) + (a * c); \
 		}*/
 /* TODO: Check if 64-bit type exists. If not, see http://www.8052.com/mul16.phtml or http://www.cs.uaf.edu/~cs301/notes/Chapter5/node5.html */
-		
-#define SDL_FixMpy32(a, b) ((((long long)a * (long long)b) >> 32) & 0xffffffff)
-#ifdef DEBUG_CONVERT
-#define SDL_FixMpy16(a, b) ((((long)a * (long)b) >> 16) & 0xffff); printf("%f * %f = %f\n", (float)a / 16384.0f, (float)b / 16384.0f, (float)((((long)a * (long)b) >> 16) & 0xffff) / 16384.0f);
-#else
-#define SDL_FixMpy16(a, b) ((((long)a * (long)b) >> 16) & 0xffff)
-#endif
-#define SDL_FixMpy8(a, b) ((((short)a * (short)b) >> 8) & 0xff)
 
-#define SDL_Make_1_7(a) (Uint8)(a * 128.0f)
-#define SDL_Make_1_15(a) (Uint16)(a * 32768.0f)
-#define SDL_Make_1_31(a) (Uint32)(a * 2147483648.0f)
-#define SDL_Make_2_6(a) (Uint8)(a * 64.0f)
-#define SDL_Make_2_14(a) (Uint16)(a * 16384.0f)
-#define SDL_Make_2_30(a) (Uint32)(a * 1073741824.0f)
+/* We hope here that the right shift includes sign extension */
+#ifdef SDL_HAS_64BIT_Type		
+#define SDL_FixMpy32(a, b) ((((Sint64)a * (Sint64)b) >> 31) & 0xffffffff)
+#else
+/* need to do something more complicated here */
+#define SDL_FixMpy32(a, b) ((((Sint64)a * (Sint64)b) >> 31) & 0xffffffff)
+#endif
+/* Confirmed that SDL_FixMpy16 works, need to check 8 and 32 */
+#define SDL_FixMpy16(a, b) ((((Sint32)a * (Sint32)b) >> 14) & 0xffff)
+#define SDL_FixMpy8(a, b) ((((Sint16)a * (Sint16)b) >> 7) & 0xff)
+/* Everything is signed! */
+#define SDL_Make_1_7(a) (Sint8)(a * 128.0f)
+#define SDL_Make_1_15(a) (Sint16)(a * 32768.0f)
+#define SDL_Make_1_31(a) (Sint32)(a * 2147483648.0f)
+#define SDL_Make_2_6(a) (Sint8)(a * 64.0f)
+#define SDL_Make_2_14(a) (Sint16)(a * 16384.0f)
+#define SDL_Make_2_30(a) (Sint32)(a * 1073741824.0f)
 
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
@@ -1440,31 +1443,48 @@ int SDL_BuildIIRLowpass(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 
 /* Apply the lowpass IIR filter to the given SDL_AudioCVT struct */
 static void SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
-	int i, n;
+	Uint32 i, n;
 	
-	n = cvt->len_cvt / (SDL_AUDIO_BITSIZE(format) / 4);
+	/* TODO: Check that n is calculated right */
+	n = 8 * cvt->len_cvt / SDL_AUDIO_BITSIZE(format);
 
-	/* Note that the coefficients are 2_x and the input is 1_x. Do we need to shift left at the end here? */
+	/* Note that the coefficients are 2_x and the input is 1_x. Do we need to shift left at the end here? The right shift temp = buf[n] >> 1 needs to depend on whether the type is signed or not for sign extension.*/
+	/* cvt->state_pos = 1: state[0] = x_n-1, state[1] = x_n-2, state[2] = y_n-1, state[3] - y_n-2 */
 #define iir_fix(type, mult) {\
 			type *coeff = (type *)cvt->coeff; \
 			type *state = (type *)cvt->state_buf; \
 			type *buf = (type *)cvt->buf; \
 			type temp; \
 			for(i = 0; i < n; ++i) { \
-					temp = buf[n] >> 1; \
+					temp = buf[i] >> 1; \
 					if(cvt->state_pos) { \
-						buf[n] = mult(coeff[0], temp) + mult(coeff[1], state[0]) + mult(coeff[2], state[1]) - mult(coeff[4], state[2]) - mult(coeff[5], state[3]); \
+						buf[i] = mult(coeff[0], temp) + mult(coeff[1], state[0]) + mult(coeff[2], state[1]) - mult(coeff[4], state[2]) - mult(coeff[5], state[3]); \
 						state[1] = temp; \
-						state[3] = buf[n]; \
+						state[3] = buf[i]; \
 						cvt->state_pos = 0; \
 					} else { \
-						buf[n] = mult(coeff[0], temp) + mult(coeff[1], state[1]) +mult(coeff[2], state[0]) - mult(coeff[4], state[3]) - mult(coeff[5], state[2]); \
+						buf[i] = mult(coeff[0], temp) + mult(coeff[1], state[1]) + mult(coeff[2], state[0]) - mult(coeff[4], state[3]) - mult(coeff[5], state[2]); \
 						state[0] = temp; \
-						state[2] = buf[n]; \
-						cvt->state_pos = 0; \
+						state[2] = buf[i]; \
+						cvt->state_pos = 1; \
 					} \
 				} \
 		}
+/* Need to test to see if the previous method or this one is faster */
+/*#define iir_fix(type, mult) {\
+			type *coeff = (type *)cvt->coeff; \
+			type *state = (type *)cvt->state_buf; \
+			type *buf = (type *)cvt->buf; \
+			type temp; \
+			for(i = 0; i < n; ++i) { \
+					temp = buf[i] >> 1; \
+					buf[i] = mult(coeff[0], temp) + mult(coeff[1], state[0]) + mult(coeff[2], state[1]) - mult(coeff[4], state[2]) - mult(coeff[5], state[3]); \
+					state[1] = state[0]; \
+					state[0] = temp; \
+					state[3] = state[2]; \
+					state[2] = buf[i]; \
+				} \
+		}*/
 
 	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
 		float *coeff = (float *)cvt->coeff;
@@ -1474,29 +1494,30 @@ static void SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 
 		for(i = 0; i < n; ++i) {
 			/* y[n] = b0 * x[n] + b1 * x[n-1] + b2 * x[n-2] - a1 * y[n-1] - a[2] * y[n-2] */
-			temp = buf[n];
+			temp = buf[i];
 			if(cvt->state_pos) {
-				buf[n] = coeff[0] * buf[n] + coeff[1] * state[0] + coeff[2] * state[1] - coeff[4] * state[2] - coeff[5] * state[3];
+				buf[i] = coeff[0] * buf[n] + coeff[1] * state[0] + coeff[2] * state[1] - coeff[4] * state[2] - coeff[5] * state[3];
 				state[1] = temp;
-				state[3] = buf[n];
+				state[3] = buf[i];
 				cvt->state_pos = 0;
 			} else {
-				buf[n] = coeff[0] * buf[n] + coeff[1] * state[1] + coeff[2] * state[0] - coeff[4] * state[3] - coeff[5] * state[2];
+				buf[i] = coeff[0] * buf[n] + coeff[1] * state[1] + coeff[2] * state[0] - coeff[4] * state[3] - coeff[5] * state[2];
 				state[0] = temp;
-				state[2] = buf[n];
+				state[2] = buf[i];
 				cvt->state_pos = 1;
 			}
 		}
 	} else {
+		/* Treat everything as signed! */
 		switch(SDL_AUDIO_BITSIZE(format)) {
 			case 8:
-				iir_fix(Uint8, SDL_FixMpy8);
+				iir_fix(Sint8, SDL_FixMpy8);
 				break;
 			case 16:
-				iir_fix(Uint16, SDL_FixMpy16);
+				iir_fix(Sint16, SDL_FixMpy16);
 				break;
 			case 32:
-				iir_fix(Uint32, SDL_FixMpy32);
+				iir_fix(Sint32, SDL_FixMpy32);
 				break;
 		}
 	}
@@ -1544,13 +1565,13 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	} else {
 		switch (SDL_AUDIO_BITSIZE(format)) {
 			case 8:
-				filter_sinc(Uint8, SDL_FixMpy8);
+				filter_sinc(Sint8, SDL_FixMpy8);
 				break;
 			case 16:
-				filter_sinc(Uint16, SDL_FixMpy16);
+				filter_sinc(Sint16, SDL_FixMpy16);
 				break;
 			case 32:
-				filter_sinc(Uint32, SDL_FixMpy32);
+				filter_sinc(Sint32, SDL_FixMpy32);
 				break;
 		}
 	}
@@ -1830,8 +1851,8 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Do rate conversion */
 	int rate_gcd;
 	rate_gcd = SDL_GCD(src_rate, dst_rate);
-	cvt->len_mult = 2 * dst_rate / rate_gcd;
-	cvt->len_div = 2 * src_rate / rate_gcd;
+	cvt->len_mult = dst_rate / rate_gcd;
+	cvt->len_div = src_rate / rate_gcd;
 	cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
 	cvt->filters[cvt->filter_index++] = SDL_Resample;
 	SDL_BuildIIRLowpass(cvt, dst_fmt);
