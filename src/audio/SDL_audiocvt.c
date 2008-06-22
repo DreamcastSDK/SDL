@@ -54,12 +54,12 @@
 #define SDL_FixMpy16(a, b) ((((Sint32)a * (Sint32)b) >> 14) & 0xffff)
 #define SDL_FixMpy8(a, b) ((((Sint16)a * (Sint16)b) >> 7) & 0xff)
 /* Everything is signed! */
-#define SDL_Make_1_7(a) (Sint8)(a * 128.0f)
-#define SDL_Make_1_15(a) (Sint16)(a * 32768.0f)
-#define SDL_Make_1_31(a) (Sint32)(a * 2147483648.0f)
-#define SDL_Make_2_6(a) (Sint8)(a * 64.0f)
-#define SDL_Make_2_14(a) (Sint16)(a * 16384.0f)
-#define SDL_Make_2_30(a) (Sint32)(a * 1073741824.0f)
+#define SDL_Make_1_7(a) (Sint8)(a * 127.0f)
+#define SDL_Make_1_15(a) (Sint16)(a * 32767.0f)
+#define SDL_Make_1_31(a) (Sint32)(a * 2147483647.0f)
+#define SDL_Make_2_6(a) (Sint8)(a * 63.0f)
+#define SDL_Make_2_14(a) (Sint16)(a * 16383.0f)
+#define SDL_Make_2_30(a) (Sint32)(a * 1073741823.0f)
 
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
@@ -1526,10 +1526,10 @@ static void SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 
 /* Apply the windowed sinc FIR filter to the given SDL_AudioCVT struct */
 static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
-	int n = cvt->len_cvt / (SDL_AUDIO_BITSIZE(format) / 4);
+	int n = 8 * cvt->len_cvt / SDL_AUDIO_BITSIZE(format);
 	int m = cvt->len_sinc;
 	int i, j;
-	
+				
 	/* Note: this makes use of the symmetry of the sinc filter.
 	   We can also make a big optimization here by taking advantage
 	   of the fact that the signal is zero stuffed, so we can do
@@ -1540,10 +1540,12 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 			type *state = (type *)cvt->state_buf; \
 			type *buf = (type *)cvt->buf; \
 			for(i = 0; i < n; ++i) { \
-				if(cvt->state_pos == m) cvt->state_pos = 0; \
+				cvt->state_pos++; \
+				if(cvt->state_pos >= m) cvt->state_pos = 0; \
+				state[cvt->state_pos] = buf[i]; \
 				buf[i] = 0; \
 				for(j = 0; j < m;  ++j) { \
-					buf[i] += mult(state[j], sinc[j]); \
+					buf[i] += mult(state[(cvt->state_pos - j) % m], sinc[j]); \
 				} \
 			} \
 		}
@@ -1601,7 +1603,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	}
 
 	/* Set the length */
-	cvt->len_sinc = m;
+	cvt->len_sinc = m + 1;
 	
 	/* Allocate the floating point windowed sinc. */
 	fSinc = (float *)malloc(m * sizeof(float));
@@ -1611,6 +1613,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	
 	/* Set up the filter parameters */
 	fc = (cvt->len_mult > cvt->len_div) ? 0.5f / (float)cvt->len_mult : 0.5f / (float)cvt->len_div;
+	fc = 0.04f;
 	two_pi_fc = 2.0f * M_PI * fc;
 	two_pi_over_m = 2.0f * M_PI / (float)m;
 	four_pi_over_m = 2.0f * two_pi_over_m;
@@ -1626,16 +1629,19 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 			fSinc[i] *= 0.42f - 0.5f * cosf(two_pi_over_m * (float)i) + 0.08f * cosf(four_pi_over_m * (float)i);
 		}
 		norm_sum += abs(fSinc[i]);
+		printf("%f\n", fSinc[i]);
 	}
 
 	/* Now normalize and convert to fixed point. We scale everything to half the precision
 	   of whatever datatype we're using, for example, 16 bit data means we use 8 bits */
 	
 #define convert_fixed(type, fix) { \
-		norm_fact = 1.0f / norm_sum; \
+		norm_fact = 0.9f / norm_sum; \
+		norm_fact = 0.15f; \
 		type *dst = (type *)cvt->coeff; \
 		for( i = 0; i <= m; ++i ) { \
 			dst[i] = fix(fSinc[i] * norm_fact); \
+			printf("%f = 0x%x\n", fSinc[i], dst[i]); \
 		} \
 	}
 	
@@ -1661,7 +1667,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	}
 	
 	/* Initialize the state buffer to all zeroes, and set initial position */
-	memset(cvt->state_buf, 0, cvt->len_sinc * SDL_AUDIO_BITSIZE(format) / 4);
+	//memset(cvt->state_buf, 0, cvt->len_sinc * SDL_AUDIO_BITSIZE(format) / 4);
 	cvt->state_pos = 0;
 	
 	/* Clean up */
@@ -1732,7 +1738,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 	cvt->len_cvt *= cvt->len_mult;
 
 	// Step 2: Use either a windowed sinc FIR filter or IIR lowpass filter to remove all alias frequencies
-	SDL_FilterIIR( cvt, format );
+	SDL_FilterFIR( cvt, format );
 	
 	// Step 3: Discard unnecessary samples
 #ifdef DEBUG_CONVERT
@@ -1855,7 +1861,8 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 	cvt->len_div = src_rate / rate_gcd;
 	cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
 	cvt->filters[cvt->filter_index++] = SDL_Resample;
-	SDL_BuildIIRLowpass(cvt, dst_fmt);
+	//SDL_BuildIIRLowpass(cvt, dst_fmt);
+	SDL_BuildWindowedSinc(cvt, dst_fmt, 12);
 	
     /*cvt->rate_incr = 0.0;
     if ((src_rate / 100) != (dst_rate / 100)) {
