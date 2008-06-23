@@ -51,6 +51,9 @@ src/events/SDL_windowevents.c \
 src/file/SDL_rwops.c \
 src/joystick/nds/SDL_sysjoystick.c \
 src/joystick/SDL_joystick.c \
+src/touchscreen/nds/SDL_systouchscreen.c \
+src/touchscreen/dummy/SDL_systouchscreen.c \
+src/touchscreen/SDL_touchscreen.c \
 src/stdlib/SDL_getenv.c \
 src/stdlib/SDL_iconv.c \
 src/stdlib/SDL_malloc.c \
@@ -67,6 +70,9 @@ src/timer/SDL_timer.c \
 src/video/nds/SDL_ndsevents.c \
 src/video/nds/SDL_ndsrender.c \
 src/video/nds/SDL_ndsvideo.c \
+src/video/dummy/SDL_nullevents.c \
+src/video/dummy/SDL_nullrender.c \
+src/video/dummy/SDL_nullvideo.c \
 src/video/SDL_blit_0.c \
 src/video/SDL_blit_1.c \
 src/video/SDL_blit_A.c \

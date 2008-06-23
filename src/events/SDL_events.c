@@ -31,6 +31,9 @@
 #if !SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
+#if !SDL_TOUCHSCREEN_DISABLED
+#include "../touchscreen/SDL_touchscreen_c.h"
+#endif
 
 /* Public data -- the event filter */
 SDL_EventFilter SDL_EventOK = NULL;
@@ -115,6 +118,12 @@ SDL_GobbleEvents(void *unused)
         /* Check for joystick state change */
         if (SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK)) {
             SDL_JoystickUpdate();
+        }
+#endif
+#if !SDL_TOUCHSCREEN_DISABLED
+        /* Similarly, check for touchscreen state change */
+        if (SDL_numtouchscreens && (SDL_eventstate & SDL_TOUCHEVENTMASK)) {
+            SDL_TouchscreenUpdate();
         }
 #endif
 
@@ -386,6 +395,12 @@ SDL_PumpEvents(void)
         /* Check for joystick state change */
         if (SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK)) {
             SDL_JoystickUpdate();
+        }
+#endif
+#if !SDL_TOUCHSCREEN_DISABLED
+        /* Check for touchscreen state change */
+        if (SDL_numtouchscreens && (SDL_eventstate & SDL_TOUCHEVENTMASK)) {
+            SDL_TouchscreenUpdate();
         }
 #endif
     }
