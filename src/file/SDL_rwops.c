@@ -28,6 +28,10 @@
 #include "SDL_endian.h"
 #include "SDL_rwops.h"
 
+#ifdef __NDS__
+/* include libfat headers for fatInitDefault(). */
+#include <fat.h>
+#endif /* __NDS__ */
 
 #ifdef __WIN32__
 
@@ -462,7 +466,10 @@ SDL_RWops *
 SDL_RWFromFP(FILE * fp, SDL_bool autoclose)
 {
     SDL_RWops *rwops = NULL;
-
+#ifdef __NDS__
+    /* set it up so we can use stdio file function */
+    fatInitDefault();
+#endif /* __NDS__ */
     rwops = SDL_AllocRW();
     if (rwops != NULL) {
         rwops->seek = stdio_seek;

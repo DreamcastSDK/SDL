@@ -99,6 +99,9 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_NDS	1
+/*#define SDL_JOYSTICK_DUMMY	1*/
+#define SDL_TOUCHSCREEN_NDS	1
+/*#define SDL_TOUCHSCREEN_DUMMY	1*/
 
 /* DS has no dynamic linking afaik */
 #define SDL_LOADSO_DISABLED	1
@@ -112,5 +115,6 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_NDS	1
+#define SDL_VIDEO_DRIVER_DUMMY	1
 
 #endif /* _SDL_config_nintendods_h */

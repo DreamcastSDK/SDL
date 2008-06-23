@@ -38,6 +38,10 @@
 extern int SDL_JoystickInit(void);
 extern void SDL_JoystickQuit(void);
 #endif
+#if !SDL_TOUCHSCREEN_DISABLED
+extern int SDL_TouchscreenInit(void);
+extern void SDL_TouchscreenQuit(void);
+#endif
 #if !SDL_CDROM_DISABLED
 extern int SDL_CDROMInit(void);
 extern void SDL_CDROMQuit(void);
@@ -123,6 +127,21 @@ SDL_InitSubSystem(Uint32 flags)
     }
 #endif
 
+#if !SDL_TOUCHSCREEN_DISABLED
+    /* Initialize the touchscreen subsystem */
+    if ((flags & SDL_INIT_TOUCHSCREEN) && !(SDL_initialized & SDL_INIT_TOUCHSCREEN)) {
+        if (SDL_TouchscreenInit() < 0) {
+            return (-1);
+        }
+        SDL_initialized |= SDL_INIT_TOUCHSCREEN;
+    }
+#else
+    if (flags & SDL_INIT_TOUCHSCREEN) {
+        SDL_SetError("SDL not built with touchscreen support");
+        return (-1);
+    }
+#endif
+
 #if !SDL_CDROM_DISABLED
     /* Initialize the CD-ROM subsystem */
     if ((flags & SDL_INIT_CDROM) && !(SDL_initialized & SDL_INIT_CDROM)) {
@@ -178,6 +197,12 @@ SDL_QuitSubSystem(Uint32 flags)
     if ((flags & SDL_initialized & SDL_INIT_JOYSTICK)) {
         SDL_JoystickQuit();
         SDL_initialized &= ~SDL_INIT_JOYSTICK;
+    }
+#endif
+#if !SDL_TOUCHSCREEN_DISABLED
+    if ((flags & SDL_initialized & SDL_INIT_TOUCHSCREEN)) {
+        SDL_TouchscreenQuit();
+        SDL_initialized &= ~SDL_INIT_TOUCHSCREEN;
     }
 #endif
 #if !SDL_TIMERS_DISABLED
