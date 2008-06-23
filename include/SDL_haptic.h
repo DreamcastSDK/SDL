@@ -65,11 +65,25 @@ typedef struct _SDL_Haptic SDL_Haptic;
 extern DECLSPEC int SDLCALL SDL_NumHaptics(void);
 
 /*
- * Get the implementation dependent name of a joystick.
+ * Get the implementation dependent name of a Haptic device.
  * This can be called before any joysticks are opened.
  * If no name can be found, this function returns NULL.
  */
 extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
+
+/*
+ * Opens a Haptic device for usage - the index passed as an
+ * argument refers to the N'th Haptic device on this system.
+ *
+ * This function returns a Haptic device identifier, or Null
+ * if an error occurred.
+ */
+extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
+
+/* 
+ * Closes a Haptic device previously opened with SDL_HapticOpen.
+ */
+extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
 
 
 /* Ends C function definitions when using C++ */

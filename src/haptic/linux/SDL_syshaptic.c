@@ -180,20 +180,29 @@ SDL_SYS_HapticName(int index)
 int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
-   /* TODO finish
    int fd;
 
+   /* Open the character device */
    fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
-   
    if (fd < 0) {
       SDL_SetError("Unable to open %s\n", SDL_hapticlist[haptic->index]);
       return (-1);
    }
 
-   
+   /* Allocate the hwdata */
+   haptic->hwdata = (struct haptic_hwdata *)
+      SDL_malloc(sizeof(*haptic->hwdata));
+   if (haptic->hwdata == NULL) {
+      SDL_OutOfMemory();
+      close(fd);
+      return (-1);
+   }
+   SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
+
+   /* Set the hwdata */
+   haptic->hwdata->fd = fd;
 
    return 0;
-   */
 }
 
 
@@ -203,6 +212,16 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 void
 SDL_SYS_HapticClose(SDL_Haptic * haptic)
 {
+   if (haptic->hwdata) {
+
+      /* Clean up */
+      close(haptic->hwdata->fd);
+
+      /* Free */
+      SDL_free(haptic->hwdata);
+      haptic->hwdata = NULL;
+
+   }
 }
 
 

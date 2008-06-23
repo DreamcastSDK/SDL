@@ -113,7 +113,6 @@ SDL_HapticOpen(int device_index)
       if (SDL_SYS_HapticOpen(haptic) < 0) {
          SDL_free(haptic);
          haptic = NULL;
-      } else {
       }
    }
    if (haptic) {
@@ -128,13 +127,55 @@ SDL_HapticOpen(int device_index)
 
 
 /*
+ * Checks to see if the haptic device is valid
+ */
+static int
+ValidHaptic(SDL_Haptic ** haptic)
+{
+   int valid;
+
+   if (*haptic == NULL) {
+      SDL_SetError("Haptic device hasn't been opened yet");
+      valid = 0;
+   } else {
+      valid = 1;
+   }
+   return valid;
+}
+
+
+/*
  * Closes a SDL_Haptic device.
  */
 void
 SDL_HapticClose(SDL_Haptic * haptic)
 {
-   (void)haptic;
-   /* TODO */
+   int i;
+
+   /* Must be valid */
+   if (!ValidHaptic(&haptic)) {
+      return;
+   }
+
+   /* Check if it's still in use */
+   if (--haptic->ref_count < 0) {
+      return;
+   }
+
+   /* Close it */
+   SDL_SYS_HapticClose(haptic);
+
+   /* Remove from the list */
+   for (i = 0; SDL_haptics[i]; ++i) {
+      if (haptic == SDL_haptics[i]) {
+         SDL_memcpy(&SDL_haptics[i], &SDL_haptics[i + 1],
+               (SDL_numhaptics - i) * sizeof(haptic));
+         break;
+      }
+   }
+
+   /* Free */
+   SDL_free(haptic);
 }
 
 /*
