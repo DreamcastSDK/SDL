@@ -82,7 +82,7 @@ void
 SDL_SYS_TouchscreenUpdate(SDL_Touchscreen * touchscreen)
 {
     u32 keysd, keysu, keysh;
-    int xpos, ypos, pressure = 16384;
+    Uint16 xpos=0, ypos=0, pressure = 32767;
     touchPosition touch;
 
     scanKeys();
@@ -90,11 +90,17 @@ SDL_SYS_TouchscreenUpdate(SDL_Touchscreen * touchscreen)
     keysh = keysHeld();
     keysu = keysUp();
     touch=touchReadXY();
-    xpos = (touch.px-128)*256;
-    ypos = (touch.py-96)*(65536/192);
+    xpos = (touch.px << 8) + 1;
+    ypos = (touch.py << 16) / 192 + 1;
+    /* TODO uses touch.x and touch.y for something.
+       we discussed in the mailing list having both "hardware x/y" and
+       "screen x/y" coordinates. */
 
-    if (((keysd|keysh) & KEY_TOUCH)) {
+    if ((keysd & KEY_TOUCH)) {
         SDL_PrivateTouchPress(touchscreen, 0, xpos, ypos, pressure);
+    }
+    if ((keysh & KEY_TOUCH)) {
+    	SDL_PrivateTouchMove(touchscreen, 0, xpos, ypos, pressure); 
     }
     if ((keysu & KEY_TOUCH)) {
         SDL_PrivateTouchRelease(touchscreen, 0);

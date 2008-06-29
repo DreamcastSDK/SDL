@@ -35,9 +35,9 @@ struct _SDL_Touchscreen
     int npoints;                /* Number of points currently touched */
     struct touchpoint
     {
-        int x;
-        int y;
-        int pressure;
+        Uint16 x;
+        Uint16 y;
+        Uint16 pressure;
     } *points;                   /* Current ball motion deltas */
 
     struct touchscreen_hwdata *hwdata;     /* Driver dependent information */
