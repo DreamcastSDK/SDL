@@ -107,11 +107,12 @@ extern DECLSPEC int SDLCALL SDL_TouchscreenEventState(int state);
 /*
  * Get the current X,Y position of the indicated point on the touchscreen.
  *
- * If not NULL, *x is set to an integer in the range [-32768,32767]
- * where -32768 is the left edge, 0 is center, 32767 is right edge.
+ * If not NULL, *x is set to an unsigned integer in the range [1,65535]
+ * where 1 is the left edge, 32768 is roughly center, 65535 is right edge.
  * Similarly with *y, for the top, center, and bottom, respectively.
- * The returned value is an unsigned integer in the range [1,32767]
- * that represents the pressure of the touch.
+ * The returned value is an unsigned integer in the range [1,65535],
+ * which represents the pressure of the touch.  This should be 32767 in
+ * non-pressure-sensitive driver implementations.
  * If not being touched, 0 is returned and *x and *y are unmodified.
  *
  * The touch point indices start at index 0.
@@ -123,8 +124,8 @@ extern DECLSPEC int SDLCALL SDL_TouchscreenEventState(int state);
  *
  * On error, -1 is returned.
  */
-extern DECLSPEC int SDLCALL SDL_TouchscreenGetXY(SDL_Touchscreen *touchscreen,
-                                                    int point, int *x, int *y);
+extern DECLSPEC Uint16 SDLCALL SDL_TouchscreenGetXY(SDL_Touchscreen *touchscreen,
+                                                    int point, Uint16 *x, Uint16 *y);
 
 /*
  * Get the number of currently touched points on a touchscreen.

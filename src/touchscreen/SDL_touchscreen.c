@@ -210,8 +210,8 @@ SDL_TouchscreenMaxPoints(SDL_Touchscreen * touchscreen)
 /*
  * Get the current X,Y position of the indicated point on the touchscreen
  */
-int
-SDL_TouchscreenGetXY(SDL_Touchscreen *touchscreen, int point, int *x, int *y)
+Uint16
+SDL_TouchscreenGetXY(SDL_Touchscreen *touchscreen, int point, Uint16 *x, Uint16 *y)
 {
     int retval;
 
@@ -328,10 +328,8 @@ SDL_TouchscreenQuit(void)
 
 /* These are global for SDL_systouchscreen.c and SDL_events.c */
 int
-SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point,
-                                 int x, int y, int pressure) {
+SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point, Uint16 x, Uint16 y, Uint16 pressure) {
     int posted;
-    int ev = SDL_TOUCHMOTION;
 
     if (!ValidTouchscreen(&touchscreen)) {
         return -1;
@@ -353,9 +351,69 @@ SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point,
 
     /* new touch point!  that means a TOUCHPRESSED event is due. */
     if(point >= touchscreen->npoints) {
-        ev = SDL_TOUCHPRESSED;
         point = touchscreen->npoints;
         ++touchscreen->npoints;
+    }
+
+    /* no motion, no change, don't report an event. */
+    if(touchscreen->points[point].pressure > 0) {
+        SDL_SetError("Warning: touch point %d was already pressed", point);
+        return -1;
+    }
+
+    /* Update internal touchscreen point state */
+    touchscreen->points[point].x = x;
+    touchscreen->points[point].y = y;
+    touchscreen->points[point].pressure = pressure;
+
+    /* Post the event, if desired */
+    posted = 0;
+#if !SDL_EVENTS_DISABLED
+    if (SDL_ProcessEvents[SDL_TOUCHPRESSED] == SDL_ENABLE) {
+        SDL_Event event;
+        event.touch.type = SDL_TOUCHPRESSED;
+        event.touch.which = touchscreen->index;
+        event.touch.point = point;
+        event.touch.xpos = x;
+        event.touch.ypos = y;
+        event.touch.pressure = pressure;
+        if ((SDL_EventOK == NULL)
+            || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
+            posted = 1;
+            SDL_PushEvent(&event);
+        }
+    }
+#endif /* !SDL_EVENTS_DISABLED */
+    return (posted);
+}
+
+int
+SDL_PrivateTouchMove(SDL_Touchscreen * touchscreen, int point,
+                                 Uint16 x, Uint16 y, Uint16 pressure) {
+    int posted;
+
+    if (!ValidTouchscreen(&touchscreen)) {
+        return -1;
+    }
+
+    if(point >= touchscreen->maxpoints) {
+        SDL_SetError("Touchscreen only can have %d points", touchscreen->maxpoints);
+        return -1;
+    }
+
+    /* on neg. point, set the given args as the *only* point.
+       so set the struct to have no points pressed, then continue as normal. */
+    if(point < 0) {
+        point = 0;
+        touchscreen->npoints = 0;
+        SDL_memset(touchscreen->points, 0,
+                   touchscreen->maxpoints * sizeof(touchscreen->points[0]));
+    }
+
+    /* new touch point!  that means a TOUCHPRESSED event is due. */
+    if(point >= touchscreen->npoints || touchscreen->points[point].pressure == 0) {
+        SDL_SetError("Touch point %d shouldn't move before it's pressed.", point);
+        return -1;
     }
 
     /* no motion, no change, don't report an event. */
@@ -373,9 +431,9 @@ SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point,
     /* Post the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
-    if (SDL_ProcessEvents[ev] == SDL_ENABLE) {
+    if (SDL_ProcessEvents[SDL_TOUCHMOTION] == SDL_ENABLE) {
         SDL_Event event;
-        event.touch.type = ev;
+        event.touch.type = SDL_TOUCHMOTION;
         event.touch.which = touchscreen->index;
         event.touch.point = point;
         event.touch.xpos = x;
@@ -394,6 +452,7 @@ SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point,
 int
 SDL_PrivateTouchRelease(SDL_Touchscreen * touchscreen, int point) {
     int posted;
+    int i;
 
     if (!ValidTouchscreen(&touchscreen)) {
         return -1;
@@ -418,7 +477,12 @@ SDL_PrivateTouchRelease(SDL_Touchscreen * touchscreen, int point) {
 
     /* Update internal touchscreen point state */
     touchscreen->points[point].pressure = 0;
+    touchscreen->points[point].x = 0;
+    touchscreen->points[point].y = 0;
     if(touchscreen->npoints >= 0) --touchscreen->npoints;
+    for(i = point; i < touchscreen->npoints; ++i) {
+        touchscreen->points[i] = touchscreen->points[i+1];
+    }
 
     /* Post the event, if desired */
     posted = 0;

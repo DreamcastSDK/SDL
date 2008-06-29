@@ -32,11 +32,22 @@ extern Uint8 SDL_numtouchscreens;
 /* the point index starts at 0
  * if point < 0, release all points and set this to be the first (only) point.
  * if point >= touchscreen->maxpoints, error.
- * otherwise, set or update the coordinates for the given point.
- * return -1 if fatal error, 0 on success
+ * otherwise, add a point with the given coordinates.
+ * return < 0 if fatal error, >= 0 on success
  */
 extern int SDL_PrivateTouchPress(SDL_Touchscreen * touchscreen, int point,
-                                 int x, int y, int pressure);
-/* if point < 0, release all points. */
+                                  Uint16 x, Uint16 y, Uint16 pressure);
+/* if point < 0, release all points and set this to be the first (only) point.
+ * if point >= touchscreen->maxpoints, error.
+ * otherwise, update the coordinates for the given point.
+ * return < 0 if fatal error, >= 0 on success
+ */
+extern int SDL_PrivateTouchMove(SDL_Touchscreen * touchscreen, int point,
+                                 Uint16 x, Uint16 y, Uint16 pressure);
+/* if point < 0, release all points.
+ * if point >= touchscreen->npoints, error.
+ * otherwise, remove the given point.
+ * return < 0 if fatal error, >= 0 on success
+ */
 extern int SDL_PrivateTouchRelease(SDL_Touchscreen * touchscreen, int point);
 /* vi: set ts=4 sw=4 expandtab: */
