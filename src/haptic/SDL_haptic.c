@@ -197,6 +197,43 @@ SDL_HapticQuit(void)
    }
 }
 
+/*
+ * Returns the number of effects a haptic device has.
+ */
+int
+SDL_HapticNumEffects(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   return haptic->neffects;
+}
+
+/*
+ * Returns supported effects by the device.
+ */
+unsigned int
+SDL_HapticQueryEffects(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   return haptic->supported;
+}
+
+int
+SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   if ((haptic->supported & effect->type) != 0)
+      return SDL_TRUE;
+   return SDL_FALSE;
+}
 
 /*
  * Creates a new haptic effect.

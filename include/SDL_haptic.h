@@ -100,6 +100,19 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
 extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
 
 /*
+ * Returns the number of effects a haptic device can store.
+ */
+extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
+
+/*
+ * Returns the supported effects.  Individual effects can be queried by
+ * bitwise operators.
+ *
+ * Example:  (SDL_HapticQueryEffects(haptic) & SDL_HAPTIC_CONSTANT)
+ */
+extern DECLSPEC unsigned int SDL_HapticQueryEffects(SDL_Haptic * haptic);
+
+/*
  * Creates a new haptic effect on the device.
  */
 extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
