@@ -64,7 +64,7 @@ struct haptic_hwdata
  */
 struct haptic_hweffect
 {
-   int id;
+   struct ff_effect effect;
 };
 
 
@@ -271,12 +271,89 @@ SDL_SYS_HapticQuit(void)
 }
 
 /*
+ * Initializes the linux effect struct from a haptic_effect.
+ */
+static int
+SDL_SYS_ToFFEffect( struct ff_effect * dest, struct haptic_effect * src )
+{
+   SDL_memset(dest, 0, sizeof(struct ff_effect));
+   switch (src->effect.type) {
+      case SDL_HAPTIC_CONSTANT:
+         dest->type = FF_CONSTANT;
+
+         break;
+
+      default:
+         SDL_SetError("Unknown haptic effect type.");
+         return -1;
+   }
+
+   return 0;
+}
+
+/*
  * Creates a new haptic effect.
  */
 int
 SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 {
-   return -1;
+   /* Allocate the hardware effect */
+   effect->hweffect = (struct haptic_hweffect *) 
+         SDL_malloc(sizeof(struct haptic_hweffect));
+   if (effect->hweffect == NULL) {
+      SDL_OutOfMemory();
+      return -1;
+   }
+
+   /* Prepare the ff_effect */
+   if (SDL_SYS_ToFFEffect( &effect->hweffect->effect, effect ) != 0) {
+      return -1;
+   }
+   effect->hweffect->effect.id = -1; /* Have the kernel give it an id */
+
+   /* Upload the effect */
+   if (ioctl(haptic->hwdata->fd, EVIOCSFF, &effect->hweffect->effect) < 0) {
+      SDL_SetError("Error uploading effect to the haptic device.");
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
+ * Runs an effect.
+ */
+int
+SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   struct input_event run;
+
+   /* Prepare to run the effect */
+   run.type = EV_FF;
+   run.code = effect->hweffect->effect.id;
+   run.value = 1;
+
+   if (write(haptic->hwdata->fd, (const void*) &run, sizeof(run)) < 0) {
+      SDL_SetError("Unable to run the haptic effect.");
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
+ * Frees the effect
+ */
+void
+SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   if (ioctl(haptic->hwdata->fd, EVIOCRMFF, effect->hweffect->effect.id) < 0) {
+      SDL_SetError("Error removing the effect from the haptic device.");
+   }
+   SDL_free(effect->hweffect);
+   effect->hweffect = NULL;
 }
 
 

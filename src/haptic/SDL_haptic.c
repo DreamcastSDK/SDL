@@ -273,6 +273,13 @@ SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
    if (!ValidHaptic(&haptic)) {
       return -1;
    }
+
+   /* Run the effect */
+   if (SDL_SYS_HapticRunEffect(haptic,&haptic->effects[effect]) < 0) {
+      return -1;
+   }
+
+   return 0;
 }
 
 /*
@@ -284,6 +291,13 @@ SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
    if (!ValidHaptic(&haptic)) {
       return;
    }
+
+   /* Not allocated */
+   if (haptic->effects[effect].hweffect == NULL) {
+      return;
+   }
+
+   SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
 }
 
 
