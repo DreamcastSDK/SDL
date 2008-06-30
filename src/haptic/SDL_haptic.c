@@ -97,7 +97,7 @@ SDL_HapticOpen(int device_index)
    }
 
    /* If the haptic is already open, return it */
-   for (i = 0; SDL_haptics[i]; ++i) {             
+   for (i=0; SDL_haptics[i]; i++) {             
       if (device_index == SDL_haptics[i]->index) {
          haptic = SDL_haptics[i];
          ++haptic->ref_count;
@@ -105,23 +105,27 @@ SDL_HapticOpen(int device_index)
       }
    }
 
-   /* Create and initialize the haptic */
+   /* Create the haptic device */
    haptic = (SDL_Haptic *) SDL_malloc((sizeof *haptic));
-   if (haptic != NULL) {
-      SDL_memset(haptic, 0, (sizeof *haptic));
-      haptic->index = device_index;
-      if (SDL_SYS_HapticOpen(haptic) < 0) {
-         SDL_free(haptic);
-         haptic = NULL;
-      }
+   if (haptic == NULL) {
+      SDL_OutOfMemory();
+      return NULL;
    }
-   if (haptic) {
-      /* Add haptic to list */
-      ++haptic->ref_count;
-      for (i = 0; SDL_haptics[i]; ++i)
-         /* Skip to next haptic */ ;
-      SDL_haptics[i] = haptic;
+
+   /* Initialize the haptic device */
+   SDL_memset(haptic, 0, (sizeof *haptic));
+   haptic->index = device_index;
+   if (SDL_SYS_HapticOpen(haptic) < 0) {
+      SDL_free(haptic);
+      return NULL;
    }
+
+   /* Add haptic to list */
+   ++haptic->ref_count;
+   for (i = 0; SDL_haptics[i]; ++i)
+      /* Skip to next haptic */ ;
+   SDL_haptics[i] = haptic;
+
    return haptic;
 }
 
@@ -192,3 +196,57 @@ SDL_HapticQuit(void)
       SDL_haptics = NULL;
    }
 }
+
+
+/*
+ * Creates a new haptic effect.
+ */
+int
+SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
+{
+   int i;
+
+   /* Check for device validity. */
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   /* See if there's a free slot */
+   for (i=0; i<haptic->neffects; i++) {
+      if (haptic->effects[i].hweffect == NULL) {
+
+         /* Now let the backend create the real effect */
+         if (SDL_SYS_HapticNewEffect(haptic,&haptic->effects[i]) != 0) {
+            return -1; /* Backend failed to create effect */
+         }
+         return i;
+      }
+   }
+
+   SDL_SetError("Haptic device has no free space left.");
+   return -1;
+}
+
+/*
+ * Runs the haptic effect on the device.
+ */
+int
+SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+}
+
+/*
+ * Gets rid of a haptic effect.
+ */
+void
+SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
+{
+   if (!ValidHaptic(&haptic)) {
+      return;
+   }
+}
+
+
