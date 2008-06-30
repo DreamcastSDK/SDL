@@ -52,4 +52,11 @@ extern const char * SDL_SYS_HapticName(int index);
 extern int SDL_SYS_HapticOpen(SDL_Haptic * haptic);
 extern void SDL_SYS_HapticClose(SDL_Haptic * haptic);
 extern void SDL_SYS_HapticQuit(void);
+extern int SDL_SYS_HapticNewEffect(SDL_Haptic * haptic,
+      struct haptic_effect * effect);
+extern int SDL_SYS_HapticRunEffect(SDL_Haptic * haptic,
+      struct haptic_effect * effect);
+extern void SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic,
+      struct haptic_effect * effect);
+
 
