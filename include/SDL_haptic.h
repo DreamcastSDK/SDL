@@ -57,6 +57,20 @@ typedef struct _SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_GAIN       (1<<8)
 #define SDL_HAPTIC_AUTOCENTER (1<<9)
 
+typedef struct SDL_HapticConstant {
+   /* Header */
+   Uint16 type;
+   Uint16 length;
+   Uint16 delay;
+   Uint16 direction;
+} SDL_HapticConstant;
+
+typedef union SDL_HapticEffect {
+   /* Common for all force feedback effects */
+   Uint16 type; /* Effect type */
+   SDL_HapticConstant constant; /* Constant effect */
+} SDL_HapticEffect;
+
 
 /* Function prototypes */
 /*
@@ -84,6 +98,21 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
  * Closes a Haptic device previously opened with SDL_HapticOpen.
  */
 extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
+
+/*
+ * Creates a new haptic effect on the device.
+ */
+extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
+
+/*
+ * Runs the haptic effect on it's assosciated haptic device.
+ */
+extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
+
+/*
+ * Destroys a haptic effect on the device.
+ */
+extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
 
 
 /* Ends C function definitions when using C++ */

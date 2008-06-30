@@ -59,6 +59,15 @@ struct haptic_hwdata
 };
 
 
+/*
+ * Haptic system effect data.
+ */
+struct haptic_hweffect
+{
+   int id;
+};
+
+
 
 #define test_bit(nr, addr) \
    (((1UL << ((nr) & 31)) & (((const unsigned int *) addr)[(nr) >> 5])) != 0)
@@ -180,29 +189,49 @@ SDL_SYS_HapticName(int index)
 int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
+   int i;
    int fd;
 
    /* Open the character device */
    fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
    if (fd < 0) {
       SDL_SetError("Unable to open %s\n", SDL_hapticlist[haptic->index]);
-      return (-1);
+      return -1;
    }
 
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
-      SDL_malloc(sizeof(*haptic->hwdata));
+         SDL_malloc(sizeof(*haptic->hwdata));
    if (haptic->hwdata == NULL) {
       SDL_OutOfMemory();
-      close(fd);
-      return (-1);
+      goto open_err;
    }
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
-
    /* Set the hwdata */
    haptic->hwdata->fd = fd;
 
+   /* Set the effects */
+   if (ioctl(fd, EVIOCGEFFECTS, &haptic->neffects) < 0) {
+      SDL_SetError("Unable to query haptic device memory.");
+      goto open_err;
+   }
+   haptic->effects = (struct haptic_effect *)
+         SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
+   if (haptic->effects == NULL) {
+      SDL_OutOfMemory();
+      goto open_err;
+   }
+
    return 0;
+
+   /* Error handling */
+open_err:
+   close(fd);
+   if (haptic->hwdata != NULL) {
+      free(haptic->hwdata);
+      haptic->hwdata = NULL;
+   }
+   return -1;
 }
 
 
@@ -220,12 +249,15 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
       /* Free */
       SDL_free(haptic->hwdata);
       haptic->hwdata = NULL;
-
+      SDL_free(haptic->effects);
+      haptic->neffects = 0;
    }
 }
 
 
-/* Clean up after system specific haptic stuff */
+/* 
+ * Clean up after system specific haptic stuff
+ */
 void
 SDL_SYS_HapticQuit(void)
 {
@@ -235,6 +267,15 @@ SDL_SYS_HapticQuit(void)
       SDL_free(SDL_hapticlist[i].fname);
    }
    SDL_hapticlist[0].fname = NULL;
+}
+
+/*
+ * Creates a new haptic effect.
+ */
+int
+SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   return -1;
 }
 
 

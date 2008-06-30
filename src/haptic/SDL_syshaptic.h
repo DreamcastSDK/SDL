@@ -25,18 +25,27 @@
 #include "SDL_haptic.h"
 
 
-struct _SDL_Haptic
-{  
-   Uint8 index; /* stores index it is attached to */
-   const char* name; /* stores the name of the device */
-
-   int neffects; /* maximum amount of effects */
-   unsigned int supported; /* supported effects */
-
-   struct haptic_hwdata *hwdata; /* driver dependent */
-   int ref_count; /* count for multiple opens */
+struct haptic_effect
+{
+   SDL_HapticEffect effect; /* The current event */
+   struct haptic_hweffect *hweffect; /* The hardware behind the event */
 };
 
+/*
+ * The real SDL_Haptic event.
+ */
+struct _SDL_Haptic
+{  
+   Uint8 index; /* Stores index it is attached to */
+   const char* name; /* Stores the name of the device */
+
+   struct haptic_effect *effects; /* Allocated effects */
+   int neffects; /* Maximum amount of effects */
+   unsigned int supported; /* Supported effects */
+
+   struct haptic_hwdata *hwdata; /* Driver dependent */
+   int ref_count; /* Count for multiple opens */
+};
 
 extern int SDL_SYS_HapticInit(void);
 extern const char * SDL_SYS_HapticName(int index);
