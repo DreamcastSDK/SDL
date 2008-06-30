@@ -207,8 +207,9 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
       goto open_err;
    }
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
-   /* Set the hwdata */
+   /* Set the data */
    haptic->hwdata->fd = fd;
+   haptic->supported = EV_IsHaptic(fd);
 
    /* Set the effects */
    if (ioctl(fd, EVIOCGEFFECTS, &haptic->neffects) < 0) {
