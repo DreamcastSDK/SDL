@@ -456,17 +456,52 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    /* Prepare the ff_effect */
    linux_effect = &effect->hweffect->effect;
    if (SDL_SYS_ToFFEffect( linux_effect, base ) != 0) {
-      return -1;
+      goto new_effect_err;
    }
    linux_effect->id = -1; /* Have the kernel give it an id */
 
    /* Upload the effect */
    if (ioctl(haptic->hwdata->fd, EVIOCSFF, linux_effect) < 0) {
       SDL_SetError("Error uploading effect to the haptic device.");
-      return -1;
+      goto new_effect_err;
    }
 
    return 0;
+
+new_effect_err:
+   free(effect->hweffect);
+   effect->hweffect = NULL;
+   return -1;
+}
+
+
+/*
+ * Updates an effect.
+ *
+ * Note: Dynamically updating the direction can in some cases force
+ * the effect to restart and run once.
+ */
+int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
+      struct haptic_effect * effect, SDL_HapticEffect * data)
+{
+   struct ff_effect linux_effect;
+
+   /* Create the new effect */
+   if (SDL_SYS_ToFFEffect( &linux_effect, data ) != 0) {
+      return -1;
+   }
+   linux_effect.id = effect->hweffect->effect.id;
+
+   /* See if it can be uploaded. */
+   if (ioctl(haptic->hwdata->fd, EVIOCSFF, &linux_effect) < 0) {
+      SDL_SetError("Error updating the haptic effect.");
+      return -1;
+   }
+
+   /* Copy the new effect into memory. */
+   SDL_memcpy( &effect->hweffect->effect, &linux_effect, sizeof(struct ff_effect) );
+
+   return effect->hweffect->effect.id;
 }
 
 
