@@ -54,6 +54,8 @@ extern void SDL_SYS_HapticClose(SDL_Haptic * haptic);
 extern void SDL_SYS_HapticQuit(void);
 extern int SDL_SYS_HapticNewEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect, SDL_HapticEffect * base);
+extern int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
+      struct haptic_effect * effect, SDL_HapticEffect * data);
 extern int SDL_SYS_HapticRunEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect);
 extern int SDL_SYS_HapticStopEffect(SDL_Haptic * haptic,

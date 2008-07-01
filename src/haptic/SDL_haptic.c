@@ -292,6 +292,25 @@ ValidEffect(SDL_Haptic * haptic, int effect)
 }
 
 /*
+ * Updates an effect.
+ */
+int
+SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
+{
+   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+      return -1;
+   }
+
+   /* Updates the effect */
+   if (SDL_SYS_HapticUpdateEffect(haptic,&haptic->effects[effect],data) < 0) {
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
  * Runs the haptic effect on the device.
  */
 int

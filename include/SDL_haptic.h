@@ -241,6 +241,16 @@ extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEff
 extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
 /*
+ * Uploads an effect.  Can be used dynamically, although behaviour when
+ * dynamically changing direction may be strange.  Specifically the effect
+ * may reupload itself and start playing from the start.  You cannot change
+ * the type either when running UpdateEffect.
+ *
+ * Returns the id of the effect on success, -1 on failure.
+ */
+extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
+
+/*
  * Runs the haptic effect on it's assosciated haptic device.
  *
  * Returns 0 on success or -1 on failure.
