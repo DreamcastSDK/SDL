@@ -324,4 +324,26 @@ SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
    SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
 }
 
+/*
+ * Sets the global gain of the device.
+ */
+int
+SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   if ((gain < 0) || (gain > 100)) {
+      SDL_SetError("Haptic gain must be between 0 and 100.");
+      return -1;
+   }
+
+   if (SDL_SYS_HapticSetGain(haptic,gain) < 0) {
+      return -1;
+   }
+
+   return 0;
+}
+
 

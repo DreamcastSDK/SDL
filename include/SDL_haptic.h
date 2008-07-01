@@ -232,11 +232,15 @@ extern DECLSPEC unsigned int SDL_HapticQueryEffects(SDL_Haptic * haptic);
 
 /*
  * Creates a new haptic effect on the device.
+ *
+ * Returns the id of the effect on success, -1 on failure.
  */
 extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
 /*
  * Runs the haptic effect on it's assosciated haptic device.
+ *
+ * Returns 0 on success or -1 on failure.
  */
 extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
 
@@ -244,6 +248,13 @@ extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
  * Destroys a haptic effect on the device.
  */
 extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
+
+/*
+ * Sets the global gain of the device.  Gain should be between 0 and 100.
+ *
+ * Returns 0 on success or -1 on failure.
+ */
+extern DECLSPEC int SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
 
 
 /* Ends C function definitions when using C++ */

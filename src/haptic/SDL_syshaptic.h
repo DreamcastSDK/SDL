@@ -58,5 +58,6 @@ extern int SDL_SYS_HapticRunEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect);
 extern void SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect);
+extern int SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain);
 
 
