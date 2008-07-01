@@ -47,28 +47,20 @@ typedef struct _SDL_Haptic SDL_Haptic;
 
 /* Different effects that can be generated */
 #define SDL_HAPTIC_CONSTANT   (1<<0)
-#define SDL_HAPTIC_PERIODIC   (1<<1)
-#define SDL_HAPTIC_RAMP       (1<<2)
-#define SDL_HAPTIC_SPRING     (1<<3)
-#define SDL_HAPTIC_FRICTION   (1<<4)
-#define SDL_HAPTIC_DAMPER     (1<<5)
-#define SDL_HAPTIC_INERTIA    (1<<6)
-#define SDL_HAPTIC_CUSTOM     (1<<7)
-#define SDL_HAPTIC_GAIN       (1<<8)
-#define SDL_HAPTIC_AUTOCENTER (1<<9)
-
-
-/*
- * Different waveforms a SDL_HAPTIC_PERIODIC effect can have.
- */
-typedef enum SDL_waveform {
-   SDL_WAVEFORM_SINE,
-   SDL_WAVEFORM_SQUARE,
-   SDL_WAVEFORM_TRIANGLE,
-   SDL_WAVEFORM_SAWTOOTHUP,
-   SDL_WAVEFORM_SAWTOOTHDOWN,
-   SDL_WAVEFORM_CUSTOM
-} SDL_waveform;
+#define SDL_HAPTIC_SINE       (1<<1)
+#define SDL_HAPTIC_SQUARE     (1<<2)
+#define SDL_HAPTIC_TRIANGLE   (1<<3)
+#define SDL_HAPTIC_SAWTOOTHUP (1<<4)
+#define SDL_HAPTIC_SAWTOOTHDOWN (1<<5)
+#define SDL_HAPTIC_RAMP       (1<<6)
+#define SDL_HAPTIC_SPRING     (1<<7)
+#define SDL_HAPTIC_FRICTION   (1<<8)
+#define SDL_HAPTIC_DAMPER     (1<<9)
+#define SDL_HAPTIC_INERTIA    (1<<10)
+#define SDL_HAPTIC_CUSTOM     (1<<11)
+/* These last two are features the device has, not effects */
+#define SDL_HAPTIC_GAIN       (1<<12)
+#define SDL_HAPTIC_AUTOCENTER (1<<13)
 
 
 /*
@@ -115,7 +107,7 @@ typedef struct SDL_HapticConstant {
 } SDL_HapticConstant;
 typedef struct SDL_HapticPeriodic {
    /* Header */
-   Uint16 type; /* SDL_HAPTIC_PERIODIC */
+   Uint16 type; /* SDL_HAPTIC_{SINE,SQUARE,TRIANGLE,SAWTOOTHUP,SAWTOOTHDOWN} */
    Uint16 direction;
 
    /* Replay */
@@ -127,7 +119,6 @@ typedef struct SDL_HapticPeriodic {
    Uint16 interval;
 
    /* Periodic */
-   SDL_waveform waveform; /* Type of effect */
    Uint16 period; /* Period of the wave */
    Sint16 magnitude; /* Peak value */
    Sint16 offset; /* Mean value of the wave */
