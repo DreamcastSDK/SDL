@@ -256,6 +256,14 @@ extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
  */
 extern DECLSPEC int SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
 
+/*
+ * Sets the global autocenter of the device.  Autocenter should be between
+ * 0 and 100.  Setting it to 0 will disable autocentering.
+ *
+ * Returns 0 on success or -1 on failure.
+ */
+extern DECLSPEC int SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter);
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
