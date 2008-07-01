@@ -519,13 +519,36 @@ SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
    ie.type = EV_FF;
    ie.code = FF_GAIN;
    ie.value = (0xFFFFUL * gain) / 100;
-   printf("%d\n",ie.value);
 
-   if (write(haptic->hwdata->fd, &ie, sizeof(ie)) == -1) {
+   if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
       SDL_SetError("Error setting gain.");
+      return -1;
    }
 
+   return 0;
 }
+
+
+/*
+ * Sets the autocentering.
+ */
+int
+SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
+{
+   struct input_event ie;
+
+   ie.type = EV_FF;
+   ie.code = FF_AUTOCENTER;
+   ie.value = (0xFFFFUL * autocenter) / 100;
+
+   if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
+      SDL_SetError("Error setting autocenter.");
+      return -1;
+   }
+
+   return 0;
+}
+
 
 
 #endif /* SDL_HAPTIC_LINUX */

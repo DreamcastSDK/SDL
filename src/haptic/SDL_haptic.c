@@ -334,12 +334,44 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
       return -1;
    }
 
+   if ((haptic->supported & SDL_HAPTIC_GAIN) == 0) {
+      SDL_SetError("Haptic device does not support setting gain.");
+      return -1;
+   }
+
    if ((gain < 0) || (gain > 100)) {
       SDL_SetError("Haptic gain must be between 0 and 100.");
       return -1;
    }
 
    if (SDL_SYS_HapticSetGain(haptic,gain) < 0) {
+      return -1;
+   }
+
+   return 0;
+}
+
+/*
+ * Makes the device autocenter, 0 disables.
+ */
+int
+SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter )
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   if ((haptic->supported & SDL_HAPTIC_AUTOCENTER) == 0) {
+      SDL_SetError("Haptic device does not support setting autocenter.");
+      return -1;
+   }
+
+   if ((autocenter < 0) || (autocenter > 100)) {
+      SDL_SetError("Haptic autocenter must be between 0 and 100.");
+      return -1;
+   }                                           
+
+   if (SDL_SYS_HapticSetAutocenter(haptic,autocenter) < 0) {
       return -1;
    }
 
