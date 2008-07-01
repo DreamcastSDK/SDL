@@ -495,6 +495,27 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 
 
 /*
+ * Stops an effect.
+ */
+int
+SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   struct input_event stop;
+
+   stop.type = EV_FF;
+   stop.code = effect->hweffect->effect.id;
+   stop.value = 0;
+
+   if (write(haptic->hwdata->fd, (const void*) &stop, sizeof(stop)) < 0) {
+      SDL_SetError("Unable to stop the haptic effect.");
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
  * Frees the effect
  */
 void

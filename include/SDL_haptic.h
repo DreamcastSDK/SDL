@@ -245,7 +245,15 @@ extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * 
 extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
 
 /*
- * Destroys a haptic effect on the device.
+ * Stops the haptic effect on it's assosciated haptic device.
+ *
+ * Returns 0 on success or -1 on failure.
+ */
+extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
+
+/*
+ * Destroys a haptic effect on the device.  This will stop the effect if it's
+ * running.
  */
 extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
 
