@@ -307,6 +307,24 @@ SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
 }
 
 /*
+ * Stops the haptic effect on the device.
+ */
+int
+SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)
+{
+   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+      return -1;
+   }
+
+   /* Stop the effect */
+   if (SDL_SYS_HapticStopEffect(haptic,&haptic->effects[effect]) < 0) {
+      return -1;
+   }
+
+   return 0;
+}
+
+/*
  * Gets rid of a haptic effect.
  */
 void
