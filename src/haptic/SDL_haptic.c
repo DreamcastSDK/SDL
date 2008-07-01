@@ -166,7 +166,12 @@ SDL_HapticClose(SDL_Haptic * haptic)
       return;
    }
 
-   /* Close it */
+   /* Close it, properly removing effects if needed */
+   for (i=0; i<haptic->neffects; i++) {
+      if (haptic->effects[i].hweffect != NULL) {
+         SDL_HapticDestroyEffect(haptic,i);
+      }
+   }
    SDL_SYS_HapticClose(haptic);
 
    /* Remove from the list */
@@ -248,12 +253,18 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
       return -1;
    }
 
+   /* Check to see if effect is supported */
+   if (SDL_HapticEffectSupported(haptic,effect)==SDL_FALSE) {
+      SDL_SetError("Haptic effect not supported by haptic device.");
+      return -1;
+   }
+
    /* See if there's a free slot */
    for (i=0; i<haptic->neffects; i++) {
       if (haptic->effects[i].hweffect == NULL) {
 
          /* Now let the backend create the real effect */
-         if (SDL_SYS_HapticNewEffect(haptic,&haptic->effects[i]) != 0) {
+         if (SDL_SYS_HapticNewEffect(haptic,&haptic->effects[i],effect) != 0) {
             return -1; /* Backend failed to create effect */
          }
          return i;
@@ -265,12 +276,25 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
 }
 
 /*
+ * Checks to see if an effect is valid.
+ */
+static int
+ValidEffect(SDL_Haptic * haptic, int effect)
+{
+   if ((effect < 0) || (effect >= haptic->neffects)) {
+      SDL_SetError("Invalid haptic effect identifier.");
+      return 0;
+   }
+   return 1;
+}
+
+/*
  * Runs the haptic effect on the device.
  */
 int
 SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
@@ -288,7 +312,7 @@ SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
 void
 SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
       return;
    }
 
