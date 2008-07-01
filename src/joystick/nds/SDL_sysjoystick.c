@@ -91,7 +91,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     u32 keysd, keysu;
     int magnitude = 16384;
-    scanKeys();
+    /*scanKeys();*/
     keysd = keysDown();
     keysu = keysUp();
 

@@ -38,7 +38,7 @@
 void
 NDS_PumpEvents(_THIS)
 {
-    /* do nothing. */
+    scanKeys();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
