@@ -35,7 +35,6 @@
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <string.h>
-#include <errno.h>
 
 
 #define MAX_HAPTICS  32
@@ -222,6 +221,9 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
       SDL_OutOfMemory();
       goto open_err;
    }
+   /* Clear the memory */
+   SDL_memset(haptic->effects, 0,
+         sizeof(struct haptic_effect) * haptic->neffects);
 
    return 0;
 
@@ -435,6 +437,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
    return 0;
 }
 
+
 /*
  * Creates a new haptic effect.
  */
@@ -461,8 +464,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
 
    /* Upload the effect */
    if (ioctl(haptic->hwdata->fd, EVIOCSFF, linux_effect) < 0) {
-      SDL_SetError("Error uploading effect to the haptic device: %s",
-            strerror(errno));
+      SDL_SetError("Error uploading effect to the haptic device.");
       return -1;
    }
 
@@ -503,6 +505,26 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
    }
    SDL_free(effect->hweffect);
    effect->hweffect = NULL;
+}
+
+
+/*
+ * Sets the gain.
+ */
+int
+SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
+{
+   struct input_event ie;
+
+   ie.type = EV_FF;
+   ie.code = FF_GAIN;
+   ie.value = (0xFFFFUL * gain) / 100;
+   printf("%d\n",ie.value);
+
+   if (write(haptic->hwdata->fd, &ie, sizeof(ie)) == -1) {
+      SDL_SetError("Error setting gain.");
+   }
+
 }
 
 
