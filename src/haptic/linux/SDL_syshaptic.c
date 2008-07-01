@@ -88,7 +88,11 @@ EV_IsHaptic(int fd)
    ioctl(fd, EVIOCGBIT(EV_FF, sizeof(unsigned long) * 4), features);
 
    EV_TEST(FF_CONSTANT,   SDL_HAPTIC_CONSTANT);
-   EV_TEST(FF_PERIODIC,   SDL_HAPTIC_PERIODIC);
+   EV_TEST(FF_PERIODIC,   SDL_HAPTIC_SINE |
+                          SDL_HAPTIC_SQUARE |
+                          SDL_HAPTIC_TRIANGLE |
+                          SDL_HAPTIC_SAWTOOTHUP |
+                          SDL_HAPTIC_SAWTOOTHDOWN);
    EV_TEST(FF_RAMP,       SDL_HAPTIC_RAMP);
    EV_TEST(FF_SPRING,     SDL_HAPTIC_SPRING);
    EV_TEST(FF_FRICTION,   SDL_HAPTIC_FRICTION);
@@ -317,7 +321,11 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          break;
 
-      case SDL_HAPTIC_PERIODIC:
+      case SDL_HAPTIC_SINE:
+      case SDL_HAPTIC_SQUARE:
+      case SDL_HAPTIC_TRIANGLE:
+      case SDL_HAPTIC_SAWTOOTHUP:
+      case SDL_HAPTIC_SAWTOOTHDOWN:
          periodic = &src->periodic;
 
          /* Header */
@@ -332,28 +340,17 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->trigger.button = CLAMP(periodic->button);
          dest->trigger.interval = CLAMP(periodic->interval);
          
-         /* Constant */
-         switch (periodic->waveform) {
-            case SDL_WAVEFORM_SINE:
-               dest->u.periodic.waveform = FF_SINE;
-               break;
-            case SDL_WAVEFORM_SQUARE:
-               dest->u.periodic.waveform = FF_SQUARE;
-               break;
-            case SDL_WAVEFORM_TRIANGLE:
-               dest->u.periodic.waveform = FF_TRIANGLE;
-               break;
-            case SDL_WAVEFORM_SAWTOOTHUP:
-               dest->u.periodic.waveform = FF_SAW_UP;
-               break;
-            case SDL_WAVEFORM_SAWTOOTHDOWN:
-               dest->u.periodic.waveform = FF_SAW_DOWN;
-               break;
-
-            default:
-               SDL_SetError("Unknown waveform.");
-               return -1;
-         }
+         /* Periodic */
+         if (periodic->type == SDL_HAPTIC_SINE)
+            dest->u.periodic.waveform = FF_SINE;
+         else if (periodic->type == SDL_HAPTIC_SQUARE)
+            dest->u.periodic.waveform = FF_SQUARE;
+         else if (periodic->type == SDL_HAPTIC_TRIANGLE)       
+            dest->u.periodic.waveform = FF_TRIANGLE;
+         else if (periodic->type == SDL_HAPTIC_SAWTOOTHUP)       
+            dest->u.periodic.waveform = FF_SAW_UP;
+         else if (periodic->type == SDL_HAPTIC_SAWTOOTHDOWN)       
+            dest->u.periodic.waveform = FF_SAW_DOWN;
          dest->u.periodic.period = CLAMP(periodic->period);
          dest->u.periodic.magnitude = periodic->magnitude;
          dest->u.periodic.offset = periodic->offset;
@@ -517,7 +514,7 @@ SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 
 
 /*
- * Frees the effect
+ * Frees the effect.
  */
 void
 SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
