@@ -85,7 +85,7 @@ SDL_SYS_TouchscreenUpdate(SDL_Touchscreen * touchscreen)
     Uint16 xpos=0, ypos=0, pressure = 32767;
     touchPosition touch;
 
-    scanKeys();
+    /*scanKeys();*/
     keysd = keysDown();
     keysh = keysHeld();
     keysu = keysUp();
@@ -94,13 +94,18 @@ SDL_SYS_TouchscreenUpdate(SDL_Touchscreen * touchscreen)
     ypos = (touch.py << 16) / 192 + 1;
     /* TODO uses touch.x and touch.y for something.
        we discussed in the mailing list having both "hardware x/y" and
-       "screen x/y" coordinates. */
+       "screen x/y" coordinates.  maybe modify structs for that too
+       also, find out how Colors! gets pressure and see if it's practical here
+     */
 
     if ((keysd & KEY_TOUCH)) {
         SDL_PrivateTouchPress(touchscreen, 0, xpos, ypos, pressure);
     }
     if ((keysh & KEY_TOUCH)) {
-    	SDL_PrivateTouchMove(touchscreen, 0, xpos, ypos, pressure); 
+    	/* sometimes the touch jumps to y=1 before it reports as keysUp */
+    	if(ypos > 1) {
+	    SDL_PrivateTouchMove(touchscreen, 0, xpos, ypos, pressure);
+	}
     }
     if ((keysu & KEY_TOUCH)) {
         SDL_PrivateTouchRelease(touchscreen, 0);
