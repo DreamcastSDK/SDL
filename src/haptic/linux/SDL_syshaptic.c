@@ -271,8 +271,10 @@ SDL_SYS_HapticQuit(void)
    SDL_hapticlist[0].fname = NULL;
 }
 
+#define  CLAMP(x)    (((x) > 32767) ? 32767 : x)
 /*
  * Initializes the linux effect struct from a haptic_effect.
+ * Values above 32767 (for unsigned) are unspecified so we must clamp.
  */
 static int
 SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
@@ -289,24 +291,24 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          /* Header */
          dest->type = FF_CONSTANT;
-         dest->direction = constant->direction;
+         dest->direction = CLAMP(constant->direction);
 
          /* Replay */
-         dest->replay.length = constant->length;
-         dest->replay.delay = constant->delay;
+         dest->replay.length = CLAMP(constant->length);
+         dest->replay.delay = CLAMP(constant->delay);
 
          /* Trigger */
-         dest->trigger.button = constant->button;
-         dest->trigger.interval = constant->interval;
+         dest->trigger.button = CLAMP(constant->button);
+         dest->trigger.interval = CLAMP(constant->interval);
 
          /* Constant */
          dest->u.constant.level = constant->level;
 
          /* Envelope */
-         dest->u.constant.envelope.attack_length = constant->attack_length;
-         dest->u.constant.envelope.attack_level = constant->attack_level;
-         dest->u.constant.envelope.fade_length = constant->fade_length;
-         dest->u.constant.envelope.fade_level = constant->fade_level;
+         dest->u.constant.envelope.attack_length = CLAMP(constant->attack_length);
+         dest->u.constant.envelope.attack_level = CLAMP(constant->attack_level);
+         dest->u.constant.envelope.fade_length = CLAMP(constant->fade_length);
+         dest->u.constant.envelope.fade_level = CLAMP(constant->fade_level);
 
          break;
 
@@ -315,28 +317,48 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          /* Header */
          dest->type = FF_PERIODIC;
-         dest->direction = periodic->direction;
+         dest->direction = CLAMP(periodic->direction);
          
          /* Replay */
-         dest->replay.length = periodic->length;
-         dest->replay.delay = periodic->delay;
+         dest->replay.length = CLAMP(periodic->length);
+         dest->replay.delay = CLAMP(periodic->delay);
          
          /* Trigger */
-         dest->trigger.button = periodic->button;
-         dest->trigger.interval = periodic->interval;
+         dest->trigger.button = CLAMP(periodic->button);
+         dest->trigger.interval = CLAMP(periodic->interval);
          
          /* Constant */
-         dest->u.periodic.waveform = periodic->waveform;
-         dest->u.periodic.period = periodic->period;
+         switch (periodic->waveform) {
+            case SDL_WAVEFORM_SINE:
+               dest->u.periodic.waveform = FF_SINE;
+               break;
+            case SDL_WAVEFORM_SQUARE:
+               dest->u.periodic.waveform = FF_SQUARE;
+               break;
+            case SDL_WAVEFORM_TRIANGLE:
+               dest->u.periodic.waveform = FF_TRIANGLE;
+               break;
+            case SDL_WAVEFORM_SAWTOOTHUP:
+               dest->u.periodic.waveform = FF_SAW_UP;
+               break;
+            case SDL_WAVEFORM_SAWTOOTHDOWN:
+               dest->u.periodic.waveform = FF_SAW_DOWN;
+               break;
+
+            default:
+               SDL_SetError("Unknown waveform.");
+               return -1;
+         }
+         dest->u.periodic.period = CLAMP(periodic->period);
          dest->u.periodic.magnitude = periodic->magnitude;
          dest->u.periodic.offset = periodic->offset;
-         dest->u.periodic.phase = periodic->phase;
+         dest->u.periodic.phase = CLAMP(periodic->phase);
          
          /* Envelope */
-         dest->u.periodic.envelope.attack_length = periodic->attack_length;
-         dest->u.periodic.envelope.attack_level = periodic->attack_level;
-         dest->u.periodic.envelope.fade_length = periodic->fade_length;
-         dest->u.periodic.envelope.fade_level = periodic->fade_level;
+         dest->u.periodic.envelope.attack_length = CLAMP(periodic->attack_length);
+         dest->u.periodic.envelope.attack_level = CLAMP(periodic->attack_level);
+         dest->u.periodic.envelope.fade_length = CLAMP(periodic->fade_length);
+         dest->u.periodic.envelope.fade_level = CLAMP(periodic->fade_level);
 
          break;
 

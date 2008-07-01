@@ -57,9 +57,38 @@ typedef struct _SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_GAIN       (1<<8)
 #define SDL_HAPTIC_AUTOCENTER (1<<9)
 
+typedef enum SDL_waveform {
+   SDL_WAVEFORM_SINE,
+   SDL_WAVEFORM_SQUARE,
+   SDL_WAVEFORM_TRIANGLE,
+   SDL_WAVEFORM_SAWTOOTHUP,
+   SDL_WAVEFORM_SAWTOOTHDOWN
+} SDL_waveform;
+
+
+/*
+ * All values max at 32767 (0x7fff).  Signed values also can be negative.
+ * Time values unless specified otherwise are in milliseconds.
+ *
+ * Common parts:
+ * 
+ * Replay:
+ *    Uint16 length;    Duration of effect.
+ *    Uint16 delay;     Delay before starting effect.
+ *
+ * Trigger:
+ *    Uint16 button;    Button that triggers effect.
+ *    Uint16 interval;  How soon before effect can be triggered again.
+ *
+ * Envelope:
+ *    Uint16 attack_length;   Duration of the attack.
+ *    Uint16 attack_level;    Level at the start of the attack.
+ *    Uint16 fade_length;     Duration of the fade out.
+ *    Uint16 fade_level;      Level at the end of the fade.
+ */
 typedef struct SDL_HapticConstant {
    /* Header */
-   Uint16 type;
+   Uint16 type; /* SDL_HAPTIC_CONSTANT */
    Uint16 direction;
 
    /* Replay */
@@ -71,7 +100,7 @@ typedef struct SDL_HapticConstant {
    Uint16 interval;
 
    /* Constant */
-   Sint16 level;
+   Sint16 level; /* Strength of the constant effect. */
 
    /* Envelope */
    Uint16 attack_length;
@@ -81,7 +110,7 @@ typedef struct SDL_HapticConstant {
 } SDL_HapticConstant;
 typedef struct SDL_HapticPeriodic {
    /* Header */
-   Uint16 type;
+   Uint16 type; /* SDL_HAPTIC_PERIODIC */
    Uint16 direction;
 
    /* Replay */
@@ -93,11 +122,11 @@ typedef struct SDL_HapticPeriodic {
    Uint16 interval;
 
    /* Periodic */
-   Uint16 waveform;
-   Uint16 period;
-   Sint16 magnitude;
-   Sint16 offset;
-   Uint16 phase;
+   SDL_waveform waveform; /* Type of effect */
+   Uint16 period; /* Period of the wave */
+   Sint16 magnitude; /* Peak value */
+   Sint16 offset; /* Mean value of the wave */
+   Uint16 phase; /* Horizontal shift */
 
    /* Envelope */
    Uint16 attack_length;
