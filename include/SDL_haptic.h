@@ -52,10 +52,9 @@ typedef struct _SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_SPRING     (1<<3)
 #define SDL_HAPTIC_FRICTION   (1<<4)
 #define SDL_HAPTIC_DAMPER     (1<<5)
-#define SDL_HAPTIC_RUMBLE     (1<<6)
-#define SDL_HAPTIC_INERTIA    (1<<7)
-#define SDL_HAPTIC_GAIN       (1<<8)
-#define SDL_HAPTIC_AUTOCENTER (1<<9)
+#define SDL_HAPTIC_INERTIA    (1<<6)
+#define SDL_HAPTIC_GAIN       (1<<7)
+#define SDL_HAPTIC_AUTOCENTER (1<<8)
 
 typedef enum SDL_waveform {
    SDL_WAVEFORM_SINE,
@@ -134,12 +133,60 @@ typedef struct SDL_HapticPeriodic {
    Uint16 fade_length;
    Uint16 fade_level;
 } SDL_HapticPeriodic;
+typedef struct SDL_HapticCondition {
+   /* Header */
+   Uint16 type; /* SDL_HAPTIC_{SPRING,DAMPER,INERTIA,FRICTION} */
+   Uint16 direction;
+
+   /* Replay */
+   Uint16 length;
+   Uint16 delay;
+
+   /* Trigger */
+   Uint16 button;
+   Uint16 interval;
+
+   /* Condition */
+   Uint16 right_sat; /* Level when joystick is to the right. */
+   Uint16 left_sat; /* Level when joystick is to the left */
+   Sint16 right_coeff; /* How fast to increase the force towards the right */
+   Sint16 left_coeff; /* How fast to increase the force towards the left */
+   Uint16 deadband; /* Size of the dead zone */
+   Sint16 center; /* Position of the dead zone */
+
+} SDL_HapticCondition;
+typedef struct SDL_HapticRamp {
+   /* Header */
+   Uint16 type; /* SDL_HAPTIC_RAMP */
+   Uint16 direction;
+
+   /* Replay */
+   Uint16 length;
+   Uint16 delay;
+
+   /* Trigger */
+   Uint16 button;
+   Uint16 interval;
+
+   /* Ramp */
+   Sint16 start;
+   Sint16 end;
+
+   /* Envelope */
+   Uint16 attack_length;
+   Uint16 attack_level;
+   Uint16 fade_length;
+   Uint16 fade_level;
+
+} SDL_HapticRamp;
 
 typedef union SDL_HapticEffect {
    /* Common for all force feedback effects */
    Uint16 type; /* Effect type */
    SDL_HapticConstant constant; /* Constant effect */
    SDL_HapticPeriodic periodic; /* Periodic effect */
+   SDL_HapticCondition condition; /* Condition effect */
+   SDL_HapticRamp ramp; /* Ramp effect */
 } SDL_HapticEffect;
 
 

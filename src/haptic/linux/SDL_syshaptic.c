@@ -94,7 +94,6 @@ EV_IsHaptic(int fd)
    EV_TEST(FF_SPRING,     SDL_HAPTIC_SPRING);
    EV_TEST(FF_FRICTION,   SDL_HAPTIC_FRICTION);
    EV_TEST(FF_DAMPER,     SDL_HAPTIC_DAMPER);
-   EV_TEST(FF_RUMBLE,     SDL_HAPTIC_RUMBLE);
    EV_TEST(FF_INERTIA,    SDL_HAPTIC_INERTIA);
    EV_TEST(FF_GAIN,       SDL_HAPTIC_GAIN);
    EV_TEST(FF_AUTOCENTER, SDL_HAPTIC_AUTOCENTER);
@@ -279,8 +278,11 @@ SDL_SYS_HapticQuit(void)
 static int
 SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 {
+   int i;
    SDL_HapticConstant *constant;
    SDL_HapticPeriodic *periodic;
+   SDL_HapticCondition *condition;
+   SDL_HapticRamp *ramp;
 
    /* Clear up */
    SDL_memset(dest, 0, sizeof(struct ff_effect));
@@ -361,6 +363,69 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->u.periodic.envelope.fade_level = CLAMP(periodic->fade_level);
 
          break;
+
+      case SDL_HAPTIC_SPRING:
+      case SDL_HAPTIC_DAMPER:
+      case SDL_HAPTIC_INERTIA:
+      case SDL_HAPTIC_FRICTION:
+         condition = &src->condition;
+
+         /* Header */
+         if (dest->type == SDL_HAPTIC_SPRING)
+            dest->type = FF_SPRING;
+         else if (dest->type == SDL_HAPTIC_DAMPER)
+            dest->type = FF_DAMPER;
+         else if (dest->type == SDL_HAPTIC_INERTIA)
+            dest->type = FF_INERTIA;
+         else if (dest->type == SDL_HAPTIC_FRICTION)
+            dest->type = FF_FRICTION;
+         dest->direction = CLAMP(condition->direction);
+
+         /* Replay */
+         dest->replay.length = CLAMP(condition->length);
+         dest->replay.delay = CLAMP(condition->delay);
+
+         /* Trigger */
+         dest->trigger.button = CLAMP(condition->button);
+         dest->trigger.interval = CLAMP(condition->interval);
+
+         /* Condition - TODO handle axes */
+         dest->u.condition[0].right_saturation = CLAMP(condition->right_sat);
+         dest->u.condition[0].left_saturation = CLAMP(condition->left_sat);
+         dest->u.condition[0].right_coeff = condition->right_coeff;
+         dest->u.condition[0].left_coeff = condition->left_coeff;
+         dest->u.condition[0].deadband = CLAMP(condition->deadband);
+         dest->u.condition[0].center = condition->center;
+
+         break;
+
+      case SDL_HAPTIC_RAMP:
+         ramp = &src->ramp;
+
+         /* Header */
+         dest->type = FF_RAMP;
+         dest->direction = CLAMP(ramp->direction);
+
+         /* Replay */
+         dest->replay.length = CLAMP(ramp->length);
+         dest->replay.delay = CLAMP(ramp->delay);
+
+         /* Trigger */
+         dest->trigger.button = CLAMP(ramp->button);
+         dest->trigger.interval = CLAMP(ramp->interval);
+
+         /* Ramp */
+         dest->u.ramp.start_level = ramp->start;
+         dest->u.ramp.end_level = ramp->end;
+
+         /* Envelope */
+         dest->u.ramp.envelope.attack_length = CLAMP(ramp->attack_length);
+         dest->u.ramp.envelope.attack_level = CLAMP(ramp->attack_level);
+         dest->u.ramp.envelope.fade_length = CLAMP(ramp->fade_length);
+         dest->u.ramp.envelope.fade_level = CLAMP(ramp->fade_level);
+
+         break;
+
 
       default:
          SDL_SetError("Unknown haptic effect type.");
