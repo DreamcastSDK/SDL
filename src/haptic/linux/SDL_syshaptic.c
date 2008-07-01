@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <linux/limits.h>
 #include <string.h>
+#include <errno.h>
 
 
 #define MAX_HAPTICS  32
@@ -274,12 +275,68 @@ SDL_SYS_HapticQuit(void)
  * Initializes the linux effect struct from a haptic_effect.
  */
 static int
-SDL_SYS_ToFFEffect( struct ff_effect * dest, struct haptic_effect * src )
+SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 {
+   SDL_HapticConstant *constant;
+   SDL_HapticPeriodic *periodic;
+
+   /* Clear up */
    SDL_memset(dest, 0, sizeof(struct ff_effect));
-   switch (src->effect.type) {
+
+   switch (src->type) {
       case SDL_HAPTIC_CONSTANT:
+         constant = &src->constant;
+
+         /* Header */
          dest->type = FF_CONSTANT;
+         dest->direction = constant->direction;
+
+         /* Replay */
+         dest->replay.length = constant->length;
+         dest->replay.delay = constant->delay;
+
+         /* Trigger */
+         dest->trigger.button = constant->button;
+         dest->trigger.interval = constant->interval;
+
+         /* Constant */
+         dest->u.constant.level = constant->level;
+
+         /* Envelope */
+         dest->u.constant.envelope.attack_length = constant->attack_length;
+         dest->u.constant.envelope.attack_level = constant->attack_level;
+         dest->u.constant.envelope.fade_length = constant->fade_length;
+         dest->u.constant.envelope.fade_level = constant->fade_level;
+
+         break;
+
+      case SDL_HAPTIC_PERIODIC:
+         periodic = &src->periodic;
+
+         /* Header */
+         dest->type = FF_PERIODIC;
+         dest->direction = periodic->direction;
+         
+         /* Replay */
+         dest->replay.length = periodic->length;
+         dest->replay.delay = periodic->delay;
+         
+         /* Trigger */
+         dest->trigger.button = periodic->button;
+         dest->trigger.interval = periodic->interval;
+         
+         /* Constant */
+         dest->u.periodic.waveform = periodic->waveform;
+         dest->u.periodic.period = periodic->period;
+         dest->u.periodic.magnitude = periodic->magnitude;
+         dest->u.periodic.offset = periodic->offset;
+         dest->u.periodic.phase = periodic->phase;
+         
+         /* Envelope */
+         dest->u.periodic.envelope.attack_length = periodic->attack_length;
+         dest->u.periodic.envelope.attack_level = periodic->attack_level;
+         dest->u.periodic.envelope.fade_length = periodic->fade_length;
+         dest->u.periodic.envelope.fade_level = periodic->fade_level;
 
          break;
 
@@ -295,8 +352,11 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, struct haptic_effect * src )
  * Creates a new haptic effect.
  */
 int
-SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
+      SDL_HapticEffect * base)
 {
+   struct ff_effect * linux_effect;
+
    /* Allocate the hardware effect */
    effect->hweffect = (struct haptic_hweffect *) 
          SDL_malloc(sizeof(struct haptic_hweffect));
@@ -306,14 +366,16 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
    }
 
    /* Prepare the ff_effect */
-   if (SDL_SYS_ToFFEffect( &effect->hweffect->effect, effect ) != 0) {
+   linux_effect = &effect->hweffect->effect;
+   if (SDL_SYS_ToFFEffect( linux_effect, base ) != 0) {
       return -1;
    }
-   effect->hweffect->effect.id = -1; /* Have the kernel give it an id */
+   linux_effect->id = -1; /* Have the kernel give it an id */
 
    /* Upload the effect */
-   if (ioctl(haptic->hwdata->fd, EVIOCSFF, &effect->hweffect->effect) < 0) {
-      SDL_SetError("Error uploading effect to the haptic device.");
+   if (ioctl(haptic->hwdata->fd, EVIOCSFF, linux_effect) < 0) {
+      SDL_SetError("Error uploading effect to the haptic device: %s",
+            strerror(errno));
       return -1;
    }
 

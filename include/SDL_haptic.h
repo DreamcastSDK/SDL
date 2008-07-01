@@ -60,15 +60,57 @@ typedef struct _SDL_Haptic SDL_Haptic;
 typedef struct SDL_HapticConstant {
    /* Header */
    Uint16 type;
+   Uint16 direction;
+
+   /* Replay */
    Uint16 length;
    Uint16 delay;
-   Uint16 direction;
+
+   /* Trigger */
+   Uint16 button;
+   Uint16 interval;
+
+   /* Constant */
+   Sint16 level;
+
+   /* Envelope */
+   Uint16 attack_length;
+   Uint16 attack_level;
+   Uint16 fade_length;
+   Uint16 fade_level;
 } SDL_HapticConstant;
+typedef struct SDL_HapticPeriodic {
+   /* Header */
+   Uint16 type;
+   Uint16 direction;
+
+   /* Replay */
+   Uint16 length;
+   Uint16 delay;
+
+   /* Trigger */
+   Uint16 button;
+   Uint16 interval;
+
+   /* Periodic */
+   Uint16 waveform;
+   Uint16 period;
+   Sint16 magnitude;
+   Sint16 offset;
+   Uint16 phase;
+
+   /* Envelope */
+   Uint16 attack_length;
+   Uint16 attack_level;
+   Uint16 fade_length;
+   Uint16 fade_level;
+} SDL_HapticPeriodic;
 
 typedef union SDL_HapticEffect {
    /* Common for all force feedback effects */
    Uint16 type; /* Effect type */
    SDL_HapticConstant constant; /* Constant effect */
+   SDL_HapticPeriodic periodic; /* Periodic effect */
 } SDL_HapticEffect;
 
 
