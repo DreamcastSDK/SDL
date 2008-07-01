@@ -53,15 +53,21 @@ typedef struct _SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_FRICTION   (1<<4)
 #define SDL_HAPTIC_DAMPER     (1<<5)
 #define SDL_HAPTIC_INERTIA    (1<<6)
-#define SDL_HAPTIC_GAIN       (1<<7)
-#define SDL_HAPTIC_AUTOCENTER (1<<8)
+#define SDL_HAPTIC_CUSTOM     (1<<7)
+#define SDL_HAPTIC_GAIN       (1<<8)
+#define SDL_HAPTIC_AUTOCENTER (1<<9)
 
+
+/*
+ * Different waveforms a SDL_HAPTIC_PERIODIC effect can have.
+ */
 typedef enum SDL_waveform {
    SDL_WAVEFORM_SINE,
    SDL_WAVEFORM_SQUARE,
    SDL_WAVEFORM_TRIANGLE,
    SDL_WAVEFORM_SAWTOOTHUP,
-   SDL_WAVEFORM_SAWTOOTHDOWN
+   SDL_WAVEFORM_SAWTOOTHDOWN,
+   SDL_WAVEFORM_CUSTOM
 } SDL_waveform;
 
 
@@ -153,7 +159,6 @@ typedef struct SDL_HapticCondition {
    Sint16 left_coeff; /* How fast to increase the force towards the left */
    Uint16 deadband; /* Size of the dead zone */
    Sint16 center; /* Position of the dead zone */
-
 } SDL_HapticCondition;
 typedef struct SDL_HapticRamp {
    /* Header */
@@ -177,7 +182,6 @@ typedef struct SDL_HapticRamp {
    Uint16 attack_level;
    Uint16 fade_length;
    Uint16 fade_level;
-
 } SDL_HapticRamp;
 
 typedef union SDL_HapticEffect {
@@ -229,6 +233,14 @@ extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
  * Example:  (SDL_HapticQueryEffects(haptic) & SDL_HAPTIC_CONSTANT)
  */
 extern DECLSPEC unsigned int SDL_HapticQueryEffects(SDL_Haptic * haptic);
+
+/*
+ * Checks to see if effect is supported by haptic.
+ *
+ * Returns SDL_TRUE if effect is supported, SDL_FALSE if it isn't and -1
+ * on error.
+ */
+extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
 /*
  * Creates a new haptic effect on the device.

@@ -228,6 +228,9 @@ SDL_HapticQueryEffects(SDL_Haptic * haptic)
    return haptic->supported;
 }
 
+/*
+ * Checks to see if the device can support the effect.
+ */
 int
 SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
 {
