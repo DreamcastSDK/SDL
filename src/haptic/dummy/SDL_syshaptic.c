@@ -32,23 +32,45 @@ int
 SDL_SYS_HapticInit(void)
 {
    SDL_numhaptics = 0;
-   return (0);
+   return 0;
 }
 
 
 const char *
 SDL_SYS_HapticName(int index)
 {
-   SDL_SetError("Logic error: No haptic (force feedback) devices available");
-   return (NULL);
+   SDL_SetError("Logic error: No haptic devices available.");
+   return NULL;
 }
 
 
 int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
-   SDL_SetError("Logic error: No joysticks available");
-   return (-1);
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_JoystickIsHaptic(SDL_Joystick * joystick)
+{
+   return 0;
+}
+
+
+int
+SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
+{
+   return 0;
 }
 
 
@@ -63,6 +85,66 @@ void
 SDL_SYS_HapticQuit(void)
 {
    return;
+}
+
+
+int
+SDL_SYS_HapticNewEffect(SDL_Haptic * haptic,
+                        struct haptic_effect * effect,
+                        SDL_HapticEffect * base)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
+                           struct haptic_effect * effect,
+                           SDL_HapticEffect * data)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+void
+SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+
+int
+SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
 }
 
 
