@@ -21,7 +21,6 @@
 */
 #include "SDL_config.h"
 
-#include "SDL_haptic_c.h"
 #include "SDL_syshaptic.h"
 #include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 
@@ -173,7 +172,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
 
    /* Check to see if joystick's haptic is already open */
    for (i=0; SDL_haptics[i]; i++) {
-      if (SDL_SYS_JoystickSameHaptic(&SDL_haptics[i],joystick)) {
+      if (SDL_SYS_JoystickSameHaptic(SDL_haptics[i],joystick)) {
          haptic = SDL_haptics[i];
          ++haptic->ref_count;
          return haptic;
