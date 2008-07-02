@@ -319,6 +319,24 @@ SDL_SetMouseFocus(int id, SDL_WindowID windowID)
 }
 
 int
+SDL_SendProximity(int id, int x, int y, int type)
+{
+    int index=SDL_GetIndexById(id);
+    int posted=0;
+    if(SDL_ProcessEvents[type]==SDL_ENABLE)
+    {
+        SDL_Event event;
+        event.proximity.which=index;
+        event.proximity.x=x;
+        event.proximity.y=y;
+        event.type=type;
+        event.proximity.type=type;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+
+int
 SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
 {
     int index=SDL_GetIndexById(id);

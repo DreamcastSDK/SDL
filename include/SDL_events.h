@@ -72,9 +72,11 @@ typedef enum
     SDL_JOYBUTTONUP,            /**< Joystick button released */
     SDL_QUIT,                   /**< User-requested quit */
     SDL_SYSWMEVENT,             /**< System specific event */
+    SDL_PROXIMITYIN,        /**< Proximity In event */
+    SDL_PROXIMITYOUT,        /**< Proximity Out event */
     SDL_EVENT_RESERVED1,        /**< Reserved for future use... */
-    SDL_EVENT_RESERVED2,        /**< Reserved for future use... */
-    SDL_EVENT_RESERVED3,        /**< Reserved for future use... */
+    SDL_EVENT_RESERVED2,
+    SDL_EVENT_RESERVED3,
     /* Events SDL_USEREVENT through SDL_MAXEVENTS-1 are for your use */
     SDL_USEREVENT = 24,
     /* This last event is only for bounding internal arrays
@@ -112,7 +114,9 @@ typedef enum
         SDL_EVENTMASK(SDL_JOYHATMOTION) |
         SDL_EVENTMASK(SDL_JOYBUTTONDOWN) | SDL_EVENTMASK(SDL_JOYBUTTONUP),
     SDL_QUITMASK = SDL_EVENTMASK(SDL_QUIT),
-    SDL_SYSWMEVENTMASK = SDL_EVENTMASK(SDL_SYSWMEVENT)
+    SDL_SYSWMEVENTMASK = SDL_EVENTMASK(SDL_SYSWMEVENT),
+    SDL_PROXIMITYINMASK = SDL_EVENTMASK(SDL_PROXIMITYIN),
+    SDL_PROXIMITYOUTMASK = SDL_EVENTMASK(SDL_PROXIMITYOUT)
 } SDL_EventMask;
 #define SDL_ALLEVENTS		0xFFFFFFFF
 
@@ -317,6 +321,14 @@ typedef struct SDL_ResizeEvent
     int h;
 } SDL_ResizeEvent;
 
+typedef struct SDL_ProximityEvent
+{
+    Uint8 which;
+    Uint8 type;
+    int x;
+    int y;
+} SDL_ProximityEvent;
+
 /**
  * \union SDL_Event
  *
@@ -338,7 +350,7 @@ typedef union SDL_Event
     SDL_QuitEvent quit;             /**< Quit request event data */
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */
-
+    SDL_ProximityEvent proximity;    /**< Proximity In or Out event */
     /* Temporarily here for backwards compatibility */
     SDL_ActiveEvent active;
     SDL_ResizeEvent resize;

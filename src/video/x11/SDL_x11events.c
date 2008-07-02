@@ -35,6 +35,9 @@
 extern int motion;
 extern int button_pressed;
 extern int button_released;
+extern int proximity_in;
+extern int proximity_out;
+
 
 static void
 X11_DispatchEvent(_THIS)
@@ -314,6 +317,16 @@ X11_DispatchEvent(_THIS)
 			    XDeviceButtonReleasedEvent* released=(XDeviceButtonReleasedEvent*)&xevent;
                 SDL_SendMouseButton(released->deviceid, SDL_RELEASED,
                                 released->button);
+            }
+            else if(xevent.type==proximity_in)
+            {
+                XProximityNotifyEvent* proximity = (XProximityNotifyEvent*)&xevent;
+                SDL_SendProximity(proximity->deviceid, proximity->x, proximity->y,SDL_PROXIMITYIN);
+            }
+            else if(xevent.type==proximity_out)
+            {
+                XProximityNotifyEvent* proximity = (XProximityNotifyEvent*)&xevent;
+                SDL_SendProximity(proximity->deviceid, proximity->x, proximity->y,SDL_PROXIMITYOUT);
             }
             else
             {

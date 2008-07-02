@@ -1033,6 +1033,8 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             SOURCES="$SOURCES $srcdir/src/video/Xext/XmuStdCmap/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $X_CFLAGS"
 
+	    enable_x11_shared=no
+
             if test x$enable_x11_shared = xmaybe; then
                 enable_x11_shared=$x11_symbols_private
             fi
