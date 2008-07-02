@@ -1550,7 +1550,7 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 			} \
 		}
 	
-	/* If it's floating point, we don't need to do any shifting */
+	/* If it's floating point, do it normally, otherwise used fixed-point code */
 	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
 		float *sinc = (float *)cvt->coeff;
 		float *state = (float *)cvt->state_buf;
@@ -1561,7 +1561,7 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 			if(cvt->state_pos == m) cvt->state_pos = 0;
 			buf[i] = 0.0f;
 			for(j = 0; j < m; ++j) {
-				buf[i] += state[j] * sinc[j];
+				buf[i] += state[(cvt->state_pos - j) % m] * sinc[j];
 			}
 		}
 	} else {
@@ -1628,20 +1628,17 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 			/* Apply blackman window */
 			fSinc[i] *= 0.42f - 0.5f * cosf(two_pi_over_m * (float)i) + 0.08f * cosf(four_pi_over_m * (float)i);
 		}
-		norm_sum += abs(fSinc[i]);
+		fSinc[i] = 0.0f;
+		norm_sum += fabs(fSinc[i]);
 		printf("%f\n", fSinc[i]);
 	}
-
-	/* Now normalize and convert to fixed point. We scale everything to half the precision
-	   of whatever datatype we're using, for example, 16 bit data means we use 8 bits */
-	
+		
 #define convert_fixed(type, fix) { \
-		norm_fact = 0.9f / norm_sum; \
-		norm_fact = 0.15f; \
+		norm_fact = 0.8f / norm_sum; \
 		type *dst = (type *)cvt->coeff; \
 		for( i = 0; i <= m; ++i ) { \
 			dst[i] = fix(fSinc[i] * norm_fact); \
-			printf("%f = 0x%x\n", fSinc[i], dst[i]); \
+			printf("%f = 0x%x\n", fSinc[i] * norm_fact, dst[i]); \
 		} \
 	}
 	
@@ -1720,7 +1717,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 
 	// Step 1: Zero stuff the conversion buffer
-#ifdef DEBUG_CONVERT
+/*#ifdef DEBUG_CONVERT
 	printf("Zero-stuffing by a factor of %u\n", cvt->len_mult);
 #endif
     switch (SDL_AUDIO_BITSIZE(format)) {
@@ -1735,13 +1732,13 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         break;
     }
 	
-	cvt->len_cvt *= cvt->len_mult;
+	cvt->len_cvt *= cvt->len_mult;*/
 
 	// Step 2: Use either a windowed sinc FIR filter or IIR lowpass filter to remove all alias frequencies
 	SDL_FilterFIR( cvt, format );
 	
 	// Step 3: Discard unnecessary samples
-#ifdef DEBUG_CONVERT
+/*#ifdef DEBUG_CONVERT
 	printf("Discarding samples by a factor of %u\n", cvt->len_div);
 #endif
     switch (SDL_AUDIO_BITSIZE(format)) {
@@ -1759,7 +1756,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 #undef zerostuff_mono
 #undef discard_mono
 
-    cvt->len_cvt /= cvt->len_div;
+    cvt->len_cvt /= cvt->len_div;*/
 	
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index] (cvt, format);
