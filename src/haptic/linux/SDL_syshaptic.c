@@ -26,6 +26,9 @@
 #include "SDL_haptic.h"
 #include "../SDL_haptic_c.h"
 #include "../SDL_syshaptic.h"
+#include "SDL_joystick.h"
+#include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
+#include "../../joystick/linux/SDL_sysjoystick_c.h" /* For joystick hwdata */ 
 
 #include <unistd.h> /* close */
 #include <linux/input.h>
@@ -240,6 +243,27 @@ open_err:
       haptic->hwdata = NULL;
    }
    return -1;
+}
+
+
+/*
+ * Checks to see if a joystick has haptic features.
+ */
+int
+SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
+{
+   if (EV_IsHaptic(joystick->hwdata->fd) > 0)
+      return 1;
+   return 0;
+}
+
+
+/*
+ * Opens a SDL_Haptic from a SDL_Joystick.
+ */
+int
+SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
+{
 }
 
 
@@ -602,7 +626,6 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
 
    return 0;
 }
-
 
 
 #endif /* SDL_HAPTIC_LINUX */

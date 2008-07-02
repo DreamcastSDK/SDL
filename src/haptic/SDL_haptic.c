@@ -23,6 +23,7 @@
 
 #include "SDL_haptic_c.h"
 #include "SDL_syshaptic.h"
+#include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 
 
 static Uint8 SDL_numhaptics = 0;
@@ -127,6 +128,39 @@ SDL_HapticOpen(int device_index)
    SDL_haptics[i] = haptic;
 
    return haptic;
+}
+
+
+/*
+ * Returns SDL_TRUE if joystick has haptic features.
+ */
+int
+SDL_JoystickIsHaptic(SDL_Joystick * joystick)
+{
+   int ret;
+
+   if (!SDL_PrivateJoystickValid(&joystick)) {
+      return -1;
+   }
+
+   ret = SDL_SYS_JoystickIsHaptic(joystick);
+
+   if (ret > 0) return SDL_TRUE;
+   else if (ret == 0) return SDL_FALSE;
+   else return -1;
+}
+
+
+/*
+ * Opens a haptic device from a joystick.
+ */
+SDL_Haptic *
+SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
+{
+   if (!SDL_PrivateJoystickValid(&joystick)) {
+      return -1;
+   }
+   return -1;
 }
 
 
