@@ -774,6 +774,7 @@ int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 {
     int fd;
+    char *fname;
     SDL_logical_joydecl(int realindex);
     SDL_logical_joydecl(SDL_Joystick * realjoy = NULL);
 
@@ -787,13 +788,16 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
             return (-1);
 
         fd = realjoy->hwdata->fd;
+        fname = realjoy->hwdata->fname;
 
     } else {
         fd = open(SDL_joylist[joystick->index].fname, O_RDONLY, 0);
+        fname = SDL_joylist[joystick->index].fname;
     }
     SDL_joylist[joystick->index].joy = joystick;
 #else
     fd = open(SDL_joylist[joystick->index].fname, O_RDONLY, 0);
+    fname = SDL_joylist[joystick->index].fname;
 #endif
 
     if (fd < 0) {
@@ -809,6 +813,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
     }
     SDL_memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
     joystick->hwdata->fd = fd;
+    joystick->hwdata->fname = fname;
 
     /* Set the joystick to non-blocking read mode */
     fcntl(fd, F_SETFL, O_NONBLOCK);

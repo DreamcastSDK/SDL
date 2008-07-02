@@ -28,6 +28,8 @@
 struct joystick_hwdata
 {
    int fd;
+   char *fname; /* Used in haptic subsystem */
+
    /* The current linux joystick driver maps hats to two axes */
    struct hwdata_hat
    {   
