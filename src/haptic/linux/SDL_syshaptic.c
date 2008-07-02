@@ -24,7 +24,6 @@
 #ifdef SDL_JOYSTICK_LINUX
 
 #include "SDL_haptic.h"
-#include "../SDL_haptic_c.h"
 #include "../SDL_syshaptic.h"
 #include "SDL_joystick.h"
 #include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
