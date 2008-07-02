@@ -23,6 +23,6 @@
 
 /* SDL surface based renderer implementation */
 
-extern SDL_RenderDriver SDL_NDS_RenderDriver;
+extern SDL_RenderDriver NDS_RenderDriver;
 
 /* vi: set ts=4 sw=4 expandtab: */

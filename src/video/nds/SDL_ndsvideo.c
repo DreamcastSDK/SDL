@@ -121,7 +121,7 @@ NDS_VideoInit(_THIS)
     mode.driverdata = NULL;
 
     SDL_AddBasicVideoDisplay(&mode);
-    SDL_AddRenderDriver(0, &SDL_NDS_RenderDriver);
+    SDL_AddRenderDriver(0, &NDS_RenderDriver);
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
