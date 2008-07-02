@@ -34,20 +34,51 @@
 
 /* SDL surface based renderer implementation */
 
-static SDL_Renderer *SDL_NDS_CreateRenderer(SDL_Window * window,
-                                            Uint32 flags);
-static int SDL_NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g,
+static SDL_Renderer *NDS_CreateRenderer(SDL_Window * window, Uint32 flags);
+static int NDS_ActivateRenderer(SDL_Renderer * renderer);
+static int NDS_DisplayModeChanged(SDL_Renderer * renderer);
+static int NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
+static int NDS_QueryTexturePixels(SDL_Renderer * renderer,
+                                 SDL_Texture * texture, void **pixels,
+                                 int *pitch);
+static int NDS_SetTexturePalette(SDL_Renderer * renderer,
+                                SDL_Texture * texture,
+                                const SDL_Color * colors, int firstcolor,
+                                int ncolors);
+static int NDS_GetTexturePalette(SDL_Renderer * renderer,
+                                SDL_Texture * texture, SDL_Color * colors,
+                                int firstcolor, int ncolors);
+static int NDS_SetTextureColorMod(SDL_Renderer * renderer,
+                                 SDL_Texture * texture);
+static int NDS_SetTextureAlphaMod(SDL_Renderer * renderer,
+                                 SDL_Texture * texture);
+static int NDS_SetTextureBlendMode(SDL_Renderer * renderer,
+                                  SDL_Texture * texture);
+static int NDS_SetTextureScaleMode(SDL_Renderer * renderer,
+                                  SDL_Texture * texture);
+static int NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                            const SDL_Rect * rect, const void *pixels,
+                            int pitch);
+static int NDS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                          const SDL_Rect * rect, int markDirty, void **pixels,
+                          int *pitch);
+static void NDS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
+static void NDS_DirtyTexture(SDL_Renderer * renderer,
+                            SDL_Texture * texture, int numrects,
+                            const SDL_Rect * rects);
+static int NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g,
                               Uint8 b, Uint8 a, const SDL_Rect * rect);
-static int SDL_NDS_RenderCopy(SDL_Renderer * renderer,
+static int NDS_RenderCopy(SDL_Renderer * renderer,
                               SDL_Texture * texture,
                               const SDL_Rect * srcrect,
                               const SDL_Rect * dstrect);
-static void SDL_NDS_RenderPresent(SDL_Renderer * renderer);
-static void SDL_NDS_DestroyRenderer(SDL_Renderer * renderer);
+static void NDS_RenderPresent(SDL_Renderer * renderer);
+static void NDS_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
+static void NDS_DestroyRenderer(SDL_Renderer * renderer);
 
 
-SDL_RenderDriver SDL_NDS_RenderDriver = {
-    SDL_NDS_CreateRenderer,
+SDL_RenderDriver NDS_RenderDriver = {
+    NDS_CreateRenderer,
     {"nds", SDL_RENDERER_PRESENTCOPY}
 /*   (SDL_RENDERER_SINGLEBUFFER | SDL_RENDERER_PRESENTCOPY |
       SDL_RENDERER_PRESENTFLIP2 | SDL_RENDERER_PRESENTFLIP3 |
@@ -57,9 +88,8 @@ SDL_RenderDriver SDL_NDS_RenderDriver = {
 typedef struct
 {
     int current_screen;
-    SDL_Surface *screens[3];
-    int ultimate_answer;
-} SDL_NDS_RenderData;
+    u16* fb;
+} NDS_RenderData;
 
 
 
@@ -81,8 +111,16 @@ void
 sdlds_surf2vram(SDL_Surface * s)
 {
     if (s->w == 256) {
+        u16 tmpbuf[0x20000];
+        int i;
+
         dmaCopy((u8 *) (s->pixels) + 156 * sizeof(u16),
-                VRAM_A, 256 * 192 * sizeof(u16));
+                tmpbuf, 256 * 192 * sizeof(u16));
+    /* hack to fix the pixel format until I figure out why BGR doesn't work */
+        for (i = 0; i < 256 * 192; ++i) {
+            tmpbuf[i] = sdlds_rgb2bgr(tmpbuf[i]);
+        }
+        dmaCopy(tmpbuf, VRAM_A, 256 * 192 * sizeof(u16));
     }
 }
 
@@ -108,24 +146,18 @@ sdlds_print_surface_info(SDL_Surface * s)
 
 
 SDL_Renderer *
-SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
+NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     SDL_DisplayMode *displayMode = &display->current_mode;
     SDL_Renderer *renderer;
-    SDL_NDS_RenderData *data;
+    NDS_RenderData *data;
     int i, n;
     int bpp = 15;
     Uint32 Rmask, Gmask, Bmask, Amask;
 /*  Uint32 Rmask = 0x7C00, Gmask = 0x03E0, Bmask = 0x001F, Amask = 0x8000;
     Uint32 Rmask = 0x001F, Gmask = 0x03E0, Bmask = 0x7C00, Amask = 0x8000;
 */
-
-#if 0
-    printf("SDL_NDS_CreateRenderer(window, 0x%x)\n", flags);
-    printf(" window: (%d,%d), %dx%d\n",
-           window->x, window->y, window->w, window->h);
-#endif
 
     /* hard coded this to BGR555 for now */
     if (!SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_BGR555, &bpp,
@@ -140,23 +172,23 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    data = (SDL_NDS_RenderData *) SDL_malloc(sizeof(*data));
+    data = (NDS_RenderData *) SDL_malloc(sizeof(*data));
     if (!data) {
-        SDL_NDS_DestroyRenderer(renderer);
+        NDS_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;
     }
     SDL_zerop(data);
 
-    renderer->RenderFill = SDL_NDS_RenderFill;
-    renderer->RenderCopy = SDL_NDS_RenderCopy;
-    renderer->RenderPresent = SDL_NDS_RenderPresent;
-    renderer->DestroyRenderer = SDL_NDS_DestroyRenderer;
-    renderer->info.name = SDL_NDS_RenderDriver.info.name;
+    renderer->RenderFill = NDS_RenderFill;
+    renderer->RenderCopy = NDS_RenderCopy;
+    renderer->RenderPresent = NDS_RenderPresent;
+    renderer->DestroyRenderer = NDS_DestroyRenderer;
+    renderer->info.name = NDS_RenderDriver.info.name;
     renderer->info.flags = 0;
     renderer->window = window->id;
     renderer->driverdata = data;
-    Setup_SoftwareRenderer(renderer);
+    Setup_SoftwareRenderer(renderer); /* TODO: well, "TODON'T" is more like it */
 
     if (flags & SDL_RENDERER_PRESENTFLIP2) {
         renderer->info.flags |= SDL_RENDERER_PRESENTFLIP2;
@@ -167,55 +199,51 @@ SDL_NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     } else {
         renderer->info.flags |= SDL_RENDERER_PRESENTCOPY;
         n = 1;
-    }
+    }/*
     for (i = 0; i < n; ++i) {
         data->screens[i] =
             SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask,
                                  Amask);
         if (!data->screens[i]) {
-            SDL_NDS_DestroyRenderer(renderer);
+            NDS_DestroyRenderer(renderer);
             return NULL;
         }
         SDL_SetSurfacePalette(data->screens[i], display->palette);
         sdlds_print_surface_info(data->screens[i]);
-    }
+    }*/
 
-    data->current_screen = 0;
-    data->ultimate_answer = 42;
+    data->fb = (u16*)0x06020000;
 
     return renderer;
 }
 
 static int
-SDL_NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b,
+NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b,
                    Uint8 a, const SDL_Rect * rect)
 {
-    SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
-    SDL_Surface *target = data->screens[data->current_screen];
-    Uint32 color;
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     SDL_Rect real_rect = *rect;
+    u16 color;
+    int i, j;
 
-    color = SDL_MapRGBA(target->format, r, g, b, a);
-
-    return SDL_FillRect(target, &real_rect, color);
+    color = RGB15(r>>3,g>>3,b>>3);
+    for (i = real_rect.x; i < real_rect.x+real_rect.w; ++i) {
+        for (j = real_rect.y; j < real_rect.y+real_rect.h; ++j) {
+            data->fb[(j + real_rect.y) * 256 + i + real_rect.x] = 
+                0x8000 | color;
+        }
+    }
+    return 0;
 }
-
 static int
-SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
+NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * srcrect, const SDL_Rect * dstrect)
 {
-    SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+
 #if 0
-    printf("SDL_NDS_RenderCopy(renderer, texture, srcrect, dstrect)\n");
-    printf(" renderer: %s\n", renderer->info.name);
-    printf(" texture: %dx%d\n", texture->w, texture->h);
-    printf(" srcrect: (%d,%d), %dx%d\n", srcrect->x, srcrect->y, srcrect->w,
-           srcrect->h);
-    printf(" dstrect: (%d,%d), %dx%d\n", dstrect->x, dstrect->y, dstrect->w,
-           dstrect->h);
-#endif
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_Surface *target = data->screens[data->current_screen];
         void *pixels =
@@ -235,39 +263,31 @@ SDL_NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         sdlds_surf2vram(surface);
         return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
     }
-#if 0
+#endif
     /* copy it directly to vram */
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    sdlds_surf2vram(surface);
+    /*
     int sx = srcrect->x, sy = srcrect->y, sw = srcrect->w, sh = srcrect->h;
     int dx = dstrect->x, dy = dstrect->y, dw = dstrect->w, dh = dstrect->h;
     int si, sj, di, dj;
     for (sj = 0, dj = 0; sj < sh && dj < dh; ++sj, ++dj) {
         for (si = 0, di = 0; si < sw && di < dw; ++si, ++di) {
-            VRAM_A[(dj + dy) * 256 + di + dx] =
-                ((Uint16 *) surface->pixels)[(sj + sy) * (surface->w) + si +
+            data->fb[(dj + dy) * 256 + di + dx] = 0x8000 |
+                ((u16 *) surface->pixels)[(sj + sy) * (surface->w) + si +
                                              sx];
         }
-    }
+    }*/
     return 0;
-#endif
 }
 
 
 static void
-SDL_NDS_RenderPresent(SDL_Renderer * renderer)
+NDS_RenderPresent(SDL_Renderer * renderer)
 {
-    SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
-    int i;
-#if 0
-    printf("SDL_NDS_RenderPresent(renderer)\n");
-    printf(" renderer: %s\n", renderer->info.name);
-#endif
-    /* Send the data to the display */
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
+    /* Send the data to the display TODO */
 
-    /* hack to fix the pixel format until I figure out why BGR doesn't work */
-    for (i = 0; i < 256 * 192; ++i) {
-        VRAM_A[i] = sdlds_rgb2bgr(VRAM_A[i]);
-    }
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2) {
         data->current_screen = (data->current_screen + 1) % 2;
@@ -277,19 +297,19 @@ SDL_NDS_RenderPresent(SDL_Renderer * renderer)
 }
 
 static void
-SDL_NDS_DestroyRenderer(SDL_Renderer * renderer)
+NDS_DestroyRenderer(SDL_Renderer * renderer)
 {
-    SDL_NDS_RenderData *data = (SDL_NDS_RenderData *) renderer->driverdata;
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     int i;
 
-    printf("SDL_NDS_DestroyRenderer(renderer)\n");
+    printf("NDS_DestroyRenderer(renderer)\n");
     printf(" renderer: %s\n", renderer->info.name);
     if (data) {
-        for (i = 0; i < SDL_arraysize(data->screens); ++i) {
+        /*for (i = 0; i < SDL_arraysize(data->screens); ++i) {
             if (data->screens[i]) {
                 SDL_FreeSurface(data->screens[i]);
             }
-        }
+        }*/
         SDL_free(data);
     }
     SDL_free(renderer);
