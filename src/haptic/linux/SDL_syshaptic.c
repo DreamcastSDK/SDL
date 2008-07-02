@@ -88,7 +88,10 @@ EV_IsHaptic(int fd)
 
    ret = 0;
 
-   ioctl(fd, EVIOCGBIT(EV_FF, sizeof(unsigned long) * 4), features);
+   if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(unsigned long) * 4), features) < 0) {
+      SDL_SetError("Unable to get device's haptic abilities.");
+      return -1;
+   }
 
    EV_TEST(FF_CONSTANT,   SDL_HAPTIC_CONSTANT);
    EV_TEST(FF_PERIODIC,   SDL_HAPTIC_SINE |
@@ -151,7 +154,7 @@ SDL_SYS_HapticInit(void)
 #endif          
 
       /* see if it works */
-      if (EV_IsHaptic(fd)!=0) {
+      if (EV_IsHaptic(fd) > 0) {
          SDL_hapticlist[numhaptics].fname = SDL_strdup(path);
          SDL_hapticlist[numhaptics].haptic = NULL;
          dev_nums[numhaptics] = sb.st_rdev;
@@ -191,21 +194,11 @@ SDL_SYS_HapticName(int index)
 
 
 /*
- * Opens a haptic device for usage.
+ * Opens the haptic device from the file descriptor.
  */
-int
-SDL_SYS_HapticOpen(SDL_Haptic * haptic)
+static int
+SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
 {
-   int i;
-   int fd;
-
-   /* Open the character device */
-   fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
-   if (fd < 0) {
-      SDL_SetError("Unable to open %s\n", SDL_hapticlist[haptic->index]);
-      return -1;
-   }
-
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
          SDL_malloc(sizeof(*haptic->hwdata));
@@ -247,13 +240,43 @@ open_err:
 
 
 /*
+ * Opens a haptic device for usage.
+ */
+int
+SDL_SYS_HapticOpen(SDL_Haptic * haptic)
+{
+   int fd;
+
+   /* Open the character device */
+   fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
+   if (fd < 0) {
+      SDL_SetError("Unable to open %s\n", SDL_hapticlist[haptic->index]);
+      return -1;
+   }
+   
+   return SDL_SYS_HapticOpenFromFD(haptic,fd);
+} 
+
+
+/*
  * Checks to see if a joystick has haptic features.
  */
 int
 SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
-   if (EV_IsHaptic(joystick->hwdata->fd) > 0)
+   return EV_IsHaptic(joystick->hwdata->fd);
+}
+
+
+/*
+ * Checks to see if the haptic device and joystick and in reality the same.
+ */
+int
+SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
+{
+   if (SDL_strcmp(joystick->name,haptic->name)==0) {
       return 1;
+   }
    return 0;
 }
 
@@ -264,6 +287,9 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+   int fd;
+   fd = open(joystick->hwdata->fname, O_RDWR, 0);
+   return SDL_SYS_HapticOpenFromFD(haptic,fd);
 }
 
 
