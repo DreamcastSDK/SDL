@@ -31,6 +31,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
+#include "SDL_joystick.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -206,6 +207,22 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  * if an error occurred.
  */
 extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
+
+/*
+ * Checks to see if a joystick has haptic features.
+ *
+ * Returns SDL_TRUE if the joystick is haptic, SDL_FALSE if it isn't
+ * and -1 on error.
+ */
+extern DECLSPEC int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
+
+/*
+ * Opens a Haptic device for usage from a Joystick device.
+ *
+ * Returns a valid pointer to a haptic device on success or NULL
+ * if an error occurred.
+ */
+extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick);
 
 /* 
  * Closes a Haptic device previously opened with SDL_HapticOpen.
