@@ -145,6 +145,15 @@ extern void SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic,
                                         struct haptic_effect * effect);
 
 /*
+ * Queries the device for the status of effect.
+ *
+ * Returns 0 if device is stopped, >0 if device is playing and
+ * -1 on error.
+ */
+extern int SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic,
+                                         struct haptic_effect * effect);
+
+/*
  * Sets the global gain of the haptic device.
  *
  * Returns 0 on success, -1 on error.

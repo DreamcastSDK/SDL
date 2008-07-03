@@ -132,6 +132,13 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 }
 
 
+int SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+   SDL_SetError("Logic error: No Haptic devices available.");
+   return -1;
+}
+
+
 int
 SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
 {

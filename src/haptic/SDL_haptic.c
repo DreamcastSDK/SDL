@@ -438,6 +438,24 @@ SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
 }
 
 /*
+ * Gets the status of a haptic effect.
+ */
+int
+SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
+{
+   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+      return -1;
+   }
+
+   if ((haptic->supported & SDL_HAPTIC_STATUS) == 0) {
+      SDL_SetError("Haptic device does not support status queries.");
+      return -1;
+   }
+
+   return SDL_SYS_HapticGetEffectStatus(haptic, &haptic->effects[effect]);
+}
+
+/*
  * Sets the global gain of the device.
  */
 int
