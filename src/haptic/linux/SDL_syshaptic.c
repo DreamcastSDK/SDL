@@ -21,7 +21,7 @@
 */
 #include "SDL_config.h"
 
-#ifdef SDL_JOYSTICK_LINUX
+#ifdef SDL_HAPTIC_LINUX
 
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
