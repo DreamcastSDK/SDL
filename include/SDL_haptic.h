@@ -46,22 +46,25 @@ struct _SDL_Haptic;
 typedef struct _SDL_Haptic SDL_Haptic;
 
 
-/* Different effects that can be generated */
-#define SDL_HAPTIC_CONSTANT   (1<<0)
-#define SDL_HAPTIC_SINE       (1<<1)
-#define SDL_HAPTIC_SQUARE     (1<<2)
-#define SDL_HAPTIC_TRIANGLE   (1<<3)
-#define SDL_HAPTIC_SAWTOOTHUP (1<<4)
-#define SDL_HAPTIC_SAWTOOTHDOWN (1<<5)
-#define SDL_HAPTIC_RAMP       (1<<6)
-#define SDL_HAPTIC_SPRING     (1<<7)
-#define SDL_HAPTIC_FRICTION   (1<<8)
-#define SDL_HAPTIC_DAMPER     (1<<9)
-#define SDL_HAPTIC_INERTIA    (1<<10)
-#define SDL_HAPTIC_CUSTOM     (1<<11)
+/*
+ * Different haptic features a device can have.
+ */
+#define SDL_HAPTIC_CONSTANT   (1<<0) /* Constant effect supported */
+#define SDL_HAPTIC_SINE       (1<<1) /* Sine wave effect supported */
+#define SDL_HAPTIC_SQUARE     (1<<2) /* Square wave effect supported */
+#define SDL_HAPTIC_TRIANGLE   (1<<3) /* Triangle wave effect supported */
+#define SDL_HAPTIC_SAWTOOTHUP (1<<4) /* Sawtoothup wave effect supported */
+#define SDL_HAPTIC_SAWTOOTHDOWN (1<<5) /* Sawtoothdown wave effect supported */
+#define SDL_HAPTIC_RAMP       (1<<6) /* Ramp effect supported */
+#define SDL_HAPTIC_SPRING     (1<<7) /* Spring effect supported - uses axes position */
+#define SDL_HAPTIC_DAMPER     (1<<8) /* Damper effect supported - uses axes velocity */
+#define SDL_HAPTIC_INERTIA    (1<<9) /* Inertia effect supported - uses axes acceleration */
+#define SDL_HAPTIC_FRICTION   (1<<10) /* Friction effect supported - uses axes movement */
+#define SDL_HAPTIC_CUSTOM     (1<<11) /* Custom effect is supported */
 /* These last two are features the device has, not effects */
-#define SDL_HAPTIC_GAIN       (1<<12)
-#define SDL_HAPTIC_AUTOCENTER (1<<13)
+#define SDL_HAPTIC_GAIN       (1<<12) /* Device can set global gain */
+#define SDL_HAPTIC_AUTOCENTER (1<<13) /* Device can set autocenter */
+#define SDL_HAPTIC_STATUS     (1<<14) /* Device can be queried for effect status */
 
 
 /*
@@ -166,8 +169,8 @@ typedef struct SDL_HapticRamp {
    Uint16 interval;
 
    /* Ramp */
-   Sint16 start;
-   Sint16 end;
+   Sint16 start; /* Beginning strength level. */
+   Sint16 end; /* Ending strength level. */
 
    /* Envelope */
    Uint16 attack_length;
@@ -286,6 +289,14 @@ extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
  * running.
  */
 extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
+
+/*
+ * Gets the status of the current effect on the haptic device.
+ *
+ * Returns 0 if it isn't playing, SDL_HAPTIC_PLAYING if it is playing
+ * or -1 on failure.
+ */
+extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
 
 /*
  * Sets the global gain of the device.  Gain should be between 0 and 100.

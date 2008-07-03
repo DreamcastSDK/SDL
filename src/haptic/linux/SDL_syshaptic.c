@@ -612,6 +612,31 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 
 
 /*
+ * Gets the status of a haptic effect.
+ */
+int
+SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect)
+{
+#if 0  /* Not supported atm. */
+   struct input_event ie;
+
+   ie.type = EV_FF;
+   ie.type = EV_FF_STATUS;
+   ie.code = effect->hweffect->effect.id;
+
+   if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
+      SDL_SetError("Error getting haptic device status.");
+      return -1;
+   }
+
+   return 0;
+#endif
+
+   return -1;
+}
+
+
+/*
  * Sets the gain.
  */
 int
