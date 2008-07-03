@@ -92,7 +92,7 @@ extern DECLSPEC SDL_WindowID SDLCALL SDL_GetMouseFocusWindow(void);
  *
  * \sa SDL_GetRelativeMouseMode()
  */
-extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
+extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled, int index);
 
 /**
  * \fn SDL_bool SDL_GetRelativeMouseMode()

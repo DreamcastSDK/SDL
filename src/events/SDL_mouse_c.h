@@ -67,6 +67,7 @@ struct SDL_Mouse
     char* name;
     Uint8 buttonstate;
     SDL_bool relative_mode;
+    SDL_bool proximity;
     SDL_bool flush_motion;
 
     SDL_Cursor *cursors;
@@ -118,7 +119,7 @@ extern int SDL_GetNumOfMice(void);
 
 extern char* SDL_GetMouseName(int index);
 
-
+extern void SDL_UpdateCoordinates(int x, int y);
 
 #endif /* _SDL_mouse_c_h */
 
