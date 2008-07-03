@@ -37,6 +37,7 @@ extern int button_pressed;
 extern int button_released;
 extern int proximity_in;
 extern int proximity_out;
+extern int x_max,y_max;
 
 
 static void
@@ -126,8 +127,8 @@ X11_DispatchEvent(_THIS)
                 (xevent.xcrossing.mode != NotifyUngrab) &&
                 (xevent.xcrossing.detail != NotifyInferior)) {
 			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
-                SDL_SendMouseMotion(move->deviceid, 0,
-                                    move->x, move->y,move->axis_data[2]);
+                //SDL_SendMouseMotion(move->deviceid, 0,
+                //                    move->x, move->y,move->axis_data[2]);
                 SDL_SetMouseFocus(move->deviceid, 0);
             }
         }
@@ -297,6 +298,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_MOTION
                 printf("X11 motion: %d,%d\n", xevent.xmotion.x, xevent.xmotion.y);
 #endif
+                XWindowAttributes attrib;
+                XGetWindowAttributes(videodata->display, ((XAnyEvent*)&xevent)->window, &attrib);
+                /*x_max=attrib.width;
+                y_max=attrib.height;*/
+                SDL_UpdateCoordinates(attrib.width, attrib.height);
 			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
                 SDL_SendMouseMotion(move->deviceid, 0, move->x,
                                 move->y,move->axis_data[2]);

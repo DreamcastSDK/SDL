@@ -362,4 +362,9 @@ X11_VideoQuit(_THIS)
     free(SDL_XDevices);
 }
 
+/*void X11_ForwardWindowCoordinates(int x, int y)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+}*/
+
 /* vim: set ts=4 sw=4 expandtab: */

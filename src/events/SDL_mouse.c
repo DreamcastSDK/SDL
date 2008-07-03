@@ -33,8 +33,8 @@ static int SDL_current_mouse;
 static SDL_Mouse **SDL_mice;
 int *SDL_IdIndex;
 int SDL_highestId;
-
-
+int last_x, last_y;
+int x_max, y_max;
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -85,6 +85,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name)
         SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH,
                          DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
     SDL_SetCursor(SDL_mice[index]->def_cursor);
+    SDL_mice[index]->proximity=SDL_TRUE;
+    SDL_mice[index]->relative_mode=SDL_FALSE;
     SDL_SelectMouse(selected_mouse);
 
     return index;
@@ -180,9 +182,9 @@ FlushMouseMotion(void *param, SDL_Event * event)
 }
 
 int
-SDL_SetRelativeMouseMode(SDL_bool enabled)
+SDL_SetRelativeMouseMode(SDL_bool enabled, int index)
 {
-    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+    SDL_Mouse *mouse = SDL_GetMouse(index);
 
     if (!mouse) {
         return -1;
@@ -326,12 +328,20 @@ SDL_SendProximity(int id, int x, int y, int type)
     if(SDL_ProcessEvents[type]==SDL_ENABLE)
     {
         SDL_Event event;
-        event.proximity.which=index;
+        event.proximity.which=(Uint8)index;
         event.proximity.x=x;
         event.proximity.y=y;
         event.type=type;
         event.proximity.type=type;
         posted = (SDL_PushEvent(&event) > 0);
+        if(type==SDL_PROXIMITYIN)
+        {
+            SDL_mice[index]->proximity=SDL_TRUE;
+        }
+        else
+        {
+            SDL_mice[index]->proximity=SDL_FALSE;
+        }
     }
     return posted;
 }
@@ -348,16 +358,21 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     if (!mouse || mouse->flush_motion) {
         return 0;
     }
-
-    if (relative) {
+    if(mouse->proximity==SDL_FALSE)
+    {
+        last_x=x;
+        last_y=y;
+        return 0;
+    }
+    if (mouse->relative_mode==SDL_TRUE && mouse->proximity==SDL_TRUE) {
         /* Push the cursor around */
-        xrel = x;
-        yrel = y;
-        x = (mouse->x + xrel);
-        y = (mouse->y + yrel);
+        xrel = x - last_x;
+        yrel = y - last_y;
+        //x = (mouse->x + xrel);
+        //y = (mouse->y + yrel);
     } else {
-        xrel = x - mouse->x;
-        yrel = y - mouse->y;
+        xrel = x - last_x;
+        yrel = y - last_y;
     }
 
     /* Drop events that don't change state */
@@ -369,9 +384,36 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     }
 
     /* Update internal mouse state */
-    if (!mouse->relative_mode) {
+    if (mouse->relative_mode==SDL_FALSE) {
         mouse->x = x;
         mouse->y = y;
+    }
+    else
+    {
+        if(mouse->x+xrel>x_max)
+        {
+            mouse->x=x_max;
+        }
+        else if(mouse->x+xrel<0)
+        {
+            mouse->x=0;
+        }
+        else
+        {
+            mouse->x+=xrel;
+        }
+        if(mouse->y+yrel>y_max)
+        {
+            mouse->y=y_max;
+        }
+        else if(mouse->y+yrel<0)
+        {
+            mouse->y=0;
+        }
+        else
+        {
+            mouse->y+=yrel;
+        }
     }
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
@@ -385,10 +427,10 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE) {
+    if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE && SDL_mice[index]->proximity==SDL_TRUE) {
         SDL_Event event;
         event.motion.type = SDL_MOUSEMOTION;
-        event.motion.which = (Uint8) index;
+event.motion.which = (Uint8) index;
         event.motion.state = mouse->buttonstate;
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
@@ -398,6 +440,8 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
         event.motion.windowID = mouse->focus;
         posted = (SDL_PushEvent(&event) > 0);
     }
+    last_x=x;
+    last_y=y;
     return posted;
 }
 
@@ -724,5 +768,9 @@ char* SDL_GetMouseName(int index)
     return mouse->name;
 }
 
-
+void SDL_UpdateCoordinates(int x, int y)
+{
+    x_max=x;
+    y_max=y;
+}
 /* vi: set ts=4 sw=4 expandtab: */
