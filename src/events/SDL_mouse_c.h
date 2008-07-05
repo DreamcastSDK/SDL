@@ -61,9 +61,12 @@ struct SDL_Mouse
     int which;
     int x;
     int y;
-    int z;
+    int z;/*for future use*/
     int xdelta;
     int ydelta;
+    int pressure;
+    int tilt;/*for future use*/
+    int rotation;/*for future use*/
     char* name;
     Uint8 buttonstate;
     SDL_bool relative_mode;

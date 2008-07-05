@@ -417,7 +417,7 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     }
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
-    mouse->z=z;
+    mouse->pressure=z;
 
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
@@ -434,7 +434,7 @@ event.motion.which = (Uint8) index;
         event.motion.state = mouse->buttonstate;
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
-        event.motion.z = mouse->z;
+        event.motion.pressure= mouse->pressure;
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         event.motion.windowID = mouse->focus;

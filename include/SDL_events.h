@@ -174,7 +174,10 @@ typedef struct SDL_MouseMotionEvent
     Uint8 state;            /**< The current button state */
     int x;                  /**< X coordinate, relative to window */
     int y;                  /**< Y coordinate, relative to window */
-    int z;
+    int z;                  /**< Z coordinate, for future use*/
+    int pressure;           /**< Pressure reported by tablets */
+    int rotation;           /**<For future use */
+    int tilt;               /**<For future use */
     int xrel;               /**< The relative motion in the X direction */
     int yrel;               /**< The relative motion in the Y direction */
     SDL_WindowID windowID;  /**< The window with mouse focus, if any */
