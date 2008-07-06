@@ -111,6 +111,9 @@ EV_IsHaptic(int fd)
    return ret;
 }
 
+/*
+ * Initializes the haptic subsystem by finding available devices.
+ */
 int
 SDL_SYS_HapticInit(void)
 {
@@ -328,6 +331,31 @@ SDL_SYS_HapticQuit(void)
    SDL_hapticlist[0].fname = NULL;
 }
 
+/*
+ * Returns the ff_effect usable direction from a SDL_HapticDirection.
+ */
+static Uint16
+SDL_SYS_ToDirection( SDL_HapticDirection * dir )
+{
+   Uint32 tmp;
+
+   switch (dir->type) {
+      case SDL_HAPTIC_POLAR:
+         tmp = ((dir->dir[0] % 36000) * 0xFFFF) / 36000;
+         return (Uint16) tmp;
+         break;
+      case SDL_HAPTIC_CARTESIAN:
+         /* TODO implement cartesian for linux since it's not supported
+          * by driver */
+         break;
+
+      default:
+         return -1;
+   }
+
+   return 0;
+}
+
 #define  CLAMP(x)    (((x) > 32767) ? 32767 : x)
 /*
  * Initializes the linux effect struct from a haptic_effect.
@@ -351,7 +379,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          /* Header */
          dest->type = FF_CONSTANT;
-         dest->direction = CLAMP(constant->direction);
+         dest->direction = SDL_SYS_ToDirection(&constant->direction);
 
          /* Replay */
          dest->replay.length = CLAMP(constant->length);
@@ -381,7 +409,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          /* Header */
          dest->type = FF_PERIODIC;
-         dest->direction = CLAMP(periodic->direction);
+         dest->direction = SDL_SYS_ToDirection(&periodic->direction);
          
          /* Replay */
          dest->replay.length = CLAMP(periodic->length);
@@ -430,7 +458,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
             dest->type = FF_INERTIA;
          else if (dest->type == SDL_HAPTIC_FRICTION)
             dest->type = FF_FRICTION;
-         dest->direction = CLAMP(condition->direction);
+         dest->direction = 0; /* Handled by the condition-specifics. */
 
          /* Replay */
          dest->replay.length = CLAMP(condition->length);
@@ -440,13 +468,21 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->trigger.button = CLAMP(condition->button);
          dest->trigger.interval = CLAMP(condition->interval);
 
-         /* Condition - TODO handle axes */
-         dest->u.condition[0].right_saturation = CLAMP(condition->right_sat);
-         dest->u.condition[0].left_saturation = CLAMP(condition->left_sat);
-         dest->u.condition[0].right_coeff = condition->right_coeff;
-         dest->u.condition[0].left_coeff = condition->left_coeff;
-         dest->u.condition[0].deadband = CLAMP(condition->deadband);
-         dest->u.condition[0].center = condition->center;
+         /* Condition */
+         /* X axis */
+         dest->u.condition[0].right_saturation = CLAMP(condition->right_sat[0]);
+         dest->u.condition[0].left_saturation = CLAMP(condition->left_sat[0]);
+         dest->u.condition[0].right_coeff = condition->right_coeff[0];
+         dest->u.condition[0].left_coeff = condition->left_coeff[0];
+         dest->u.condition[0].deadband = CLAMP(condition->deadband[0]);
+         dest->u.condition[0].center = condition->center[0];
+         /* Y axis */
+         dest->u.condition[1].right_saturation = CLAMP(condition->right_sat[1]);
+         dest->u.condition[1].left_saturation = CLAMP(condition->left_sat[1]);
+         dest->u.condition[1].right_coeff = condition->right_coeff[1];
+         dest->u.condition[1].left_coeff = condition->left_coeff[1];  
+         dest->u.condition[1].deadband = CLAMP(condition->deadband[1]);
+         dest->u.condition[1].center = condition->center[1];
 
          break;
 
@@ -455,7 +491,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
          /* Header */
          dest->type = FF_RAMP;
-         dest->direction = CLAMP(ramp->direction);
+         dest->direction = SDL_SYS_ToDirection(&ramp->direction);
 
          /* Replay */
          dest->replay.length = CLAMP(ramp->length);
