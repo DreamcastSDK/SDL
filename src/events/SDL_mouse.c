@@ -52,7 +52,7 @@ SDL_GetMouse(int index)
 }
 
 int
-SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name)
+SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int pressure_min)
 {
     SDL_Mouse **mice;
     int selected_mouse;
@@ -78,6 +78,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name)
     *SDL_mice[index] = *mouse;
     SDL_mice[index]->name=SDL_malloc(strlen(name)*sizeof(char));
     strcpy(SDL_mice[index]->name,name);
+    SDL_mice[index]->pressure_max=pressure_max;
+    SDL_mice[index]->pressure_min=pressure_min;
     SDL_mice[index]->cursor_shown = SDL_TRUE;
     selected_mouse = SDL_SelectMouse(index);
     SDL_mice[index]->cur_cursor = NULL;
@@ -368,8 +370,6 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
         /* Push the cursor around */
         xrel = x - last_x;
         yrel = y - last_y;
-        //x = (mouse->x + xrel);
-        //y = (mouse->y + yrel);
     } else {
         xrel = x - last_x;
         yrel = y - last_y;
@@ -438,6 +438,8 @@ event.motion.which = (Uint8) index;
         event.motion.xrel = xrel;
         event.motion.yrel = yrel;
         event.motion.windowID = mouse->focus;
+        event.motion.pressure_max=mouse->pressure_max;
+        event.motion.pressure_min=mouse->pressure_min;
         posted = (SDL_PushEvent(&event) > 0);
     }
     last_x=x;

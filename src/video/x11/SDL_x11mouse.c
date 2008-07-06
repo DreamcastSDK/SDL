@@ -47,6 +47,7 @@ X11_InitMouse(_THIS)
             {
                 if(deviceClass->class==ValuatorClass)
                 {
+                    XValuatorInfo* valInfo;
                     newDevices= (XDevice**) SDL_realloc(SDL_XDevices, (index+1)*sizeof(*newDevices));
                     if(!newDevices)
                     {
@@ -58,7 +59,15 @@ X11_InitMouse(_THIS)
                     SDL_Mouse mouse;
                     SDL_zero(mouse);
                     SDL_SetIndexId(DevList[i].id,index);
-                    data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name);
+                    valInfo=(XValuatorInfo*)deviceClass;
+                    if(valInfo->num_axes>2)
+                    {
+                        data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,valInfo->axes[2].max_value,valInfo->axes[2].min_value);
+                    }
+                    else
+                    {
+                         data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,0,0);
+                    }
                     break;
                 }
                 deviceClass=(XAnyClassPtr)((char*)deviceClass + deviceClass->length);
