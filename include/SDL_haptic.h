@@ -450,6 +450,9 @@ typedef struct SDL_HapticPeriodic {
  * \brief A structure containing a template for a Condition effect.
  *
  * Direction is handled by condition internals instead of a direction member.
+ *  Each of right_sat, lefT-sat, right_coeff, left_coeff, deadband and center
+ *  have two parameters, first is for x value, second is for y value following
+ *  the scheme set by SDL_HapticDirection.
  *
  * The struct handles the following effects:
  *   - SDL_HAPTIC_SPRING: Effect based on axes position.
@@ -457,6 +460,7 @@ typedef struct SDL_HapticPeriodic {
  *   - SDL_HAPTIC_INERTIA: Effect based on axes acceleration.
  *   - SDL_HAPTIC_FRICTION: Effect based on axes movement.
  *
+ * \sa SDL_HapticDirection
  * \sa SDL_HAPTIC_SPRING
  * \sa SDL_HAPTIC_DAMPER
  * \sa SDL_HAPTIC_INERTIA
@@ -476,12 +480,12 @@ typedef struct SDL_HapticCondition {
    Uint16 interval; /**< How soon it can be triggered again after button. */
 
    /* Condition */
-   Uint16 right_sat; /**< Level when joystick is to the right. */
-   Uint16 left_sat; /**< Level when joystick is to the left. */
-   Sint16 right_coeff; /**< How fast to increase the force towards the right. */
-   Sint16 left_coeff; /**< How fast to increase the force towards the left. */
-   Uint16 deadband; /**< Size of the dead zone. */
-   Sint16 center; /**< Position of the dead zone. */
+   Uint16 right_sat[2]; /**< Level when joystick is to the right. */
+   Uint16 left_sat[2]; /**< Level when joystick is to the left. */
+   Sint16 right_coeff[2]; /**< How fast to increase the force towards the right. */
+   Sint16 left_coeff[2]; /**< How fast to increase the force towards the left. */
+   Uint16 deadband[2]; /**< Size of the dead zone. */
+   Sint16 center[2]; /**< Position of the dead zone. */
 } SDL_HapticCondition;
 /**
  * \struct SDL_HapticRamp
@@ -574,7 +578,7 @@ typedef union SDL_HapticEffect {
    Uint16 type; /**< Effect type. */
    SDL_HapticConstant constant; /**< Constant effect. */
    SDL_HapticPeriodic periodic; /**< Periodic effect. */
-   SDL_HapticCondition condition[2]; /**< Condition effect, one for each axis. */
+   SDL_HapticCondition condition; /**< Condition effect. */
    SDL_HapticRamp ramp; /**< Ramp effect. */
 } SDL_HapticEffect;
 
