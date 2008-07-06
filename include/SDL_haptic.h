@@ -20,11 +20,12 @@
     slouken@libsdl.org
 */
 
-/** \file SDL_haptic.h */
+/** \file SDL_Haptic.h */
+
 /**
  * \mainpage SDL_haptic
  *
- * The SDL Haptic subsystem allows you to control haptic (force feedback)
+ * \brief The SDL Haptic subsystem allows you to control haptic (force feedback)
  *  devices.
  *
  * The basic usage is as follows:
@@ -102,7 +103,7 @@ extern "C" {
 #endif /* __cpluspuls */
 
 /**
- * \struct SDL_Haptic
+ * \typedef SDL_Haptic
  *
  * \brief The haptic structure used to identify an SDL haptic.
  *
@@ -389,7 +390,7 @@ typedef struct SDL_HapticRamp {
    Uint16 fade_length; /**< Duration of the fade. */
    Uint16 fade_level; /**< Level at the end of the fade. */
 } SDL_HapticRamp;
-/*
+/**
  * \union SDL_HapticEffect
  *
  * \brief The generic template for any haptic effect.
@@ -429,7 +430,7 @@ typedef union SDL_HapticEffect {
 
 
 /* Function prototypes */
-/*
+/**
  * \fn int SDL_NumHaptics(void)
  *
  * \brief Count the number of joysticks attached to the system.
@@ -438,7 +439,7 @@ typedef union SDL_HapticEffect {
  */
 extern DECLSPEC int SDLCALL SDL_NumHaptics(void);
 
-/*
+/**
  * \fn const char * SDL_HapticName(int device_index)
  *
  * \brief Get the implementation dependent name of a Haptic device.
@@ -452,7 +453,7 @@ extern DECLSPEC int SDLCALL SDL_NumHaptics(void);
  */
 extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
 
-/*
+/**
  * \fn SDL_Haptic * SDL_HapticOpen(int device_Index)
  *
  * \brief Opens a Haptic device for usage - the index passed as an
@@ -469,8 +470,8 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  */
 extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
 
-/*
- * \fn int SDL_JoystickIsHaptic(SDL_Joystick * joysticke)
+/**
+ * \fn int SDL_JoystickIsHaptic(SDL_Joystick * joystick)
  *
  * \brief Checks to see if a joystick has haptic features.
  *
@@ -482,7 +483,7 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
  */
 extern DECLSPEC int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
 
-/*
+/**
  * \fn SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
  *
  * \brief Opens a Haptic device for usage from a Joystick device.  Still has
@@ -496,7 +497,7 @@ extern DECLSPEC int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
  */
 extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick);
 
-/* 
+/**
  * \fn void SDL_HapticClose(SDL_Haptic * haptic)
  *
  * \brief Closes a Haptic device previously opened with SDL_HapticOpen.
@@ -505,7 +506,7 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
  */
 extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
 
-/*
+/**
  * \fn int SDL_HapticNumEffects(SDL_Haptic * haptic)
  *
  * \brief Returns the number of effects a haptic device can store.
@@ -518,7 +519,7 @@ extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
  */
 extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
 
-/*
+/**
  * \fn unsigned int SDL_HapticQueryEffects(SDL_Haptic * haptic)
  *
  * \brief Gets the haptic devices supported features in bitwise matter.
@@ -539,7 +540,7 @@ extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
  */
 extern DECLSPEC unsigned int SDL_HapticQuery(SDL_Haptic * haptic);
 
-/*
+/**
  * \fn int SDL_HapticEffectSupported
  *
  * \brief Checks to see if effect is supported by haptic.
@@ -554,7 +555,7 @@ extern DECLSPEC unsigned int SDL_HapticQuery(SDL_Haptic * haptic);
  */
 extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
-/*
+/**
  * \fn int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
  *
  * \brief Creates a new haptic effect on the device.
@@ -569,7 +570,7 @@ extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEff
  */
 extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
-/*
+/**
  * \fn int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
  *
  * \brief Updates an effect.  Can be used dynamically, although behaviour when
@@ -588,7 +589,7 @@ extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * 
  */
 extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
 
-/*
+/**
  * \fn int SDL_HapticRunEffects(SDL_Haptic * haptic, int effect)
  *
  * \brief Runs the haptic effect on it's assosciated haptic device.
@@ -603,7 +604,7 @@ extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_
  */
 extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
 
-/*
+/**
  * \fn int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)
  *
  * \brief Stops the haptic effect on it's assosciated haptic device.
@@ -617,7 +618,7 @@ extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
  */
 extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
 
-/*
+/**
  * \fn void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
  *
  * \brief Destroys a haptic effect on the device.  This will stop the effect
@@ -631,7 +632,7 @@ extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
  */
 extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
 
-/*
+/**
  * \fn int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
  *
  * \brief Gets the status of the current effect on the haptic device.
@@ -648,7 +649,7 @@ extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
  */
 extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
 
-/*
+/**
  * \fn int SDL_HapticSetGain(SDL_Haptic * haptic, int gain)
  *
  * \brief Sets the global gain of the device.  Gain should be between 0 and 100.
@@ -663,7 +664,7 @@ extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
  */
 extern DECLSPEC int SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
 
-/*
+/**
  * \fn int SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
  *
  * \brief Sets the global autocenter of the device.  Autocenter should be between
