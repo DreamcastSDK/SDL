@@ -292,7 +292,7 @@ SDL_HapticNumEffects(SDL_Haptic * haptic)
  * Returns supported effects by the device.
  */
 unsigned int
-SDL_HapticQueryEffects(SDL_Haptic * haptic)
+SDL_HapticQuery(SDL_Haptic * haptic)
 {
    if (!ValidHaptic(&haptic)) {
       return -1;
