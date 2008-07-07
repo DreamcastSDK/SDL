@@ -451,13 +451,13 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          condition = &src->condition;
 
          /* Header */
-         if (dest->type == SDL_HAPTIC_SPRING)
+         if (condition->type == SDL_HAPTIC_SPRING)
             dest->type = FF_SPRING;
-         else if (dest->type == SDL_HAPTIC_DAMPER)
+         else if (condition->type == SDL_HAPTIC_DAMPER)
             dest->type = FF_DAMPER;
-         else if (dest->type == SDL_HAPTIC_INERTIA)
+         else if (condition->type == SDL_HAPTIC_INERTIA)
             dest->type = FF_INERTIA;
-         else if (dest->type == SDL_HAPTIC_FRICTION)
+         else if (condition->type == SDL_HAPTIC_FRICTION)
             dest->type = FF_FRICTION;
          dest->direction = 0; /* Handled by the condition-specifics. */
 
