@@ -60,7 +60,7 @@
  *    memset( &effect, 0, sizeof(SDL_HapticEffect) ); // 0 is safe default
  *    effect.type = SDL_HAPTIC_SINE;
  *    effect.periodic.direction.type = SDL_HAPTIC_POLAR; // Polar coordinates
- *    effect.periodic.direction.dir[0] = 180000; // Force comes from south
+ *    effect.periodic.direction.dir[0] = 18000; // Force comes from south
  *    effect.periodic.period = 1000; // 1000 ms
  *    effect.periodic.magnitude = 20000; // 20000/32767 strength
  *    effect.periodic.length = 5000; // 5 seconds long
