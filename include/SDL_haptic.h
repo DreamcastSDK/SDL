@@ -291,7 +291,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *                    ^
  *                    |
  *                    |
- * (1)  East <----[ HAPTIC ]----> West (-1)
+ * (1)  West <----[ HAPTIC ]----> East (-1)
  *                    |
  *                    |
  *                    v

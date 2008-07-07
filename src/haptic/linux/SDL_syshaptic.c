@@ -341,7 +341,8 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 
    switch (dir->type) {
       case SDL_HAPTIC_POLAR:
-         tmp = ((dir->dir[0] % 36000) * 0xFFFF) / 36000;
+         /* Linux directions are inverted. */
+         tmp = (((18000 + dir->dir[0]) % 36000) * 0xFFFF) / 36000;
          return (Uint16) tmp;
          break;
       case SDL_HAPTIC_CARTESIAN:
