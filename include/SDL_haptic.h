@@ -636,10 +636,24 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  *    \param device_index Index of the device to open.
  *    \return Device identifier or NULL on error.
  *
+ * \sa SDL_HapticIndex
  * \sa SDL_HapticOpenFromJoystick
  * \sa SDL_HapticClose
  */
 extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
+
+
+/**
+ * \fn int SDL_HapticIndex(SDL_Haptic * haptic)
+ *
+ * \brief Gets the index of a haptic device.
+ *
+ *    \param haptic Haptic device to get the index of.
+ *    \return The index of the haptic device or -1 on error.
+ *
+ * \sa SDL_HapticOpen
+ */
+extern DECLSPEC int SDL_HapticIndex(SDL_Haptic * haptic);
 
 /**
  * \fn int SDL_JoystickIsHaptic(SDL_Joystick * joystick)
