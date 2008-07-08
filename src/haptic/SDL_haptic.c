@@ -149,6 +149,25 @@ SDL_HapticOpen(int device_index)
 
 
 /*
+ * Returns 1 if the device has been opened.
+ */
+int
+SDL_HapticOpened(int device_index)
+{
+   int i, opened;
+
+   opened = 0;
+   for (i=0; SDL_haptics[i]; i++) {
+      if (SDL_haptics[i]->index == (Uint8) device_index) {
+         opened = 1;
+         break;
+      }
+   }
+   return opened;
+}
+
+
+/*
  * Returns the index to a haptic device.
  */
 int
