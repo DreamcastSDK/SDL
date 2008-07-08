@@ -630,8 +630,9 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  * \brief Opens a Haptic device for usage - the index passed as an
  * argument refers to the N'th Haptic device on this system.
  *
- * This function returns a Haptic device identifier, or Null
- * if an error occurred.
+ * When opening a haptic device, it's gain will be set to maximum and
+ *  autocenter will be disabled.  To modify these values use
+ *  SDL_HapticSetGain and SDL_HapticSetAutocenter
  *
  *    \param device_index Index of the device to open.
  *    \return Device identifier or NULL on error.
@@ -639,6 +640,8 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  * \sa SDL_HapticIndex
  * \sa SDL_HapticOpenFromJoystick
  * \sa SDL_HapticClose
+ * \sa SDL_HapticSetGain
+ * \sa SDL_HapticSetAutocenter
  */
 extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
 
@@ -853,6 +856,11 @@ extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
  * \brief Sets the global gain of the device.  Gain should be between 0 and 100.
  *
  * Device must support the SDL_HAPTIC_GAIN feature.
+ *
+ * The user may specify the maxmimum gain by setting the environment variable
+ *  SDL_HAPTIC_GAIN_MAX which should be between 0 and 100.  All calls to
+ *  SDL_HapticSetGain will scale linearly using SDL_HAPTIC_GAIN_MAX as the
+ *  maximum.
  *
  *    \param haptic Haptic device to set the gain on.
  *    \param gain Value to set the gain to, should be between 0 and 100.

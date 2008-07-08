@@ -138,6 +138,12 @@ SDL_HapticOpen(int device_index)
       return NULL;
    }
 
+   /* Disable autocenter and set gain to max. */
+   if (haptic->supported & SDL_HAPTIC_GAIN)
+      SDL_HapticSetGain(haptic,100);
+   if (haptic->supported & SDL_HAPTIC_AUTOCENTER)
+      SDL_HapticSetAutocenter(haptic,0);
+
    /* Add haptic to list */
    ++haptic->ref_count;
    for (i=0; SDL_haptics[i]; i++)
@@ -494,6 +500,9 @@ SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
 int
 SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
 {
+   const char *env;
+   int real_gain, max_gain;
+
    if (!ValidHaptic(&haptic)) {
       return -1;
    }
@@ -508,7 +517,23 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
       return -1;
    }
 
-   if (SDL_SYS_HapticSetGain(haptic,gain) < 0) {
+   /* We use the envvar to get the maximum gain. */
+   env = SDL_getenv("SDL_HAPTIC_GAIN_MAX");
+   if (env != NULL) {
+      max_gain = SDL_atoi(env);
+
+      /* Check for sanity. */
+      if (max_gain < 0) max_gain = 0;
+      else if (max_gain > 100) max_gain = 100;
+
+      /* We'll scale it linearly with SDL_HAPTIC_GAIN_MAX */
+      real_gain = (gain * max_gain) / 100;
+   }
+   else {
+      real_gain = gain;
+   }
+
+   if (SDL_SYS_HapticSetGain(haptic,real_gain) < 0) {
       return -1;
    }
 
