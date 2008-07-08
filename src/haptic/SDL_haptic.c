@@ -59,6 +59,24 @@ SDL_HapticInit(void)
 
 
 /*
+ * Checks to see if the haptic device is valid
+ */
+static int
+ValidHaptic(SDL_Haptic ** haptic)
+{
+   int valid;
+   
+   if (*haptic == NULL) {
+      SDL_SetError("Haptic device hasn't been opened yet");
+      valid = 0;
+   } else {
+      valid = 1;
+   }
+   return valid;
+}
+
+
+/*
  * Returns the number of available devices.
  */
 int
@@ -127,6 +145,20 @@ SDL_HapticOpen(int device_index)
    SDL_haptics[i] = haptic;
 
    return haptic;
+}
+
+
+/*
+ * Returns the index to a haptic device.
+ */
+int
+SDL_HapticIndex(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   return haptic->index;
 }
 
 
@@ -200,24 +232,6 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
    SDL_haptics[i] = haptic;
 
    return haptic;
-}
-
-
-/*
- * Checks to see if the haptic device is valid
- */
-static int
-ValidHaptic(SDL_Haptic ** haptic)
-{
-   int valid;
-
-   if (*haptic == NULL) {
-      SDL_SetError("Haptic device hasn't been opened yet");
-      valid = 0;
-   } else {
-      valid = 1;
-   }
-   return valid;
 }
 
 
