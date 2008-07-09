@@ -24,14 +24,12 @@
 #if defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
 
 #include "SDL_haptic.h"
-#include "../SDL_haptic_c.h"
 #include "../SDL_syshaptic.h"
 
 
 int
 SDL_SYS_HapticInit(void)
 {
-   SDL_numhaptics = 0;
    return 0;
 }
 
@@ -53,7 +51,7 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 
 
 int
-SDL_JoystickIsHaptic(SDL_Joystick * joystick)
+SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
    return 0;
 }
@@ -128,7 +126,7 @@ void
 SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 {
    SDL_SetError("Logic error: No haptic devices available.");
-   return -1;
+   return;
 }
 
 
