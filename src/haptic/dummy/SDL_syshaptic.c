@@ -21,7 +21,7 @@
 */
 #include "SDL_config.h"
 
-#ifdef defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
+#if defined(SDL_HAPTIC_DUMMY) || defined(SDL_HAPTIC_DISABLED)
 
 #include "SDL_haptic.h"
 #include "../SDL_haptic_c.h"

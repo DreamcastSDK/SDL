@@ -239,7 +239,7 @@ AC_ARG_ENABLE(haptic,
 AC_HELP_STRING([--enable-haptic], [Enable the haptic (force feedback) subsystem [[default=yes]]]),
               , enable_haptic=yes)
 if test x$enable_haptic != xyes; then
-    AC_DEFINE(SDL_HAPTIC_DISABLE)
+    AC_DEFINE(SDL_HAPTIC_DISABLED)
 else
     SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 fi
