@@ -38,6 +38,11 @@
 #include <linux/limits.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
+
+#ifndef M_PI
+#  define M_PI     3.14159265358979323846
+#endif
 
 
 #define MAX_HAPTICS  32
@@ -338,6 +343,7 @@ static Uint16
 SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 {
    Uint32 tmp;
+   float f;
 
    switch (dir->type) {
       case SDL_HAPTIC_POLAR:
@@ -346,8 +352,10 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
          return (Uint16) tmp;
          break;
       case SDL_HAPTIC_CARTESIAN:
-         /* TODO implement cartesian for linux since it's not supported
-          * by driver */
+         f = atan2(dir->dir[0], dir->dir[1]);
+         tmp = (int)(f*18000./M_PI) % 36000;
+         tmp = (tmp * 0xFFFF) / 36000;
+         return (Uint16) tmp;
          break;
 
       default:
