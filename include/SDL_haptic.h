@@ -306,16 +306,16 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * If type is SDL_HAPTIC_POLAR, direction is encoded by hundredths of a 
  *  degree starting north and turning clockwise.  The cardinal directions would be:
  *   - North: 0 (0 degrees)
- *   - West: 9000 (90 degrees)
+ *   - East: 9000 (90 degrees)
  *   - South: 18000 (180 degrees)
- *   - East: 27000 (270 degrees)
+ *   - West: 27000 (270 degrees)
  *
  * If type is SDL_HAPTIC_CARTESIAN, direction is encoded by position.
  *  The cardinal directions would be:
  *   - North:  0,-1
- *   - West:  -1, 0
+ *   - East:  -1, 0
  *   - South:  0, 1
- *   - East:   1, 0
+ *   - West:   1, 0
  *
  *
  * Example:
@@ -323,7 +323,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * SDL_HapticDirection direction;
  *
  * direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
- * direction.dir = 180000; // Force comes from the south meaning the user will
+ * direction.dir = 18000; // Force comes from the south meaning the user will
  *                         // have to pull the stick to counteract.
  * \endcode
  *
