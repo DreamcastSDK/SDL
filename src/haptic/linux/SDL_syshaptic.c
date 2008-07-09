@@ -72,7 +72,7 @@ struct haptic_hwdata
  */
 struct haptic_hweffect
 {
-   struct ff_effect effect;
+   struct ff_effect effect; /* The linux kernel effect structure. */
 };
 
 
@@ -343,20 +343,19 @@ static Uint16
 SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 {
    Uint32 tmp;
-   float f;
+   float f; /* Ideally we'd use fixed point math instead of floats... */
 
    switch (dir->type) {
       case SDL_HAPTIC_POLAR:
          /* Linux directions are inverted. */
          tmp = (((18000 + dir->dir[0]) % 36000) * 0xFFFF) / 36000;
          return (Uint16) tmp;
-         break;
       case SDL_HAPTIC_CARTESIAN:
+         /* We must invert "x" and "y" to go clockwise. */
          f = atan2(dir->dir[0], dir->dir[1]);
          tmp = (int)(f*18000./M_PI) % 36000;
          tmp = (tmp * 0xFFFF) / 36000;
          return (Uint16) tmp;
-         break;
 
       default:
          return -1;
