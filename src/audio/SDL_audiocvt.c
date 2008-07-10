@@ -1536,6 +1536,7 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	   significantly fewer multiplications and additions. However, this
 	   depends on the zero stuffing ratio, so it may not pay off.
 	*/
+	/* We only calculate the values of samples which are 0 (mod len_div) because those are the only ones used */
 #define filter_sinc(type, mult) { \
 			type *sinc = (type *)cvt->coeff; \
 			type *state = (type *)cvt->state_buf; \
@@ -1543,9 +1544,11 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 			for(i = 0; i < n; ++i) { \
 				state[cvt->state_pos] = buf[i]; \
 				buf[i] = 0; \
-				for(j = 0; j < m;  ++j) { \
-					buf[i] += mult(sinc[j], state[(cvt->state_pos + j) % m]); \
-				} \
+				if( i % cvt->len_div == 0 ) { \
+					for(j = 0; j < m;  ++j) { \
+						buf[i] += mult(sinc[j], state[(cvt->state_pos + j) % m]); \
+					} \
+				}\
 				cvt->state_pos = (cvt->state_pos + 1) % m; \
 			} \
 		}
@@ -1616,7 +1619,6 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 #ifdef DEBUG_CONVERT
 	printf("Lowpass cutoff frequency = %f\n", fc);
 #endif
-//	fc = 0.02f;
 	two_pi_fc = 2.0f * M_PI * fc;
 	two_pi_over_m = 2.0f * M_PI / (float)m;
 	four_pi_over_m = 2.0f * two_pi_over_m;
@@ -1635,7 +1637,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	}
 		
 #define convert_fixed(type, fix) { \
-		norm_fact = 0.7f / norm_sum; \
+		norm_fact = 0.5f / norm_sum; \
 		type *dst = (type *)cvt->coeff; \
 		for( i = 0; i <= m; ++i ) { \
 			dst[i] = fix(fSinc[i] * norm_fact); \
@@ -1709,7 +1711,7 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 #define discard_mono(type) { \
         const type *src = (const type *) (cvt->buf); \
         type *dst = (type *) (cvt->buf); \
-        for (i = 0; i < cvt->len_cvt / cvt->len_div / sizeof (type); ++i) { \
+        for (i = 0; i < (cvt->len_cvt / sizeof(type)) / cvt->len_div; ++i) { \
             dst[0] = src[0]; \
             src += cvt->len_div; \
             ++dst; \
@@ -1735,9 +1737,12 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 	cvt->len_cvt *= cvt->len_mult;
 
 	// Step 2: Use either a windowed sinc FIR filter or IIR lowpass filter to remove all alias frequencies
-	SDL_FilterFIR( cvt, format );
+	QSDL_FilterFIR( cvt, format );
+	
+	// OPTIMIZATION: we only need to calculate the non-discarded samples. This could be a big speedup!
 	
 	// Step 3: Discard unnecessary samples
+
 #ifdef DEBUG_CONVERT
 	printf("Discarding samples by a factor of %u\n", cvt->len_div);
 #endif
@@ -1859,7 +1864,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 	cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
 	cvt->filters[cvt->filter_index++] = SDL_Resample;
 	//SDL_BuildIIRLowpass(cvt, dst_fmt);
-	SDL_BuildWindowedSinc(cvt, dst_fmt, 20);
+	SDL_BuildWindowedSinc(cvt, dst_fmt, 768);
 	
     /*cvt->rate_incr = 0.0;
     if ((src_rate / 100) != (dst_rate / 100)) {
