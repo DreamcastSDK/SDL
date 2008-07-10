@@ -79,10 +79,16 @@ static void NDS_DestroyRenderer(SDL_Renderer * renderer);
 
 SDL_RenderDriver NDS_RenderDriver = {
     NDS_CreateRenderer,
-    {"nds", SDL_RENDERER_PRESENTCOPY}
-/*   (SDL_RENDERER_SINGLEBUFFER | SDL_RENDERER_PRESENTCOPY |
-      SDL_RENDERER_PRESENTFLIP2 | SDL_RENDERER_PRESENTFLIP3 |
-      SDL_RENDERER_PRESENTDISCARD),*/
+    {"nds", SDL_RENDERER_SINGLEBUFFER}
+/*SDL_RENDERER_ values
+SINGLEBUFFER   Render directly to the window, if possible
+PRESENTCOPY    Present uses a copy from back buffer to the front buffer
+PRESENTFLIP2   Present uses a flip, swapping back buffer and front buffer
+PRESENTFLIP3   Present uses a flip, rotating two back buf.s and a front buf.
+PRESENTDISCARD Present leaves the contents of the backbuffer undefined
+PRESENTVSYNC   Present is synchronized with the refresh rate
+ACCELERATED    The renderer uses hardware acceleration
+*/
 };
 
 typedef struct
@@ -91,6 +97,12 @@ typedef struct
     u16* fb;
 } NDS_RenderData;
 
+typedef struct
+{
+    enum { NDSTX_BG, NDSTX_SPR } type;
+    struct { int w, h, pitch, bpp; } dim;
+    u16 *vram;
+} NDS_TextureData;
 
 
 /* this is mainly hackish testing/debugging stuff to get cleaned up soon
@@ -143,7 +155,7 @@ sdlds_print_surface_info(SDL_Surface * s)
     sdlds_print_pixfmt_info(s->format);
 }
 
-
+/* again the above shouldn't make it into the stable version */
 
 SDL_Renderer *
 NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
@@ -199,7 +211,8 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     } else {
         renderer->info.flags |= SDL_RENDERER_PRESENTCOPY;
         n = 1;
-    }/*
+    }
+    /*
     for (i = 0; i < n; ++i) {
         data->screens[i] =
             SDL_CreateRGBSurface(0, 256, 192, bpp, Rmask, Gmask, Bmask,
@@ -215,6 +228,182 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->fb = (u16*)0x06020000;
 
     return renderer;
+}
+
+static int
+NDS_ActivateRenderer(SDL_Renderer * renderer)
+{
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
+    /* stub. TODO: figure out what needs to be done, if anything. */
+    return 0;
+}
+
+static int
+NDS_DisplayModeChanged(SDL_Renderer * renderer)
+{
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
+    /* stub. TODO: figure out what needs to be done */
+    return 0;
+}
+
+static int
+NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
+
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+        return -1;
+    } else {
+        int bpp;
+        Uint32 Rmask, Gmask, Bmask, Amask;
+
+        if (!SDL_PixelFormatEnumToMasks
+            (texture->format, &bpp, &Rmask, &Gmask, &Bmask, &Amask)) {
+            SDL_SetError("Unknown texture format");
+            return -1;
+        }
+        /* TODO: appropriate checks for ABGR1555 */
+        texture->driverdata = SDL_calloc(1, sizeof(NDS_TextureData));
+        /* TODO: conditional statements on w/h to place it as bg/sprite */
+    }
+
+    if (!texture->driverdata) {
+        return -1;
+    }
+    return 0;
+}
+
+static int
+NDS_QueryTexturePixels(SDL_Renderer * renderer, SDL_Texture * texture,
+                      void **pixels, int *pitch)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+        return -1;
+    } else {
+        NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+
+        *pixels = txdat->vram;
+        *pitch = txdat->dim.pitch;
+        return 0;
+    }
+}
+
+static int
+NDS_SetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
+                     const SDL_Color * colors, int firstcolor, int ncolors)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("YUV textures don't have a palette");
+        return -1;
+    } else {
+        NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+        /* TODO: mess with 8-bit modes and/or 16-color palette modes */
+        return 0;
+    }
+}
+
+static int
+NDS_GetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
+                     SDL_Color * colors, int firstcolor, int ncolors)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("YUV textures don't have a palette");
+        return -1;
+    } else {
+        NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+        /* TODO: mess with 8-bit modes and/or 16-color palette modes */
+        return 0;
+    }
+}
+
+static int
+NDS_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    /* stub. TODO: figure out what needs to be done, if anything */
+    return 0;
+}
+
+static int
+NDS_SetTextureAlphaMod(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    /* stub. TODO: figure out what needs to be done, if anything */
+    return 0;
+}
+
+static int
+NDS_SetTextureBlendMode(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    /* stub. TODO: figure out what needs to be done, if anything */
+    return 0;
+}
+
+static int
+NDS_SetTextureScaleMode(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    /* stub. TODO: figure out what needs to be done.
+       (NDS hardware scaling is nearest neighbor.) */
+    return 0;
+}
+
+static int
+NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                 const SDL_Rect * rect, const void *pixels, int pitch)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+        return -1;
+    } else {
+        NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+        Uint8 *src, *dst;
+        int row;
+        size_t length;
+        /* IMPORTANT! copy the new pixels into the sprite or bg. */
+        src = (Uint8 *) pixels;
+        dst =
+            (Uint8 *) txdat->vram + rect->y * txdat->dim.pitch +
+            rect->x * (txdat->dim.bpp/8);
+        length = rect->w * (txdat->dim.bpp/8);
+        for (row = 0; row < rect->h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += pitch;
+            dst += surface->pitch;
+        }
+        return 0;
+    }
+}
+
+static int
+NDS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+               const SDL_Rect * rect, int markDirty, void **pixels,
+               int *pitch)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+        return -1;
+    } else {
+        NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+
+        *pixels = (void *) ((u8 *)txdat->vram + rect->y * txdat->dim.pitch
+                            + rect->x * (txdat->dim.bpp/8));
+        *pitch = txdat->dim.pitch;
+        return 0;
+    }
+}
+
+static void
+NDS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+    }
+}
+
+static void
+NDS_DirtyTexture(SDL_Renderer * renderer, SDL_Texture * texture,
+                int numrects, const SDL_Rect * rects)
+{ /* stub */
 }
 
 static int
@@ -235,6 +424,7 @@ NDS_RenderFill(SDL_Renderer * renderer, Uint8 r, Uint8 g, Uint8 b,
     }
     return 0;
 }
+
 static int
 NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * srcrect, const SDL_Rect * dstrect)
@@ -297,19 +487,40 @@ NDS_RenderPresent(SDL_Renderer * renderer)
 }
 
 static void
+NDS_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        SDL_SetError("Unsupported texture format");
+    } else {
+        /* TODO: free anything allocated for texture */
+        /*SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+        SDL_FreeSurface(surface);*/
+    }
+}
+
+static void
 NDS_DestroyRenderer(SDL_Renderer * renderer)
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
+    /*SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);*/
     int i;
 
-    printf("NDS_DestroyRenderer(renderer)\n");
-    printf(" renderer: %s\n", renderer->info.name);
     if (data) {
-        /*for (i = 0; i < SDL_arraysize(data->screens); ++i) {
-            if (data->screens[i]) {
-                SDL_FreeSurface(data->screens[i]);
+        for (i = 0; i < SDL_arraysize(data->texture); ++i) {
+            if (data->texture[i]) {
+                DestroyTexture(data->renderer, data->texture[i]);
             }
-        }*/
+        }
+        if (data->surface.format) {
+            SDL_SetSurfacePalette(&data->surface, NULL);
+            SDL_FreeFormat(data->surface.format);
+        }
+        if (display->palette) {
+            SDL_DelPaletteWatch(display->palette, DisplayPaletteChanged,
+                                data);
+        }
+        SDL_FreeDirtyRects(&data->dirty);
         SDL_free(data);
     }
     SDL_free(renderer);

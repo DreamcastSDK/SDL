@@ -35,7 +35,6 @@
 #include "SDL_keyboard.h"
 #include "SDL_mouse.h"
 #include "SDL_joystick.h"
-#include "SDL_touchscreen.h"
 #include "SDL_quit.h"
 
 #include "begin_code.h"
@@ -71,9 +70,6 @@ typedef enum
     SDL_JOYHATMOTION,           /**< Joystick hat position change */
     SDL_JOYBUTTONDOWN,          /**< Joystick button pressed */
     SDL_JOYBUTTONUP,            /**< Joystick button released */
-    SDL_TOUCHPRESSED,           /**< Touchscreen pressed */
-    SDL_TOUCHRELEASED,          /**< Touchscreen no longer pressed */
-    SDL_TOUCHMOTION,            /**< Touchscreen point motion */
     SDL_QUIT,                   /**< User-requested quit */
     SDL_SYSWMEVENT,             /**< System specific event */
     SDL_EVENT_RESERVED1,        /**< Reserved for future use... */
@@ -115,11 +111,6 @@ typedef enum
         SDL_EVENTMASK(SDL_JOYBALLMOTION) |
         SDL_EVENTMASK(SDL_JOYHATMOTION) |
         SDL_EVENTMASK(SDL_JOYBUTTONDOWN) | SDL_EVENTMASK(SDL_JOYBUTTONUP),
-    SDL_TOUCHPRESSEDMASK = SDL_EVENTMASK(SDL_TOUCHPRESSED),
-    SDL_TOUCHRELEASEDMASK = SDL_EVENTMASK(SDL_TOUCHRELEASED),
-    SDL_TOUCHMOTIONMASK = SDL_EVENTMASK(SDL_TOUCHMOTION),
-    SDL_TOUCHEVENTMASK = SDL_EVENTMASK(SDL_TOUCHPRESSED) |
-        SDL_EVENTMASK(SDL_TOUCHRELEASED) | SDL_EVENTMASK(SDL_TOUCHMOTION),
     SDL_QUITMASK = SDL_EVENTMASK(SDL_QUIT),
     SDL_SYSWMEVENTMASK = SDL_EVENTMASK(SDL_SYSWMEVENT)
 } SDL_EventMask;
@@ -273,21 +264,6 @@ typedef struct SDL_JoyButtonEvent
 } SDL_JoyButtonEvent;
 
 /**
- * \struct SDL_TouchEvent
- *
- * \brief Touchscreen motion event structure (event.touch.*)
- */
-typedef struct SDL_TouchEvent
-{
-    Uint8 type;         /**< SDL_TOUCHMOTION, SDL_TOUCHPRESS, SDL_TOUCHRELEASED */
-    Uint8 which;        /**< The touchscreen device index */
-    int point;          /**< The touch point index, relevant for multitouch. */
-    int xpos;           /**< The X coordinate of the touch point. */
-    int ypos;           /**< The Y coordinate of the touch point. */
-    int pressure;       /**< The pressure of the touch */
-} SDL_TouchEvent;
-
-/**
  * \struct SDL_QuitEvent
  *
  * \brief The "quit requested" event
@@ -358,7 +334,6 @@ typedef union SDL_Event
     SDL_JoyBallEvent jball;         /**< Joystick ball event data */
     SDL_JoyHatEvent jhat;           /**< Joystick hat event data */
     SDL_JoyButtonEvent jbutton;     /**< Joystick button event data */
-    SDL_TouchEvent touch;           /**< Touchscreen event data */
     SDL_QuitEvent quit;             /**< Quit request event data */
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */

@@ -51,9 +51,6 @@ src/events/SDL_windowevents.c \
 src/file/SDL_rwops.c \
 src/joystick/nds/SDL_sysjoystick.c \
 src/joystick/SDL_joystick.c \
-src/touchscreen/nds/SDL_systouchscreen.c \
-src/touchscreen/dummy/SDL_systouchscreen.c \
-src/touchscreen/SDL_touchscreen.c \
 src/stdlib/SDL_getenv.c \
 src/stdlib/SDL_iconv.c \
 src/stdlib/SDL_malloc.c \
