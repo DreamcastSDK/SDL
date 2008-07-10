@@ -25,7 +25,7 @@
 #include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 
 
-static Uint8 SDL_numhaptics = 0;
+Uint8 SDL_numhaptics = 0;
 SDL_Haptic **SDL_haptics = NULL;
 static SDL_Haptic *default_haptic = NULL;
 
@@ -184,6 +184,37 @@ SDL_HapticIndex(SDL_Haptic * haptic)
    }
 
    return haptic->index;
+}
+
+
+/*
+ * Returns SDL_TRUE if mouse is haptic, SDL_FALSE if it isn't.
+ */
+int
+SDL_MouseIsHaptic(void)
+{
+   if (SDL_SYS_HapticMouse() < 0)
+      return SDL_FALSE;
+   return SDL_TRUE;
+}
+
+
+/*
+ * Returns the haptic device if mouse is haptic or NULL elsewise.
+ */
+SDL_Haptic *
+SDL_HapticOpenFromMouse(void)
+{
+   int device_index;
+
+   device_index = SDL_SYS_HapticMouse();
+
+   if (device_index < 0) {
+      SDL_SetError("Mouse isn't a haptic device.");
+      return NULL;
+   }
+
+   return SDL_HapticOpen(device_index);
 }
 
 

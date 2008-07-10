@@ -91,13 +91,14 @@ EV_IsHaptic(int fd)
    unsigned int ret;
    unsigned long features[1 + FF_MAX/sizeof(unsigned long)];
 
+   /* Ask device for what it has. */
    ret = 0;
-
-   if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(unsigned long) * 4), features) < 0) {
+   if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(features)), features) < 0) {
       SDL_SetError("Unable to get device's haptic abilities: %s", strerror(errno));
       return -1;
    }
 
+   /* Convert supported features to SDL_HAPTIC platform-neutral features. */
    EV_TEST(FF_CONSTANT,   SDL_HAPTIC_CONSTANT);
    EV_TEST(FF_PERIODIC,   SDL_HAPTIC_SINE |
                           SDL_HAPTIC_SQUARE |
@@ -113,7 +114,30 @@ EV_IsHaptic(int fd)
    EV_TEST(FF_GAIN,       SDL_HAPTIC_GAIN);
    EV_TEST(FF_AUTOCENTER, SDL_HAPTIC_AUTOCENTER);
 
+   /* Return what it supports. */
    return ret;
+}
+
+
+/*
+ * Tests whether a device is a mouse or not.
+ */
+static int
+EV_IsMouse(int fd)
+{
+   unsigned long argp[40];
+
+   /* Ask for supported features. */
+   if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(argp)), argp) < 0) {
+      return -1;
+   }
+
+   /* Currently we only test for BTN_MOUSE which can give fake positives. */
+   if (test_bit(BTN_MOUSE,argp) != 0) {
+      return 1;
+   }
+
+   return 0;
 }
 
 /*
@@ -133,6 +157,10 @@ SDL_SYS_HapticInit(void)
 
    numhaptics = 0;
 
+   /* 
+    * Limit amount of checks to MAX_HAPTICS since we may or may not have
+    * permission to some or all devices.
+    */
    i = 0;
    for (j = 0; j < MAX_HAPTICS; ++j) {
 
@@ -185,12 +213,19 @@ SDL_SYS_HapticName(int index)
    static char namebuf[128];
    char *name;
 
+   /* Open the haptic device. */
    name = NULL;
    fd = open(SDL_hapticlist[index].fname, O_RDONLY, 0);
+
    if (fd >= 0) {
+
+      /* Check for name ioctl. */
       if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) <= 0) {
+
+         /* No name found, return device character device */
          name = SDL_hapticlist[index].fname;
       }
+      /* Name found, return name. */
       else {
          name = namebuf;
       }
@@ -215,6 +250,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
       goto open_err;
    }
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
+
    /* Set the data */
    haptic->hwdata->fd = fd;
    haptic->supported = EV_IsHaptic(fd);
@@ -264,7 +300,38 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
    }
    
    return SDL_SYS_HapticOpenFromFD(haptic,fd);
-} 
+}
+
+
+/*
+ * Opens a haptic device from first mouse it finds for usage.
+ */
+int
+SDL_SYS_HapticMouse(void)
+{
+   int fd;
+   int i;
+
+   for (i=0; i<SDL_numhaptics; i++) {
+
+      /* Open the device. */
+      fd = open(SDL_hapticlist[i].fname, O_RDWR, 0);
+      if (fd < 0) {
+         SDL_SetError("Unable to open %s: %s",
+               SDL_hapticlist[i], strerror(errno));
+         return -1;
+      }
+
+      if (EV_IsMouse(fd)) {
+         close(fd);
+         return i;
+      }
+
+      close(fd);
+   }
+   
+   return -1;
+}
 
 
 /*
