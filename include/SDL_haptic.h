@@ -70,7 +70,7 @@
  *    effect_id = SDL_HapticNewEffect( haptic, &effect );
  *
  *    // Test the effect
- *    SDL_HapticRunEffect( haptic, effect_id );
+ *    SDL_HapticRunEffect( haptic, effect_id, 1 );
  *    SDL_Delay( 5000); // Wait for the effect to finish
  *
  *    // We destroy the effect, although closing the device also does this
@@ -261,6 +261,19 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * \sa SDL_HapticDirection
  */
 #define SDL_HAPTIC_CARTESIAN  1
+
+
+/*
+ * Misc defines.
+ */
+/**
+ * \def SDL_HAPTIC_INFINITY
+ *
+ * \brief Used to play a device an infinite number of times.
+ *
+ * \sa SDL_HapticRunEffect
+ */
+#define SDL_HAPTIC_INFINITY   -1
 
 
 /**
@@ -681,7 +694,7 @@ extern DECLSPEC int SDL_HapticIndex(SDL_Haptic * haptic);
  *
  * \sa SDL_HapticOpenFromMouse
  */
-extern DECLSPEC SDL_MouseIsHaptic(void);
+extern DECLSPEC int SDL_MouseIsHaptic(void);
 
 /**
  * \fn SDL_Haptic * SDL_HapticOpenFromMouse(void)
@@ -830,19 +843,21 @@ extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * 
 extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
 
 /**
- * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
+ * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations)
  *
  * \brief Runs the haptic effect on it's assosciated haptic device.
  *
  *    \param haptic Haptic device to run the effect on.
  *    \param effect Identifier of the haptic effect to run.
+ *    \param iterations Number of iterations to run the effect. Use
+ *           SDL_HAPTIC_INFINITY for infinity.
  *    \return 0 on success or -1 on error.
  *
  * \sa SDL_HapticStopEffect
  * \sa SDL_HapticDestroyEffect
  * \sa SDL_HapticGetEffectStatus
  */
-extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect);
+extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations);
 
 /**
  * \fn int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)

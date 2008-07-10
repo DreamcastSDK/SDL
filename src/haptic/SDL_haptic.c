@@ -470,14 +470,14 @@ SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
  * Runs the haptic effect on the device.
  */
 int
-SDL_HapticRunEffect(SDL_Haptic * haptic, int effect)
+SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations)
 {
    if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
    /* Run the effect */
-   if (SDL_SYS_HapticRunEffect(haptic,&haptic->effects[effect]) < 0) {
+   if (SDL_SYS_HapticRunEffect(haptic,&haptic->effects[effect], iterations) < 0) {
       return -1;
    }
 

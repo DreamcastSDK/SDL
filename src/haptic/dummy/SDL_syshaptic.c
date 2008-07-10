@@ -114,7 +114,7 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
 
 
 int
-SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
+SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect, int iterations)
 {
    SDL_SetError("Logic error: No haptic devices available.");
    return -1;

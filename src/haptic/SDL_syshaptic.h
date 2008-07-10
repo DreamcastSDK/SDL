@@ -38,7 +38,7 @@ struct haptic_effect
 };
 
 /*
- * The real SDL_Haptic event.
+ * The real SDL_Haptic struct.
  */
 struct _SDL_Haptic
 {  
@@ -139,7 +139,8 @@ extern int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
  * Returns 0 on success, -1 on error.
  */
 extern int SDL_SYS_HapticRunEffect(SDL_Haptic * haptic,
-                                   struct haptic_effect * effect);
+                                   struct haptic_effect * effect,
+                                   int iterations);
 
 /*
  * Stops the effect on the haptic device.
