@@ -356,6 +356,21 @@ SDL_HapticNumEffects(SDL_Haptic * haptic)
    return haptic->neffects;
 }
 
+
+/*
+ * Returns the number of effects a haptic device can play.
+ */
+int
+SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   return haptic->nplaying;
+}
+
+
 /*
  * Returns supported effects by the device.
  */

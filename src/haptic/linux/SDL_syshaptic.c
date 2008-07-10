@@ -260,6 +260,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
       SDL_SetError("Haptic: Unable to query device memory: %s", strerror(errno));
       goto open_err;
    }
+   haptic->nplaying = haptic->neffects; /* Linux makes no distinction. */
    haptic->effects = (struct haptic_effect *)
          SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
    if (haptic->effects == NULL) {
