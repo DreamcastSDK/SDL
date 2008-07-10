@@ -67,7 +67,7 @@ ValidHaptic(SDL_Haptic ** haptic)
    int valid;
    
    if (*haptic == NULL) {
-      SDL_SetError("Haptic device hasn't been opened yet");
+      SDL_SetError("Haptic: Device hasn't been opened yet");
       valid = 0;
    } else {
       valid = 1;
@@ -93,7 +93,7 @@ const char *
 SDL_HapticName(int device_index)
 {
    if ((device_index < 0) || (device_index >= SDL_numhaptics)) {
-      SDL_SetError("There are %d haptic devices available", SDL_numhaptics);
+      SDL_SetError("Haptic: There are %d haptic devices available", SDL_numhaptics);
       return NULL;
    }
    return SDL_SYS_HapticName(device_index);
@@ -110,7 +110,7 @@ SDL_HapticOpen(int device_index)
    SDL_Haptic *haptic;
 
    if ((device_index < 0) || (device_index >= SDL_numhaptics)) {
-      SDL_SetError("There are %d haptic devices available", SDL_numhaptics);
+      SDL_SetError("Haptic: There are %d haptic devices available", SDL_numhaptics);
       return NULL;
    }
 
@@ -210,7 +210,7 @@ SDL_HapticOpenFromMouse(void)
    device_index = SDL_SYS_HapticMouse();
 
    if (device_index < 0) {
-      SDL_SetError("Mouse isn't a haptic device.");
+      SDL_SetError("Haptic: Mouse isn't a haptic device.");
       return NULL;
    }
 
@@ -401,7 +401,7 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
 
    /* Check to see if effect is supported */
    if (SDL_HapticEffectSupported(haptic,effect)==SDL_FALSE) {
-      SDL_SetError("Haptic effect not supported by haptic device.");
+      SDL_SetError("Haptic: Effect not supported by haptic device.");
       return -1;
    }
 
@@ -417,7 +417,7 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
       }
    }
 
-   SDL_SetError("Haptic device has no free space left.");
+   SDL_SetError("Haptic: Device has no free space left.");
    return -1;
 }
 
@@ -428,7 +428,7 @@ static int
 ValidEffect(SDL_Haptic * haptic, int effect)
 {
    if ((effect < 0) || (effect >= haptic->neffects)) {
-      SDL_SetError("Invalid haptic effect identifier.");
+      SDL_SetError("Haptic: Invalid effect identifier.");
       return 0;
    }
    return 1;
@@ -518,7 +518,7 @@ SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
    }
 
    if ((haptic->supported & SDL_HAPTIC_STATUS) == 0) {
-      SDL_SetError("Haptic device does not support status queries.");
+      SDL_SetError("Haptic: Device does not support status queries.");
       return -1;
    }
 
@@ -539,12 +539,12 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
    }
 
    if ((haptic->supported & SDL_HAPTIC_GAIN) == 0) {
-      SDL_SetError("Haptic device does not support setting gain.");
+      SDL_SetError("Haptic: Device does not support setting gain.");
       return -1;
    }
 
    if ((gain < 0) || (gain > 100)) {
-      SDL_SetError("Haptic gain must be between 0 and 100.");
+      SDL_SetError("Haptic: Gain must be between 0 and 100.");
       return -1;
    }
 
@@ -582,12 +582,12 @@ SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter )
    }
 
    if ((haptic->supported & SDL_HAPTIC_AUTOCENTER) == 0) {
-      SDL_SetError("Haptic device does not support setting autocenter.");
+      SDL_SetError("Haptic: Device does not support setting autocenter.");
       return -1;
    }
 
    if ((autocenter < 0) || (autocenter > 100)) {
-      SDL_SetError("Haptic autocenter must be between 0 and 100.");
+      SDL_SetError("Haptic: Autocenter must be between 0 and 100.");
       return -1;
    }                                           
 
