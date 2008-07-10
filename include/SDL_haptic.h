@@ -638,6 +638,7 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  *    \return Device identifier or NULL on error.
  *
  * \sa SDL_HapticIndex
+ * \sa SDL_HapticOpenFromMouse
  * \sa SDL_HapticOpenFromJoystick
  * \sa SDL_HapticClose
  * \sa SDL_HapticSetGain
@@ -670,6 +671,29 @@ extern DECLSPEC int SDL_HapticOpened(int device_index);
  * \sa SDL_HapticOpened
  */
 extern DECLSPEC int SDL_HapticIndex(SDL_Haptic * haptic);
+
+/**
+ * \fn int SDL_MouseIsHaptic(void)
+ *
+ * \brief Gets whether or not the current mouse has haptic capabilities.
+ *
+ *    \return SDL_TRUE if the mouse is haptic, SDL_FALSE if it isn't.
+ *
+ * \sa SDL_HapticOpenFromMouse
+ */
+extern DECLSPEC SDL_MouseIsHaptic(void);
+
+/**
+ * \fn SDL_Haptic * SDL_HapticOpenFromMouse(void)
+ *
+ * \brief Tries to open a haptic device from the current mouse.
+ *
+ *    \return The haptic device identifier or NULL on error.
+ *
+ * \sa SDL_MouseIsHaptic
+ * \sa SDL_HapticOpen
+ */
+extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromMouse(void);
 
 /**
  * \fn int SDL_JoystickIsHaptic(SDL_Joystick * joystick)

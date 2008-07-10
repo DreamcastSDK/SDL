@@ -25,6 +25,12 @@
 #include "SDL_haptic.h"
 
 
+/*
+ * Number of haptic devices on the system.
+ */
+extern Uint8 SDL_numhaptics;
+
+
 struct haptic_effect
 {
    SDL_HapticEffect effect; /* The current event */
@@ -68,6 +74,11 @@ extern const char * SDL_SYS_HapticName(int index);
 extern int SDL_SYS_HapticOpen(SDL_Haptic * haptic);
 
 /*
+ * Returns the index of the haptic core pointer or -1 if none is found.
+ */
+int SDL_SYS_HapticMouse(void);
+
+/*
  * Checks to see if the joystick has haptic capabilities.
  *
  * Returns >0 if haptic capabilities are detected, 0 if haptic
@@ -83,7 +94,6 @@ extern int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
  */
 extern int SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic,
                                           SDL_Joystick * joystick);
-
 /*
  * Checks to see if haptic device and joystick device are the same.
  *
