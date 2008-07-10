@@ -27,7 +27,6 @@
 
 Uint8 SDL_numhaptics = 0;
 SDL_Haptic **SDL_haptics = NULL;
-static SDL_Haptic *default_haptic = NULL;
 
 
 /*
@@ -44,15 +43,15 @@ SDL_HapticInit(void)
    if (status >= 0) {
       arraylen = (status + 1) * sizeof(*SDL_haptics);
       SDL_haptics = (SDL_Haptic **) SDL_malloc(arraylen);
-      if (SDL_haptics == NULL) {
+      if (SDL_haptics == NULL) { /* Out of memory. */
          SDL_numhaptics = 0;
-      } else {
+      }
+      else {
          SDL_memset(SDL_haptics, 0, arraylen);
          SDL_numhaptics = status;
       }
       status = 0;
    }
-   default_haptic = NULL;
 
    return status;
 }
@@ -336,13 +335,12 @@ SDL_HapticClose(SDL_Haptic * haptic)
 void
 SDL_HapticQuit(void)
 {
-   SDL_numhaptics = 0;
-
    SDL_SYS_HapticQuit();
    if (SDL_haptics != NULL) {
       SDL_free(SDL_haptics);
       SDL_haptics = NULL;
    }
+   SDL_numhaptics = 0;
 }
 
 /*
