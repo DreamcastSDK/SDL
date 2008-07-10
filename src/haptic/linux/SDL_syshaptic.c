@@ -94,7 +94,7 @@ EV_IsHaptic(int fd)
    /* Ask device for what it has. */
    ret = 0;
    if (ioctl(fd, EVIOCGBIT(EV_FF, sizeof(features)), features) < 0) {
-      SDL_SetError("Unable to get device's haptic abilities: %s", strerror(errno));
+      SDL_SetError("Haptic: Unable to get device's features: %s", strerror(errno));
       return -1;
    }
 
@@ -257,7 +257,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
 
    /* Set the effects */
    if (ioctl(fd, EVIOCGEFFECTS, &haptic->neffects) < 0) {
-      SDL_SetError("Unable to query haptic device memory: %s", strerror(errno));
+      SDL_SetError("Haptic: Unable to query device memory: %s", strerror(errno));
       goto open_err;
    }
    haptic->effects = (struct haptic_effect *)
@@ -294,7 +294,7 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
    /* Open the character device */
    fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
    if (fd < 0) {
-      SDL_SetError("Unable to open %s: %s",
+      SDL_SetError("Haptic: Unable to open %s: %s",
             SDL_hapticlist[haptic->index], strerror(errno));
       return -1;
    }
@@ -317,7 +317,7 @@ SDL_SYS_HapticMouse(void)
       /* Open the device. */
       fd = open(SDL_hapticlist[i].fname, O_RDWR, 0);
       if (fd < 0) {
-         SDL_SetError("Unable to open %s: %s",
+         SDL_SetError("Haptic: Unable to open %s: %s",
                SDL_hapticlist[i], strerror(errno));
          return -1;
       }
@@ -590,7 +590,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 
 
       default:
-         SDL_SetError("Unknown haptic effect type");
+         SDL_SetError("Haptic: Unknown effect type.");
          return -1;
    }
 
@@ -624,7 +624,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
 
    /* Upload the effect */
    if (ioctl(haptic->hwdata->fd, EVIOCSFF, linux_effect) < 0) {
-      SDL_SetError("Error uploading effect to the haptic device: %s", strerror(errno));
+      SDL_SetError("Haptic: Error uploading effect to the device: %s", strerror(errno));
       goto new_effect_err;
    }
 
@@ -656,7 +656,7 @@ int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
 
    /* See if it can be uploaded. */
    if (ioctl(haptic->hwdata->fd, EVIOCSFF, &linux_effect) < 0) {
-      SDL_SetError("Error updating the haptic effect: %s", strerror(errno));
+      SDL_SetError("Haptic: Error updating the effect: %s", strerror(errno));
       return -1;
    }
 
@@ -681,7 +681,7 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
    run.value = 1;
 
    if (write(haptic->hwdata->fd, (const void*) &run, sizeof(run)) < 0) {
-      SDL_SetError("Unable to run the haptic effect: %s", strerror(errno));
+      SDL_SetError("Haptic: Unable to run the effect: %s", strerror(errno));
       return -1;
    }
 
@@ -702,7 +702,7 @@ SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
    stop.value = 0;
 
    if (write(haptic->hwdata->fd, (const void*) &stop, sizeof(stop)) < 0) {
-      SDL_SetError("Unable to stop the haptic effect: %s", strerror(errno));
+      SDL_SetError("Haptic: Unable to stop the effect: %s", strerror(errno));
       return -1;
    }
 
@@ -717,7 +717,7 @@ void
 SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 {
    if (ioctl(haptic->hwdata->fd, EVIOCRMFF, effect->hweffect->effect.id) < 0) {
-      SDL_SetError("Error removing the effect from the haptic device: %s",
+      SDL_SetError("Haptic: Error removing the effect from the device: %s",
             strerror(errno));
    }
    SDL_free(effect->hweffect);
@@ -739,7 +739,7 @@ SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect
    ie.code = effect->hweffect->effect.id;
 
    if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
-      SDL_SetError("Error getting haptic device status.");
+      SDL_SetError("Haptic: Error getting device status.");
       return -1;
    }
 
@@ -763,7 +763,7 @@ SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
    ie.value = (0xFFFFUL * gain) / 100;
 
    if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
-      SDL_SetError("Error setting gain: %s", strerror(errno));
+      SDL_SetError("Haptic: Error setting gain: %s", strerror(errno));
       return -1;
    }
 
@@ -784,7 +784,7 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    ie.value = (0xFFFFUL * autocenter) / 100;
 
    if (write(haptic->hwdata->fd, &ie, sizeof(ie)) < 0) {
-      SDL_SetError("Error setting autocenter: %s", strerror(errno));
+      SDL_SetError("Haptic: Error setting autocenter: %s", strerror(errno));
       return -1;
    }
 
