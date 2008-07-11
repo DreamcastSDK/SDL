@@ -59,6 +59,7 @@ extern AudioBootStrap WINWAVEOUT_bootstrap;
 extern AudioBootStrap PAUDIO_bootstrap;
 extern AudioBootStrap BEOSAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
+extern AudioBootStrap COREAUDIOIPHONE_bootstrap;
 extern AudioBootStrap SNDMGR_bootstrap;
 extern AudioBootStrap MINTAUDIO_GSXB_bootstrap;
 extern AudioBootStrap MINTAUDIO_MCSN_bootstrap;
@@ -144,6 +145,9 @@ static AudioBootStrap *bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_DART
     &DART_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_COREAUDIOIPHONE
+	&COREAUDIOIPHONE_bootstrap,
 #endif
     NULL
 };
