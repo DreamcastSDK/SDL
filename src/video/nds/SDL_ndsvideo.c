@@ -116,31 +116,22 @@ NDS_VideoInit(_THIS)
     /* simple 256x192x15x60 for now */
     mode.w = 256;
     mode.h = 192;
-    mode.format = SDL_PIXELFORMAT_BGR555;
+    mode.format = SDL_PIXELFORMAT_ABGR1555;
     mode.refresh_rate = 60;
     mode.driverdata = NULL;
 
     SDL_AddBasicVideoDisplay(&mode);
     SDL_AddRenderDriver(0, &NDS_RenderDriver);
+    /*SDL_AddBasicVideoDisplay(&mode); two screens, same mode. uncomment later
+    SDL_AddRenderDriver(1, &NDS_RenderDriver);*/
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
 
     /* hackish stuff to get things up and running for now, and for a console */
-    powerON(POWER_ALL);
-    videoSetMode(MODE_FB0);
-    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */
-        vramSetBankA(VRAM_A_LCD);
-    vramSetBankC(VRAM_C_SUB_BG);
-        irqInit();
+    powerON(POWER_ALL);    irqInit();
     irqEnable(IRQ_VBLANK);
-    /* set up console for debug text 'n stuff */
-    SUB_BG0_CR = BG_MAP_BASE(31);
-    BG_PALETTE_SUB[255] = RGB15(31, 31, 31);
-    consoleInitDefault((u16 *) SCREEN_BASE_BLOCK_SUB(31),
-                       (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);
-
-    /*NDS_SetDisplayMode(_this, &mode); */
+    NDS_SetDisplayMode(_this, &mode);
     return 0;
 }
 
@@ -148,14 +139,21 @@ static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
     /* right now this function is just hard-coded for 256x192 ABGR1555 */
-#if 0
     videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE);       /* display on main core */
     videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */
     vramSetMainBanks(VRAM_A_MAIN_BG_0x06000000, VRAM_B_LCD,
                      VRAM_C_SUB_BG, VRAM_D_LCD);
 
+    /* set up console for debug text 'n stuff */
+    SUB_BG0_CR = BG_MAP_BASE(31);
+    BG_PALETTE_SUB[255] = RGB15(31, 31, 31);
+    consoleInitDefault((u16 *) SCREEN_BASE_BLOCK_SUB(31),
+                       (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);
+
+#if 0
+/* we should be using this as a texture for rendering, not as a framebuffer */
     /* maps well to the 256x192 screen anyway.  note: need VRAM_B for bigger */
-    BG3_CR = BG_BMP16_256x256;
+    BACKGROUND.control[3] = BG_BMP16_256x256;
     /* affine transformation matrix.  nothing too fancy here */
     BG3_XDX = 0x100;
     BG3_XDY = 0;
@@ -171,6 +169,9 @@ NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 void
 NDS_VideoQuit(_THIS)
 {
+    videoSetMode(DISPLAY_SCREEN_OFF);
+    videoSetModeSub(DISPLAY_SCREEN_OFF);
+    vramSetMainBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
