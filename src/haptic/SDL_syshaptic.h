@@ -140,7 +140,7 @@ extern int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
  */
 extern int SDL_SYS_HapticRunEffect(SDL_Haptic * haptic,
                                    struct haptic_effect * effect,
-                                   int iterations);
+                                   Uint32 iterations);
 
 /*
  * Stops the effect on the haptic device.

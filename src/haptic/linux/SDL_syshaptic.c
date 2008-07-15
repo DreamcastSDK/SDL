@@ -672,17 +672,15 @@ int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
  * Runs an effect.
  */
 int
-SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect, int iterations)
+SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
+                        Uint32 iterations)
 {
    struct input_event run;
 
    /* Prepare to run the effect */
    run.type = EV_FF;
    run.code = effect->hweffect->effect.id;
-   if (iterations == SDL_HAPTIC_INFINITY)
-      run.value = INT_MAX;
-   else
-      run.value = iterations;
+   run.value = (iterations > INT_MAX) ? INT_MAX : iterations;
 
    if (write(haptic->hwdata->fd, (const void*) &run, sizeof(run)) < 0) {
       SDL_SetError("Haptic: Unable to run the effect: %s", strerror(errno));
