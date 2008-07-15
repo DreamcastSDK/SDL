@@ -441,7 +441,6 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 static int
 SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 {
-   int i;
    SDL_HapticConstant *constant;
    SDL_HapticPeriodic *periodic;
    SDL_HapticCondition *condition;
