@@ -29,6 +29,7 @@
 #include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
 /*#include "../../joystick/dawrin/SDL_sysjoystick_c.h"*/ /* For joystick hwdata */ 
 
+#include <IOKit/IOTypes.h>
 #include <ForceFeedback/ForceFeedback.h>
 #include <ForceFeedback/ForceFeedbackConstants.h>
 
@@ -75,7 +76,7 @@ SDL_SYS_HapticInit(void)
    IOReturn result;
    io_iterator_t iter;
    CFDictionaryRef match;
-   io_sercive_t device;
+   io_service_t device;
 
    /* Get HID devices. */
    match = IOServiceMatching(kIOHIDDeviceKey);
@@ -172,7 +173,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    }
 
    /* Checks if supports autocenter. */
-   ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_FFAUTOCENTER,
+   ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_AUTOCENTER,
                                           val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_AUTOCENTER;
    else if (ret != FFERR_UNSUPPORTED) {
@@ -339,31 +340,31 @@ SDL_SYS_HapticQuit(void)
 static int
 SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
 {
-   LONG *dir;
+   LONG *rglDir;
    dir = SDL_malloc( sizeof(LONG) * axes );
    if (dir == NULL) {
       SDL_OutOfMemory();
       return -1;
    }
    SDL_memset( dir, 0, sizeof(LONG) * axes );
-   effect->rglDirection = dir;
+   effect->rglDirection = rglDir;
 
    switch (dir->type) {
       case SDL_HAPTIC_POLAR:
          effect->dwFlags |= FFEFF_POLAR;
-         dir[0] = dir->dir[0];
+         rglDir[0] = dir->dir[0];
          return 0;
       case SDL_HAPTIC_CARTESIAN:
          effects->dwFlags |= FFEFF_CARTESIAN;
-         dir[0] = dir->dir[0];
-         dir[1] = dir->dir[1];
-         dir[2] = dir->dir[2];
+         rglDir[0] = dir->dir[0];
+         rglDir[1] = dir->dir[1];
+         rglDir[2] = dir->dir[2];
          return 0;
-      case SDL_HAPTIC_SHPERICAL:
+      case SDL_HAPTIC_SPHERICAL:
          effects->dwFlags |= FFEFF_SPHERICAL;
-         dir[0] = dir->dir[0];
-         dir[1] = dir->dir[1];
-         dir[2] = dir->dir[2];
+         rglDir[0] = dir->dir[0];
+         rglDir[1] = dir->dir[1];
+         rglDir[2] = dir->dir[2];
          return 0;
 
       default:
@@ -385,7 +386,7 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    FFRAMPFORCE *ramp;
    FFCUSTOMFORCE *custom;
    SDL_HapticConstant *hap_constant;
-   SDL_HapticPeriodic *hap-periodic;
+   SDL_HapticPeriodic *hap_periodic;
    SDL_HapticCondition *hap_condition;
    SDL_HapticRamp *hap_ramp;
 
@@ -407,10 +408,10 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
          dest->lpvTypeSpecificParams = constant;
 
          /* Generics */
-         dest->dwDuration = src->length * 1000; /* In microseconds. */
+         dest->dwDuration = hap_constant->length * 1000; /* In microseconds. */
          dest->dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
          dest->dwTriggerRepeatInterval = hap_constant->interval;
-         dest->dwStartDelay = src->delay * 1000; /* In microseconds. */
+         dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
 
          /* Axes */
          dest->cAxes = 2; /* TODO handle */
@@ -468,7 +469,7 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
  */
 CFUUIDRef SDL_SYS_HapticEffectType(struct haptic_effect * effect)
 {
-   switch (effect->effect->type) {
+   switch (effect->effect.type) {
       case SDL_HAPTIC_CONSTANT:
          return kFFEffectType_ConstantForce_ID;
 
@@ -481,7 +482,7 @@ CFUUIDRef SDL_SYS_HapticEffectType(struct haptic_effect * effect)
       case SDL_HAPTIC_SINE:
          return kFFEffectType_Sine_ID;
 
-      case SDL_HAPTIC_TRIANGLE;
+      case SDL_HAPTIC_TRIANGLE:
          return kFFEffectType_Triangle_ID;
 
       case SDL_HAPTIC_SAWTOOTHUP:
@@ -539,7 +540,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    }
 
    /* Get the effect. */
-   if (SDL_SYS_ToFFEFFECT( &effect->hweffect->effect, &haptic_effect->effect ) < 0) {
+   if (SDL_SYS_ToFFEFFECT( &effect->hweffect->effect, &effect->effect ) < 0) {
       /* TODO cleanup alloced stuff. */
       return -1;
    }
@@ -572,7 +573,7 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
 
    /* Check if it's infinite. */
    if (iterations == SDL_HAPTIC_INFINITY) {
-      iter = INFINITE;
+      iter = FF_INFINITE;
    }
    else
       iter = iterations;
@@ -634,7 +635,7 @@ SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect
    HRESULT ret;
    FFEffectStatusFlag status;
 
-   ret = FFEffectGetEffectStatus(effect->hweffect.ref, &status);
+   ret = FFEffectGetEffectStatus(effect->hweffect->ref, &status);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Unable to get effect status.");
       return -1;
@@ -679,7 +680,7 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    else val = 1;
 
    ret = FFDeviceSetForceFeedbackProperty(haptic->hwdata->device,
-               FFPROP_FFAUTOCENTER, &val);
+               FFPROP_AUTOCENTER, &val);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Error setting autocenter.");
       return -1;
