@@ -29,7 +29,8 @@
 #include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
 /*#include "../../joystick/dawrin/SDL_sysjoystick_c.h"*/ /* For joystick hwdata */ 
 
-#include <IOKit/IOTypes.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDKeys.h>
 #include <ForceFeedback/ForceFeedback.h>
 #include <ForceFeedback/ForceFeedbackConstants.h>
 
@@ -165,7 +166,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
 
    /* Check if supports gain. */
    ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_FFGAIN,
-                                          val, sizeof(val));
+                                          &val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_GAIN;
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports gain.");
@@ -174,7 +175,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
 
    /* Checks if supports autocenter. */
    ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_AUTOCENTER,
-                                          val, sizeof(val));
+                                          &val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_AUTOCENTER;
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports autocenter.");
@@ -203,7 +204,7 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
   
    /* Open the device */
-   if (FFCreateDevice( &service, &haptic->hwdata->device ) != FF_OK) {
+   if (FFCreateDevice( service, &haptic->hwdata->device ) != FF_OK) {
       SDL_SetError("Haptic: Unable to create device from service.");
       goto creat_err;
    }
@@ -246,7 +247,7 @@ int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
    return SDL_SYS_HapticOpenFromService(haptic,
-                SDL_hapticlist[haptic->index].device);
+                SDL_hapticlist[haptic->index].dev);
 }
 
 
@@ -355,13 +356,13 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
          rglDir[0] = dir->dir[0];
          return 0;
       case SDL_HAPTIC_CARTESIAN:
-         effects->dwFlags |= FFEFF_CARTESIAN;
+         effect->dwFlags |= FFEFF_CARTESIAN;
          rglDir[0] = dir->dir[0];
          rglDir[1] = dir->dir[1];
          rglDir[2] = dir->dir[2];
          return 0;
       case SDL_HAPTIC_SPHERICAL:
-         effects->dwFlags |= FFEFF_SPHERICAL;
+         effect->dwFlags |= FFEFF_SPHERICAL;
          rglDir[0] = dir->dir[0];
          rglDir[1] = dir->dir[1];
          rglDir[2] = dir->dir[2];
@@ -385,6 +386,7 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    FFCONDITION *condition;
    FFRAMPFORCE *ramp;
    FFCUSTOMFORCE *custom;
+   FFENVELOPE *envelope;
    SDL_HapticConstant *hap_constant;
    SDL_HapticPeriodic *hap_periodic;
    SDL_HapticCondition *hap_condition;
@@ -395,7 +397,16 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    dest->dwSize = sizeof(FFEFFECT); /* Set the structure size. */
    dest->dwSamplePeriod = 0; /* Not used by us. */
    dest->dwGain = 10000; /* Gain is set globally, not locally. */
-   dest->lpEnvelope.dwSize = sizeof(FFENVELOPE); /* Always should be this. */
+
+   /* Envelope. */
+   envelope = SDL_malloc( sizeof(FFENVELOPE) );
+   if (envelope == NULL) {
+      SDL_OutOfMemory();
+      return -1;
+   }
+   SDL_memset(envelope, 0, sizeof(FFENVELOPE));
+   dest->lpEnvelope = envelope;
+   envelope->dwSize = sizeof(FFENVELOPE); /* Always should be this. */
 
    switch (src->type) {
       case SDL_HAPTIC_CONSTANT:
@@ -418,15 +429,15 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
          dest->rgdwAxes = 0;
 
          /* Direction. */
-         if (SDL_SYS_SetDirection(dest, hap_constant->direction, dest->cAxes) < 0) {
+         if (SDL_SYS_SetDirection(dest, &hap_constant->direction, dest->cAxes) < 0) {
             return -1;
          }
          
          /* Envelope */
-         dest->lpEnvelope.dwAttackLevel = CONVERT(hap_constant->attack_level);
-         dest->lpEnvelope.dwAttackTime = hap_constant->attack_length * 1000;
-         dest->lpEnvelope.dwFadeLevel = CONVERT(hap_constant->fade_level);
-         dest->lpEnvelope.dwFadeTime = hap_constant->fade_length * 1000;
+         envelope->dwAttackLevel = CONVERT(hap_constant->attack_level);
+         envelope->dwAttackTime = hap_constant->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_constant->fade_level);
+         envelope->dwFadeTime = hap_constant->fade_length * 1000;
 
          break;
 
@@ -437,7 +448,7 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
       case SDL_HAPTIC_TRIANGLE:
       case SDL_HAPTIC_SAWTOOTHUP:
       case SDL_HAPTIC_SAWTOOTHDOWN:
-         periodic = &src->periodic;
+         hap_periodic = &src->periodic;
 
          break;
 
@@ -445,12 +456,12 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
       case SDL_HAPTIC_DAMPER:
       case SDL_HAPTIC_INERTIA:
       case SDL_HAPTIC_FRICTION:
-         condition = &src->condition;
+         hap_condition = &src->condition;
 
          break;
 
       case SDL_HAPTIC_RAMP:
-         ramp = &src->ramp;
+         hap_ramp = &src->ramp;
 
          break;
 
