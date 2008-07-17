@@ -384,6 +384,20 @@ SDL_HapticQuery(SDL_Haptic * haptic)
    return haptic->supported;
 }
 
+
+/*
+ * Returns the number of axis on the device.
+ */
+int
+SDL_HapticNumAxes(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(&haptic)) {
+      return -1;
+   }
+
+   return haptic->naxes;
+}
+
 /*
  * Checks to see if the device can support the effect.
  */

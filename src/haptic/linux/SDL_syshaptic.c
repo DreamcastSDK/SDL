@@ -255,6 +255,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
    /* Set the data */
    haptic->hwdata->fd = fd;
    haptic->supported = EV_IsHaptic(fd);
+   haptic->naxes = 2; /* Hardcoded for now, not sure if it's possible to find out. */
 
    /* Set the effects */
    if (ioctl(fd, EVIOCGEFFECTS, &haptic->neffects) < 0) {
@@ -419,6 +420,7 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
          /* Linux directions are inverted. */
          tmp = (((18000 + dir->dir[0]) % 36000) * 0xFFFF) / 36000;
          return (Uint16) tmp;
+
       case SDL_HAPTIC_CARTESIAN:
          /* We must invert "x" and "y" to go clockwise. */
          f = atan2(dir->dir[0], dir->dir[1]);
@@ -426,7 +428,13 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
          tmp = (tmp * 0xFFFF) / 36000;
          return (Uint16) tmp;
 
+      case SDL_HAPTIC_SPHERICAL:
+         tmp = (36000 - dir->dir[0]) + 27000; /* Convert to polars */
+         tmp = (((18000 + tmp) % 36000) * 0xFFFF) / 36000;
+         return (Uint16) tmp;
+
       default:
+         SDL_SetError("Haptic: Unsupported direction type.");
          return -1;
    }
 
@@ -456,6 +464,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_CONSTANT;
          dest->direction = SDL_SYS_ToDirection(&constant->direction);
+         if (dest->direction < 0) return -1;
 
          /* Replay */
          dest->replay.length = CLAMP(constant->length);
@@ -486,6 +495,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_PERIODIC;
          dest->direction = SDL_SYS_ToDirection(&periodic->direction);
+         if (dest->direction < 0) return -1;
          
          /* Replay */
          dest->replay.length = CLAMP(periodic->length);
@@ -568,6 +578,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_RAMP;
          dest->direction = SDL_SYS_ToDirection(&ramp->direction);
+         if (dest->direction < 0) return -1;
 
          /* Replay */
          dest->replay.length = CLAMP(ramp->length);
