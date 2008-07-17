@@ -508,11 +508,12 @@ typedef struct SDL_HapticPeriodic {
  *   - SDL_HAPTIC_FRICTION: Effect based on axes movement.
  *
  * Direction is handled by condition internals instead of a direction member.
- *  The condition effect specific members have two parameters.  The first
- *  refers to the X axis, the second refers to the Y axis.  The right terms
- *  refer to the positive side of the axis and the left terms refer to the
- *  negative side of the axis.  Please refer to the SDL_HapticDirection 
- *  diagram for which side is positive and which is negative.
+ *  The condition effect specific members have three parameters.  The first
+ *  refers to the X axis, the second refers to the Y axis and the third
+ *  refers to the Z axis.  The right terms refer to the positive side of the
+ *  axis and the left terms refer to the negative side of the axis.  Please 
+ *  refer to the SDL_HapticDirection  diagram for which side is positive and
+ *  which is negative.
  *
  * \sa SDL_HapticDirection
  * \sa SDL_HAPTIC_SPRING
@@ -536,12 +537,12 @@ typedef struct SDL_HapticCondition {
    Uint16 interval; /**< How soon it can be triggered again after button. */
 
    /* Condition */
-   Uint16 right_sat[2]; /**< Level when joystick is to the positive side. */
-   Uint16 left_sat[2]; /**< Level when joystick is to the negative side. */
-   Sint16 right_coeff[2]; /**< How fast to increase the force towards the positive side. */
-   Sint16 left_coeff[2]; /**< How fast to increase the force towards the negative side. */
-   Uint16 deadband[2]; /**< Size of the dead zone. */
-   Sint16 center[2]; /**< Position of the dead zone. */
+   Uint16 right_sat[3]; /**< Level when joystick is to the positive side. */
+   Uint16 left_sat[3]; /**< Level when joystick is to the negative side. */
+   Sint16 right_coeff[3]; /**< How fast to increase the force towards the positive side. */
+   Sint16 left_coeff[3]; /**< How fast to increase the force towards the negative side. */
+   Uint16 deadband[3]; /**< Size of the dead zone. */
+   Sint16 center[3]; /**< Position of the dead zone. */
 } SDL_HapticCondition;
 /**
  * \struct SDL_HapticRamp
