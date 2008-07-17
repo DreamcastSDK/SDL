@@ -43,7 +43,6 @@ struct haptic_effect
 struct _SDL_Haptic
 {  
    Uint8 index; /* Stores index it is attached to */
-   const char* name; /* Stores the name of the device */
 
    struct haptic_effect *effects; /* Allocated effects */
    int neffects; /* Maximum amount of effects */

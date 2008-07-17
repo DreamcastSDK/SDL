@@ -274,7 +274,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
    }
 
    /* Initialize the haptic device */
-   SDL_memset(haptic, 0, (sizeof *haptic));
+   SDL_memset(haptic, 0, sizeof(SDL_Haptic));
    if (SDL_SYS_HapticOpenFromJoystick(haptic,joystick) < 0) {
       SDL_free(haptic);
       return NULL;

@@ -65,6 +65,7 @@ static struct
 struct haptic_hwdata
 {
    int fd;
+   char *fname; /* Points to the name in SDL_hapticlist. */
 };
 
 
@@ -205,14 +206,30 @@ SDL_SYS_HapticInit(void)
 
 
 /*
+ * Gets the name from a file descriptor.
+ */
+static const char *
+SDL_SYS_HapticNameFromFD(int fd)
+{
+   static char namebuf[128];
+
+   /* We use the evdev name ioctl. */
+   if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) <= 0) {
+      return NULL;
+   }
+
+   return namebuf;
+}
+
+
+/*
  * Return the name of a haptic device, does not need to be opened.
  */
 const char *
 SDL_SYS_HapticName(int index)
 {
    int fd;
-   static char namebuf[128];
-   char *name;
+   const char *name;
 
    /* Open the haptic device. */
    name = NULL;
@@ -220,15 +237,10 @@ SDL_SYS_HapticName(int index)
 
    if (fd >= 0) {
 
-      /* Check for name ioctl. */
-      if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) <= 0) {
-
+      name = SDL_SYS_HapticNameFromFD(fd);
+      if (name==NULL) {
          /* No name found, return device character device */
          name = SDL_hapticlist[index].fname;
-      }
-      /* Name found, return name. */
-      else {
-         name = namebuf;
       }
    }
    close(fd);
@@ -243,6 +255,8 @@ SDL_SYS_HapticName(int index)
 static int
 SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
 {
+   const char *name;
+
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
          SDL_malloc(sizeof(*haptic->hwdata));
@@ -252,7 +266,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
    }
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
 
-   /* Set the data */
+   /* Set the data. */
    haptic->hwdata->fd = fd;
    haptic->supported = EV_IsHaptic(fd);
    haptic->naxes = 2; /* Hardcoded for now, not sure if it's possible to find out. */
@@ -293,6 +307,7 @@ int
 SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
    int fd;
+   int ret;
 
    /* Open the character device */
    fd = open(SDL_hapticlist[haptic->index].fname, O_RDWR, 0);
@@ -301,8 +316,16 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
             SDL_hapticlist[haptic->index], strerror(errno));
       return -1;
    }
-   
-   return SDL_SYS_HapticOpenFromFD(haptic,fd);
+
+   /* Try to create the haptic. */
+   ret =  SDL_SYS_HapticOpenFromFD(haptic,fd); /* Already closes on error. */
+   if (ret < 0) {
+      return -1;
+   }
+
+   /* Set the fname. */
+   haptic->hwdata->fname = SDL_hapticlist[haptic->index].fname;
+   return 0;
 }
 
 
@@ -353,7 +376,9 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-   if (SDL_strcmp(joystick->name,haptic->name)==0) {
+   /* We are assuming linux is using evdev which should trump the old
+    * joystick methods. */
+   if (SDL_strcmp(joystick->hwdata->fname,haptic->hwdata->fname)==0) {
       return 1;
    }
    return 0;
@@ -366,9 +391,27 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+   int i;
    int fd;
+   int ret;
+
+   /* Find the joystick in the haptic list. */
+   for (i=0; i<MAX_HAPTICS; i++) {
+      if (SDL_hapticlist[i].fname != NULL) {
+         if (SDL_strcmp(SDL_hapticlist[i].fname, joystick->hwdata->fname)==0) {
+            haptic->index = i;
+         }
+      }
+   }
+
    fd = open(joystick->hwdata->fname, O_RDWR, 0);
-   return SDL_SYS_HapticOpenFromFD(haptic,fd);
+   ret =  SDL_SYS_HapticOpenFromFD(haptic,fd); /* Already closes on error. */
+   if (ret < 0) {
+      return -1;
+   }
+
+   haptic->hwdata->fname = SDL_hapticlist[haptic->index].fname;
+   return 0;
 }
 
 
@@ -385,10 +428,11 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
 
       /* Free */
       SDL_free(haptic->hwdata);
-      haptic->hwdata = NULL;
       SDL_free(haptic->effects);
-      haptic->neffects = 0;
    }
+
+   /* Clear the rest. */
+   SDL_memset(haptic, 0, sizeof(SDL_Haptic));
 }
 
 
