@@ -292,36 +292,37 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * Directions can be specified by:
  *   - SDL_HAPTIC_POLAR : Specified by polar coordinates.
  *   - SDL_HAPTIC_CARTESIAN : Specified by cartesian coordinates.
+ *   - SDL_HAPTIC_SHPERICAL : Specified by spherical coordinates.
  *
  * Cardinal directions of the haptic device are relative to the positioning
  *  of the device.  North is considered to be away from the user.
  *
  * The following diagram represents the cardinal directions:
  * \code
- *            .--.
- *            |__| .-------.
- *            |=.| |.-----.|
- *            |--| ||     ||
- *            |  | |'-----'|
- *            |__|~')_____('
- *              [ COMPUTER ]
+ *              .--.
+ *              |__| .-------.
+ *              |=.| |.-----.|
+ *              |--| ||     ||
+ *              |  | |'-----'|
+ *              |__|~')_____('
+ *                [ COMPUTER ]
  *
  *
- *                  North (-1)
- *                    ^
- *                    |
- *                    |
- * (1)  West <----[ HAPTIC ]----> East (-1)
- *                    |
- *                    |
- *                    v
- *                  South (1)
+ *                  North (0,-1)
+ *                      ^
+ *                      |
+ *                      |
+ * (1,0)  West <----[ HAPTIC ]----> East (-1,0)
+ *                      |
+ *                      |
+ *                      v
+ *                   South (0,1)
  *
  *
- *                 [ USER ]
- *                   \|||/
- *                   (o o)
- *             ---ooO-(_)-Ooo---
+ *                   [ USER ]
+ *                     \|||/
+ *                     (o o)
+ *               ---ooO-(_)-Ooo---
  * \endcode
  *
  * If type is SDL_HAPTIC_POLAR, direction is encoded by hundredths of a 
@@ -332,35 +333,49 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *   - South: 18000 (180 degrees)
  *   - West: 27000 (270 degrees)
  *
- * If type is SDL_HAPTIC_CARTESIAN, direction is encoded by two positions
- *  (X axis and Y axis).  SDL_HAPTIC_CARTESIAN uses the first two dir 
- *  parameters.  The cardinal directions would be:
- *   - North:  0,-1
- *   - East:  -1, 0
- *   - South:  0, 1
- *   - West:   1, 0
+ * If type is SDL_HAPTIC_CARTESIAN, direction is encoded by three positions
+ *  (X axis, Y axis and Z axis (with 3 axes)).  SDL_HAPTIC_CARTESIAN uses
+ *  the first three dir parameters.  The cardinal directions would be:
+ *   - North:  0,-1, 0
+ *   - East:  -1, 0, 0
+ *   - South:  0, 1, 0
+ *   - West:   1, 0, 0
+ *  The Z axis represents the height of the effect if supported, otherwise
+ *  it's unused.  In cartesian encoding (1,2) would be the same as (2,4), you
+ *  can use any multiple you want, only the direction matters.
  *
- * If type is SDL_HAPTIC_SPHERICAL, direction is encoded by three rotations.
- *  All three dir parameters are used.  The dir parameters are as follows
+ * If type is SDL_HAPTIC_SPHERICAL, direction is encoded by two rotations.
+ *  The first two  dir parameters are used.  The dir parameters are as follows
  *  (all values are in hundredths of degrees):
  *    1) Degrees from (1, 0) rotated towards (0, 1).
  *    2) Degrees towards (0, 0, 1) (device needs at least 3 axes).
- *    3) Degrees tworads (0, 0, 0, 1) (device needs at least 4 axes).
  *
  *
- * Example:
+ * Example of force coming from the south with all encodings (force coming
+ *  from the south means the user will have to pull the stick to counteract):
  * \code
  * SDL_HapticDirection direction;
  *
+ * // Cartesian directions
+ * direction.type = SDL_HAPTIC_CARTESIAN; // Using cartesian direction encoding.
+ * direction.dir[0] = 0; // X position
+ * direction.dir[1] = 1; // Y position
+ * // Assuming the device has 2 axes, we don't need to specify third parameter.
+ *
+ * // Polar directions
  * direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
- * direction.dir = 18000; // Force comes from the south meaning the user will
- *                         // have to pull the stick to counteract.
+ * direction.dir[0] = 18000; // Polar only uses first parameter
+ *
+ * // Spherical coordinates
+ * direction.type = SDL_HAPTIC_SPHERICAL; // Spherical encoding
+ * direction.dir[0] = 9000; // Since we only have two axes we don't need more parameters.
  * \endcode
  *
  * \sa SDL_HAPTIC_POLAR
  * \sa SDL_HAPTIC_CARTESIAN
  * \sa SDL_HAPTIC_SHPERICAL
  * \sa SDL_HapticEffect
+ * \sa SDL_HapticNumAxes
  */
 typedef struct SDL_HapticDirection {
    Uint8 type; /**< The type of encoding. */
@@ -510,6 +525,7 @@ typedef struct SDL_HapticCondition {
    /* Header */
    Uint16 type; /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
                      SDL_HAPTIC_INERTIA or SDL_HAPTIC_FRICTION */
+   SDL_HapticDirection direction; /**< Direction of the effect - Not used ATM. */
 
    /* Replay */
    Uint32 length; /**< Duration of the effect. */
@@ -679,7 +695,7 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  * \sa SDL_HapticSetGain
  * \sa SDL_HapticSetAutocenter
  */
-extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
+extern DECLSPEC SDL_Haptic *SDLCALL SDL_HapticOpen(int device_index);
 
 /**
  * \fn int SDL_HapticOpened(int device_index)
@@ -692,7 +708,7 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpen(int device_index);
  * \sa SDL_HapticOpen
  * \sa SDL_HapticIndex
  */
-extern DECLSPEC int SDL_HapticOpened(int device_index);
+extern DECLSPEC int SDLCALL SDL_HapticOpened(int device_index);
 
 /**
  * \fn int SDL_HapticIndex(SDL_Haptic * haptic)
@@ -705,7 +721,7 @@ extern DECLSPEC int SDL_HapticOpened(int device_index);
  * \sa SDL_HapticOpen
  * \sa SDL_HapticOpened
  */
-extern DECLSPEC int SDL_HapticIndex(SDL_Haptic * haptic);
+extern DECLSPEC int SDLCALL SDL_HapticIndex(SDL_Haptic * haptic);
 
 /**
  * \fn int SDL_MouseIsHaptic(void)
@@ -716,7 +732,7 @@ extern DECLSPEC int SDL_HapticIndex(SDL_Haptic * haptic);
  *
  * \sa SDL_HapticOpenFromMouse
  */
-extern DECLSPEC int SDL_MouseIsHaptic(void);
+extern DECLSPEC int SDLCALL SDL_MouseIsHaptic(void);
 
 /**
  * \fn SDL_Haptic * SDL_HapticOpenFromMouse(void)
@@ -728,7 +744,7 @@ extern DECLSPEC int SDL_MouseIsHaptic(void);
  * \sa SDL_MouseIsHaptic
  * \sa SDL_HapticOpen
  */
-extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromMouse(void);
+extern DECLSPEC SDL_Haptic *SDLCALL SDL_HapticOpenFromMouse(void);
 
 /**
  * \fn int SDL_JoystickIsHaptic(SDL_Joystick * joystick)
@@ -741,7 +757,7 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromMouse(void);
  *
  * \sa SDL_HapticOpenFromJoystick
  */
-extern DECLSPEC int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
+extern DECLSPEC int SDLCALL SDL_JoystickIsHaptic(SDL_Joystick * joystick);
 
 /**
  * \fn SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
@@ -755,7 +771,7 @@ extern DECLSPEC int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
  * \sa SDL_HapticOpen
  * \sa SDL_HapticClose
  */
-extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick);
+extern DECLSPEC SDL_Haptic *SDLCALL SDL_HapticOpenFromJoystick(SDL_Joystick * joystick);
 
 /**
  * \fn void SDL_HapticClose(SDL_Haptic * haptic)
@@ -764,7 +780,7 @@ extern DECLSPEC SDL_Haptic * SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
  *
  *    \param haptic Haptic device to close.
  */
-extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
+extern DECLSPEC void SDLCALL SDL_HapticClose(SDL_Haptic * haptic);
 
 /**
  * \fn int SDL_HapticNumEffects(SDL_Haptic * haptic)
@@ -778,7 +794,7 @@ extern DECLSPEC void SDL_HapticClose(SDL_Haptic * haptic);
  * \sa SDL_HapticNumEffectsPlaying
  * \sa SDL_HapticQuery
  */
-extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
+extern DECLSPEC int SDLCALL SDL_HapticNumEffects(SDL_Haptic * haptic);
 
 /**
  * \fn int SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic)
@@ -792,7 +808,7 @@ extern DECLSPEC int SDL_HapticNumEffects(SDL_Haptic * haptic);
  * \sa SDL_HapticNumEffects
  * \sa SDL_HapticQuery
  */
-extern DECLSPEC int SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic);
+extern DECLSPEC int SDLCALL SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic);
 
 /**
  * \fn unsigned int SDL_HapticQuery(SDL_Haptic * haptic)
@@ -813,7 +829,17 @@ extern DECLSPEC int SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic);
  * \sa SDL_HapticNumEffects
  * \sa SDL_HapticEffectSupported
  */
-extern DECLSPEC unsigned int SDL_HapticQuery(SDL_Haptic * haptic);
+extern DECLSPEC unsigned int SDLCALL SDL_HapticQuery(SDL_Haptic * haptic);
+
+
+/**
+ * \fn int SDL_HapticNumAxes(SDL_Haptic * haptic)
+ *
+ * \brief Gets the number of haptic axes the device has.
+ *
+ * \sa SDL_HapticDirection
+ */
+extern DECLSPEC int SDLCALL SDL_HapticNumAxes(SDL_Haptic * haptic);
 
 /**
  * \fn int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
@@ -828,7 +854,7 @@ extern DECLSPEC unsigned int SDL_HapticQuery(SDL_Haptic * haptic);
  * \sa SDL_HapticQuery
  * \sa SDL_HapticNewEffect
  */
-extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect);
+extern DECLSPEC int SDLCALL SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
 /**
  * \fn int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
@@ -843,7 +869,7 @@ extern DECLSPEC int SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEff
  * \sa SDL_HapticRunEffect
  * \sa SDL_HapticDestroyEffect
  */
-extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
+extern DECLSPEC int SDLCALL SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect);
 
 /**
  * \fn int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
@@ -862,7 +888,7 @@ extern DECLSPEC int SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * 
  * \sa SDL_HapticRunEffect
  * \sa SDL_HapticDestroyEffect
  */
-extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
+extern DECLSPEC int SDLCALL SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
 
 /**
  * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations)
@@ -879,7 +905,7 @@ extern DECLSPEC int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_
  * \sa SDL_HapticDestroyEffect
  * \sa SDL_HapticGetEffectStatus
  */
-extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 iterations);
+extern DECLSPEC int SDLCALL SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 iterations);
 
 /**
  * \fn int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)
@@ -893,7 +919,7 @@ extern DECLSPEC int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 
  * \sa SDL_HapticRunEffect
  * \sa SDL_HapticDestroyEffect
  */
-extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
+extern DECLSPEC int SDLCALL SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
 
 /**
  * \fn void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
@@ -907,7 +933,7 @@ extern DECLSPEC int SDL_HapticStopEffect(SDL_Haptic * haptic, int effect);
  * 
  * \sa SDL_HapticNewEffect
  */
-extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
+extern DECLSPEC void SDLCALL SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
 
 /**
  * \fn int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
@@ -924,7 +950,7 @@ extern DECLSPEC void SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect);
  * \sa SDL_HapticRunEffect
  * \sa SDL_HapticStopEffect
  */
-extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
+extern DECLSPEC int SDLCALL SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
 
 /**
  * \fn int SDL_HapticSetGain(SDL_Haptic * haptic, int gain)
@@ -944,7 +970,7 @@ extern DECLSPEC int SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect);
  *
  * \sa SDL_HapticQuery
  */
-extern DECLSPEC int SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
+extern DECLSPEC int SDLCALL SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
 
 /**
  * \fn int SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
@@ -960,7 +986,7 @@ extern DECLSPEC int SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
  *
  * \sa SDL_HapticQuery
  */
-extern DECLSPEC int SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter);
+extern DECLSPEC int SDLCALL SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter);
 
 
 /* Ends C function definitions when using C++ */
