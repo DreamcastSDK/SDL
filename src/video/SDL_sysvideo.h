@@ -284,6 +284,7 @@ struct SDL_VideoDevice
         int multisamplebuffers;
         int multisamplesamples;
         int accelerated;
+		int retained_backing;
         int driver_loaded;
         char driver_path[256];
         void *dll_handle;
@@ -366,6 +367,9 @@ extern VideoBootStrap RISCOS_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_OS2FS
 extern VideoBootStrap OS2FSLib_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_UIKIT
+extern VideoBootStrap UIKIT_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
 extern VideoBootStrap DUMMY_bootstrap;
