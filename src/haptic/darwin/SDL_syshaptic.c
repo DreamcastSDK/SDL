@@ -341,7 +341,7 @@ SDL_SYS_HapticQuit(void)
  * Sets the direction.
  */
 static int
-SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
+SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int naxes )
 {
    LONG *rglDir;
 
@@ -352,12 +352,12 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
    }
 
    /* Has axes. */
-   rglDir = SDL_malloc( sizeof(LONG) * axes );
+   rglDir = SDL_malloc( sizeof(LONG) * naxes );
    if (rglDir == NULL) {
       SDL_OutOfMemory();
       return -1;
    }
-   SDL_memset( rglDir, 0, sizeof(LONG) * axes );
+   SDL_memset( rglDir, 0, sizeof(LONG) * naxes );
    effect->rglDirection = rglDir;
 
    switch (dir->type) {
