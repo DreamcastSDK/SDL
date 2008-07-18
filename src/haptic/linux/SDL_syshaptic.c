@@ -493,6 +493,7 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 static int
 SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
 {
+   Uint32 tmp;
    SDL_HapticConstant *constant;
    SDL_HapticPeriodic *periodic;
    SDL_HapticCondition *condition;
@@ -563,7 +564,9 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->u.periodic.period = CLAMP(periodic->period);
          dest->u.periodic.magnitude = periodic->magnitude;
          dest->u.periodic.offset = periodic->offset;
-         dest->u.periodic.phase = CLAMP(periodic->phase);
+         /* Phase is calculated based of offset from period and then clamped. */
+         tmp = ((periodic->phase % 36000) * dest->u.periodic.period) / 36000;
+         dest->u.periodic.phase = CLAMP(tmp);
          
          /* Envelope */
          dest->u.periodic.envelope.attack_length = CLAMP(periodic->attack_length);

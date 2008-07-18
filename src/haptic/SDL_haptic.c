@@ -440,6 +440,8 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
          if (SDL_SYS_HapticNewEffect(haptic,&haptic->effects[i],effect) != 0) {
             return -1; /* Backend failed to create effect */
          }
+
+         SDL_memcpy(&haptic->effects[i].effect, effect, sizeof(SDL_HapticEffect));
          return i;
       }
    }
@@ -471,11 +473,18 @@ SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
       return -1;
    }
 
+   /* Can't change type dynamically. */
+   if (data->type != haptic->effects[effect].effect.type) {
+      SDL_SetError("Haptic: Updating effect type is illegal.");
+      return -1;
+   }
+
    /* Updates the effect */
    if (SDL_SYS_HapticUpdateEffect(haptic,&haptic->effects[effect],data) < 0) {
       return -1;
    }
 
+   SDL_memcpy(&haptic->effects[effect].effect, data, sizeof(SDL_HapticEffect));
    return 0;
 }
 

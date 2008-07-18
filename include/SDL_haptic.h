@@ -434,6 +434,14 @@ typedef struct SDL_HapticConstant {
  *  over time.  The type determines the shape of the wave and the parameters
  *  determine the dimensions of the wave.
  *
+ * Phase is given by hundredth of a cyle meaning that giving the phase a value
+ *  of 9000 will displace it 25% of it's period.  Here are sample values:
+ *    -     0: No phase displacement.
+ *    -  9000: Displaced 25% of it's period.
+ *    - 18000: Displaced 50% of it's period.
+ *    - 27000: Displaced 75% of it's period.
+ *    - 36000: Displaced 100% of it's period, same as 0, but 0 is preffered.
+ *
  * Examples:
  * \code
  * SDL_HAPTIC_SINE
@@ -488,7 +496,7 @@ typedef struct SDL_HapticPeriodic {
    Uint16 period; /**< Period of the wave. */
    Sint16 magnitude; /**< Peak value. */
    Sint16 offset; /**< Mean value of the wave. */
-   Uint16 phase; /**< Horizontal shift. */
+   Uint16 phase; /**< Horizontal shift given by hundredth of a cycle. */
 
    /* Envelope */
    Uint16 attack_length; /**< Duration of the attack. */
@@ -592,7 +600,7 @@ typedef struct SDL_HapticRamp {
  *
  * You can also pass SDL_HAPTIC_INFINITY to length instead of a 0-32767 value.
  *  Neither delay, interval, attack_length nor fade_length support 
- *  SDL_HAPTIC_INFINITY.
+ *  SDL_HAPTIC_INFINITY.  Fade will also not be used since effect never ends.
  *
  * Common parts:
  * \code
@@ -875,10 +883,12 @@ extern DECLSPEC int SDLCALL SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticE
 /**
  * \fn int SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
  *
- * \brief Updates an effect.  Can be used dynamically, although behaviour when
- * dynamically changing direction may be strange.  Specifically the effect
- * may reupload itself and start playing from the start.  You cannot change
- * the type either when running UpdateEffect.
+ * \brief Updates the properties of an effect.
+ *
+ * Can be used dynamically, although behaviour when dynamically changing
+ * direction may be strange.  Specifically the effect may reupload itself
+ * and start playing from the start.  You cannot change the type either when
+ * running UpdateEffect.
  *
  *    \param haptic Haptic device that has the effect.
  *    \param effect Effect to update.
@@ -895,6 +905,11 @@ extern DECLSPEC int SDLCALL SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effe
  * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations)
  *
  * \brief Runs the haptic effect on it's assosciated haptic device.
+ *
+ * If iterations are SDL_HAPTIC_INFINITY, it'll run the effect over and over
+ *  repeating the envelope (attack and fade) every time.  If you only want the
+ *  effect to last forever, set SDL_HAPTIC_INFINITY in the effect's length
+ *  parameter.
  *
  *    \param haptic Haptic device to run the effect on.
  *    \param effect Identifier of the haptic effect to run.
