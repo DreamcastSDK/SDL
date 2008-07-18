@@ -570,6 +570,32 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
       case SDL_HAPTIC_RAMP:
          hap_ramp = &src->ramp;
+         ramp = SDL_malloc(sizeof(FFRAMPFORCE));
+         if (ramp == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+         }
+
+         /* Specifics */
+         ramp->lMagnitude = CONVERT(hap_ramp->start);
+         ramp->lEnd = CONVERT(hap_ramp->end);
+
+         /* Generics */
+         dest->dwDuration = hap_ramp->length * 1000; /* In microseconds. */
+         dest->dwTriggerButton = FFJOFS_BUTTON(hap_ramp->button);
+         dest->dwTriggerRepeatInterval = hap_ramp->interval;
+         dest->dwStartDelay = hap_ramp->delay * 1000; /* In microseconds. */
+
+         /* Direction. */
+         if (SDL_SYS_SetDirection(dest, &hap_ramp->direction, dest->cAxes) < 0) {
+            return -1;
+         }
+
+         /* Envelope */
+         envelope->dwAttackLevel = CONVERT(hap_ramp->attack_level);
+         envelope->dwAttackTime = hap_ramp->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_ramp->fade_level);
+         envelope->dwFadeTime = hap_ramp->fade_length * 1000;
 
          break;
 
