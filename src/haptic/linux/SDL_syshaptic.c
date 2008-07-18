@@ -445,6 +445,9 @@ SDL_SYS_HapticQuit(void)
    int i;
 
    for (i=0; SDL_hapticlist[i].fname != NULL; i++) {
+      /* Opened and not closed haptics are leaked, this is on purpose.
+       * Close your haptic devices after usage. */
+
       SDL_free(SDL_hapticlist[i].fname);
    }
    SDL_hapticlist[0].fname = NULL;
