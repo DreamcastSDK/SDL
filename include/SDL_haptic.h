@@ -602,6 +602,9 @@ typedef struct SDL_HapticRamp {
  *  Neither delay, interval, attack_length nor fade_length support 
  *  SDL_HAPTIC_INFINITY.  Fade will also not be used since effect never ends.
  *
+ * Additionally, the SDL_HAPTIC_RAMP effect does not support a duration of
+ *  SDL_HAPTIC_INFINITY.
+ *
  * Common parts:
  * \code
  * // Replay - All effects have this
