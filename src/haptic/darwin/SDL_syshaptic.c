@@ -577,7 +577,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
 
          /* Specifics */
-         ramp->lMagnitude = CONVERT(hap_ramp->start);
+         ramp->lStart = CONVERT(hap_ramp->start);
          ramp->lEnd = CONVERT(hap_ramp->end);
 
          /* Generics */
