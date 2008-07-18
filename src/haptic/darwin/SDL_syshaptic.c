@@ -131,7 +131,7 @@ if (features.supportedEffects & ff) supported |= s
  */
 static unsigned int
 GetSupportedFeatures(FFDeviceObjectReference device,
-                     int *neffects, int *nplaying)
+                     int *neffects, int *nplaying, int *naxes)
 {
    HRESULT ret;
    FFCAPABILITIES features;
@@ -182,6 +182,10 @@ GetSupportedFeatures(FFDeviceObjectReference device,
       return 0;
    }
 
+   /* Check for axes, we have an artificial limit on axes */
+   *axes = ((features.numFfAxes) > 3) ?
+         3 : features.numFfAxes;
+
    /* Always supported features. */
    supported |= SDL_HAPTIC_STATUS;
    return supported;
@@ -211,7 +215,8 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
 
    /* Get supported features. */
    haptic->supported = GetSupportedFeatures(haptic->hwdata->device,
-                                            &haptic->neffects, &haptic->nplaying);
+                                            &haptic->neffects, &haptic->nplaying,
+                                            &haptic->naxes);
    if (haptic->supported == 0) { /* Error since device supports nothing. */
       goto open_err;
    }
@@ -342,12 +347,20 @@ static int
 SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
 {
    LONG *rglDir;
-   dir = SDL_malloc( sizeof(LONG) * axes );
-   if (dir == NULL) {
+
+   /* Handle no axes a part. */
+   if (dest->cAxes == 0) {
+      effect->rglDirection = NULL;
+      return 0;
+   }
+
+   /* Has axes. */
+   rglDir = SDL_malloc( sizeof(LONG) * axes );
+   if (rglDir == NULL) {
       SDL_OutOfMemory();
       return -1;
    }
-   SDL_memset( dir, 0, sizeof(LONG) * axes );
+   SDL_memset( rglDir, 0, sizeof(LONG) * axes );
    effect->rglDirection = rglDir;
 
    switch (dir->type) {
@@ -376,10 +389,10 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
 
 #define CONVERT(x)   (((x)*10000) / 0xFFFF )
 /*
- * Creates the FFStruct
+ * Creates the FFEFFECT from a SDL_HapticEffect.
  */
 static int
-SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
+SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src )
 {
    FFCONSTANTFORCE *constant;
    FFPERIODIC *periodic;
@@ -391,6 +404,7 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    SDL_HapticPeriodic *hap_periodic;
    SDL_HapticCondition *hap_condition;
    SDL_HapticRamp *hap_ramp;
+   DWORD *axes;
 
    /* Set global stuff. */
    SDL_memset(dest, 0, sizeof(FFEFFECT));
@@ -408,10 +422,33 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    dest->lpEnvelope = envelope;
    envelope->dwSize = sizeof(FFENVELOPE); /* Always should be this. */
 
+   /* Axes. */
+   dest->cAxes = haptic->naxes;
+   if (dest->cAxes > 0) {
+      axes = SDL_malloc(sizeof(DWORD) * dest->cAxes);
+      if (axes == NULL) {
+         SDL_OutOfMemory();
+         return -1;
+      }
+      axes[0] = FFJOFS_X; /* Always at least one axis. */
+      if (dest->cAxes > 1) {
+         axes[1] = FFJOFS_Y;
+      }
+      if (dest->cAxes > 2) {
+         axes[2] = FFJOFS_Z;
+      }
+      dest->rgdwAxes = axes;
+   }
+
+
    switch (src->type) {
       case SDL_HAPTIC_CONSTANT:
          hap_constant = &src->constant;
          constant = SDL_malloc( sizeof(FFCONSTANTFORCE) );
+         if (constant == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+         }
 
          /* Specifics */
          constant->lMagnitude = CONVERT(hap_constant->level);
@@ -423,10 +460,6 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
          dest->dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
          dest->dwTriggerRepeatInterval = hap_constant->interval;
          dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
-
-         /* Axes */
-         dest->cAxes = 2; /* TODO handle */
-         dest->rgdwAxes = 0;
 
          /* Direction. */
          if (SDL_SYS_SetDirection(dest, &hap_constant->direction, dest->cAxes) < 0) {
@@ -441,14 +474,42 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
 
          break;
 
-         /* TODO finish */
-
       case SDL_HAPTIC_SINE:
       case SDL_HAPTIC_SQUARE:
       case SDL_HAPTIC_TRIANGLE:
       case SDL_HAPTIC_SAWTOOTHUP:
       case SDL_HAPTIC_SAWTOOTHDOWN:
          hap_periodic = &src->periodic;
+         periodic = SDL_malloc(sizeof(FFPERIODIC));
+         if (periodic == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+         }
+
+         /* Specifics */
+         periodic->dwMagnitude = CONVERT(hap_periodic->magnitude);
+         periodic->lOffset = CONVERT(hap_periodic->offset);
+         periodic->dwPhase = hap_periodic->phase;
+         periodic->dwPeriod = hap_periodic->period * 1000;
+         dest->cbTypeSpecificParams = sizeof(FFPERIODIC);
+         dest->lpvTypeSpecificParams = periodic;
+
+         /* Generics */
+         dest->dwDuration = hap_periodic->length * 1000; /* In microseconds. */
+         dest->dwTriggerButton = FFJOFS_BUTTON(hap_periodic->button);
+         dest->dwTriggerRepeatInterval = hap_periodic->interval;
+         dest->dwStartDelay = hap_periodic->delay * 1000; /* In microseconds. */
+         
+         /* Direction. */
+         if (SDL_SYS_SetDirection(dest, &hap_periodic->direction, dest->cAxes) < 0) {
+            return -1;
+         }
+         
+         /* Envelope */
+         envelope->dwAttackLevel = CONVERT(hap_periodic->attack_level);
+         envelope->dwAttackTime = hap_periodic->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_periodic->fade_level);
+         envelope->dwFadeTime = hap_periodic->fade_length * 1000;
 
          break;
 
@@ -472,6 +533,30 @@ SDL_SYS_ToFFEFFECT( FFEFFECT * dest, SDL_HapticEffect * src )
    }
 
    return 0;
+}
+
+
+/*
+ * Frees an FFEFFECT allocated by SDL_SYS_ToFFEFFECT.
+ */
+void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
+{
+   if (effect->lpEnvelope != NULL) {
+      SDL_free(effect->lpEnvelope);
+      effect->lpEnvelope = NULL;
+   }
+   if (effect->rgdwAxes != NULL) {
+      SDL_free(effect->rgdwAxes);
+      effect->rgdwAxes = NULL;
+   }
+   if (effect->lpvTypeSpecificParams != NULL) {
+      SDL_free(effect->lpvTypeSpecificParams);
+      effect->lpvTypeSpecificParams = NULL;
+   }
+   if (effect->rglDirection != NULL) {
+      SDL_free(effect->rglDirection);
+      effect->rglDirection = NULL;
+   }
 }
 
 
@@ -539,25 +624,39 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
          SDL_malloc(sizeof(struct haptic_hweffect));
    if (effect->hweffect == NULL) {
       SDL_OutOfMemory();
-      return -1;
+      goto err_hweffect;
    }
 
    /* Get the type. */
    type = SDL_SYS_HapticEffectType(effect);
    if (type == NULL) {
-      SDL_free(effect->hweffect);
-      effect->hweffect = NULL;
-      return -1;
+      goto err_hweffect;
    }
 
    /* Get the effect. */
-   if (SDL_SYS_ToFFEFFECT( &effect->hweffect->effect, &effect->effect ) < 0) {
-      /* TODO cleanup alloced stuff. */
-      return -1;
+   if (SDL_SYS_ToFFEFFECT(haptic, &effect->hweffect->effect, &effect->effect ) < 0) {
+      goto err_effectdone;
    }
 
+   /* Create the actual effect. */
    ret = FFDeviceCreateEffect( haptic->hwdata->device, type,
          &effect->hweffect->effect, &effect->hweffect->ref );
+
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Unable to create effect.");
+      goto err_effectdone;
+   }
+
+   return 0;
+
+err_effectdone:
+   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect);
+err_hweffect:
+   if (effect->hweffect != NULL) {
+      SDL_free(effect->hweffect);
+      effect->hweffect = NULL;
+   }
+   return -1;
 }
 
 
