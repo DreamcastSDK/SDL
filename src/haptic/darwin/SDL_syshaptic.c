@@ -306,18 +306,22 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
 
    if (haptic->hwdata) {
 
+      /* Free the effects. */
+      for (i=0; i<haptic->neffects; i++) {        
+         if (haptic->effects[i].hweffect != NULL) {
+            SDL_SYS_HapticFreeFFEFFECT(&haptic->effects[i].hweffect->effect);
+            SDL_free(haptic->effects[i].hweffect);
+         } 
+      }    
+      SDL_free(haptic->effects);
+      haptic->neffects = 0;
+
       /* Clean up */
       FFReleaseDevice(haptic->hwdata->device);
 
       /* Free */
       SDL_free(haptic->hwdata);
       haptic->hwdata = NULL;
-      for (i=0; i<haptic->neffects; i++) {
-         if (haptic->effects[i].hweffect != NULL)
-            SDL_free(haptic->effects[i].hweffect->effect.lpvTypeSpecificParams);
-      }
-      SDL_free(haptic->effects);
-      haptic->neffects = 0;
    }
 }
 
@@ -331,8 +335,11 @@ SDL_SYS_HapticQuit(void)
    int i;
 
    for (i=0; i < SDL_numhaptics; i++) {
+      /* Opened and not closed haptics are leaked, this is on purpose.
+       * Close your haptic devices after usage. */
+
+      /* Free the io_service_t */
       IOObjectRelease(SDL_hapticlist[i].dev);
-      /* TODO free effects. */
    }
 }
 
@@ -391,9 +398,10 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int naxes )
 static int
 SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src )
 {
+   int i;
    FFCONSTANTFORCE *constant;
    FFPERIODIC *periodic;
-   FFCONDITION *condition;
+   FFCONDITION *condition; /* Actually an array of conditions - one per axis. */
    FFRAMPFORCE *ramp;
    FFCUSTOMFORCE *custom;
    FFENVELOPE *envelope;
@@ -438,6 +446,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
    }
 
 
+   /* The big type handling switch, even bigger then linux's version. */
    switch (src->type) {
       case SDL_HAPTIC_CONSTANT:
          hap_constant = &src->constant;
@@ -515,6 +524,40 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
       case SDL_HAPTIC_INERTIA:
       case SDL_HAPTIC_FRICTION:
          hap_condition = &src->condition;
+         condition = SDL_malloc(sizeof(FFCONDITION) * dest->cAxes);
+         if (condition == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+         }
+
+         /* Specifics */
+         for (i=0; i<dest->cAxes; i++) {
+            condition[i].lOffset = CONVERT(hap_constant->center[i]);
+            condition[i].lPositiveCoefficient = CONVERT(hap_constant->right_coeff[i]);
+            condition[i].lNegativeCoefficient = CONVERT(hap_constant->left_coeff[i]);
+            condition[i].dwPositiveSaturation = CONVERT(hap_constant->right_sat[i]);
+            condition[i].dwNegativeSaturation = CONVERT(hap_constant->left_sat[i]);
+            condition[i].lDeadBand = CONVERT(hap_constant->deadband[i]);
+         }
+         dest->cbTypeSpecificParams = sizeof(FFCONDITION) * dest->cAxes;
+         dest->lpvTypeSpecificParams = condition;
+
+         /* Generics */
+         dest->dwDuration = hap_constant->length * 1000; /* In microseconds. */
+         dest->dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
+         dest->dwTriggerRepeatInterval = hap_constant->interval;
+         dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
+
+         /* Direction. */
+         if (SDL_SYS_SetDirection(dest, &hap_constant->direction, dest->cAxes) < 0) {
+            return -1;                
+         }                            
+                                      
+         /* Envelope */               
+         envelope->dwAttackLevel = CONVERT(hap_constant->attack_level);
+         envelope->dwAttackTime = hap_constant->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_constant->fade_level);
+         envelope->dwFadeTime = hap_constant->fade_length * 1000;
 
          break;
 
