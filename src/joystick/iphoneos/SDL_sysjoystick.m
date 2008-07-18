@@ -89,10 +89,10 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
 	
 	Sint16 orientation[3];
-	[[SDLUIAccelerationDelegate sharedDelegate] getLastOrientation: orientation];
 	
 	if ([[SDLUIAccelerationDelegate sharedDelegate] hasNewData]) {
 	
+		[[SDLUIAccelerationDelegate sharedDelegate] getLastOrientation: orientation];
 		[[SDLUIAccelerationDelegate sharedDelegate] setHasNewData: NO];
 		
 		SDL_PrivateJoystickAxis(joystick, 0, orientation[0]);
