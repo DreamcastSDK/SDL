@@ -66,6 +66,11 @@ struct haptic_hweffect
    struct FFEFFECT effect; /* Hardware effect. */
 };
 
+/*
+ * Prototypes.
+ */
+static void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect );
+
 
 /*
  * Initializes the haptic subsystem.
@@ -532,32 +537,32 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Specifics */
          for (i=0; i<dest->cAxes; i++) {
-            condition[i].lOffset = CONVERT(hap_constant->center[i]);
-            condition[i].lPositiveCoefficient = CONVERT(hap_constant->right_coeff[i]);
-            condition[i].lNegativeCoefficient = CONVERT(hap_constant->left_coeff[i]);
-            condition[i].dwPositiveSaturation = CONVERT(hap_constant->right_sat[i]);
-            condition[i].dwNegativeSaturation = CONVERT(hap_constant->left_sat[i]);
-            condition[i].lDeadBand = CONVERT(hap_constant->deadband[i]);
+            condition[i].lOffset = CONVERT(hap_condition->center[i]);
+            condition[i].lPositiveCoefficient = CONVERT(hap_condition->right_coeff[i]);
+            condition[i].lNegativeCoefficient = CONVERT(hap_condition->left_coeff[i]);
+            condition[i].dwPositiveSaturation = CONVERT(hap_condition->right_sat[i]);
+            condition[i].dwNegativeSaturation = CONVERT(hap_condition->left_sat[i]);
+            condition[i].lDeadBand = CONVERT(hap_condition->deadband[i]);
          }
          dest->cbTypeSpecificParams = sizeof(FFCONDITION) * dest->cAxes;
          dest->lpvTypeSpecificParams = condition;
 
          /* Generics */
-         dest->dwDuration = hap_constant->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
-         dest->dwTriggerRepeatInterval = hap_constant->interval;
-         dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
+         dest->dwDuration = hap_condition->length * 1000; /* In microseconds. */
+         dest->dwTriggerButton = FFJOFS_BUTTON(hap_condition->button);
+         dest->dwTriggerRepeatInterval = hap_condition->interval;
+         dest->dwStartDelay = hap_condition->delay * 1000; /* In microseconds. */
 
          /* Direction. */
-         if (SDL_SYS_SetDirection(dest, &hap_constant->direction, dest->cAxes) < 0) {
+         if (SDL_SYS_SetDirection(dest, &hap_condition->direction, dest->cAxes) < 0) {
             return -1;                
          }                            
                                       
          /* Envelope */               
-         envelope->dwAttackLevel = CONVERT(hap_constant->attack_level);
-         envelope->dwAttackTime = hap_constant->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_constant->fade_level);
-         envelope->dwFadeTime = hap_constant->fade_length * 1000;
+         envelope->dwAttackLevel = CONVERT(hap_condition->attack_level);
+         envelope->dwAttackTime = hap_condition->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_condition->fade_level);
+         envelope->dwFadeTime = hap_condition->fade_length * 1000;
 
          break;
 
@@ -579,7 +584,8 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 /*
  * Frees an FFEFFECT allocated by SDL_SYS_ToFFEFFECT.
  */
-void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
+static void
+SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
 {
    if (effect->lpEnvelope != NULL) {
       SDL_free(effect->lpEnvelope);
@@ -603,7 +609,8 @@ void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
 /*
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
-CFUUIDRef SDL_SYS_HapticEffectType(struct haptic_effect * effect)
+CFUUIDRef
+SDL_SYS_HapticEffectType(struct haptic_effect * effect)
 {
    switch (effect->effect.type) {
       case SDL_HAPTIC_CONSTANT:
@@ -703,7 +710,8 @@ err_hweffect:
 /*
  * Updates an effect.
  */
-int SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
+int
+SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect, SDL_HapticEffect * data)
 {
    /* TODO */
