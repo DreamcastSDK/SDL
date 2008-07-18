@@ -183,7 +183,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    }
 
    /* Check for axes, we have an artificial limit on axes */
-   *axes = ((features.numFfAxes) > 3) ?
+   *naxes = ((features.numFfAxes) > 3) ?
          3 : features.numFfAxes;
 
    /* Always supported features. */
@@ -282,9 +282,6 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-   if (SDL_strcmp(joystick->name,haptic->name)==0) {
-      return 1;
-   }
    return 0;
 }
 
@@ -349,7 +346,7 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int axes )
    LONG *rglDir;
 
    /* Handle no axes a part. */
-   if (dest->cAxes == 0) {
+   if (naxes == 0) {
       effect->rglDirection = NULL;
       return 0;
    }
