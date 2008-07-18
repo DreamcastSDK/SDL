@@ -4,8 +4,6 @@
 */
 #define SDL_PROC_UNUSED(ret,func,params)
 
-poop
-
 SDL_PROC(void, glBindTexture, (GLenum, GLuint))
 SDL_PROC(void, glBlendFunc, (GLenum, GLenum))
 SDL_PROC(void, glClear, (GLbitfield))
