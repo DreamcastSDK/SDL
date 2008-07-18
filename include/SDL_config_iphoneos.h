@@ -43,7 +43,9 @@ typedef unsigned int uint32_t;
 
 typedef unsigned long uintptr_t;
 
+/* enable OpenGL ES */
 #define SDL_VIDEO_OPENGL_ES	1
+
 #define SDL_VIDEO_RENDER_OGL_ES	1
 
 #define SDL_HAS_64BIT_TYPE	0
@@ -54,6 +56,9 @@ typedef unsigned long uintptr_t;
 /* Enable the dummy audio driver (src/audio/dummy/\*.c) */
 #define SDL_AUDIO_DRIVER_COREAUDIOIPHONE 1
 #define SDL_AUDIO_DRIVER_DUMMY	1
+
+/* Enable Unix style SO loading */
+#define SDL_LOADSO_DLOPEN 1
 
 /* Enable the stub cdrom driver (src/cdrom/dummy/\*.c) */
 #define SDL_CDROM_DISABLED	1
