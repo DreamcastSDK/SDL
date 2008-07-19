@@ -21,16 +21,8 @@
 */
 #include "SDL_config.h"
 
-/* Dummy SDL video driver implementation; this is just enough to make an
- *  SDL-based application THINK it's got a working video driver, for
- *  applications that call SDL_Init(SDL_INIT_VIDEO) when they don't need it,
- *  and also for use as a collection of stubs when porting SDL to a new
- *  platform for which you haven't yet written a valid video driver.
- *
- * This is also a great way to determine bottlenecks: if you think that SDL
- *  is a performance problem for a given platform, enable this driver, and
- *  then see if your application runs faster without video overhead.
- *
+/* SDL Nintendo DS video driver implementation
+ * based on dummy driver:
  * Initial work by Ryan C. Gordon (icculus@icculus.org). A good portion
  *  of this was cut-and-pasted from Stephane Peter's work in the AAlib
  *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
@@ -39,6 +31,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <nds.h>
+#include <nds/arm9/sprite.h>
+#include <nds/arm9/trig_lut.h>
+#include <nds/arm9/video.h>
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"
@@ -57,12 +52,71 @@ static int NDS_VideoInit(_THIS);
 static int NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
 static void NDS_VideoQuit(_THIS);
 
-/* DUMMY driver bootstrap functions */
+/* NDS sprite-related functions */
 
+#define SPRITE_DMA_CHANNEL 3
+#define SPRITE_ANGLE_MASK 0x01FF
+
+void
+NDS_OAM_Update(tOAM *oam)
+{
+    DC_FlushAll();
+    dmaCopyHalfWords(SPRITE_DMA_CHANNEL, oam->spriteBuffer, OAM,
+                     SPRITE_COUNT * sizeof(SpriteEntry));
+}
+
+void
+NDS_OAM_RotateSprite(SpriteRotation *spriteRotation, u16 angle)
+{
+    s16 s = SIN[angle & SPRITE_ANGLE_MASK] >> 4;
+    s16 c = COS[angle & SPRITE_ANGLE_MASK] >> 4;
+
+    spriteRotation->hdx = c;
+    spriteRotation->hdy = s;
+    spriteRotation->vdx = -s;
+    spriteRotation->vdy = c;
+}
+
+void
+NDS_OAM_Init(tOAM *oam)
+{
+    int i;
+    for(i = 0; i < SPRITE_COUNT; i++) {
+        oam->spriteBuffer[i].attribute[0] = ATTR0_DISABLED;
+        oam->spriteBuffer[i].attribute[1] = 0;
+        oam->spriteBuffer[i].attribute[2] = 0;
+    }
+    for(i = 0; i < MATRIX_COUNT; i++) {
+        NDS_OAM_RotateSprite(&(oam->matrixBuffer[i]), 0);
+    }
+    swiWaitForVBlank();
+    NDS_OAM_Update(oam);
+}
+
+void
+NDS_OAM_HideSprite(SpriteEntry *spriteEntry)
+{
+    spriteEntry->isRotoscale = 0;
+    spriteEntry->isHidden = 1;
+}
+
+void
+NDS_OAM_ShowSprite(SpriteEntry *spriteEntry, int affine, int double_bound)
+{
+    if (affine) {
+        spriteEntry->isRotoscale = 1;
+        spriteEntry->rsDouble = double_bound;
+    } else {
+        spriteEntry->isHidden = 0;
+    }
+}
+
+
+/* SDL NDS driver bootstrap functions */
 static int
 NDS_Available(void)
 {
-    const char *envr = SDL_getenv("SDL_VIDEODRIVER");
+    /*const char *envr = SDL_getenv("SDL_VIDEODRIVER");*/
     /*printf("NDS_Available()\n"); */
     return (1);
 }
@@ -79,6 +133,7 @@ NDS_CreateDevice(int devindex)
     SDL_VideoDevice *device;
     /*printf("NDS_CreateDevice(%d)\n", devindex); */
 
+printf("+NDS_CreateDevice\n");
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -99,6 +154,7 @@ NDS_CreateDevice(int devindex)
 
     device->free = NDS_DeleteDevice;
 
+printf("-NDS_CreateDevice\n");
     return device;
 }
 
@@ -113,7 +169,8 @@ NDS_VideoInit(_THIS)
     SDL_DisplayMode mode;
     int i;
 
-    /* simple 256x192x15x60 for now */
+printf("+NDS_VideoInit\n");
+    /* simple 256x192x16x60 for now */
     mode.w = 256;
     mode.h = 192;
     mode.format = SDL_PIXELFORMAT_ABGR1555;
@@ -129,49 +186,41 @@ NDS_VideoInit(_THIS)
     SDL_AddDisplayMode(0, &mode);
 
     /* hackish stuff to get things up and running for now, and for a console */
-    powerON(POWER_ALL);    irqInit();
+    powerON(POWER_ALL_2D);    irqInit();
     irqEnable(IRQ_VBLANK);
     NDS_SetDisplayMode(_this, &mode);
+printf("-NDS_VideoInit\n");
     return 0;
 }
 
 static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
+printf("+NDS_SetDisplayMode\n");
     /* right now this function is just hard-coded for 256x192 ABGR1555 */
     videoSetMode(MODE_5_2D | DISPLAY_BG3_ACTIVE);       /* display on main core */
     videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub */
-    vramSetMainBanks(VRAM_A_MAIN_BG_0x06000000, VRAM_B_LCD,
-                     VRAM_C_SUB_BG, VRAM_D_LCD);
-
+    vramSetMainBanks(VRAM_A_MAIN_BG_0x06000000, VRAM_B_MAIN_BG_0x06020000,
+                     VRAM_C_SUB_BG_0x06200000,  VRAM_C_SUB_BG_0x06220000);
+    vramSetBankE(VRAM_E_MAIN_SPRITE);
     /* set up console for debug text 'n stuff */
     SUB_BG0_CR = BG_MAP_BASE(31);
     BG_PALETTE_SUB[255] = RGB15(31, 31, 31);
+   /* debugging purposes, uncomment this later.  then remove it & add 2screen.
     consoleInitDefault((u16 *) SCREEN_BASE_BLOCK_SUB(31),
-                       (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);
-
-#if 0
-/* we should be using this as a texture for rendering, not as a framebuffer */
-    /* maps well to the 256x192 screen anyway.  note: need VRAM_B for bigger */
-    BACKGROUND.control[3] = BG_BMP16_256x256;
-    /* affine transformation matrix.  nothing too fancy here */
-    BG3_XDX = 0x100;
-    BG3_XDY = 0;
-    BG3_YDX = 0;
-    BG3_YDY = 0x100;
-    /* x/y position */
-    BG3_CX = 0;
-    BG3_CY = 0;
-#endif
+                       (u16 *) CHAR_BASE_BLOCK_SUB(0), 16);*/
+printf("-NDS_SetDisplayMode\n");
     return 0;
 }
 
 void
 NDS_VideoQuit(_THIS)
 {
+printf("+NDS_VideoQuit\n");
     videoSetMode(DISPLAY_SCREEN_OFF);
     videoSetModeSub(DISPLAY_SCREEN_OFF);
     vramSetMainBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
+printf("-NDS_VideoQuit\n");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

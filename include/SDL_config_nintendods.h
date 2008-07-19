@@ -92,14 +92,15 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 #define LACKS_SYS_MMAN_H 1
 
 /* Enable various audio drivers */
-#define SDL_AUDIO_DRIVER_DUMMY	1
+#define SDL_AUDIO_DRIVER_NDS	1
+/*#define SDL_AUDIO_DRIVER_DUMMY	1 TODO: uncomment this later*/
 
 /* DS doesn't have optical media */
 #define SDL_CDROM_DISABLED	1
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_NDS	1
-/*#define SDL_JOYSTICK_DUMMY	1*/
+/*#define SDL_JOYSTICK_DUMMY	1 TODO: uncomment this later*/
 
 /* DS has no dynamic linking afaik */
 #define SDL_LOADSO_DISABLED	1
@@ -113,6 +114,6 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_NDS	1
-#define SDL_VIDEO_DRIVER_DUMMY	1
+/*#define SDL_VIDEO_DRIVER_DUMMY	1 TODO: uncomment this later*/
 
 #endif /* _SDL_config_nintendods_h */

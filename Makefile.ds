@@ -31,6 +31,7 @@ src/SDL_error.c \
 src/SDL_fatal.c \
 src/audio/disk/SDL_diskaudio.c \
 src/audio/dummy/SDL_dummyaudio.c \
+src/audio/nds/SDL_ndsaudio.c \
 src/audio/SDL_audio.c \
 src/audio/SDL_audiocvt.c \
 src/audio/SDL_audiodev.c \
