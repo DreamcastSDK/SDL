@@ -69,7 +69,7 @@ struct haptic_hweffect
 /*
  * Prototypes.
  */
-static void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect );
+static void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect, int type );
 
 
 /*
@@ -314,7 +314,8 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
       /* Free the effects. */
       for (i=0; i<haptic->neffects; i++) {        
          if (haptic->effects[i].hweffect != NULL) {
-            SDL_SYS_HapticFreeFFEFFECT(&haptic->effects[i].hweffect->effect);
+            SDL_SYS_HapticFreeFFEFFECT(&haptic->effects[i].hweffect->effect,
+                                       haptic->effects[i].effect.type);
             SDL_free(haptic->effects[i].hweffect);
          } 
       }    
@@ -414,6 +415,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
    SDL_HapticPeriodic *hap_periodic;
    SDL_HapticCondition *hap_condition;
    SDL_HapticRamp *hap_ramp;
+   SDL_HapticCustom *hap_custom;
    DWORD *axes;
 
    /* Set global stuff. */
@@ -460,6 +462,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
             SDL_OutOfMemory();
             return -1;
          }
+         SDL_memset(constant, 0, sizeof(FFCONSTANTFORCE));
 
          /* Specifics */
          constant->lMagnitude = CONVERT(hap_constant->level);
@@ -496,6 +499,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
             SDL_OutOfMemory();
             return -1;
          }
+         SDL_memset(periodic, 0, sizeof(FFPERIODIC));
 
          /* Specifics */
          periodic->dwMagnitude = CONVERT(hap_periodic->magnitude);
@@ -534,6 +538,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
             SDL_OutOfMemory();
             return -1;
          }
+         SDL_memset(condition, 0, sizeof(FFCONDITION));
 
          /* Specifics */
          for (i=0; i<dest->cAxes; i++) {
@@ -575,10 +580,13 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
             SDL_OutOfMemory();
             return -1;
          }
+         SDL_memset(ramp, 0, sizeof(FFRAMPFORCE));
 
          /* Specifics */
          ramp->lStart = CONVERT(hap_ramp->start);
          ramp->lEnd = CONVERT(hap_ramp->end);
+         dest->cbTypeSpecificParams = sizeof(FFRAMPFORCE);
+         dest->lpvTypeSpecificParams = ramp;
 
          /* Generics */
          dest->dwDuration = hap_ramp->length * 1000; /* In microseconds. */
@@ -599,6 +607,45 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          break;
 
+      case SDL_HAPTIC_CUSTOM:
+         hap_custom = &src->custom;
+         custom = SDL_malloc(sizeof(FFCUSTOMFORCE));
+         if (custom == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+         }
+         SDL_memset(custom, 0, sizeof(FFCUSTOMFORCE));
+
+         /* Specifics */
+         custom->cChannels = hap_custom->channels;
+         custom->dwSamplePeriod = hap_custom->period * 1000;
+         custom->cSamples = hap_custom->samples;
+         custom->rglForceData = SDL_malloc(sizeof(LONG)*custom->cSamples*custom->cChannels);
+         for (i=0; i<hap_custom->samples*hap_custom->channels; i++) { /* Copy data. */
+            custom->rglForceData[i] = CONVERT(hap_custom->data[i]);
+         }
+         dest->cbTypeSpecificParams = sizeof(FFCUSTOMFORCE);
+         dest->lpvTypeSpecificParams = custom;
+
+         /* Generics */
+         dest->dwDuration = hap_custom->length * 1000; /* In microseconds. */
+         dest->dwTriggerButton = FFJOFS_BUTTON(hap_custom->button);
+         dest->dwTriggerRepeatInterval = hap_custom->interval;
+         dest->dwStartDelay = hap_custom->delay * 1000; /* In microseconds. */
+
+         /* Direction. */
+         if (SDL_SYS_SetDirection(dest, &hap_custom->direction, dest->cAxes) < 0) {
+            return -1;
+         }
+         
+         /* Envelope */
+         envelope->dwAttackLevel = CONVERT(hap_custom->attack_level);
+         envelope->dwAttackTime = hap_custom->attack_length * 1000;
+         envelope->dwFadeLevel = CONVERT(hap_custom->fade_level);
+         envelope->dwFadeTime = hap_custom->fade_length * 1000;
+
+         break;
+
 
       default:
          SDL_SetError("Haptic: Unknown effect type.");
@@ -613,8 +660,10 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
  * Frees an FFEFFECT allocated by SDL_SYS_ToFFEFFECT.
  */
 static void
-SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
+SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect, int type )
 {
+   FFCUSTOMFORCE *custom;
+
    if (effect->lpEnvelope != NULL) {
       SDL_free(effect->lpEnvelope);
       effect->lpEnvelope = NULL;
@@ -624,6 +673,11 @@ SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect )
       effect->rgdwAxes = NULL;
    }
    if (effect->lpvTypeSpecificParams != NULL) {
+      if (type == SDL_HAPTIC_CUSTOM) { /* Must free the custom data. */
+         custom = (FFCUSTOMFORCE*) effect->lpvTypeSpecificParams;
+         SDL_free(custom->rglForceData);
+         custom->rglForceData = NULL;
+      }
       SDL_free(effect->lpvTypeSpecificParams);
       effect->lpvTypeSpecificParams = NULL;
    }
@@ -725,7 +779,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    return 0;
 
 err_effectdone:
-   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect);
+   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, effect->effect.type);
 err_hweffect:
    if (effect->hweffect != NULL) {
       SDL_free(effect->hweffect);
