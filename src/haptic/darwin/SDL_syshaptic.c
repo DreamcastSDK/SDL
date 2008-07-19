@@ -43,6 +43,7 @@
  */
 static struct
 {
+   char name[256];
    io_service_t dev;
    SDL_Haptic *haptic;
 } SDL_hapticlist[MAX_HAPTICS];
@@ -69,7 +70,8 @@ struct haptic_hweffect
 /*
  * Prototypes.
  */
-static void SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect, int type );
+static void SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type);
+static int HIDGetDeviceProduct(io_service_t dev, char * name);
 
 
 /*
@@ -83,6 +85,9 @@ SDL_SYS_HapticInit(void)
    io_iterator_t iter;
    CFDictionaryRef match;
    io_service_t device;
+
+   /* Clear all the memory. */
+   SDL_memset(SDL_hapticlist, 0, sizeof(SDL_hapticlist));
 
    /* Get HID devices. */
    match = IOServiceMatching(kIOHIDDeviceKey);
@@ -104,9 +109,13 @@ SDL_SYS_HapticInit(void)
 
       /* Check for force feedback. */
       if (FFIsForceFeedback(device) == FF_OK) {
+         HIDGetDeviceProduct(device, SDL_hapticlist[numhaptics].name);
          SDL_hapticlist[numhaptics].dev = device;
          SDL_hapticlist[numhaptics].haptic = NULL;
          numhaptics++;
+      }
+      else { /* Free the unused device. */
+         IOObjectRelease(device);
       }
 
       /* Reached haptic limit. */
@@ -125,7 +134,68 @@ SDL_SYS_HapticInit(void)
 const char *
 SDL_SYS_HapticName(int index)
 {
-   return NULL;
+   return SDL_hapticlist[index].name;
+}
+
+/*
+ * Gets the device's product name.
+ */
+static int
+HIDGetDeviceProduct(io_service_t dev, char *name)
+{
+   CFMutableDictionaryRef hidProperties, usbProperties;
+   io_registry_entry_t parent1, parent2;
+
+   hidProperties = usbProperties = 0;
+
+   /* Mac OS X currently is not mirroring all USB properties to HID page so need to look at USB device page also
+    * get dictionary for usb properties: step up two levels and get CF dictionary for USB properties
+    */
+   if ((KERN_SUCCESS ==
+            IORegistryEntryGetParentEntry(dev, kIOServicePlane, &parent1))
+         && (KERN_SUCCESS ==
+            IORegistryEntryGetParentEntry(parent1, kIOServicePlane, &parent2))
+         && (KERN_SUCCESS ==
+            IORegistryEntryCreateCFProperties(parent2, &usbProperties,
+               kCFAllocatorDefault,
+               kNilOptions))) {
+      if (usbProperties) {
+         CFTypeRef refCF = 0;
+         /* get device info
+          * try hid dictionary first, if fail then go to usb dictionary
+          */
+
+
+         /* Get product name */
+         refCF =
+            CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDProductKey));
+         if (!refCF)
+            refCF =
+               CFDictionaryGetValue(usbProperties, CFSTR("USB Product Name"));
+         if (refCF) {
+            if (!CFStringGetCString(refCF, name, 256,
+                                    CFStringGetSystemEncoding())) {
+               SDL_SetError("CFStringGetCString error retrieving pDevice->product.");
+               return -1;
+            }
+         }
+
+         CFRelease(usbProperties);
+      }
+      else {
+         SDL_SetError("IORegistryEntryCreateCFProperties failed to create usbProperties.");
+         return -1;
+      }
+
+      /* Release stuff. */
+      if (kIOReturnSuccess != IOObjectRelease(parent2)) {
+         SDL_SetError("IOObjectRelease error with parent2.");
+      }
+      if (kIOReturnSuccess != IOObjectRelease(parent1))  {
+         SDL_SetError("IOObjectRelease error with parent1.");
+      }
+   }
+   return 0;
 }
 
 
