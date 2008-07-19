@@ -212,7 +212,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
 /**
  * \def SDL_HAPTIC_CUSTOM
  *
- * \brief User defined custom haptic effect. @todo.
+ * \brief User defined custom haptic effect.
  */
 #define SDL_HAPTIC_CUSTOM     (1<<11) /* Custom effect is supported */
 /* These last two are features the device has, not effects */
@@ -262,7 +262,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  */
 #define SDL_HAPTIC_CARTESIAN  1
 /**
- * \def SDL_HAPTIC_SHPERICAL
+ * \def SDL_HAPTIC_SPHERICAL
  *
  * \brief Uses spherical coordinates for the direction.
  *
@@ -947,7 +947,7 @@ extern DECLSPEC int SDLCALL SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticE
 extern DECLSPEC int SDLCALL SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data);
 
 /**
- * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, int iterations)
+ * \fn int SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 iterations)
  *
  * \brief Runs the haptic effect on it's assosciated haptic device.
  *
