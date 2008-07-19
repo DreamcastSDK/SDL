@@ -591,6 +591,46 @@ typedef struct SDL_HapticRamp {
    Uint16 fade_level; /**< Level at the end of the fade. */
 } SDL_HapticRamp;
 /**
+ * \struct SDL_HapticCustom
+ *
+ * \brief A structure containing a template for the SDL_HAPTIC_CUSTOM effect.
+ *
+ * A custom force feedback effect is much like a periodic effect, where the
+ *  application can define it's exact shape.  You will have to allocate the
+ *  data yourself.  Data should consist of channels * samples Uint16 samples.
+ *
+ * If channels is one, the effect is rotated using the defined direction.
+ *  Otherwise it uses the samples in data for the different axes.
+ *
+ * \sa SDL_HAPTIC_CUSTOM
+ * \sa SDL_HapticEffect
+ */
+typedef struct SDL_HapticCustom {
+   /* Header */
+   Uint16 type; /**< SDL_HAPTIC_CUSTOM */
+   SDL_HapticDirection direction; /**< Direction of the effect. */
+
+   /* Replay */
+   Uint32 length; /**< Duration of the effect. */
+   Uint16 delay; /**< Delay before starting the effect. */
+
+   /* Trigger */
+   Uint16 button; /**< Button that triggers the effect. */
+   Uint16 interval; /**< How soon it can be triggered again after button. */
+
+   /* Custom */
+   Uint8 channels; /**< Axes to use, minimum of one. */
+   Uint16 period; /**< Sample periods. */
+   Uint16 samples; /**< Amount of samples. */
+   Uint16 *data; /**< Should contain channels*samples items. */
+
+   /* Envelope */                                                         
+   Uint16 attack_length; /**< Duration of the attack. */
+   Uint16 attack_level; /**< Level at the start of the attack. */
+   Uint16 fade_length; /**< Duration of the fade. */
+   Uint16 fade_level; /**< Level at the end of the fade. */
+} SDL_HapticCustom;
+/**
  * \union SDL_HapticEffect
  *
  * \brief The generic template for any haptic effect.
@@ -652,6 +692,7 @@ typedef struct SDL_HapticRamp {
  * \sa SDL_HapticPeriodic
  * \sa SDL_HapticCondition
  * \sa SDL_HapticRamp
+ * \sa SDL_HapticCustom
  */
 typedef union SDL_HapticEffect {
    /* Common for all force feedback effects */
@@ -660,6 +701,7 @@ typedef union SDL_HapticEffect {
    SDL_HapticPeriodic periodic; /**< Periodic effect. */
    SDL_HapticCondition condition; /**< Condition effect. */
    SDL_HapticRamp ramp; /**< Ramp effect. */
+   SDL_HapticCustom custom; /**< Custom effect. */
 } SDL_HapticEffect;
 
 
