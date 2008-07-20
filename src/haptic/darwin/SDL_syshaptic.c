@@ -83,8 +83,8 @@ FFStrError(HRESULT err)
    switch (err) {
       case FFERR_DEVICEFULL:
          return "device full";
-      case FFERR_DEVICENOTREG:
-         return "device not registered";
+      /*case FFERR_DEVICENOTREG:
+         return "device not registered";*/
       case FFERR_DEVICEPAUSED:
          return "device paused";
       case FFERR_DEVICERELEASED:
