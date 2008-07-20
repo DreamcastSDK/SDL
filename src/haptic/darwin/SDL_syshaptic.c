@@ -833,13 +833,13 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    }
 
    /* Get the effect. */
-   if (SDL_SYS_ToFFEFFECT(haptic, &effect->hweffect->effect, &effect->effect ) < 0) {
+   if (SDL_SYS_ToFFEFFECT(haptic, &effect->hweffect->effect, base) < 0) {
       goto err_effectdone;
    }
 
    /* Create the actual effect. */
-   ret = FFDeviceCreateEffect( haptic->hwdata->device, type,
-         &effect->hweffect->effect, &effect->hweffect->ref );
+   ret = FFDeviceCreateEffect(haptic->hwdata->device, type,
+         &effect->hweffect->effect, &effect->hweffect->ref);
 
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Unable to create effect.");
@@ -849,7 +849,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    return 0;
 
 err_effectdone:
-   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, effect->effect.type);
+   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, base->type);
 err_hweffect:
    if (effect->hweffect != NULL) {
       SDL_free(effect->hweffect);
@@ -866,7 +866,37 @@ int
 SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
       struct haptic_effect * effect, SDL_HapticEffect * data)
 {
-   /* TODO */
+   HRESULT ret;
+   FFEffectParameterFlag flags;
+   FFEFFECT temp;
+
+   /* Get the effect. */
+   SDL_memset(&temp, 0, sizeof(FFEFFECT));
+   if (SDL_SYS_ToFFEFFECT(haptic, &temp, data) < 0) {
+      goto err_update;
+   }
+
+   /* Set the flags.  Might be worthwhile to diff temp with loaded effect and
+    *  only change those parameters. */
+   flags = FFEP_ALLPARAMS;
+
+   /* Create the actual effect. */
+   ret = FFEffectSetParameters(haptic->hwdata->device, effect->hweffect->ref,
+                               &temp, flags);
+
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Unable to update effect.");
+      goto err_update;
+   }
+
+   /* Copy it over. */
+   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, data->type);
+   SDL_memcpy(&effect->hweffect->effect, &temp, sizeof(FFEFFECT));
+
+   return 0;
+
+err_update:
+   SDL_SYS_HapticFreeFFEFFECT(&temp, data->type);
    return -1;
 }
 
