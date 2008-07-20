@@ -301,7 +301,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    if (ret == FF_OK) supported |= SDL_HAPTIC_GAIN;
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports gain: %s.",
-                   FFStrError(ret););
+                   FFStrError(ret));
       return 0;
    }
 
@@ -942,9 +942,7 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
    flags = FFEP_ALLPARAMS;
 
    /* Create the actual effect. */
-   ret = FFEffectSetParameters(haptic->hwdata->device, effect->hweffect->ref,
-                               &temp, flags);
-
+   ret = FFEffectSetParameters(effect->hweffect->ref, &temp, flags);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Unable to update effect: %s.", FFStrError(ret));
       goto err_update;
