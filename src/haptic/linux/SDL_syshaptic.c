@@ -515,7 +515,8 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          if (dest->direction < 0) return -1;
 
          /* Replay */
-         dest->replay.length = CLAMP(constant->length);
+         dest->replay.length = (constant->length == SDL_HAPTIC_INFINITY) ?
+               0 : CLAMP(constant->length);
          dest->replay.delay = CLAMP(constant->delay);
 
          /* Trigger */
@@ -546,7 +547,8 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          if (dest->direction < 0) return -1;
          
          /* Replay */
-         dest->replay.length = CLAMP(periodic->length);
+         dest->replay.length = (periodic->length == SDL_HAPTIC_INFINITY) ? 
+               0 : CLAMP(periodic->length);
          dest->replay.delay = CLAMP(periodic->delay);
          
          /* Trigger */
@@ -597,7 +599,8 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->direction = 0; /* Handled by the condition-specifics. */
 
          /* Replay */
-         dest->replay.length = CLAMP(condition->length);
+         dest->replay.length = (condition->length == SDL_HAPTIC_INFINITY) ? 
+               0 : CLAMP(condition->length);
          dest->replay.delay = CLAMP(condition->delay);
 
          /* Trigger */
@@ -631,7 +634,8 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          if (dest->direction < 0) return -1;
 
          /* Replay */
-         dest->replay.length = CLAMP(ramp->length);
+         dest->replay.length = (ramp->length == SDL_HAPTIC_INFINITY) ? 
+               0 : CLAMP(ramp->length);
          dest->replay.delay = CLAMP(ramp->delay);
 
          /* Trigger */
@@ -741,6 +745,7 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    /* Prepare to run the effect */
    run.type = EV_FF;
    run.code = effect->hweffect->effect.id;
+   /* We don't actually have infinity here, so we just do INT_MAX which is pretty damn close. */
    run.value = (iterations > INT_MAX) ? INT_MAX : iterations;
 
    if (write(haptic->hwdata->fd, (const void*) &run, sizeof(run)) < 0) {
