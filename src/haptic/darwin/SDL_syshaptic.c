@@ -74,6 +74,62 @@ static void SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type);
 static int HIDGetDeviceProduct(io_service_t dev, char * name);
 
 
+/* 
+ * Like strerror but for force feedback errors.
+ */
+static const char *
+FFStrError(HRESULT err)
+{
+   switch (err) {
+      case FFERR_DEVICEFULL:
+         return "device full";
+      case FFERR_DEVICENOTREG:
+         return "device not registered";
+      case FFERR_DEVICEPAUSED:
+         return "device paused";
+      case FFERR_DEVICERELEASED:
+         return "device released";
+      case FFERR_EFFECTPLAYING:
+         return "effect playing";
+      case FFERR_EFFECTTYPEMISMATCH:
+         return "effect type mismatch";
+      case FFERR_EFFECTTYPENOTSUPPORTED:
+         return "effect type not supported";
+      case FFERR_GENERIC:
+         return "undetermined error";
+      case FFERR_HASEFFECTS:
+         return "device has effects";
+      case FFERR_INCOMPLETEEFFECT:
+         return "incomplete effect";
+      case FFERR_INTERNAL:
+         return "internal fault";
+      case FFERR_INVALIDDOWNLOADID:
+         return "invalid download id";
+      case FFERR_INVALIDPARAM:
+         return "invalid parameter";
+      case FFERR_MOREDATA:
+         return "more data";
+      case FFERR_NOINTERFACE:
+         return "interface not supported";
+      case FFERR_NOTDOWNLOADED:
+         return "effect is not downloaded";
+      case FFERR_NOTINITIALIZED:
+         return "object has not been initialized";
+      case FFERR_OUTOFMEMORY:
+         return "out of memory";
+      case FFERR_UNPLUGGED:
+         return "device is unplugged";
+      case FFERR_UNSUPPORTED:
+         return "function call unsupported";
+      case FFERR_UNSUPPORTEDAXIS:
+         return "axis unsupported";
+
+      default:
+         return "unknown error";
+   }
+}
+
+
 /*
  * Initializes the haptic subsystem.
  */
@@ -244,7 +300,8 @@ GetSupportedFeatures(FFDeviceObjectReference device,
                                           &val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_GAIN;
    else if (ret != FFERR_UNSUPPORTED) {
-      SDL_SetError("Haptic: Unable to get if device supports gain.");
+      SDL_SetError("Haptic: Unable to get if device supports gain: %s.",
+                   FFStrError(ret););
       return 0;
    }
 
@@ -253,7 +310,8 @@ GetSupportedFeatures(FFDeviceObjectReference device,
                                           &val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_AUTOCENTER;
    else if (ret != FFERR_UNSUPPORTED) {
-      SDL_SetError("Haptic: Unable to get if device supports autocenter.");
+      SDL_SetError("Haptic: Unable to get if device supports autocenter: %s.",
+                   FFStrError(ret));
       return 0;
    }
 
@@ -273,6 +331,8 @@ GetSupportedFeatures(FFDeviceObjectReference device,
 static int
 SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
 {
+   HRESULT ret;
+
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
          SDL_malloc(sizeof(*haptic->hwdata));
@@ -283,8 +343,10 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
   
    /* Open the device */
-   if (FFCreateDevice( service, &haptic->hwdata->device ) != FF_OK) {
-      SDL_SetError("Haptic: Unable to create device from service.");
+   ret = FFCreateDevice( service, &haptic->hwdata->device);
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Unable to create device from service: %s.",
+                   FFStrError(ret));
       goto creat_err;
    }
 
@@ -840,9 +902,8 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    /* Create the actual effect. */
    ret = FFDeviceCreateEffect(haptic->hwdata->device, type,
          &effect->hweffect->effect, &effect->hweffect->ref);
-
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to create effect.");
+      SDL_SetError("Haptic: Unable to create effect: %s.", FFStrError(ret));
       goto err_effectdone;
    }
 
@@ -885,7 +946,7 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
                                &temp, flags);
 
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to update effect.");
+      SDL_SetError("Haptic: Unable to update effect: %s.", FFStrError(ret));
       goto err_update;
    }
 
@@ -921,7 +982,7 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    /* Run the effect. */
    ret = FFEffectStart(effect->hweffect->ref, iter, 0);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to run the effect.");
+      SDL_SetError("Haptic: Unable to run the effect: %s.", FFStrError(ret));
       return -1;
    }
 
@@ -939,7 +1000,7 @@ SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 
    ret = FFEffectStop(effect->hweffect->ref);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to stop the effect.");
+      SDL_SetError("Haptic: Unable to stop the effect: %s.", FFStrError(ret));
       return -1;
    }
 
@@ -957,7 +1018,8 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 
    ret = FFDeviceReleaseEffect(haptic->hwdata->device, effect->hweffect->ref);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Error removing the effect from the device.");
+      SDL_SetError("Haptic: Error removing the effect from the device: %s.",
+                   FFStrError(ret));
    }
    SDL_free(effect->hweffect->effect.lpvTypeSpecificParams);
    effect->hweffect->effect.lpvTypeSpecificParams = NULL;
@@ -977,7 +1039,7 @@ SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect
 
    ret = FFEffectGetEffectStatus(effect->hweffect->ref, &status);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to get effect status.");
+      SDL_SetError("Haptic: Unable to get effect status: %s.", FFStrError(ret));
       return -1;
    }
 
@@ -998,7 +1060,7 @@ SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain)
    val = gain * 100; /* Mac OS X uses 0 to 10,000 */
    ret = FFDeviceSetForceFeedbackProperty(haptic->hwdata->device, FFPROP_FFGAIN, &val);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Error setting gain.");
+      SDL_SetError("Haptic: Error setting gain: %s.", FFStrError(ret));
       return -1;
    }
 
@@ -1022,7 +1084,7 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    ret = FFDeviceSetForceFeedbackProperty(haptic->hwdata->device,
                FFPROP_AUTOCENTER, &val);
    if (ret != FF_OK) {
-      SDL_SetError("Haptic: Error setting autocenter.");
+      SDL_SetError("Haptic: Error setting autocenter: %s.", FFStrError(ret));
       return -1;
    }
   
@@ -1031,4 +1093,4 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
 }
 
 
-#endif /* SDL_HAPTIC_LINUX */
+#endif /* SDL_HAPTIC_IOKIT */
