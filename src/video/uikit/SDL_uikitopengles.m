@@ -9,13 +9,12 @@
 
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitopenglview.h"
+#include "SDL_uikitappdelegate.h"
+#include "SDL_uikitwindow.h"
 #include "jump.h"
 #include "SDL_sysvideo.h"
 #include "SDL_loadso.h"
 #include <dlfcn.h>
-
-extern SDL_uikitopenglview *uikitEAGLView;
-extern UIWindow *uikitWindow;
 
 static int UIKit_GL_Initialize(_THIS);
 
@@ -31,7 +30,10 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
 
 int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
-	[uikitEAGLView setCurrentContext];
+	
+	SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+	
+	[data->view setCurrentContext];
     return 0;
 }
 
@@ -50,11 +52,15 @@ UIKit_GL_LoadLibrary(_THIS, const char *path)
 void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
 
-	[uikitEAGLView swapBuffers];
+	SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 	
+	if (nil == data->view) {
+		return;
+	}
+	[data->view swapBuffers];
 	/* since now we've got something to draw
 	   make the window visible */
-	[uikitWindow makeKeyAndVisible];
+	[data->uiwindow makeKeyAndVisible];
 
 	/* we need to let the event cycle run, or the OS won't update the OpenGL view! */
 	SDL_PumpEvents();
@@ -64,27 +70,41 @@ void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 {
 	
-	uikitEAGLView = [[SDL_uikitopenglview alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame] \
-						retainBacking: _this->gl_config.retained_backing \
-						rBits: _this->gl_config.red_size \
-						gBits: _this->gl_config.green_size \
-						bBits: _this->gl_config.blue_size \
-						aBits: _this->gl_config.alpha_size \
-						depthBits: _this->gl_config.depth_size];
+	SDL_uikitopenglview *view;
 
-	[uikitWindow addSubview: [uikitEAGLView autorelease]];
-	uikitEAGLView.multipleTouchEnabled = YES;
+	SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+	
+	view = [[SDL_uikitopenglview alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame] \
+									retainBacking: _this->gl_config.retained_backing \
+									rBits: _this->gl_config.red_size \
+									gBits: _this->gl_config.green_size \
+									bBits: _this->gl_config.blue_size \
+									aBits: _this->gl_config.alpha_size \
+									depthBits: _this->gl_config.depth_size];
+
+	view.multipleTouchEnabled = YES;
+
+	data->view = view;
+
+	[data->uiwindow addSubview: view ];
+	
+	/* Don't worry, the window retained the view */
+	[view release];
 	
 	if ( UIKit_GL_MakeCurrent(_this, window, NULL) < 0 ) {
-        //Cocoa_GL_DeleteContext(_this, context);
+        UIKit_GL_DeleteContext(_this, NULL);
         return NULL;
     }
 		
-	return [uikitEAGLView context];
+	return view;
 }
 
 void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
+	/* the delegate has retained the view, this will release him */
+	SDL_uikitopenglview *view = (SDL_uikitopenglview *)context;
+	/* this will also delete it */
+	[view removeFromSuperview];
 	
 	return;
 }
