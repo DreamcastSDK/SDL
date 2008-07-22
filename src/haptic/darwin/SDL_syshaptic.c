@@ -201,8 +201,17 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
 {
    CFMutableDictionaryRef hidProperties, usbProperties;
    io_registry_entry_t parent1, parent2;
+   kern_return_t ret;
 
    hidProperties = usbProperties = 0;
+
+   ret = IORegistryEntryCreateCFProperties(hidDevice, &hidProperties,
+                                           kCFAllocatorDefault,
+                                           kNilOptions);
+   if ((ret != KERN_SUCCESS) || !hidProperties) {
+      SDL_SetError("Haptic: Unable to create CFProperties.");
+      return -1;
+   }
 
    /* Mac OS X currently is not mirroring all USB properties to HID page so need to look at USB device page also
     * get dictionary for usb properties: step up two levels and get CF dictionary for USB properties
@@ -213,8 +222,8 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
             IORegistryEntryGetParentEntry(parent1, kIOServicePlane, &parent2))
          && (KERN_SUCCESS ==
             IORegistryEntryCreateCFProperties(parent2, &usbProperties,
-               kCFAllocatorDefault,
-               kNilOptions))) {
+                                              kCFAllocatorDefault,
+                                              kNilOptions))) {
       if (usbProperties) {
          CFTypeRef refCF = 0;
          /* get device info
@@ -223,8 +232,7 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
 
 
          /* Get product name */
-         refCF =
-            CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDProductKey));
+         refCF = CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDProductKey));
          if (!refCF)
             refCF =
                CFDictionaryGetValue(usbProperties, CFSTR("USB Product Name"));
@@ -251,6 +259,11 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
          SDL_SetError("IOObjectRelease error with parent1.");
       }
    }
+   else {
+      SDL_SetError("Haptic: Error getting registry entries.");
+      return -1;
+   }
+
    return 0;
 }
 
