@@ -2472,6 +2472,13 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
             have_joystick=yes
         fi
+        # Set up files for the haptic library
+        if test x$enable_haptic = xyes; then
+            AC_DEFINE(SDL_HAPTIC_IOKIT)
+            SOURCES="$SOURCES $srcdir/src/haptic/darwin/*.c"
+            have_haptic=yes
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
+        fi
         # Set up files for the cdrom library
         if test x$enable_cdrom = xyes; then
             AC_DEFINE(SDL_CDROM_MACOSX)

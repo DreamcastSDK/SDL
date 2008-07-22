@@ -218,6 +218,7 @@
 #undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H
 #undef SDL_HAPTIC_DUMMY
 #undef SDL_HAPTIC_LINUX
+#undef SDL_HAPTIC_IOKIT
 
 /* Enable various shared object loading systems */
 #undef SDL_LOADSO_BEOS
