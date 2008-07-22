@@ -205,7 +205,7 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
 
    hidProperties = usbProperties = 0;
 
-   ret = IORegistryEntryCreateCFProperties(hidDevice, &hidProperties,
+   ret = IORegistryEntryCreateCFProperties(dev, &hidProperties,
                                            kCFAllocatorDefault,
                                            kNilOptions);
    if ((ret != KERN_SUCCESS) || !hidProperties) {
