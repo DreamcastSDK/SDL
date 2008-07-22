@@ -25,9 +25,22 @@
 #define _SDL_uikitwindow_h
 
 #include "../SDL_sysvideo.h"
+#import "SDL_uikitopenglview.h"
+
+typedef struct SDL_WindowData SDL_WindowData;
 
 extern int UIKit_CreateWindow(_THIS, SDL_Window *window);
 extern void UIKit_DestroyWindow(_THIS, SDL_Window * window);
+
+@class UIWindow;
+
+struct SDL_WindowData
+{
+    SDL_WindowID windowID;
+    UIWindow *uiwindow;
+	SDL_uikitopenglview *view;
+};
+
 
 #endif /* _SDL_uikitwindow_h */
 
