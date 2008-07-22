@@ -10,7 +10,6 @@
 
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
-
 #import "SDL_uikitopenglview.h"
 
 // A class extension to declare private methods
