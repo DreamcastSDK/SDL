@@ -25,6 +25,10 @@
 #include "SDL_syswm.h"
 #include "SDL_vkeys.h"
 #include "../../events/SDL_events_c.h"
+#include <wintab.h>
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETMODE 0
+#include <pktdef.h>
 
 /*#define WMMSG_DEBUG*/
 #ifdef WMMSG_DEBUG
@@ -48,6 +52,12 @@
 #ifndef GET_XBUTTON_WPARAM
 #define GET_XBUTTON_WPARAM(w) (HIWORD(w))
 #endif
+
+#define pi 1.0
+
+int first=1;
+
+LOGCONTEXT lc;
 
 static WPARAM
 RemapVKEY(WPARAM wParam, LPARAM lParam)
@@ -85,7 +95,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
 
-    /* Send a SDL_SYSWMEVENT if the application wants them */
+	PACKET packet;
+	
+	/* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
 
@@ -101,7 +113,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     data = (SDL_WindowData *) GetProp(hwnd, TEXT("SDL_WindowData"));
     if (!data) {
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
-    }
+	}
 #ifdef WMMSG_DEBUG
     {
         FILE *log = fopen("wmmsg.txt", "a");
@@ -117,7 +129,27 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #endif
 
     switch (msg) {
-
+	case WT_PACKET:
+		{
+			if (WTPacket((HCTX)lParam, wParam, &packet))
+			{
+				SDL_SendMouseMotion(0,0,(int)packet.pkX,(int)packet.pkY,(int)packet.pkNormalPressure);
+			}
+		}
+		break;
+	case WT_PROXIMITY:
+		{
+			int h_context=LOWORD(lParam);
+			if(h_context==0)
+			{
+				SDL_SendProximity(0, 0, 0, SDL_PROXIMITYOUT);
+			}
+			else
+			{
+				SDL_SendProximity(0, 0, 0, SDL_PROXIMITYIN);
+			}
+		}
+		break;
     case WM_SHOWWINDOW:
         {
             if (wParam) {
@@ -164,7 +196,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return (0);
         }
         break;
-
+	case WT_CTXOPEN:
+		{
+			SDL_SendMouseMotion(0,1,1,0,0);
+			SDL_SendMouseMotion(0,1,-1,0,0);
+		}
     case WM_MOUSEMOVE:
         {
             int index;
@@ -188,6 +224,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* mouse has moved within the window */
             x = LOWORD(lParam);
             y = HIWORD(lParam);
+			//printf("index: %d\n",index);
             if (mouse->relative_mode) {
                 int w, h;
                 POINT center;
@@ -199,10 +236,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (x || y) {
                     ClientToScreen(hwnd, &center);
                     SetCursorPos(center.x, center.y);
-                    SDL_SendMouseMotion(index, 1, x, y);
+					SDL_SendMouseMotion(index, 1, x, y,0);
                 }
             } else {
-                SDL_SendMouseMotion(index, 0, x, y);
+					SDL_SendMouseMotion(index, 0, x, y,0);
             }
         }
         return (0);
@@ -302,7 +339,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 int x, y;
                 x = LOWORD(lParam);
                 y = HIWORD(lParam);
-                SDL_SendMouseMotion(index, 0, x, y);
+                SDL_SendMouseMotion(index, 0, x, y,0);
             }
             SDL_SendMouseButton(index, state, button);
 
@@ -625,10 +662,17 @@ void
 WIN_PumpEvents(_THIS)
 {
     MSG msg;
+
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+
     }
+	/*while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }*/
+	//WTClose(g_hCtx);
 }
 
 static int app_registered = 0;

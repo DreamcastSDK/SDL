@@ -31,9 +31,13 @@
 #include "SDL_d3drender.h"
 #include "SDL_gdirender.h"
 
+#include <wintab.h>
+
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
+
+HCTX* g_hCtx = NULL;
 
 /* WIN32 driver bootstrap functions */
 
@@ -157,6 +161,8 @@ WIN_VideoInit(_THIS)
     GDI_AddRenderDriver(_this);
 #endif
 
+	g_hCtx = SDL_malloc(sizeof(HCTX));
+
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
 
@@ -169,6 +175,7 @@ WIN_VideoQuit(_THIS)
     WIN_QuitModes(_this);
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
+	SDL_free(g_hCtx);
 }
 
 /* vim: set ts=4 sw=4 expandtab: */

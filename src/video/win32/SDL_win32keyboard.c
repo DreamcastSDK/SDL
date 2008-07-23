@@ -54,20 +54,20 @@ WIN_InitKeyboard(_THIS)
 
     /* Make sure the alpha scancodes are correct.  T isn't usually remapped */
     if (MapVirtualKey('T', MAPVK_VK_TO_VSC) != alpha_scancodes['T' - 'A']) {
-        printf
-            ("Fixing alpha scancode map, assuming US QWERTY layout!\nPlease send the following 26 lines of output to the SDL mailing list <sdl@libsdl.org>, including a description of your keyboard hardware.\n");
+        //printf
+        //    ("Fixing alpha scancode map, assuming US QWERTY layout!\nPlease send the following 26 lines of output to the SDL mailing list <sdl@libsdl.org>, including a description of your keyboard hardware.\n");
         for (i = 0; i < SDL_arraysize(alpha_scancodes); ++i) {
             alpha_scancodes[i] = MapVirtualKey('A' + i, MAPVK_VK_TO_VSC);
-            printf("%d = %d\n", i, alpha_scancodes[i]);
+       //     printf("%d = %d\n", i, alpha_scancodes[i]);
         }
     }
     if (MapVirtualKey(VK_NUMPAD0, MAPVK_VK_TO_VSC) != keypad_scancodes[0]) {
-        printf
-            ("Fixing keypad scancode map!\nPlease send the following 10 lines of output to the SDL mailing list <sdl@libsdl.org>, including a description of your keyboard hardware.\n");
+      //  printf
+      //      ("Fixing keypad scancode map!\nPlease send the following 10 lines of output to the SDL mailing list <sdl@libsdl.org>, including a description of your keyboard hardware.\n");
         for (i = 0; i < SDL_arraysize(keypad_scancodes); ++i) {
             keypad_scancodes[i] =
                 MapVirtualKey(VK_NUMPAD0 + i, MAPVK_VK_TO_VSC);
-            printf("%d = %d\n", i, keypad_scancodes[i]);
+       //     printf("%d = %d\n", i, keypad_scancodes[i]);
         }
     }
 
