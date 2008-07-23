@@ -29,6 +29,14 @@
 /* This is included after SDL_win32video.h, which includes windows.h */
 #include "SDL_syswm.h"
 
+#include <wintab.h>
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETMODE 0
+#include <pktdef.h>
+
+extern HCTX* g_hCtx;
+
+int highestId=0;
 
 static int
 SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
@@ -132,6 +140,8 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
 int
 WIN_CreateWindow(_THIS, SDL_Window * window)
 {
+	AXIS TabX,TabY;
+	LOGCONTEXT lc;
     HWND hwnd;
     HWND top;
     RECT rect;
@@ -175,11 +185,47 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         y = CW_USEDEFAULT;
     } else {
         y = window->y + rect.top;
-    }
+    }	
 
     hwnd =
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, NULL, NULL,
                      SDL_Instance, NULL);
+	
+	WTInfo(WTI_DEFCONTEXT, 0, &lc);
+
+	lc.lcPktData = PACKETDATA;
+	lc.lcPktMode = PACKETMODE;
+	lc.lcOptions |= CXO_MESSAGES;
+	lc.lcMoveMask = PACKETDATA;
+	lc.lcBtnDnMask=lc.lcBtnUpMask = PACKETDATA;
+
+	WTInfo(WTI_DEVICES,DVC_X,&TabX);
+	WTInfo(WTI_DEVICES,DVC_Y,&TabY);
+	
+	lc.lcInOrgX = 0;
+	lc.lcInOrgY = 0;
+	
+	lc.lcInExtX = TabX.axMax;
+	lc.lcInExtY = TabY.axMax;
+
+	lc.lcOutOrgX = 0;
+	lc.lcOutOrgY = 0;
+
+	lc.lcOutExtX = GetSystemMetrics(SM_CXSCREEN);
+	lc.lcOutExtY = -GetSystemMetrics(SM_CYSCREEN);
+	if(window->id>highestId)
+	{
+		HCTX* tmp_hctx;
+		highestId=window->id;
+		tmp_hctx= (HCTX*)SDL_realloc(g_hCtx,(highestId+1)*sizeof(HCTX));
+		if (!tmp_hctx) {
+            SDL_OutOfMemory();
+            return -1;
+        }
+		g_hCtx=tmp_hctx;
+	}
+
+	g_hCtx[window->id] = WTOpen(hwnd, &lc, TRUE);
     WIN_PumpEvents(_this);
 
     if (!hwnd) {
@@ -389,9 +435,11 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
 #endif
         ReleaseDC(data->hwnd, data->hdc);
         if (data->created) {
+			WTClose(g_hCtx[window->id]);
             DestroyWindow(data->hwnd);
         }
         SDL_free(data);
+		WTClose(g_hCtx[window->id]);
     }
 }
 

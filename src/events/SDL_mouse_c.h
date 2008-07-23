@@ -118,7 +118,7 @@ extern void SDL_MouseQuit(void);
 
 extern int SDL_GetIndexById(int id);
 
-extern void SDL_SetIndexId(int id, int index);
+extern int SDL_SetIndexId(int id, int index);
 
 extern int SDL_GetNumOfMice(void);
 

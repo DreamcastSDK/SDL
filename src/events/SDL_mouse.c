@@ -28,12 +28,12 @@
 #include "default_cursor.h"
 
 
-static int SDL_num_mice;
-static int SDL_current_mouse;
-static SDL_Mouse **SDL_mice;
-int *SDL_IdIndex;
-int SDL_highestId;
-int last_x, last_y;
+static int SDL_num_mice=0;
+static int SDL_current_mouse=-1;
+static SDL_Mouse **SDL_mice=NULL;
+static int *SDL_IdIndex=NULL;
+static int SDL_highestId=-1;
+static int last_x, last_y;
 int x_max, y_max;
 /* Public functions */
 int
@@ -56,7 +56,7 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
 {
     SDL_Mouse **mice;
     int selected_mouse;
-    char* temp_name;
+    //char* temp_name;
     /* Add the mouse to the list of mice */
     if (index < 0 || index >= SDL_num_mice || SDL_mice[index]) {
         mice =
@@ -76,8 +76,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
         return -1;
     }
     *SDL_mice[index] = *mouse;
-    SDL_mice[index]->name=SDL_malloc(strlen(name)*sizeof(char));
-    strcpy(SDL_mice[index]->name,name);
+    SDL_mice[index]->name=SDL_malloc(SDL_strlen(name)*sizeof(char));
+    SDL_strlcpy(SDL_mice[index]->name,name,255);
     SDL_mice[index]->pressure_max=pressure_max;
     SDL_mice[index]->pressure_min=pressure_min;
     SDL_mice[index]->cursor_shown = SDL_TRUE;
@@ -721,7 +721,7 @@ SDL_ShowCursor(int toggle)
     return shown;
 }
 
-void SDL_SetIndexId(int id, int index)
+int SDL_SetIndexId(int id, int index)
 {
     if(id>SDL_highestId)
     {
@@ -741,6 +741,7 @@ void SDL_SetIndexId(int id, int index)
     {
         SDL_IdIndex[id]=index;
     }
+	return 1;
 }
 
 int SDL_GetIndexById(int id)
