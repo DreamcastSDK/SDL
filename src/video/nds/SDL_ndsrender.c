@@ -87,8 +87,8 @@ SDL_RenderDriver NDS_RenderDriver = {
         3, /* u32 num_texture_formats */
         {
             SDL_PIXELFORMAT_INDEX8,
-            SDL_PIXELFORMAT_RGB555,
-            SDL_PIXELFORMAT_RGB565
+            SDL_PIXELFORMAT_ABGR1555,
+            SDL_PIXELFORMAT_BGR555,
         }, /* u32 texture_formats[20] */
         (256), /* int max_texture_width */
         (256), /* int max_texture_height */
@@ -100,6 +100,7 @@ typedef struct
     bg_attribute *bg;
     u8 bg_taken[4];
     int sub;
+    SDL_DirtyRectList dirty;
 } NDS_RenderData;
 
 typedef struct
@@ -437,6 +438,10 @@ printf("+NDS_LockTexture\n");
     } else {
         NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
 
+        if (markDirty) {
+            SDL_AddDirtyRect(&txdat->dirty, rect);
+        }
+
         *pixels = (void *) ((u8 *)txdat->vram + rect->y * txdat->dim.pitch
                             + rect->x * (txdat->dim.bpp/8));
         *pitch = txdat->dim.pitch;
@@ -488,30 +493,34 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                    const SDL_Rect * srcrect, const SDL_Rect * dstrect)
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
-    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+    NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+//    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+//    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
 
 printf("+NDS_RenderCopy\n");
-#if 0
-    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
-        SDL_Surface *target = data->screens[data->current_screen];
-        void *pixels =
-            (Uint8 *) target->pixels + dstrect->y * target->pitch +
-            dstrect->x * target->format->BytesPerPixel;
-        return SDL_SW_CopyYUVToRGB((SDL_SW_YUVTexture *) texture->driverdata,
-                                   srcrect, display->current_mode.format,
-                                   dstrect->w, dstrect->h, pixels,
-                                   target->pitch);
-    } else {
-        SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
-        SDL_Surface *target = data->screens[data->current_screen];
-        SDL_Rect real_srcrect = *srcrect;
-        SDL_Rect real_dstrect = *dstrect;
-        return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
+
+    if (txdat->dirty.list) {
+        SDL_DirtyRect *dirty;
+        void *pixels;
+        int bpp = SDL_BYTESPERPIXEL(texture->format);
+        int pitch = txdat->pitch;
+/* below was borrowed from SDL_renderer_gl.c.  doesn't work, obv.
+   figure out how to get the graphics data into VRAM. */
+
+        for (dirty = txdat->dirty.list; dirty; dirty = dirty->next) {
+            SDL_Rect *rect = &dirty->rect;
+            /*pixels =
+                (void *) ((Uint8 *) txdat->vram + rect->y * pitch +
+                          rect->x * bpp);
+            data->glTexSubImage2D(texturedata->type, 0, rect->x, rect->y,
+                                  rect->w, rect->h, texturedata->format,
+                                  texturedata->formattype, pixels);*/
+        }
+        SDL_ClearDirtyRects(&txdat->dirty);
     }
-#endif
+
 printf("-NDS_RenderCopy\n");
-    return 0;
+    return status;
 }
 
 
@@ -537,7 +546,9 @@ printf("+NDS_DestroyTexture\n");
         SDL_SetError("Unsupported texture format");
     } else {
         /* free anything else allocated for texture */
-        SDL_free(texture->driverdata);
+        NDS_TextureData *txdat = texture->driverdata;
+        SDL_FreeDirtyRects(&txdat->dirty);
+        SDL_free(txdat);
     }
 printf("-NDS_DestroyTexture\n");
 }
