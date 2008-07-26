@@ -199,11 +199,11 @@ NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 printf("+NDS_SetDisplayMode\n");
     /* right now this function is just hard-coded for 256x192 ABGR1555 */
     videoSetMode(MODE_5_2D |
-        DISPLAY_BG2_ACTIVE | DISPLAY_BG3_ACTIVE
+        DISPLAY_BG2_ACTIVE | DISPLAY_BG3_ACTIVE |
         DISPLAY_SPR_1D_LAYOUT | DISPLAY_SPR_ACTIVE); /* display on main core */
     videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE); /* debug text on sub */
     vramSetMainBanks(VRAM_A_MAIN_BG_0x06000000, VRAM_B_MAIN_BG_0x06020000,
-                     VRAM_C_SUB_BG_0x06200000,  VRAM_D_SUB_BG_0x06220000);
+                     VRAM_C_SUB_BG_0x06200000,  VRAM_D_MAIN_BG_0x06040000);
     vramSetBankE(VRAM_E_MAIN_SPRITE);
     /* set up console for debug text 'n stuff */
     SUB_BG0_CR = BG_MAP_BASE(31);
