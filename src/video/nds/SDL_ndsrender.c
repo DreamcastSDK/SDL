@@ -100,7 +100,6 @@ typedef struct
     bg_attribute *bg;
     u8 bg_taken[4];
     int sub;
-    SDL_DirtyRectList dirty;
 } NDS_RenderData;
 
 typedef struct
@@ -249,6 +248,7 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     NDS_TextureData *txdat = NULL;
+    int i;
 printf("+NDS_CreateTexture\n");
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_SetError("Unsupported texture format");
@@ -299,6 +299,10 @@ printf("+NDS_CreateTexture\n");
                 txdat->dim.bpp = bpp;
                 txdat->vram = (u16*)(data->sub ?
                     BG_BMP_RAM_SUB(whichbg) : BG_BMP_RAM(whichbg));
+                for(i = 0; i < 256*256; ++i) {
+                    txdat->vram[i] = 0x8000|RGB15(0,31,31);
+                }
+                for(i = 0; i < 60; ++i) swiWaitForVBlank();
             } else {
                 SDL_SetError("Out of NDS backgrounds.");
             }
@@ -439,7 +443,7 @@ printf("+NDS_LockTexture\n");
         NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
 
         if (markDirty) {
-            SDL_AddDirtyRect(&txdat->dirty, rect);
+            /*SDL_AddDirtyRect(&txdat->dirty, rect);*/
         }
 
         *pixels = (void *) ((u8 *)txdat->vram + rect->y * txdat->dim.pitch
@@ -496,9 +500,13 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
 //    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
 //    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
-
+    int i;
 printf("+NDS_RenderCopy\n");
-
+    for(i = 0; i <= 0xFFFF; ++i) {
+        txdat->vram[i] = 0x8000|i;
+    }
+    printf("/txdat->hw_index = %d\n", txdat->hw_index);
+#if 0
     if (txdat->dirty.list) {
         SDL_DirtyRect *dirty;
         void *pixels;
@@ -518,9 +526,9 @@ printf("+NDS_RenderCopy\n");
         }
         SDL_ClearDirtyRects(&txdat->dirty);
     }
-
+#endif
 printf("-NDS_RenderCopy\n");
-    return status;
+    return 0;
 }
 
 
@@ -547,7 +555,7 @@ printf("+NDS_DestroyTexture\n");
     } else {
         /* free anything else allocated for texture */
         NDS_TextureData *txdat = texture->driverdata;
-        SDL_FreeDirtyRects(&txdat->dirty);
+        /*SDL_FreeDirtyRects(&txdat->dirty);*/
         SDL_free(txdat);
     }
 printf("-NDS_DestroyTexture\n");
