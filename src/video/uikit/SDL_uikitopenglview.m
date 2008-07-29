@@ -136,8 +136,6 @@
 
 
 - (void)swapBuffers {
-	
-	
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	if (![context presentRenderbuffer:GL_RENDERBUFFER_OES]) {
 		NSLog(@"Could not swap buffers");
