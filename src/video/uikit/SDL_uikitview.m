@@ -19,11 +19,16 @@
  Sam Lantinga
  slouken@libsdl.org
  */
+
 #import "SDL_uikitview.h"
+#import "SDL_uikitkeyboard.h"
 
 @implementation SDL_uikitview
 
 - (void)dealloc {
+#if SDL_IPHONE_KEYBOARD
+	[textField release];
+#endif
 	[super dealloc];
 }
 
@@ -31,13 +36,17 @@
 
 	self = [super initWithFrame: frame];
 	
+#if SDL_IPHONE_KEYBOARD
+	[self initializeKeyboard];
+#endif	
+
 	int i;
 	for (i=0; i<MAX_SIMULTANEOUS_TOUCHES; i++) {
 		mice[i].driverdata = NULL;
 		SDL_AddMouse(&(mice[i]), i);
 	}
 	self.multipleTouchEnabled = YES;
-		
+			
 	return self;
 
 }
@@ -95,8 +104,8 @@
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
 	/*
 		this can happen if the user puts more than 5 touches on the screen
-		at once, or perhaps in other circumstances.  Usually all active
-		touches are canceled.
+		at once, or perhaps in other circumstances.  Usually (it seems)
+		all active touches are canceled.
 	*/
 	[self touchesEnded: touches withEvent: event];
 }
@@ -117,5 +126,7 @@
 		}
 	}
 }
+
+
 
 @end
