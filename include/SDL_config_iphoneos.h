@@ -43,6 +43,9 @@ typedef unsigned int uint32_t;
 
 typedef unsigned long uintptr_t;
 
+/* enable keyboard support */
+#define SDL_IPHONE_KEYBOARD 1
+
 /* enable OpenGL ES */
 #define SDL_VIDEO_OPENGL_ES	1
 
