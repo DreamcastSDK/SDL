@@ -292,7 +292,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * Directions can be specified by:
  *   - SDL_HAPTIC_POLAR : Specified by polar coordinates.
  *   - SDL_HAPTIC_CARTESIAN : Specified by cartesian coordinates.
- *   - SDL_HAPTIC_SHPERICAL : Specified by spherical coordinates.
+ *   - SDL_HAPTIC_SPHERICAL : Specified by spherical coordinates.
  *
  * Cardinal directions of the haptic device are relative to the positioning
  *  of the device.  North is considered to be away from the user.
@@ -373,7 +373,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *
  * \sa SDL_HAPTIC_POLAR
  * \sa SDL_HAPTIC_CARTESIAN
- * \sa SDL_HAPTIC_SHPERICAL
+ * \sa SDL_HAPTIC_SPHERICAL
  * \sa SDL_HapticEffect
  * \sa SDL_HapticNumAxes
  */
