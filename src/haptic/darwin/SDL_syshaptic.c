@@ -855,9 +855,9 @@ SDL_SYS_HapticFreeFFEFFECT( FFEFFECT * effect, int type )
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
 CFUUIDRef
-SDL_SYS_HapticEffectType(struct haptic_effect * effect)
+SDL_SYS_HapticEffectType( Uint16 type )
 {
-   switch (effect->effect.type) {
+   switch (type) {
       case SDL_HAPTIC_CONSTANT:
          return kFFEffectType_ConstantForce_ID;
 
@@ -920,7 +920,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    }
 
    /* Get the type. */
-   type = SDL_SYS_HapticEffectType(effect);
+   type = SDL_SYS_HapticEffectType(effect->type);
    if (type == NULL) {
       goto err_hweffect;
    }
