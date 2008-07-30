@@ -56,7 +56,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
 {
     SDL_Mouse **mice;
     int selected_mouse;
-    //char* temp_name;
+	int length;
+
     /* Add the mouse to the list of mice */
     if (index < 0 || index >= SDL_num_mice || SDL_mice[index]) {
         mice =
@@ -76,8 +77,10 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
         return -1;
     }
     *SDL_mice[index] = *mouse;
-    SDL_mice[index]->name=SDL_malloc(SDL_strlen(name)*sizeof(char));
-    SDL_strlcpy(SDL_mice[index]->name,name,255);
+	length=0;
+	length=SDL_strlen(name);
+    SDL_mice[index]->name=SDL_malloc((length+1)*sizeof(char));
+    SDL_strlcpy(SDL_mice[index]->name,name,length);
     SDL_mice[index]->pressure_max=pressure_max;
     SDL_mice[index]->pressure_min=pressure_min;
     SDL_mice[index]->cursor_shown = SDL_TRUE;
@@ -356,7 +359,14 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     int posted;
     int xrel;
     int yrel;
-
+	if(x>x_max)
+	{
+		x=x_max;
+	}
+	if(y>y_max)
+	{
+		y=y_max;
+	}
     if (!mouse || mouse->flush_motion) {
         return 0;
     }
@@ -430,7 +440,7 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE && SDL_mice[index]->proximity==SDL_TRUE) {
         SDL_Event event;
         event.motion.type = SDL_MOUSEMOTION;
-event.motion.which = (Uint8) index;
+		event.motion.which = (Uint8) index;
         event.motion.state = mouse->buttonstate;
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
@@ -572,7 +582,7 @@ SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
     /* Make sure the width is a multiple of 8 */
     w = ((w + 7) & ~7);
 
-    /* Create the surface from a bitmap */
+    /* Create the surface from a bitmap*/
     surface =
         SDL_CreateRGBSurface(0, w, h, 32, 0x00FF0000, 0x0000FF00, 0x000000FF,
                              0xFF000000);
@@ -777,3 +787,4 @@ void SDL_UpdateCoordinates(int x, int y)
     y_max=y;
 }
 /* vi: set ts=4 sw=4 expandtab: */
+
