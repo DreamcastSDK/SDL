@@ -364,12 +364,30 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
    }
 
    /* Get supported features. */
-   haptic->supported = GetSupportedFeatures(haptic->hwdata->device,
-                                            &haptic->neffects, &haptic->nplaying,
-                                            &haptic->naxes);
+   haptic->supported = GetSupportedFeatures( haptic->hwdata->device,
+                                             &haptic->neffects, &haptic->nplaying,
+                                             &haptic->naxes );
    if (haptic->supported == 0) { /* Error since device supports nothing. */
       goto open_err;
    }
+
+
+   /* Reset and then enable actuators. */
+   ret = FFDeviceSendForceFeedbackCommand( haptic->hwdata->device,
+                                           FFSFFC_RESET );
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Unable to reset device: %s.", FFStrError(ret));
+      goto open_err;
+   }
+   ret = FFDeviceSendForceFeedbackCommand( haptic->hwdata->device,
+                                           FFSFFC_SETACTUATORSON  );
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Unable to enable actuators: %s.", FFStrError(ret));
+      goto open_err;
+   }
+
+
+   /* Allocate effects memory. */
    haptic->effects = (struct haptic_effect *)
          SDL_malloc(sizeof(struct haptic_effect) * haptic->neffects);
    if (haptic->effects == NULL) {
