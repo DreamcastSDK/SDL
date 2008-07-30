@@ -453,6 +453,25 @@ SDL_SYS_HapticQuit(void)
    SDL_hapticlist[0].fname = NULL;
 }
 
+
+/*
+ * Converts an SDL button to a ff_trigger button.
+ */
+static Uint16
+SDL_SYS_ToButton( Uint16 button )
+{
+   Uint16 ff_button;
+
+   ff_button = 0;
+
+   if (button != 0) {
+      ff_button = BTN_GAMEPAD + button - 1;
+   }
+
+   return ff_button;
+}
+
+
 /*
  * Returns the ff_effect usable direction from a SDL_HapticDirection.
  */
@@ -488,6 +507,7 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
    return 0;
 }
 
+
 #define  CLAMP(x)    (((x) > 32767) ? 32767 : x)
 /*
  * Initializes the linux effect struct from a haptic_effect.
@@ -520,7 +540,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->replay.delay = CLAMP(constant->delay);
 
          /* Trigger */
-         dest->trigger.button = CLAMP(constant->button);
+         dest->trigger.button = SDL_SYS_ToButton(constant->button);
          dest->trigger.interval = CLAMP(constant->interval);
 
          /* Constant */
@@ -552,7 +572,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->replay.delay = CLAMP(periodic->delay);
          
          /* Trigger */
-         dest->trigger.button = CLAMP(periodic->button);
+         dest->trigger.button = SDL_SYS_ToButton(periodic->button);
          dest->trigger.interval = CLAMP(periodic->interval);
          
          /* Periodic */
@@ -604,7 +624,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->replay.delay = CLAMP(condition->delay);
 
          /* Trigger */
-         dest->trigger.button = CLAMP(condition->button);
+         dest->trigger.button = SDL_SYS_ToButton(condition->button);
          dest->trigger.interval = CLAMP(condition->interval);
 
          /* Condition */
@@ -639,7 +659,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->replay.delay = CLAMP(ramp->delay);
 
          /* Trigger */
-         dest->trigger.button = CLAMP(ramp->button);
+         dest->trigger.button = SDL_SYS_ToButton(ramp->button);
          dest->trigger.interval = CLAMP(ramp->interval);
 
          /* Ramp */

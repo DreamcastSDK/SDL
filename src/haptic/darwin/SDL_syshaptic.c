@@ -524,7 +524,7 @@ FFGetTriggerButton( Uint16 button )
    dwTriggerButton = FFEB_NOTRIGGER;
 
    if (button != 0) {
-      dwTriggerButton = FFJOFS_BUTTON(button);
+      dwTriggerButton = FFJOFS_BUTTON(button - 1);
    }
 
    return dwTriggerButton;
