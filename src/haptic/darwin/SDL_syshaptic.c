@@ -920,7 +920,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    }
 
    /* Get the type. */
-   type = SDL_SYS_HapticEffectType(effect->type);
+   type = SDL_SYS_HapticEffectType(base->type);
    if (type == NULL) {
       goto err_hweffect;
    }
