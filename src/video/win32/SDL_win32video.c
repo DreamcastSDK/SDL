@@ -37,7 +37,10 @@
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
 
+int total_mice =0;
+HANDLE* mice = NULL;
 HCTX* g_hCtx = NULL;
+//int highestId=0;
 
 /* WIN32 driver bootstrap functions */
 
