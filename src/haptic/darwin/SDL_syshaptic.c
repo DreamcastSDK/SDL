@@ -662,10 +662,20 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         envelope->dwAttackLevel = CONVERT(hap_constant->attack_level);
-         envelope->dwAttackTime = hap_constant->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_constant->fade_level);
-         envelope->dwFadeTime = hap_constant->fade_length * 1000;
+         if (envelope->dwAttackTime == 0) {
+            envelope->dwAttackLevel = constant->dwMagnitude
+         }
+         else {
+            envelope->dwAttackLevel = CONVERT(hap_constant->attack_level);
+            envelope->dwAttackTime = hap_constant->attack_length * 1000;
+         }
+         if (envelope->dwFadeTime == 0) {
+            envelope->dwFadeLevel = constant->dwMagnitude
+         }
+         else {
+            envelope->dwFadeLevel = CONVERT(hap_constant->fade_level);
+            envelope->dwFadeTime = hap_constant->fade_length * 1000;
+         }
 
          break;
 
@@ -702,10 +712,20 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         envelope->dwAttackLevel = CONVERT(hap_periodic->attack_level);
-         envelope->dwAttackTime = hap_periodic->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_periodic->fade_level);
-         envelope->dwFadeTime = hap_periodic->fade_length * 1000;
+         if (envelope->dwAttackTime == 0) {
+            envelope->dwAttackLevel = periodic->dwMagnitude
+         }
+         else {
+            envelope->dwAttackLevel = CONVERT(hap_periodic->attack_level);
+            envelope->dwAttackTime = hap_periodic->attack_length * 1000;
+         }
+         if (envelope->dwFadeTime == 0) {
+            envelope->dwFadeLevel = periodic->dwMagnitude
+         }
+         else {
+            envelope->dwFadeLevel = CONVERT(hap_periodic->fade_level);
+            envelope->dwFadeTime = hap_periodic->fade_length * 1000;
+         }
 
          break;
 
@@ -745,6 +765,8 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }                            
                                       
          /* Envelope */
+         SDL_free(dest->lpEnvelope);
+         dest->lpEnvelope = NULL;
 /* TODO Check is envelope actually used.
          envelope->dwAttackLevel = CONVERT(hap_condition->attack_level);
          envelope->dwAttackTime = hap_condition->attack_length * 1000;
@@ -781,10 +803,20 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
 
          /* Envelope */
-         envelope->dwAttackLevel = CONVERT(hap_ramp->attack_level);
-         envelope->dwAttackTime = hap_ramp->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_ramp->fade_level);
-         envelope->dwFadeTime = hap_ramp->fade_length * 1000;
+         if (envelope->dwAttackTime == 0) {
+            envelope->dwAttackLevel = ramp->dwMagnitude
+         }
+         else {
+            envelope->dwAttackLevel = CONVERT(hap_ramp->attack_level);
+            envelope->dwAttackTime = hap_ramp->attack_length * 1000;
+         }
+         if (envelope->dwFadeTime == 0) {
+            envelope->dwFadeLevel = ramp->dwMagnitude
+         }
+         else {
+            envelope->dwFadeLevel = CONVERT(hap_ramp->fade_level);
+            envelope->dwFadeTime = hap_ramp->fade_length * 1000;
+         }
 
          break;
 
@@ -820,10 +852,20 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         envelope->dwAttackLevel = CONVERT(hap_custom->attack_level);
-         envelope->dwAttackTime = hap_custom->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_custom->fade_level);
-         envelope->dwFadeTime = hap_custom->fade_length * 1000;
+         if (envelope->dwAttackTime == 0) {
+            envelope->dwAttackLevel = custom->dwMagnitude
+         }
+         else {
+            envelope->dwAttackLevel = CONVERT(hap_custom->attack_level);
+            envelope->dwAttackTime = hap_custom->attack_length * 1000;
+         }
+         if (envelope->dwFadeTime == 0) {
+            envelope->dwFadeLevel = custom->dwMagnitude
+         }
+         else {
+            envelope->dwFadeLevel = CONVERT(hap_custom->fade_level);
+            envelope->dwFadeTime = hap_custom->fade_length * 1000;
+         }
 
          break;
 
