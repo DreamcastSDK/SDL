@@ -129,3 +129,4 @@ extern void SDL_UpdateCoordinates(int x, int y);
 #endif /* _SDL_mouse_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
+
