@@ -645,6 +645,10 @@ typedef struct SDL_HapticCustom {
  * Additionally, the SDL_HAPTIC_RAMP effect does not support a duration of
  *  SDL_HAPTIC_INFINITY.
  *
+ * Button triggers may not be supported on all devices, it is advised to not
+ *  use them if possible.  Buttons start at index 1 instead of index 0 like
+ *  they joystick.
+ *
  * Common parts:
  * \code
  * // Replay - All effects have this
