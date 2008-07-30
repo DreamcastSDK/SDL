@@ -309,8 +309,8 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    FF_TEST(FFCAP_ET_CUSTOMFORCE,   SDL_HAPTIC_CUSTOM);
 
    /* Check if supports gain. */
-   ret = FFDeviceGetForceFeedbackProperty(device, FFPROP_FFGAIN,
-                                          &val, sizeof(val));
+   ret = FFDeviceGetForceFeedbackProperty( device, FFPROP_FFGAIN,
+                                           &val, sizeof(val));
    if (ret == FF_OK) supported |= SDL_HAPTIC_GAIN;
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports gain: %s.",
@@ -514,6 +514,23 @@ SDL_SYS_HapticQuit(void)
 
 
 /*
+ * Converts an SDL trigger button to an FFEFFECT trigger button.
+ */
+static DWORD
+FFGetTriggerButton( Uint16 button )
+{
+   DWORD dwTriggerButton;
+
+   dwTriggerButton = FFEB_NOTRIGGER;
+
+   if (hap_constant->button != 0)
+      dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
+
+   return dwTriggerButton;
+}
+
+
+/*
  * Sets the direction.
  */
 static int
@@ -634,7 +651,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Generics */
          dest->dwDuration = hap_constant->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
+         dest->dwTriggerButton = FFGetTriggerButton(hap_constant->button);
          dest->dwTriggerRepeatInterval = hap_constant->interval;
          dest->dwStartDelay = hap_constant->delay * 1000; /* In microseconds. */
 
@@ -674,7 +691,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Generics */
          dest->dwDuration = hap_periodic->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_periodic->button);
+         dest->dwTriggerButton = FFGetTriggerButton(hap_periodic->button);
          dest->dwTriggerRepeatInterval = hap_periodic->interval;
          dest->dwStartDelay = hap_periodic->delay * 1000; /* In microseconds. */
          
@@ -717,7 +734,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Generics */
          dest->dwDuration = hap_condition->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_condition->button);
+         dest->dwTriggerButton = FFGetTriggerButton(hap_condition->button);
          dest->dwTriggerRepeatInterval = hap_condition->interval;
          dest->dwStartDelay = hap_condition->delay * 1000; /* In microseconds. */
 
@@ -753,7 +770,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Generics */
          dest->dwDuration = hap_ramp->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_ramp->button);
+         dest->dwTriggerButton = FFGetTriggerButton(hap_ramp->button);
          dest->dwTriggerRepeatInterval = hap_ramp->interval;
          dest->dwStartDelay = hap_ramp->delay * 1000; /* In microseconds. */
 
@@ -792,7 +809,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
 
          /* Generics */
          dest->dwDuration = hap_custom->length * 1000; /* In microseconds. */
-         dest->dwTriggerButton = FFJOFS_BUTTON(hap_custom->button);
+         dest->dwTriggerButton = FFGetTriggerButton(hap_custom->button);
          dest->dwTriggerRepeatInterval = hap_custom->interval;
          dest->dwStartDelay = hap_custom->delay * 1000; /* In microseconds. */
 
