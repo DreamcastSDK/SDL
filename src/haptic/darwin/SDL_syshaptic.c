@@ -541,6 +541,7 @@ SDL_SYS_SetDirection( FFEFFECT * effect, SDL_HapticDirection *dir, int naxes )
 
    /* Handle no axes a part. */
    if (naxes == 0) {
+      effect->dwFlags |= FFEFF_SPHERICAL; /* Set as default. */
       effect->rglDirection = NULL;
       return 0;
    }
