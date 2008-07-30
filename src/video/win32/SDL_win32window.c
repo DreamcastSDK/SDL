@@ -19,6 +19,12 @@
     Sam Lantinga
     slouken@libsdl.org
 */
+
+#if (_WIN32_WINNT < 0x0501)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
+#endif
+
 #include "SDL_config.h"
 
 #include "../SDL_sysvideo.h"
@@ -140,6 +146,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
 int
 WIN_CreateWindow(_THIS, SDL_Window * window)
 {
+	RAWINPUTDEVICE Rid;
 	AXIS TabX,TabY;
 	LOGCONTEXT lc;
     HWND hwnd;
@@ -191,11 +198,11 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, NULL, NULL,
                      SDL_Instance, NULL);
 	
-	WTInfo(WTI_DEFCONTEXT, 0, &lc);
-
+	WTInfo(WTI_DEFSYSCTX, 0, &lc);
 	lc.lcPktData = PACKETDATA;
 	lc.lcPktMode = PACKETMODE;
 	lc.lcOptions |= CXO_MESSAGES;
+	lc.lcOptions |= CXO_SYSTEM;
 	lc.lcMoveMask = PACKETDATA;
 	lc.lcBtnDnMask=lc.lcBtnUpMask = PACKETDATA;
 
@@ -226,6 +233,16 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
 	}
 
 	g_hCtx[window->id] = WTOpen(hwnd, &lc, TRUE);
+
+	Rid.usUsagePage = 0x01; 
+	Rid.usUsage = 0x02; 
+	//Rid.usUsage = MOUSE_MOVE_ABSOLUTE;
+	Rid.dwFlags = RIDEV_INPUTSINK;   // adds HID mouse and also ignores legacy mouse messages
+	Rid.hwndTarget = hwnd;
+
+	RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
+		
+
     WIN_PumpEvents(_this);
 
     if (!hwnd) {
