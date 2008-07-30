@@ -523,8 +523,9 @@ FFGetTriggerButton( Uint16 button )
 
    dwTriggerButton = FFEB_NOTRIGGER;
 
-   if (hap_constant->button != 0)
-      dwTriggerButton = FFJOFS_BUTTON(hap_constant->button);
+   if (button != 0) {
+      dwTriggerButton = FFJOFS_BUTTON(button);
+   }
 
    return dwTriggerButton;
 }
