@@ -74,6 +74,7 @@ struct haptic_hwdata
 struct haptic_hweffect
 {
    DIEFFECT effect;
+   LPDIRECTINPUTEFFECT ref;
 };
 
 
@@ -190,7 +191,7 @@ SDL_SYS_HapticName(int index)
  * Callback to get all supported effects.
  */
 #define EFFECT_TEST(e,s)   \
-if (pei->guid == &(e))      \
+if (&pei->guid == &(e))      \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
@@ -978,8 +979,8 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
 
    /* Create the actual effect. */
    ret = IDirectInputDevice2_SetParameters(effect->hweffect->ref, &temp, flags);
-   if (ret != FF_OK) {
-      SDL_SetError("Haptic: Unable to update effect: %s.", FFStrError(ret));
+   if (FAILED(ret)) {
+      DI_SetError("Unable to update effect",ret);
       goto err_update;
    }
 
