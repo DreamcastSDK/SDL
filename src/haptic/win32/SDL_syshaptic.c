@@ -32,7 +32,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#define DIRECTINPUT_VERSION 0x0500
+#define DIRECTINPUT_VERSION 0x0700 /* Need at least DirectX 7 for dwStartDelay */
 #include <dinput.h>
 #include <dxerr9.h>          /* From DirectX SDK 9c */
 #ifdef _MSC_VER
@@ -189,9 +189,11 @@ SDL_SYS_HapticName(int index)
 /*
  * Callback to get all supported effects.
  */
+/*
 #define EFFECT_TEST(e,s)   \
 if (pei->guid == (e))      \
    haptic->supported |= (s)
+*/
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
 {
