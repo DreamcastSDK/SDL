@@ -655,7 +655,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         if ((envelope->dwAttackTime == 0) && (envelope->dwFadeTime == 0)) {
+         if ((hap_constant->attack_length==0) && (hap_constant->fade_length==0)) {
             SDL_free(envelope);
             dest->lpEnvelope = NULL;
          }
@@ -701,7 +701,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         if ((envelope->dwAttackTime == 0) && (envelope->dwFadeTime == 0)) {
+         if ((hap_periodic->attack_length==0) && (hap_periodic->fade_length==0)) {
             SDL_free(envelope);
             dest->lpEnvelope = NULL;
          }
@@ -788,7 +788,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
 
          /* Envelope */
-         if ((envelope->dwAttackTime == 0) && (envelope->dwFadeTime == 0)) {
+         if ((hap_ramp->attack_length==0) && (hap_ramp->fade_length==0)) {
             SDL_free(envelope);
             dest->lpEnvelope = NULL;
          }
@@ -833,7 +833,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          }
          
          /* Envelope */
-         if ((envelope->dwAttackTime == 0) && (envelope->dwFadeTime == 0)) {
+         if ((hap_custom->attack_length==0) && (hap_custom->fade_length==0)) {
             SDL_free(envelope);
             dest->lpEnvelope = NULL;
          }
