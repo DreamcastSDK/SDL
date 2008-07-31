@@ -649,6 +649,9 @@ typedef struct SDL_HapticCustom {
  *  use them if possible.  Buttons start at index 1 instead of index 0 like
  *  they joystick.
  *
+ * If both attack_length and fade_level are 0, the envelope is not used,
+ *  otherwise both values are used.
+ *
  * Common parts:
  * \code
  * // Replay - All effects have this
