@@ -84,6 +84,13 @@ static LPDIRECTINPUT dinput = NULL;
 
 
 /*
+ * External stuff.
+ */
+extern HINSTANCE SDL_Instance;
+extern HWND SDL_Window;
+
+
+/*
  * Prototypes.
  */
 static BOOL CALLBACK EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext);
@@ -141,8 +148,8 @@ SDL_SYS_HapticInit(void)
 
    /* Look for haptic devices. */
    ret = IDirectInput_EnumDevices( dinput,
-                                   DIDEVTYPE_ALL,
-                                   EnumJoysticksCallback,
+                                   DIDEVTYPE_DEVICE,
+                                   EnumHapticsCallback,
                                    NULL, DIEDFL_FORCEFEEDBACK | DIEDFL_ATTACHEDONLY);
    if (FAILED(ret)) {
       DI_SetError("Enumerating DirectInput devices",ret);
@@ -183,7 +190,7 @@ SDL_SYS_HapticName(int index)
  * Callback to get all supported effects.
  */
 #define EFFECT_TEST(e,s)   \
-if (pei->guid == (e))   \
+if (pei->guid == (e))      \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
@@ -240,7 +247,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
   
    /* Open the device */
    ret = IDirectInput_CreateDevice( dinput, &instance,
-                                    guidInstance, &device, NULL);
+                                    guidInstance, &device );
    if (FAILED(ret)) {
       DI_SetError("Creating DirectInput device",ret);
       goto creat_err;
@@ -249,7 +256,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    /* Now get the IDirectInputDevice2 interface, instead. */
    ret = IDirectInputDevice_QueryInterface( device,
                                             &IID_IDirectInputDevice2,
-                                            haptic->hwdata->device );
+                                            (LPVOID *) &haptic->hwdata->device );
    /* Done with the temporary one now. */
    IDirectInputDevice_Release(device);
    if (FAILED(ret)) {
@@ -301,7 +308,8 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
 
 
    /* Get supported effects. */
-   ret = IDirectInput_EnumEffects( DI_EffectCallback, haptic, DIEFT_ALL);
+   ret = IDirectInputDevice2_EnumEffects( haptic->hwdata->device, 
+                                          DI_EffectCallback, haptic, DIEFT_ALL );
    if (FAILED(ret)) {
       DI_SetError("Enumerating supported effects",ret);
       goto acquire_err;
