@@ -178,7 +178,7 @@ SDL_SYS_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
-    memcpy(&SYS_Joystick[SYS_NumJoysticks], pdidInstance,
+    SDL_memcpy(&SYS_Joystick[SYS_NumJoysticks], pdidInstance,
            sizeof(DIDEVICEINSTANCE));
     SYS_NumJoysticks++;
 
@@ -208,7 +208,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
     LPDIRECTINPUTDEVICE device;
     DIPROPDWORD dipdw;
 
-    ZeroMemory(&dipdw, sizeof(DIPROPDWORD));
+    SDL_memset(&dipdw, 0, sizeof(DIPROPDWORD));
     dipdw.diph.dwSize = sizeof(DIPROPDWORD);
     dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 
@@ -220,7 +220,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
         SDL_OutOfMemory();
         return (-1);
     }
-    ZeroMemory(joystick->hwdata, sizeof(struct joystick_hwdata));
+    SDL_memset(joystick->hwdata, 0, sizeof(struct joystick_hwdata));
     joystick->hwdata->buffered = 1;
     joystick->hwdata->Capabilities.dwSize = sizeof(DIDEVCAPS);
 
