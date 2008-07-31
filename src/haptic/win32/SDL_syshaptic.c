@@ -908,19 +908,18 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
       SDL_HapticEffect * base)
 {
    HRESULT ret;
-   REFGUID type;
+
+   /* Get the type. */
+   REFGUID type = SDL_SYS_HapticEffectType(effect);
+   if (type == NULL) {
+      goto err_hweffect;
+   }
 
    /* Alloc the effect. */
    effect->hweffect = (struct haptic_hweffect *)
          SDL_malloc(sizeof(struct haptic_hweffect));
    if (effect->hweffect == NULL) {
       SDL_OutOfMemory();
-      goto err_hweffect;
-   }
-
-   /* Get the type. */
-   type = SDL_SYS_HapticEffectType(effect);
-   if (type == NULL) {
       goto err_hweffect;
    }
 
@@ -978,7 +977,7 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
            DIEP_TYPESPECIFICPARAMS;
 
    /* Create the actual effect. */
-   ret = IDirectInputDevice2_SetParameters(effect->hweffect->ref, &temp, flags);
+   ret = IDirectInputEffect_SetParameters(effect->hweffect->ref, &temp, flags);
    if (FAILED(ret)) {
       DI_SetError("Unable to update effect",ret);
       goto err_update;
