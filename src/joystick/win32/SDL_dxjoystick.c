@@ -215,7 +215,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 
     /* allocate memory for system specific hardware data */
     joystick->hwdata =
-        (struct joystick_hwdata *) malloc(sizeof(struct joystick_hwdata));
+        (struct joystick_hwdata *) SDL_malloc(sizeof(struct joystick_hwdata));
     if (joystick->hwdata == NULL) {
         SDL_OutOfMemory();
         return (-1);
@@ -635,7 +635,7 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 
     if (joystick->hwdata != NULL) {
         /* free system specific hardware data */
-        free(joystick->hwdata);
+       SDL_free(joystick->hwdata);
     }
 }
 
