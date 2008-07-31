@@ -1103,8 +1103,7 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
       SDL_SetError("Haptic: Error removing the effect from the device: %s.",
                    FFStrError(ret));
    }
-   SDL_free(effect->hweffect->effect.lpvTypeSpecificParams);
-   effect->hweffect->effect.lpvTypeSpecificParams = NULL;
+   SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, effect->effect.type);
    SDL_free(effect->hweffect);
    effect->hweffect = NULL;
 }
