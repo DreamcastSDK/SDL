@@ -361,9 +361,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    return 0;
    
    /* Error handling */
-open_err:
-   IDirectInputDevice_Release(device);
-   goto creat_err;
 acquire_err:
    IDirectInputDevice2_Unacquire(haptic->hwdata->device);
 query_err:
@@ -435,19 +432,11 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 void
 SDL_SYS_HapticClose(SDL_Haptic * haptic)
 {
-   int i;
-
    if (haptic->hwdata) {
 
-      /* Free the effects. */
-      for (i=0; i<haptic->neffects; i++) {        
-         if (haptic->effects[i].hweffect != NULL) {
-            SDL_SYS_HapticFreeFFEFFECT( &haptic->effects[i].hweffect->effect,
-                                        haptic->effects[i].effect.type );
-            SDL_free(haptic->effects[i].hweffect);
-         } 
-      }    
+      /* Free effects. */
       SDL_free(haptic->effects);
+      haptic->effects = NULL;
       haptic->neffects = 0;
 
       /* Clean up */
