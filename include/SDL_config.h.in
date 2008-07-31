@@ -219,6 +219,7 @@
 #undef SDL_HAPTIC_DUMMY
 #undef SDL_HAPTIC_LINUX
 #undef SDL_HAPTIC_IOKIT
+#undef SDL_HAPTIC_DINPUT
 
 /* Enable various shared object loading systems */
 #undef SDL_LOADSO_BEOS

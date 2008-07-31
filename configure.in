@@ -2331,6 +2331,13 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             fi
             have_joystick=yes
         fi
+        if test x$enable_haptic = xyes; then
+            if test x$have_dinput = xyes; then
+                AC_DEFINE(SDL_HAPTIC_DINPUT)
+                SOURCES="$SOURCES $srcdir/src/haptic/win32/SDL_syshaptic.c"
+                have_haptic=yes
+            fi
+        fi
         # Set up files for the cdrom library
         if test x$enable_cdrom = xyes; then
             AC_DEFINE(SDL_CDROM_WIN32)
