@@ -200,6 +200,48 @@ DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
    haptic->supported = 0;
 
    /* Get supported. */
+   switch (pei->guid) {
+      case GUID_Spring:
+         haptic->supported |= SDL_HAPTIC_SPRING;
+         break;
+      case GUID_Damper:
+         haptic->supported |= SDL_HAPTIC_DAMPER;
+         break;
+      case GUID_Inertia:
+         haptic->supported |= SDL_HAPTIC_INERTIA;
+         break;
+      case GUID_Friction:
+         haptic->supported |= SDL_HAPTIC_FRICTION;
+         break;
+      case GUID_ConstantForce:
+         haptic->supported |= SDL_HAPTIC_CONSTANT;
+         break;
+      case GUID_CustomForce:
+         haptic->supported |= SDL_HAPTIC_CUSTOM;
+         break;
+      case GUID_Sine:
+         haptic->supported |= SDL_HAPTIC_SINE;
+         break;
+      case GUID_Square:
+         haptic->supported |= SDL_HAPTIC_SQUARE;
+         break;
+      case GUID_Triangle:
+         haptic->supported |= SDL_HAPTIC_TRIANGLE;
+         break;
+      case GUID_SawtoothUp:
+         haptic->supported |= SDL_HAPTIC_SAWTOOTHUP;
+         break;
+      case GUID_SawtoothDown:
+         haptic->supported |= SDL_HAPTIC_SAWTOOTHDOWN;
+         break;
+      case GUID_RampForce:
+         haptic->supported |= SDL_HAPTIC_RAMP;
+         break;
+
+      default:
+         break;
+   }
+/*
    EFFECT_TEST(GUID_Spring,         SDL_HAPTIC_SPRING);
    EFFECT_TEST(GUID_Damper,         SDL_HAPTIC_DAMPER);
    EFFECT_TEST(GUID_Inertia,        SDL_HAPTIC_INERTIA);
@@ -212,6 +254,7 @@ DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
    EFFECT_TEST(GUID_SawtoothUp,     SDL_HAPTIC_SAWTOOTHUP);
    EFFECT_TEST(GUID_SawtoothDown,   SDL_HAPTIC_SAWTOOTHDOWN);
    EFFECT_TEST(GUID_RampForce,      SDL_HAPTIC_RAMP);
+*/
   
    /* Check for more. */
    return DIENUM_CONTINUE;
@@ -246,8 +289,8 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
   
    /* Open the device */
-   ret = IDirectInput_CreateDevice( dinput, &instance,
-                                    guidInstance, &device );
+   ret = IDirectInput_CreateDevice( dinput, &instance.guidInstance,
+                                    &device, NULL );
    if (FAILED(ret)) {
       DI_SetError("Creating DirectInput device",ret);
       goto creat_err;
@@ -300,7 +343,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
 
    /* Get capabilities. */
    ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
-                                              haptic->hwdata->capabilities );
+                                              &haptic->hwdata->capabilities );
    if (FAILED(ret)) {
       DI_SetError("Getting device capabilities",ret);
       goto acquire_err;
