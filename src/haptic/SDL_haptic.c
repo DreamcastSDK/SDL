@@ -61,16 +61,19 @@ SDL_HapticInit(void)
  * Checks to see if the haptic device is valid
  */
 static int
-ValidHaptic(SDL_Haptic ** haptic)
+ValidHaptic(SDL_Haptic * haptic)
 {
+   int i;
    int valid;
-   
-   if (*haptic == NULL) {
-      SDL_SetError("Haptic: Device hasn't been opened yet");
-      valid = 0;
-   } else {
-      valid = 1;
+
+   valid = 0;
+   for (i=0; i<SDL_numhaptics; i++) {
+      if (SDL_haptics[i] == haptic) {
+         valid = 1;
+         break;
+      }
    }
+   
    return valid;
 }
 
@@ -178,7 +181,7 @@ SDL_HapticOpened(int device_index)
 int
 SDL_HapticIndex(SDL_Haptic * haptic)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -299,7 +302,7 @@ SDL_HapticClose(SDL_Haptic * haptic)
    int i;
 
    /* Must be valid */
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return;
    }
 
@@ -349,7 +352,7 @@ SDL_HapticQuit(void)
 int
 SDL_HapticNumEffects(SDL_Haptic * haptic)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -363,7 +366,7 @@ SDL_HapticNumEffects(SDL_Haptic * haptic)
 int
 SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -377,7 +380,7 @@ SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic)
 unsigned int
 SDL_HapticQuery(SDL_Haptic * haptic)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -391,7 +394,7 @@ SDL_HapticQuery(SDL_Haptic * haptic)
 int
 SDL_HapticNumAxes(SDL_Haptic * haptic)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -404,7 +407,7 @@ SDL_HapticNumAxes(SDL_Haptic * haptic)
 int
 SDL_HapticEffectSupported(SDL_Haptic * haptic, SDL_HapticEffect * effect)
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -422,7 +425,7 @@ SDL_HapticNewEffect(SDL_Haptic * haptic, SDL_HapticEffect * effect)
    int i;
 
    /* Check for device validity. */
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -469,7 +472,7 @@ ValidEffect(SDL_Haptic * haptic, int effect)
 int
 SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
 {
-   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+   if (!ValidHaptic(haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
@@ -495,7 +498,7 @@ SDL_HapticUpdateEffect(SDL_Haptic * haptic, int effect, SDL_HapticEffect * data)
 int
 SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 iterations)
 {
-   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+   if (!ValidHaptic(haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
@@ -513,7 +516,7 @@ SDL_HapticRunEffect(SDL_Haptic * haptic, int effect, Uint32 iterations)
 int
 SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)
 {
-   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+   if (!ValidHaptic(haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
@@ -531,7 +534,7 @@ SDL_HapticStopEffect(SDL_Haptic * haptic, int effect)
 void
 SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
 {
-   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+   if (!ValidHaptic(haptic) || !ValidEffect(haptic,effect)) {
       return;
    }
 
@@ -549,7 +552,7 @@ SDL_HapticDestroyEffect(SDL_Haptic * haptic, int effect)
 int
 SDL_HapticGetEffectStatus(SDL_Haptic *haptic, int effect)
 {
-   if (!ValidHaptic(&haptic) || !ValidEffect(haptic,effect)) {
+   if (!ValidHaptic(haptic) || !ValidEffect(haptic,effect)) {
       return -1;
    }
 
@@ -570,7 +573,7 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
    const char *env;
    int real_gain, max_gain;
 
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
@@ -613,7 +616,7 @@ SDL_HapticSetGain(SDL_Haptic * haptic, int gain )
 int
 SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter )
 {
-   if (!ValidHaptic(&haptic)) {
+   if (!ValidHaptic(haptic)) {
       return -1;
    }
 
