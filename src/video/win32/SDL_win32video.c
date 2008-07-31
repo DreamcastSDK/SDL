@@ -40,7 +40,7 @@ static void WIN_VideoQuit(_THIS);
 int total_mice =0;
 HANDLE* mice = NULL;
 HCTX* g_hCtx = NULL;
-//int highestId=0;
+int tablet=-1;
 
 /* WIN32 driver bootstrap functions */
 
@@ -182,3 +182,4 @@ WIN_VideoQuit(_THIS)
 }
 
 /* vim: set ts=4 sw=4 expandtab: */
+
