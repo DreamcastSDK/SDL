@@ -166,7 +166,7 @@ SDL_SYS_HapticInit(void)
 static BOOL CALLBACK
 EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
-   memcpy(&SDL_hapticlist[SDL_numhaptics].instance, pdidInstance,
+   SDL_memcpy(&SDL_hapticlist[SDL_numhaptics].instance, pdidInstance,
          sizeof(DIDEVICEINSTANCE));
    SDL_numhaptics++;
 
@@ -376,7 +376,7 @@ query_err:
    IDirectInputDevice2_Release(haptic->hwdata->device);   
 creat_err:
    if (haptic->hwdata != NULL) {
-      free(haptic->hwdata);
+      SDL_free(haptic->hwdata);
       haptic->hwdata = NULL;                                              
    }
    return -1;
