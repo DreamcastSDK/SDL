@@ -189,61 +189,17 @@ SDL_SYS_HapticName(int index)
 /*
  * Callback to get all supported effects.
  */
-/*
 #define EFFECT_TEST(e,s)   \
 if (pei->guid == (e))      \
    haptic->supported |= (s)
-*/
 static BOOL CALLBACK
-DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
+DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
 {
    /* Prepare the haptic device. */
    SDL_Haptic *haptic = (SDL_Haptic*) pv;
    haptic->supported = 0;
 
    /* Get supported. */
-   switch (pei->guid) {
-      case GUID_Spring:
-         haptic->supported |= SDL_HAPTIC_SPRING;
-         break;
-      case GUID_Damper:
-         haptic->supported |= SDL_HAPTIC_DAMPER;
-         break;
-      case GUID_Inertia:
-         haptic->supported |= SDL_HAPTIC_INERTIA;
-         break;
-      case GUID_Friction:
-         haptic->supported |= SDL_HAPTIC_FRICTION;
-         break;
-      case GUID_ConstantForce:
-         haptic->supported |= SDL_HAPTIC_CONSTANT;
-         break;
-      case GUID_CustomForce:
-         haptic->supported |= SDL_HAPTIC_CUSTOM;
-         break;
-      case GUID_Sine:
-         haptic->supported |= SDL_HAPTIC_SINE;
-         break;
-      case GUID_Square:
-         haptic->supported |= SDL_HAPTIC_SQUARE;
-         break;
-      case GUID_Triangle:
-         haptic->supported |= SDL_HAPTIC_TRIANGLE;
-         break;
-      case GUID_SawtoothUp:
-         haptic->supported |= SDL_HAPTIC_SAWTOOTHUP;
-         break;
-      case GUID_SawtoothDown:
-         haptic->supported |= SDL_HAPTIC_SAWTOOTHDOWN;
-         break;
-      case GUID_RampForce:
-         haptic->supported |= SDL_HAPTIC_RAMP;
-         break;
-
-      default:
-         break;
-   }
-/*
    EFFECT_TEST(GUID_Spring,         SDL_HAPTIC_SPRING);
    EFFECT_TEST(GUID_Damper,         SDL_HAPTIC_DAMPER);
    EFFECT_TEST(GUID_Inertia,        SDL_HAPTIC_INERTIA);
@@ -256,7 +212,6 @@ DI_EffectCallback(LPCDIEffectInfo pei, LPVOID pv)
    EFFECT_TEST(GUID_SawtoothUp,     SDL_HAPTIC_SAWTOOTHUP);
    EFFECT_TEST(GUID_SawtoothDown,   SDL_HAPTIC_SAWTOOTHDOWN);
    EFFECT_TEST(GUID_RampForce,      SDL_HAPTIC_RAMP);
-*/
   
    /* Check for more. */
    return DIENUM_CONTINUE;
