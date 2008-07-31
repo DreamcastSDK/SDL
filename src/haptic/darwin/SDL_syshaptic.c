@@ -791,6 +791,7 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          if ((envelope->dwAttackTime == 0) && (envelope->dwFadeTime == 0)) {
             SDL_free(envelope);
             dest->lpEnvelope = NULL;
+         }
          else {
             envelope->dwAttackLevel = CONVERT(hap_ramp->attack_level);
             envelope->dwAttackTime = hap_ramp->attack_length * 1000;
