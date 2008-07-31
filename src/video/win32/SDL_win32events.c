@@ -62,6 +62,7 @@
 extern HCTX* g_hCtx;
 extern HANDLE* mice;
 extern int total_mice;
+extern int tablet;
 
 int pressure=0;
 
@@ -146,13 +147,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WT_PROXIMITY:
 		{
 			int h_context=LOWORD(lParam);
+			LPPOINT point;
+			GetCursorPos(&point);
+			ScreenToClient(hwnd, &point);
 			if(h_context==0)
 			{
-				SDL_SendProximity(0, 0, 0, SDL_PROXIMITYOUT);
+				SDL_SendProximity(tablet, (int)(&point->x),(int)(&point->y), SDL_PROXIMITYOUT);
 			}
 			else
 			{
-				SDL_SendProximity(0, 0, 0, SDL_PROXIMITYIN);
+				SDL_SendProximity(tablet, (int)(&point->x),(int)(&point->y), SDL_PROXIMITYIN);
 			}
 		}
 		break;
@@ -202,74 +206,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return (0);
         }
         break;
-	case WT_CTXOPEN:
-		{
-			SDL_SendMouseMotion(0,1,1,0,0);
-			SDL_SendMouseMotion(0,1,-1,0,0);
-		}
-    /*case WM_MOUSEMOVE:
-        {
-			LPBYTE lpb;
-			const RAWINPUTHEADER *header;
-            int index;
-			int i;
-			int size=0;
-            SDL_Mouse *mouse;
-            int x, y;
-
-            //index = data->videodata->mouse;
-			GetRawInputData((HRAWINPUT) lParam, RID_INPUT, NULL, &size, sizeof (RAWINPUTHEADER));
-			lpb = SDL_malloc(size*sizeof(LPBYTE));
-			GetRawInputData((HRAWINPUT) lParam, RID_INPUT, lpb, &size, sizeof (RAWINPUTHEADER));
-			raw = (RAWINPUT *) lpb;
-			header = &raw->header;
-			for(i=0;i<total_mice;++i)
-			{
-				if(mice[i]==header->hDevice)
-				{
-					index=i;
-					break;
-				}
-			}
-            mouse = SDL_GetMouse(index);
-
-            if (mouse->focus != data->windowID) {
-                TRACKMOUSEEVENT tme;
-
-                tme.cbSize = sizeof(tme);
-                tme.dwFlags = TME_LEAVE;
-                tme.hwndTrack = hwnd;
-                TrackMouseEvent(&tme);
-
-                SDL_SetMouseFocus(index, data->windowID);
-            }
-
-            /* mouse has moved within the window */
-            //x = LOWORD(lParam);
-            //y = HIWORD(lParam);
-			//printf("index: %d\n",index);
-			/*if (WTPacketsPeek(g_hCtx[data->windowID],1,&packet))
-				{
-					pressure=(int)packet.pkNormalPressure;
-				}*/
-            /*if (mouse->relative_mode) {
-                int w, h;
-                POINT center;
-                SDL_GetWindowSize(data->windowID, &w, &h);
-                center.x = (w / 2);
-                center.y = (h / 2);
-                x -= center.x;
-                y -= center.y;
-                if (x || y) {
-                    ClientToScreen(hwnd, &center);
-                    SetCursorPos(center.x, center.y);
-					SDL_SendMouseMotion(index, 1, x, y,pressure);
-                }
-            } else {
-					SDL_SendMouseMotion(index, 0, x, y,pressure);
-            }
-        }
-        return (0);*/
 	case WM_INPUT:
 		{
 			LPBYTE lpb;
@@ -287,7 +223,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			GetRawInputData((HRAWINPUT) lParam, RID_INPUT, lpb, &size, sizeof (RAWINPUTHEADER));
 			raw = (RAWINPUT *) lpb;
 			header = &raw->header;
-			//raw_mouse=&raw->data.mouse;
 			flags=raw->data.mouse.usButtonFlags;
 			for(i=0;i<total_mice;++i)
 			{
@@ -302,7 +237,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			ScreenToClient(hwnd, &point);
 			SDL_GetWindowSize(data->windowID, &w, &h);
 			SDL_UpdateCoordinates(w,h);
-			SDL_SendMouseMotion(index,0,(int)(&point->x),(int)(&point->y),pressure);
+			if(i==tablet)
+			{
+				SDL_SendMouseMotion(index,0,(int)(&point->x),(int)(&point->y),pressure);
+			}
+			else
+			{
+				SDL_SendMouseMotion(index,0,(int)(&point->x),(int)(&point->y),0);
+			}
 			if(flags & RI_MOUSE_BUTTON_1_DOWN)
 			{
 				SDL_SendMouseButton(index,SDL_PRESSED,SDL_BUTTON_LEFT);
@@ -327,6 +269,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				SDL_SendMouseButton(index,SDL_RELEASED,SDL_BUTTON_RIGHT);
 			}
+			if(flags & RI_MOUSE_WHEEL)
+			{
+				if(raw->data.mouse.usButtonData!=0)
+				{
+					SDL_SendMouseWheel(index, 0, raw->data.mouse.usButtonData);
+				}
+			}
 		}
 		return(0);
     case WM_MOUSELEAVE:
@@ -342,19 +291,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         return (0);
-
-    
-
- /*   case WM_MOUSEWHEEL:
-        {
-            int index;
-            int motion = (short) HIWORD(wParam);
-
-            index = data->videodata->mouse;
-            SDL_SendMouseWheel(index, 0, motion);
-        }
-        return (0);*/
-
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
         {
@@ -743,3 +679,4 @@ WIN_SetError(const char *prefix)
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
+

@@ -330,6 +330,8 @@ SDL_SendProximity(int id, int x, int y, int type)
 {
     int index=SDL_GetIndexById(id);
     int posted=0;
+	last_x=x;
+	last_y=y;
     if(SDL_ProcessEvents[type]==SDL_ENABLE)
     {
         SDL_Event event;

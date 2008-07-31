@@ -475,3 +475,4 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
+

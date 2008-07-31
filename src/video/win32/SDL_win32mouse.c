@@ -31,13 +31,16 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-extern int total_mice;
+#include <wintab.h>
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETMODE 0
+#include <pktdef.h>
 
 extern HANDLE* mice;
 
 extern int total_mice;
 
-RAWINPUTDEVICE *Rid=NULL;
+extern int tablet;
 
 void
 WIN_InitMouse(_THIS)
@@ -48,6 +51,7 @@ WIN_InitMouse(_THIS)
 	int i;
 	int tmp=0;
 	char* buffer=NULL;
+	char* tab="wacom";
 
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -67,6 +71,7 @@ WIN_InitMouse(_THIS)
 	for(i=0;i<devCount;++i)
 	{
 		int j;
+		int k;
 		char *default_device_name="Pointing device xx";
 		const char *reg_key_root = "System\\CurrentControlSet\\Enum\\";
 		char *device_name=SDL_malloc(256*sizeof(char));
@@ -77,6 +82,7 @@ WIN_InitMouse(_THIS)
 		DWORD regtype = REG_SZ;
 		DWORD out=256*sizeof(char);
 		SDL_Mouse mouse;
+		int l;
 		if(deviceList[i].dwType!=RIM_TYPEMOUSE)
 		{
 			continue;
@@ -117,35 +123,53 @@ WIN_InitMouse(_THIS)
 	rc = RegOpenKeyExA(HKEY_LOCAL_MACHINE, key_name, 0, KEY_READ, &hkey);
     
 	if (rc != ERROR_SUCCESS)
-        return;
+	{
+		SDL_memcpy(device_name, default_device_name, SDL_strlen(default_device_name));
+	}
 
     rc = RegQueryValueExA(hkey, "DeviceDesc", NULL, &regtype, device_name, &out);
     RegCloseKey(hkey);
     if (rc != ERROR_SUCCESS)
 	{
-		return;
-        //SDL_memcpy(device_name, default_device_name, SDL_strlen(default_device_name));
+        SDL_memcpy(device_name, default_device_name, SDL_strlen(default_device_name));
     } 
-    //device_name[254] = '\0';
-
 		mice[index]=deviceList[i].hDevice;
 		SDL_zero(mouse);
 		SDL_SetIndexId(index,index);
-		data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0);
-		//data->mouse = SDL_AddMouse(&mouse, index,key_name,0,0);
+		l=SDL_strlen(device_name);
+		if(tablet==-1)
+		{
+			for(j=0;j<l-5;++j)
+			{
+				for(k=0;k<5;++k)
+				{
+					if(tab[k]!=SDL_tolower((unsigned char)device_name[j+k]))
+					{
+						break;
+					}
+				}
+				if(k==5)
+				{
+					tablet=index;
+					break;
+				}
+			}
+		}
+		if(tablet==index)
+		{
+			AXIS pressure;
+			WTInfo(WTI_DEVICES,DVC_NPRESSURE, &pressure);
+			data->mouse = SDL_AddMouse(&mouse, index,device_name,pressure.axMax,pressure.axMin);
+		}
+		else
+		{
+			data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0);
+		}
 		++index;
 
 		SDL_free(buffer);
 		SDL_free(key_name);
 	}
-	Rid = SDL_malloc(sizeof(RAWINPUTDEVICE));
-	/*Rid[0].usUsagePage = 0x01; 
-	Rid[0].usUsage = 0x02; 
-	Rid[0].dwFlags = RIDEV_INPUTSINK;   // adds HID mouse and also ignores legacy mouse messages
-	Rid[0].hwndTarget = NULL;
-
-	RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));*/
-
 	total_mice=index;
 	SDL_free(deviceList);
 }
@@ -159,7 +183,7 @@ WIN_QuitMouse(_THIS)
 	{
 		SDL_DelMouse(i);
 	}
-	SDL_free(Rid);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
+
