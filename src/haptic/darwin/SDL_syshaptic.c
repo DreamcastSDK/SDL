@@ -470,19 +470,11 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 void
 SDL_SYS_HapticClose(SDL_Haptic * haptic)
 {
-   int i;
-
    if (haptic->hwdata) {
 
-      /* Free the effects. */
-      for (i=0; i<haptic->neffects; i++) {        
-         if (haptic->effects[i].hweffect != NULL) {
-            SDL_SYS_HapticFreeFFEFFECT(&haptic->effects[i].hweffect->effect,
-                                       haptic->effects[i].effect.type);
-            SDL_free(haptic->effects[i].hweffect);
-         } 
-      }    
+      /* Free Effects. */
       SDL_free(haptic->effects);
+      haptic->effects = NULL;
       haptic->neffects = 0;
 
       /* Clean up */

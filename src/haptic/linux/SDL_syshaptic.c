@@ -423,12 +423,17 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
 {
    if (haptic->hwdata) {
 
+      /* Free effects. */
+      SDL_free(haptic->effects);
+      haptic->effects = NULL;
+      haptic->neffects = 0;
+
       /* Clean up */
       close(haptic->hwdata->fd);
 
       /* Free */
-      SDL_free(haptic->hwdata);
-      SDL_free(haptic->effects);
+      SDL_free(haptic->hwdata);                                           
+      haptic->hwdata = NULL;  
    }
 
    /* Clear the rest. */

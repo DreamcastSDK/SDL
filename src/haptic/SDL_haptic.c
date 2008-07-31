@@ -322,6 +322,7 @@ SDL_HapticClose(SDL_Haptic * haptic)
    /* Remove from the list */
    for (i = 0; SDL_haptics[i]; ++i) {
       if (haptic == SDL_haptics[i]) {
+         SDL_haptics[i] = NULL;
          SDL_memcpy(&SDL_haptics[i], &SDL_haptics[i + 1],
                (SDL_numhaptics - i) * sizeof(haptic));
          break;
