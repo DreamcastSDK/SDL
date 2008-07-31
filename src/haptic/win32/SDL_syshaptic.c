@@ -190,7 +190,7 @@ SDL_SYS_HapticName(int index)
  * Callback to get all supported effects.
  */
 #define EFFECT_TEST(e,s)   \
-if (pei->guid == (e))      \
+if (pei->guid == &(e))      \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
@@ -690,7 +690,7 @@ SDL_SYS_ToDIEFFECT( SDL_Haptic * haptic, DIEFFECT * dest, SDL_HapticEffect * src
          SDL_memset(condition, 0, sizeof(DICONDITION));
 
          /* Specifics */
-         for (i=0; i<dest->cAxes; i++) {
+         for (i=0; i<(int)dest->cAxes; i++) {
             condition[i].lOffset = CONVERT(hap_condition->center[i]);
             condition[i].lPositiveCoefficient = CONVERT(hap_condition->right_coeff[i]);
             condition[i].lNegativeCoefficient = CONVERT(hap_condition->left_coeff[i]);
@@ -857,40 +857,40 @@ SDL_SYS_HapticEffectType(struct haptic_effect * effect)
 {
    switch (effect->effect.type) {
       case SDL_HAPTIC_CONSTANT:
-         return GUID_ConstantForce;
+         return &GUID_ConstantForce;
 
       case SDL_HAPTIC_RAMP:
-         return GUID_RampForce;
+         return &GUID_RampForce;
 
       case SDL_HAPTIC_SQUARE:
-         return GUID_Square;
+         return &GUID_Square;
 
       case SDL_HAPTIC_SINE:
-         return GUID_Sine;
+         return &GUID_Sine;
 
       case SDL_HAPTIC_TRIANGLE:
-         return GUID_Triangle;
+         return &GUID_Triangle;
 
       case SDL_HAPTIC_SAWTOOTHUP:
-         return GUID_SawtoothUp;
+         return &GUID_SawtoothUp;
 
       case SDL_HAPTIC_SAWTOOTHDOWN:
-         return GUID_SawtoothDown;
+         return &GUID_SawtoothDown;
 
       case SDL_HAPTIC_SPRING:
-         return GUID_Spring;
+         return &GUID_Spring;
 
       case SDL_HAPTIC_DAMPER:
-         return GUID_Damper;
+         return &GUID_Damper;
 
       case SDL_HAPTIC_INERTIA:
-         return GUID_Inertia;
+         return &GUID_Inertia;
 
       case SDL_HAPTIC_FRICTION:
-         return GUID_Friction;
+         return &GUID_Friction;
 
       case SDL_HAPTIC_CUSTOM:
-         return GUID_CustomForce;
+         return &GUID_CustomForce;
 
       default:
          SDL_SetError("Haptic: Unknown effect type.");
