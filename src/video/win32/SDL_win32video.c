@@ -37,10 +37,10 @@
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
 
-int total_mice =0;
-HANDLE* mice = NULL;
-HCTX* g_hCtx = NULL;
-int tablet=-1;
+int total_mice = 0; /*total mouse count*/
+HANDLE* mice = NULL; /*the handles to the detected mice*/
+HCTX* g_hCtx = NULL; /*handles to tablet contexts*/
+int tablet=-1; /*we're assuming that there is no tablet*/
 
 /* WIN32 driver bootstrap functions */
 

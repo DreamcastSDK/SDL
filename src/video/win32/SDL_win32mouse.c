@@ -20,6 +20,8 @@
     slouken@libsdl.org
 */
 
+/*we need to define it, so that raw input is included*/
+
 #if (_WIN32_WINNT < 0x0501)
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
@@ -51,9 +53,11 @@ WIN_InitMouse(_THIS)
 	int i;
 	int tmp=0;
 	char* buffer=NULL;
-	char* tab="wacom";
+	char* tab="wacom";/*since windows does't give us handles to tablets, we have to detect a tablet by it's name*/
 
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+	/*we're checking for the number of rawinput devices*/
 
 	if(GetRawInputDeviceList(NULL,&devCount,sizeof(RAWINPUTDEVICELIST)))
 	{
@@ -64,9 +68,13 @@ WIN_InitMouse(_THIS)
 		deviceList = SDL_malloc(sizeof(RAWINPUTDEVICELIST)*devCount);
 	}
 
+	/*we're getting the raw input device list*/
+
 	GetRawInputDeviceList(deviceList,&devCount,sizeof(RAWINPUTDEVICELIST));
 
 	mice = SDL_malloc(devCount*sizeof(HANDLE));
+
+	/*we're getting the details of the devices*/
 
 	for(i=0;i<devCount;++i)
 	{
@@ -83,7 +91,7 @@ WIN_InitMouse(_THIS)
 		DWORD out=256*sizeof(char);
 		SDL_Mouse mouse;
 		int l;
-		if(deviceList[i].dwType!=RIM_TYPEMOUSE)
+		if(deviceList[i].dwType!=RIM_TYPEMOUSE) /*if a device isn't a mouse type we don't want it*/
 		{
 			continue;
 		}
@@ -91,8 +99,12 @@ WIN_InitMouse(_THIS)
 		{
 			continue;
 		}
+
 		buffer = SDL_malloc((tmp+1)*sizeof(char));
 		key_name = SDL_malloc(tmp + sizeof(reg_key_root)*sizeof(char));
+
+		/*we're getting the device registry path and polishing it to get it's name,
+		surely there must be an easier way, but we haven't found it yet*/
 
 		if(GetRawInputDeviceInfoA(deviceList[i].hDevice, RIDI_DEVICENAME, buffer, &tmp)<0)
 		{
@@ -120,6 +132,8 @@ WIN_InitMouse(_THIS)
 	SDL_memcpy(key_name, reg_key_root, SDL_strlen (reg_key_root));
     SDL_memcpy(key_name + (SDL_strlen (reg_key_root)), buffer, j + 1);
     
+	/*we're opening the registry key to get the mouse name*/
+
 	rc = RegOpenKeyExA(HKEY_LOCAL_MACHINE, key_name, 0, KEY_READ, &hkey);
     
 	if (rc != ERROR_SUCCESS)
@@ -129,46 +143,50 @@ WIN_InitMouse(_THIS)
 
     rc = RegQueryValueExA(hkey, "DeviceDesc", NULL, &regtype, device_name, &out);
     RegCloseKey(hkey);
+
     if (rc != ERROR_SUCCESS)
 	{
         SDL_memcpy(device_name, default_device_name, SDL_strlen(default_device_name));
-    } 
-		mice[index]=deviceList[i].hDevice;
-		SDL_zero(mouse);
-		SDL_SetIndexId(index,index);
-		l=SDL_strlen(device_name);
-		if(tablet==-1)
+    }
+	/*we're saving the handle to the device*/
+	mice[index]=deviceList[i].hDevice;
+	SDL_zero(mouse);
+	SDL_SetIndexId(index,index);
+	l=SDL_strlen(device_name);
+	/*we're checking if the device isn't by any chance a tablet*/
+	if(tablet==-1)
+	{
+		for(j=0;j<l-5;++j)
 		{
-			for(j=0;j<l-5;++j)
+			for(k=0;k<5;++k)
 			{
-				for(k=0;k<5;++k)
+				if(tab[k]!=SDL_tolower((unsigned char)device_name[j+k]))
 				{
-					if(tab[k]!=SDL_tolower((unsigned char)device_name[j+k]))
-					{
-						break;
-					}
-				}
-				if(k==5)
-				{
-					tablet=index;
 					break;
 				}
 			}
+			if(k==5)
+			{
+				tablet=index;
+				break;
+			}
 		}
-		if(tablet==index)
-		{
-			AXIS pressure;
-			WTInfo(WTI_DEVICES,DVC_NPRESSURE, &pressure);
-			data->mouse = SDL_AddMouse(&mouse, index,device_name,pressure.axMax,pressure.axMin);
-		}
-		else
-		{
-			data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0);
-		}
-		++index;
+	}
+	/*if it's a tablet, let's read it's maximum and minimum pressure*/
+	if(tablet==index)
+	{
+		AXIS pressure;
+		WTInfo(WTI_DEVICES,DVC_NPRESSURE, &pressure);
+		data->mouse = SDL_AddMouse(&mouse, index,device_name,pressure.axMax,pressure.axMin);
+	}
+	else
+	{
+		data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0);
+	}
+	++index;
 
-		SDL_free(buffer);
-		SDL_free(key_name);
+	SDL_free(buffer);
+	SDL_free(key_name);
 	}
 	total_mice=index;
 	SDL_free(deviceList);
@@ -179,10 +197,8 @@ WIN_QuitMouse(_THIS)
 {
 	int i;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-	for(i=0;i<total_mice;++i)
-	{
-		SDL_DelMouse(i);
-	}
+	/*let's delete all of the mouses*/
+	SDL_MouseQuit();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

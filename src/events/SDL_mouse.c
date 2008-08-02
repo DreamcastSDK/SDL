@@ -33,8 +33,8 @@ static int SDL_current_mouse=-1;
 static SDL_Mouse **SDL_mice=NULL;
 static int *SDL_IdIndex=NULL;
 static int SDL_highestId=-1;
-static int last_x, last_y;
-int x_max, y_max;
+static int last_x, last_y;/*the last reported x and y coordinates by the system cursor*/
+int x_max, y_max; /*current window width and height*/
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -77,6 +77,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
         return -1;
     }
     *SDL_mice[index] = *mouse;
+
+	/*we're setting the mouse properties*/
 	length=0;
 	length=SDL_strlen(name);
     SDL_mice[index]->name=SDL_malloc((length+1)*sizeof(char));
@@ -90,7 +92,11 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
         SDL_CreateCursor(default_cdata, default_cmask, DEFAULT_CWIDTH,
                          DEFAULT_CHEIGHT, DEFAULT_CHOTX, DEFAULT_CHOTY);
     SDL_SetCursor(SDL_mice[index]->def_cursor);
+	/*we're assuming that all mouses are in the computer sensing zone*/
     SDL_mice[index]->proximity=SDL_TRUE;
+	/*we're assuming that all mouses are working in the absolute position mode
+	thanx to that, the users that don't want to use many mouses don't have to
+	worry about anything*/
     SDL_mice[index]->relative_mode=SDL_FALSE;
     SDL_SelectMouse(selected_mouse);
 
@@ -361,6 +367,8 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     int posted;
     int xrel;
     int yrel;
+	/*while using the relative mode and many windows, we have to be sure,
+	that the pointers find themselves inside the windows*/
 	if(x>x_max)
 	{
 		x=x_max;
@@ -369,23 +377,23 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
 	{
 		y=y_max;
 	}
+
     if (!mouse || mouse->flush_motion) {
         return 0;
     }
+
+	/*if the mouse is out of proximity we don't to want to have any motion from it*/
     if(mouse->proximity==SDL_FALSE)
     {
         last_x=x;
         last_y=y;
         return 0;
     }
-    if (mouse->relative_mode==SDL_TRUE && mouse->proximity==SDL_TRUE) {
-        /* Push the cursor around */
-        xrel = x - last_x;
-        yrel = y - last_y;
-    } else {
-        xrel = x - last_x;
-        yrel = y - last_y;
-    }
+
+	/*the relative motion is calculated regarding the system cursor last position*/
+
+    xrel = x - last_x;
+    yrel = y - last_y;
 
     /* Drop events that don't change state */
     if (!xrel && !yrel) {
@@ -395,7 +403,7 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
         return 0;
     }
 
-    /* Update internal mouse state */
+    /* Update internal mouse coordinates */
     if (mouse->relative_mode==SDL_FALSE) {
         mouse->x = x;
         mouse->y = y;
