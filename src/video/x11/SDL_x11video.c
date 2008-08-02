@@ -27,14 +27,15 @@
 #include "../SDL_pixels_c.h"
 
 #include "SDL_x11video.h"
-//#include "SDL_d3drender.h"
-//#include "SDL_gdirender.h"
+/*#include "SDL_d3drender.h"
+#include "SDL_gdirender.h"*/
 
 XDevice **SDL_XDevices;
 int SDL_NumOfXDevices;
 XEventClass SDL_XEvents[256];
 int SDL_NumOfXEvents;
-int motion, button_pressed, button_released;
+
+int motion, button_pressed, button_released;/*the definitions of the mice events*/
 int proximity_in, proximity_out;
 
 /* Initialization/Query functions */
@@ -249,6 +250,7 @@ X11_VideoInit(_THIS)
         return -1;
     }
     X11_InitMouse(_this);
+    /*we're generating the table of events that should be recognized*/
     for(i=0;i<SDL_NumOfXDevices;++i)
     {   
         DeviceKeyPress(SDL_XDevices[i],c_not_needed,xEvent);
@@ -256,13 +258,13 @@ X11_VideoInit(_THIS)
 	    DeviceKeyRelease(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) SDL_XEvents[index++] = xEvent;
 
-	/* focus events */
+	/*focus events*/
 	DeviceFocusIn(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) SDL_XEvents[index++] = xEvent;
 	DeviceFocusOut(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) SDL_XEvents[index++] = xEvent;
 
-	/* button events */
+	/*button events*/
 	DeviceButtonPress(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) 
     {
@@ -276,7 +278,7 @@ X11_VideoInit(_THIS)
         button_released=c_not_needed;
     }
 
-	/* proximity events */
+	/*proximity events*/
 	ProximityIn(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent)
     {
@@ -289,7 +291,7 @@ X11_VideoInit(_THIS)
         SDL_XEvents[index++] = xEvent;
         proximity_out=c_not_needed;
     }
-	/* motion events */
+	/*motion events*/
 	DeviceMotionNotify(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) 
     {
@@ -297,7 +299,7 @@ X11_VideoInit(_THIS)
         motion=c_not_needed;
     }
 
-	/* device state */
+	/*device state*/
 	DeviceStateNotify(SDL_XDevices[i],c_not_needed,xEvent);
 	if (xEvent) SDL_XEvents[index++] = xEvent;
 	DeviceMappingNotify(SDL_XDevices[i],
@@ -313,7 +315,7 @@ X11_VideoInit(_THIS)
 	if (xEvent) SDL_XEvents[index++] = xEvent;
 #endif
 
-	/* button motion */
+	/*button motion*/
 	DeviceButtonMotion(SDL_XDevices[i],
 			c_not_needed,xEvent);
 	if (xEvent) SDL_XEvents[index++] = xEvent;

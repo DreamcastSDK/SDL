@@ -35,19 +35,26 @@ X11_InitMouse(_THIS)
     XDeviceInfo *DevList;
     XAnyClassPtr deviceClass;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-   
+
+    /*we're getting the list of input devices*/
     DevList=XListInputDevices(data->display, &numOfDevices);
     SDL_XDevices=(XDevice**) SDL_malloc(sizeof(XDevice));
+
+    /*we're aquiring valuators:mices, tablets, etc.*/
     for(i=0;i<numOfDevices;++i)
     {
+        /*if it's the core pointer or core keyborard we don't want it*/
         if((DevList[i].use!=IsXPointer && DevList[i].use!=IsXKeyboard))
         {
+            /*we have to check all of the device classes*/
             deviceClass=DevList[i].inputclassinfo;
             for(j=0;j<DevList[i].num_classes;++j)
             {
-                if(deviceClass->class==ValuatorClass)
+                if(deviceClass->class==ValuatorClass)/*bingo;)*/
                 {
                     XValuatorInfo* valInfo;
+                    SDL_Mouse mouse;
+
                     newDevices= (XDevice**) SDL_realloc(SDL_XDevices, (index+1)*sizeof(*newDevices));
                     if(!newDevices)
                     {
@@ -56,10 +63,14 @@ X11_InitMouse(_THIS)
                     }
                     SDL_XDevices=newDevices;
                     SDL_XDevices[index]=XOpenDevice(data->display,DevList[i].id);
-                    SDL_Mouse mouse;
                     SDL_zero(mouse);
+
+                    /*the id of the device differs from its index
+                     *so we're assigning the index of a device to it's id*/
                     SDL_SetIndexId(DevList[i].id,index);
+                    /*lets get the device parameters*/
                     valInfo=(XValuatorInfo*)deviceClass;
+                    /*if the device reports pressure, lets check it parameteres*/
                     if(valInfo->num_axes>2)
                     {
                         data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,valInfo->axes[2].max_value,valInfo->axes[2].min_value);
@@ -70,11 +81,13 @@ X11_InitMouse(_THIS)
                     }
                     break;
                 }
+                /*if it's not class we're interested in, lets go further*/
                 deviceClass=(XAnyClassPtr)((char*)deviceClass + deviceClass->length);
             }
         }
     }
     XFreeDeviceList(DevList);
+    
     SDL_NumOfXDevices=index;
 }
 
@@ -83,6 +96,7 @@ X11_QuitMouse(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    /*Lets delete all of the mice*/
     SDL_MouseQuit();
 }
 
