@@ -32,14 +32,6 @@
 		FD5F9CEA0E0E0741008E885B /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
 		FD5F9CEB0E0E0741008E885B /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */; };
 		FD5F9CEC0E0E0741008E885B /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96EDF0DEFC9DC00FAF19F /* QuartzCore.framework */; };
-		FD779FB80E26BBFB00F39101 /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA60E26BBFB00F39101 /* icon.bmp */; };
-		FD779FDD0E26BBFB00F39101 /* ship.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA70E26BBFB00F39101 /* ship.bmp */; };
-		FD779FDE0E26BBFB00F39101 /* space.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA80E26BBFB00F39101 /* space.bmp */; };
-		FD779FF10E26BBFB00F39101 /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA90E26BBFB00F39101 /* stroke.bmp */; };
-		FD779FF20E26BBFB00F39101 /* ds_brush_snare.wav in Resources */ = {isa = PBXBuildFile; fileRef = FD779F980E26BBFB00F39101 /* ds_brush_snare.wav */; };
-		FD779FF40E26BBFB00F39101 /* ds_china.wav in Resources */ = {isa = PBXBuildFile; fileRef = FD779F9A0E26BBFB00F39101 /* ds_china.wav */; };
-		FD779FF70E26BBFB00F39101 /* ds_kick_big_amb.wav in Resources */ = {isa = PBXBuildFile; fileRef = FD779F9D0E26BBFB00F39101 /* ds_kick_big_amb.wav */; };
-		FD779FFD0E26BBFB00F39101 /* ds_loose_skin_mute.wav in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA30E26BBFB00F39101 /* ds_loose_skin_mute.wav */; };
 		FD77A00E0E26BC0500F39101 /* happy.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0080E26BC0500F39101 /* happy.c */; };
 		FD77A0130E26BC0500F39101 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0060E26BC0500F39101 /* common.c */; };
 		FD77A0160E26BC0500F39101 /* rectangles.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A00A0E26BC0500F39101 /* rectangles.c */; };
@@ -57,6 +49,30 @@
 		FD925B190E0F276600E92347 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
 		FD925B1A0E0F276600E92347 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
 		FD925B1B0E0F276600E92347 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
+		FDB651D00E43D1AD00F688B5 /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CC0E43D19800F688B5 /* icon.bmp */; };
+		FDB651D10E43D1B300F688B5 /* ship.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CD0E43D19800F688B5 /* ship.bmp */; };
+		FDB651D20E43D1B500F688B5 /* space.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CE0E43D19800F688B5 /* space.bmp */; };
+		FDB651D30E43D1BA00F688B5 /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CF0E43D19800F688B5 /* stroke.bmp */; };
+		FDB651D40E43D1C500F688B5 /* ds_brush_snare.wav in Resources */ = {isa = PBXBuildFile; fileRef = FDB651C80E43D19800F688B5 /* ds_brush_snare.wav */; };
+		FDB651D50E43D1C500F688B5 /* ds_china.wav in Resources */ = {isa = PBXBuildFile; fileRef = FDB651C90E43D19800F688B5 /* ds_china.wav */; };
+		FDB651D60E43D1C500F688B5 /* ds_kick_big_amb.wav in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CA0E43D19800F688B5 /* ds_kick_big_amb.wav */; };
+		FDB651D70E43D1C500F688B5 /* ds_loose_skin_mute.wav in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CB0E43D19800F688B5 /* ds_loose_skin_mute.wav */; };
+		FDB651D80E43D1D800F688B5 /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CF0E43D19800F688B5 /* stroke.bmp */; };
+		FDB651F90E43D1F300F688B5 /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CF0E43D19800F688B5 /* stroke.bmp */; };
+		FDB651FA0E43D1F300F688B5 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
+		FDB651FB0E43D1F300F688B5 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = FD787AA00E22A5CC003E8E36 /* Default.png */; };
+		FDB651FD0E43D1F300F688B5 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0060E26BC0500F39101 /* common.c */; };
+		FDB652000E43D1F300F688B5 /* libSDLiPhoneOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD1B489E0E313154007AB34E /* libSDLiPhoneOS.a */; };
+		FDB652010E43D1F300F688B5 /* libSDLSimulator.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD1B48A00E313154007AB34E /* libSDLSimulator.a */; };
+		FDB652020E43D1F300F688B5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
+		FDB652030E43D1F300F688B5 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		FDB652040E43D1F300F688B5 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
+		FDB652050E43D1F300F688B5 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */; };
+		FDB652060E43D1F300F688B5 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96EDF0DEFC9DC00FAF19F /* QuartzCore.framework */; };
+		FDB652070E43D1F300F688B5 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDF0D71D0E12D2AB00247964 /* CoreAudio.framework */; };
+		FDB652080E43D1F300F688B5 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDF0D7220E12D31800247964 /* AudioToolbox.framework */; };
+		FDB652120E43D21A00F688B5 /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = FDB652110E43D21A00F688B5 /* keyboard.c */; };
+		FDB652C70E43E25900F688B5 /* kromasky_16x16.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB652C60E43E25900F688B5 /* kromasky_16x16.bmp */; };
 		FDB96ED40DEFC9C700FAF19F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */; };
 		FDB96EE00DEFC9DC00FAF19F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDB96EDF0DEFC9DC00FAF19F /* QuartzCore.framework */; };
 		FDC202E10E107B1200ABAC90 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
@@ -77,7 +93,6 @@
 		FDC52ED90E2843D6008D768C /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDF0D71D0E12D2AB00247964 /* CoreAudio.framework */; };
 		FDC52EDA0E2843D6008D768C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDF0D7220E12D31800247964 /* AudioToolbox.framework */; };
 		FDC52EE50E284410008D768C /* fireworks.c in Sources */ = {isa = PBXBuildFile; fileRef = FDC52EE40E284410008D768C /* fireworks.c */; };
-		FDC530C30E287879008D768C /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FD779FA90E26BBFB00F39101 /* stroke.bmp */; };
 		FDF0D6960E12D05400247964 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FD925B180E0F276600E92347 /* Icon.png */; };
 		FDF0D69C0E12D05400247964 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		FDF0D69D0E12D05400247964 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
@@ -122,14 +137,6 @@
 		FD15FCB20E086866003BDF25 /* Happy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Happy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD1B48920E313154007AB34E /* SDLiPhoneOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDLiPhoneOS.xcodeproj; path = ../SDL/SDLiPhoneOS.xcodeproj; sourceTree = SOURCE_ROOT; };
 		FD5F9BE40E0DEBEA008E885B /* Accel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Accel.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FD779F980E26BBFB00F39101 /* ds_brush_snare.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_brush_snare.wav; sourceTree = "<group>"; };
-		FD779F9A0E26BBFB00F39101 /* ds_china.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_china.wav; sourceTree = "<group>"; };
-		FD779F9D0E26BBFB00F39101 /* ds_kick_big_amb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_kick_big_amb.wav; sourceTree = "<group>"; };
-		FD779FA30E26BBFB00F39101 /* ds_loose_skin_mute.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_loose_skin_mute.wav; sourceTree = "<group>"; };
-		FD779FA60E26BBFB00F39101 /* icon.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = icon.bmp; sourceTree = "<group>"; };
-		FD779FA70E26BBFB00F39101 /* ship.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = ship.bmp; sourceTree = "<group>"; };
-		FD779FA80E26BBFB00F39101 /* space.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = space.bmp; sourceTree = "<group>"; };
-		FD779FA90E26BBFB00F39101 /* stroke.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = stroke.bmp; sourceTree = "<group>"; };
 		FD77A0050E26BC0500F39101 /* accelerometer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = accelerometer.c; sourceTree = "<group>"; };
 		FD77A0060E26BC0500F39101 /* common.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = common.c; sourceTree = "<group>"; };
 		FD77A0070E26BC0500F39101 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
@@ -139,6 +146,19 @@
 		FD77A00B0E26BC0500F39101 /* touch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = touch.c; sourceTree = "<group>"; };
 		FD787AA00E22A5CC003E8E36 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		FD925B180E0F276600E92347 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		FDB651C60E43D19800F688B5 /* license.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = license.txt; sourceTree = "<group>"; };
+		FDB651C80E43D19800F688B5 /* ds_brush_snare.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_brush_snare.wav; sourceTree = "<group>"; };
+		FDB651C90E43D19800F688B5 /* ds_china.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_china.wav; sourceTree = "<group>"; };
+		FDB651CA0E43D19800F688B5 /* ds_kick_big_amb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_kick_big_amb.wav; sourceTree = "<group>"; };
+		FDB651CB0E43D19800F688B5 /* ds_loose_skin_mute.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ds_loose_skin_mute.wav; sourceTree = "<group>"; };
+		FDB651CC0E43D19800F688B5 /* icon.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = icon.bmp; sourceTree = "<group>"; };
+		FDB651CD0E43D19800F688B5 /* ship.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = ship.bmp; sourceTree = "<group>"; };
+		FDB651CE0E43D19800F688B5 /* space.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = space.bmp; sourceTree = "<group>"; };
+		FDB651CF0E43D19800F688B5 /* stroke.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = stroke.bmp; sourceTree = "<group>"; };
+		FDB6520C0E43D1F300F688B5 /* Keyboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDB6520E0E43D1F300F688B5 /* Info copy.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info copy.plist"; sourceTree = "<group>"; };
+		FDB652110E43D21A00F688B5 /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keyboard.c; sourceTree = "<group>"; };
+		FDB652C60E43E25900F688B5 /* kromasky_16x16.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = kromasky_16x16.bmp; sourceTree = "<group>"; };
 		FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		FDB96EDF0DEFC9DC00FAF19F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		FDC202EE0E107B1200ABAC90 /* Touch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Touch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -195,6 +215,22 @@
 				FD5F9CE80E0E0741008E885B /* Foundation.framework in Frameworks */,
 				FD5F9CE90E0E0741008E885B /* UIKit.framework in Frameworks */,
 				FD5F9CEA0E0E0741008E885B /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDB651FF0E43D1F300F688B5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDB652000E43D1F300F688B5 /* libSDLiPhoneOS.a in Frameworks */,
+				FDB652010E43D1F300F688B5 /* libSDLSimulator.a in Frameworks */,
+				FDB652020E43D1F300F688B5 /* Foundation.framework in Frameworks */,
+				FDB652030E43D1F300F688B5 /* UIKit.framework in Frameworks */,
+				FDB652040E43D1F300F688B5 /* CoreGraphics.framework in Frameworks */,
+				FDB652050E43D1F300F688B5 /* OpenGLES.framework in Frameworks */,
+				FDB652060E43D1F300F688B5 /* QuartzCore.framework in Frameworks */,
+				FDB652070E43D1F300F688B5 /* CoreAudio.framework in Frameworks */,
+				FDB652080E43D1F300F688B5 /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,6 +294,7 @@
 				FDC202EE0E107B1200ABAC90 /* Touch.app */,
 				FDF0D6A40E12D05400247964 /* Mixer.app */,
 				FDC52EDE0E2843D6008D768C /* Fireworks.app */,
+				FDB6520C0E43D1F300F688B5 /* Keyboard.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -277,10 +314,11 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				FD779F960E26BBFB00F39101 /* data */,
+				FDB651C30E43D19800F688B5 /* data */,
 				FD787AA00E22A5CC003E8E36 /* Default.png */,
 				FD925B180E0F276600E92347 /* Icon.png */,
 				8D1107310486CEB800E47090 /* Info.plist */,
+				FDB6520E0E43D1F300F688B5 /* Info copy.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -308,29 +346,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		FD779F960E26BBFB00F39101 /* data */ = {
-			isa = PBXGroup;
-			children = (
-				FD779F970E26BBFB00F39101 /* drums */,
-				FD779FA60E26BBFB00F39101 /* icon.bmp */,
-				FD779FA70E26BBFB00F39101 /* ship.bmp */,
-				FD779FA80E26BBFB00F39101 /* space.bmp */,
-				FD779FA90E26BBFB00F39101 /* stroke.bmp */,
-			);
-			path = data;
-			sourceTree = "<group>";
-		};
-		FD779F970E26BBFB00F39101 /* drums */ = {
-			isa = PBXGroup;
-			children = (
-				FD779F980E26BBFB00F39101 /* ds_brush_snare.wav */,
-				FD779F9A0E26BBFB00F39101 /* ds_china.wav */,
-				FD779F9D0E26BBFB00F39101 /* ds_kick_big_amb.wav */,
-				FD779FA30E26BBFB00F39101 /* ds_loose_skin_mute.wav */,
-			);
-			path = drums;
-			sourceTree = "<group>";
-		};
 		FD77A0040E26BC0500F39101 /* src */ = {
 			isa = PBXGroup;
 			children = (
@@ -342,8 +357,42 @@
 				FD77A0090E26BC0500F39101 /* mixer.c */,
 				FD77A00A0E26BC0500F39101 /* rectangles.c */,
 				FD77A00B0E26BC0500F39101 /* touch.c */,
+				FDB652110E43D21A00F688B5 /* keyboard.c */,
 			);
 			path = src;
+			sourceTree = "<group>";
+		};
+		FDB651C30E43D19800F688B5 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				FDB651C40E43D19800F688B5 /* bitmapfont */,
+				FDB651C70E43D19800F688B5 /* drums */,
+				FDB651CC0E43D19800F688B5 /* icon.bmp */,
+				FDB651CD0E43D19800F688B5 /* ship.bmp */,
+				FDB651CE0E43D19800F688B5 /* space.bmp */,
+				FDB651CF0E43D19800F688B5 /* stroke.bmp */,
+			);
+			path = data;
+			sourceTree = "<group>";
+		};
+		FDB651C40E43D19800F688B5 /* bitmapfont */ = {
+			isa = PBXGroup;
+			children = (
+				FDB652C60E43E25900F688B5 /* kromasky_16x16.bmp */,
+				FDB651C60E43D19800F688B5 /* license.txt */,
+			);
+			path = bitmapfont;
+			sourceTree = "<group>";
+		};
+		FDB651C70E43D19800F688B5 /* drums */ = {
+			isa = PBXGroup;
+			children = (
+				FDB651C80E43D19800F688B5 /* ds_brush_snare.wav */,
+				FDB651C90E43D19800F688B5 /* ds_china.wav */,
+				FDB651CA0E43D19800F688B5 /* ds_kick_big_amb.wav */,
+				FDB651CB0E43D19800F688B5 /* ds_loose_skin_mute.wav */,
+			);
+			path = drums;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -398,6 +447,23 @@
 			name = Accel;
 			productName = Accelerometer;
 			productReference = FD5F9BE40E0DEBEA008E885B /* Accel.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FDB651F70E43D1F300F688B5 /* Keyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FDB652090E43D1F300F688B5 /* Build configuration list for PBXNativeTarget "Keyboard" */;
+			buildPhases = (
+				FDB651F80E43D1F300F688B5 /* Resources */,
+				FDB651FC0E43D1F300F688B5 /* Sources */,
+				FDB651FF0E43D1F300F688B5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Keyboard;
+			productName = Accelerometer;
+			productReference = FDB6520C0E43D1F300F688B5 /* Keyboard.app */;
 			productType = "com.apple.product-type.application";
 		};
 		FDC202DD0E107B1200ABAC90 /* Touch */ = {
@@ -475,6 +541,7 @@
 				FDC202DD0E107B1200ABAC90 /* Touch */,
 				FDF0D6920E12D05400247964 /* Mixer */,
 				FDC52EC60E2843D6008D768C /* Fireworks */,
+				FDB651F70E43D1F300F688B5 /* Keyboard */,
 			);
 		};
 /* End PBXProject section */
@@ -510,9 +577,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB651D00E43D1AD00F688B5 /* icon.bmp in Resources */,
 				FD925B1A0E0F276600E92347 /* Icon.png in Resources */,
 				FD787AA10E22A5CC003E8E36 /* Default.png in Resources */,
-				FD779FB80E26BBFB00F39101 /* icon.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -520,10 +587,21 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB651D20E43D1B500F688B5 /* space.bmp in Resources */,
+				FDB651D10E43D1B300F688B5 /* ship.bmp in Resources */,
 				FD925B190E0F276600E92347 /* Icon.png in Resources */,
 				FD787AA30E22A5CC003E8E36 /* Default.png in Resources */,
-				FD779FDD0E26BBFB00F39101 /* ship.bmp in Resources */,
-				FD779FDE0E26BBFB00F39101 /* space.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDB651F80E43D1F300F688B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDB651F90E43D1F300F688B5 /* stroke.bmp in Resources */,
+				FDB651FA0E43D1F300F688B5 /* Icon.png in Resources */,
+				FDB651FB0E43D1F300F688B5 /* Default.png in Resources */,
+				FDB652C70E43E25900F688B5 /* kromasky_16x16.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -531,9 +609,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB651D30E43D1BA00F688B5 /* stroke.bmp in Resources */,
 				FDC202E10E107B1200ABAC90 /* Icon.png in Resources */,
 				FD787AA40E22A5CC003E8E36 /* Default.png in Resources */,
-				FD779FF10E26BBFB00F39101 /* stroke.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -541,9 +619,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB651D80E43D1D800F688B5 /* stroke.bmp in Resources */,
 				FDC52EC80E2843D6008D768C /* Icon.png in Resources */,
 				FDC52EC90E2843D6008D768C /* Default.png in Resources */,
-				FDC530C30E287879008D768C /* stroke.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -551,12 +629,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDB651D40E43D1C500F688B5 /* ds_brush_snare.wav in Resources */,
+				FDB651D50E43D1C500F688B5 /* ds_china.wav in Resources */,
+				FDB651D60E43D1C500F688B5 /* ds_kick_big_amb.wav in Resources */,
+				FDB651D70E43D1C500F688B5 /* ds_loose_skin_mute.wav in Resources */,
 				FDF0D6960E12D05400247964 /* Icon.png in Resources */,
 				FD787AA50E22A5CC003E8E36 /* Default.png in Resources */,
-				FD779FF20E26BBFB00F39101 /* ds_brush_snare.wav in Resources */,
-				FD779FF40E26BBFB00F39101 /* ds_china.wav in Resources */,
-				FD779FF70E26BBFB00F39101 /* ds_kick_big_amb.wav in Resources */,
-				FD779FFD0E26BBFB00F39101 /* ds_loose_skin_mute.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -587,6 +665,15 @@
 			files = (
 				FD77A0190E26BC0500F39101 /* common.c in Sources */,
 				FD77A02A0E26BC2700F39101 /* accelerometer.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FDB651FC0E43D1F300F688B5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FDB651FD0E43D1F300F688B5 /* common.c in Sources */,
+				FDB652120E43D21A00F688B5 /* keyboard.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -791,6 +878,63 @@
 			};
 			name = Release;
 		};
+		FDB6520A0E43D1F300F688B5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\\\\\"$(SRCROOT)\\\\\\\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					UIKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Keyboard;
+				SDKROOT = iphonesimulator2.0;
+			};
+			name = Debug;
+		};
+		FDB6520B0E43D1F300F688B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "";
+				INFOPLIST_FILE = Info.plist;
+				INSTALL_PATH = "$(HOME)/Applications";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\\\\\"$(SRCROOT)\\\\\\\"",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Foundation,
+					"-framework",
+					UIKit,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Fireworks;
+				SDKROOT = iphoneos2.0;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
 		FDC202EC0E107B1200ABAC90 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -989,6 +1133,15 @@
 			buildConfigurations = (
 				FD5F9BE70E0DEBEB008E885B /* Debug */,
 				FD5F9BE80E0DEBEB008E885B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FDB652090E43D1F300F688B5 /* Build configuration list for PBXNativeTarget "Keyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FDB6520A0E43D1F300F688B5 /* Debug */,
+				FDB6520B0E43D1F300F688B5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
