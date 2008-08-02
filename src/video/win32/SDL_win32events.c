@@ -64,7 +64,7 @@ extern HANDLE* mice;
 extern int total_mice;
 extern int tablet;
 
-int pressure=0;
+int pressure=0;/*the pressure reported by the tablet*/
 
 static WPARAM
 RemapVKEY(WPARAM wParam, LPARAM lParam)
@@ -138,6 +138,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     switch (msg) {
 		case WT_PACKET:
 		{
+			/*if we receive such data we need to update the pressure*/
 			if (WTPacket((HCTX)lParam, wParam, &packet))
 			{
 				pressure=(int)packet.pkNormalPressure;
@@ -146,10 +147,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	case WT_PROXIMITY:
 		{
+			/*checking where the proximity message showed up*/
 			int h_context=LOWORD(lParam);
 			LPPOINT point;
 			GetCursorPos(&point);
 			ScreenToClient(hwnd, &point);
+			/*are we in proximity or out of proximity*/
 			if(h_context==0)
 			{
 				SDL_SendProximity(tablet, (int)(&point->x),(int)(&point->y), SDL_PROXIMITYOUT);
@@ -206,7 +209,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return (0);
         }
         break;
-	case WM_INPUT:
+	case WM_INPUT:/*mouse events*/
 		{
 			LPBYTE lpb;
 			int w, h;
@@ -214,16 +217,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			int index;
 			int i;
 			int size=0;
-            SDL_Mouse *mouse;
 			const RAWMOUSE *raw_mouse=NULL;
 			LPPOINT point;
 			USHORT flags;
+
+			/*we're collecting data from the mouse*/
 			GetRawInputData((HRAWINPUT) lParam, RID_INPUT, NULL, &size, sizeof (RAWINPUTHEADER));
 			lpb = SDL_malloc(size*sizeof(LPBYTE));
 			GetRawInputData((HRAWINPUT) lParam, RID_INPUT, lpb, &size, sizeof (RAWINPUTHEADER));
 			raw = (RAWINPUT *) lpb;
 			header = &raw->header;
 			flags=raw->data.mouse.usButtonFlags;
+
+			/*we're checking which mouse generated the event*/
 			for(i=0;i<total_mice;++i)
 			{
 				if(mice[i]==header->hDevice)
@@ -232,11 +238,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 			}
-            mouse = SDL_GetMouse(index);
+          
 			GetCursorPos(&point);
 			ScreenToClient(hwnd, &point);
 			SDL_GetWindowSize(data->windowID, &w, &h);
-			SDL_UpdateCoordinates(w,h);
+			SDL_UpdateCoordinates(w,h);/*we're updating the current window size*/
+
+			/*if the message was sent by a tablet we have to send also pressure*/
 			if(i==tablet)
 			{
 				SDL_SendMouseMotion(index,0,(int)(&point->x),(int)(&point->y),pressure);
@@ -245,6 +253,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				SDL_SendMouseMotion(index,0,(int)(&point->x),(int)(&point->y),0);
 			}
+			/*we're sending mouse buttons messages to check up if sth changed*/
 			if(flags & RI_MOUSE_BUTTON_1_DOWN)
 			{
 				SDL_SendMouseButton(index,SDL_PRESSED,SDL_BUTTON_LEFT);

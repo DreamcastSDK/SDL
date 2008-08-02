@@ -20,6 +20,8 @@
     slouken@libsdl.org
 */
 
+/*we need to define it, so that raw input is included*/
+
 #if (_WIN32_WINNT < 0x0501)
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
@@ -36,13 +38,14 @@
 #include "SDL_syswm.h"
 
 #include <wintab.h>
+/*we're telling wintab that we want to receive movement, button events and pressure information in packets*/
 #define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
 #define PACKETMODE 0
 #include <pktdef.h>
 
-extern HCTX* g_hCtx;
+extern HCTX* g_hCtx; /*the table of tablet event contexts, each windows has to have it's own tablet context*/
 
-int highestId=0;
+int highestId=0; /*the highest id of the tablet context*/
 
 static int
 SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
@@ -198,46 +201,53 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, NULL, NULL,
                      SDL_Instance, NULL);
 	
-	WTInfo(WTI_DEFSYSCTX, 0, &lc);
-	lc.lcPktData = PACKETDATA;
-	lc.lcPktMode = PACKETMODE;
-	lc.lcOptions |= CXO_MESSAGES;
-	lc.lcOptions |= CXO_SYSTEM;
-	lc.lcMoveMask = PACKETDATA;
-	lc.lcBtnDnMask=lc.lcBtnUpMask = PACKETDATA;
-
-	WTInfo(WTI_DEVICES,DVC_X,&TabX);
-	WTInfo(WTI_DEVICES,DVC_Y,&TabY);
+	/*we're configuring the tablet data. See Wintab reference for more info*/
 	
-	lc.lcInOrgX = 0;
-	lc.lcInOrgY = 0;
-	
-	lc.lcInExtX = TabX.axMax;
-	lc.lcInExtY = TabY.axMax;
-
-	lc.lcOutOrgX = 0;
-	lc.lcOutOrgY = 0;
-
-	lc.lcOutExtX = GetSystemMetrics(SM_CXSCREEN);
-	lc.lcOutExtY = -GetSystemMetrics(SM_CYSCREEN);
-	if(window->id>highestId)
+	if(WTInfo(WTI_DEFSYSCTX, 0, &lc)!=0)
 	{
-		HCTX* tmp_hctx;
-		highestId=window->id;
-		tmp_hctx= (HCTX*)SDL_realloc(g_hCtx,(highestId+1)*sizeof(HCTX));
-		if (!tmp_hctx) {
-            SDL_OutOfMemory();
-            return -1;
-        }
-		g_hCtx=tmp_hctx;
+	
+		lc.lcPktData = PACKETDATA;
+		lc.lcPktMode = PACKETMODE;
+		lc.lcOptions |= CXO_MESSAGES;
+		lc.lcOptions |= CXO_SYSTEM;
+		lc.lcMoveMask = PACKETDATA;
+		lc.lcBtnDnMask=lc.lcBtnUpMask = PACKETDATA;
+
+		WTInfo(WTI_DEVICES,DVC_X,&TabX);
+		WTInfo(WTI_DEVICES,DVC_Y,&TabY);
+	
+		lc.lcInOrgX = 0;
+		lc.lcInOrgY = 0;
+	
+		lc.lcInExtX = TabX.axMax;
+		lc.lcInExtY = TabY.axMax;
+
+		lc.lcOutOrgX = 0;
+		lc.lcOutOrgY = 0;
+
+		lc.lcOutExtX = GetSystemMetrics(SM_CXSCREEN);
+		lc.lcOutExtY = -GetSystemMetrics(SM_CYSCREEN);
+
+		if(window->id>highestId)
+		{
+			HCTX* tmp_hctx;
+			highestId=window->id;
+			tmp_hctx= (HCTX*)SDL_realloc(g_hCtx,(highestId+1)*sizeof(HCTX));
+			if (!tmp_hctx) {
+				SDL_OutOfMemory();
+				return -1;
+			}
+			g_hCtx=tmp_hctx;
+		}
+
+		g_hCtx[window->id] = WTOpen(hwnd, &lc, TRUE);
 	}
 
-	g_hCtx[window->id] = WTOpen(hwnd, &lc, TRUE);
+	/*we're telling the window, we want it to report raw input events from mice*/
 
 	Rid.usUsagePage = 0x01; 
 	Rid.usUsage = 0x02; 
-	//Rid.usUsage = MOUSE_MOVE_ABSOLUTE;
-	Rid.dwFlags = RIDEV_INPUTSINK;   // adds HID mouse and also ignores legacy mouse messages
+	Rid.dwFlags = RIDEV_INPUTSINK;  
 	Rid.hwndTarget = hwnd;
 
 	RegisterRawInputDevices(&Rid, 1, sizeof(Rid));
@@ -456,6 +466,7 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
             DestroyWindow(data->hwnd);
         }
         SDL_free(data);
+		/*lets close the tablet context for the destoryed window*/
 		WTClose(g_hCtx[window->id]);
     }
 }
