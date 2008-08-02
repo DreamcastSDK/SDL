@@ -29,16 +29,11 @@
 #include "SDL_x11video.h"
 #include "../../events/SDL_events_c.h"
 
-//XEventClass *SDL_XEvents;
-//int SDL_numOfEvents;
-
-extern int motion;
-extern int button_pressed;
-extern int button_released;
-extern int proximity_in;
-extern int proximity_out;
-extern int x_max,y_max;
-
+extern int motion;/*the motion event id defined by an XInput function*/
+extern int button_pressed;/*the button_pressed event id defined by an XInput function*/
+extern int button_released;/*the button_released event id defined by an XInput function*/
+extern int proximity_in;/*the proximity in event defined by an XInput function*/
+extern int proximity_out;/*the proximity out event defined by an XInput function*/
 
 static void
 X11_DispatchEvent(_THIS)
@@ -47,9 +42,6 @@ X11_DispatchEvent(_THIS)
     SDL_WindowData *data;
     XEvent xevent;
     int i,z;
-    //extern int motion;
-    //extern int button_pressed;
-    //extern int button_released;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     XNextEvent(videodata->display, &xevent);
@@ -67,7 +59,6 @@ X11_DispatchEvent(_THIS)
     /* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
-
         SDL_VERSION(&wmmsg.version);
         wmmsg.subsystem = SDL_SYSWM_X11;
         wmmsg.event.xevent = xevent;
@@ -127,8 +118,6 @@ X11_DispatchEvent(_THIS)
                 (xevent.xcrossing.mode != NotifyUngrab) &&
                 (xevent.xcrossing.detail != NotifyInferior)) {
 			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
-                //SDL_SendMouseMotion(move->deviceid, 0,
-                //                    move->x, move->y,move->axis_data[2]);
                 SDL_SetMouseFocus(move->deviceid, 0);
             }
         }
@@ -300,8 +289,6 @@ X11_DispatchEvent(_THIS)
 #endif
                 XWindowAttributes attrib;
                 XGetWindowAttributes(videodata->display, ((XAnyEvent*)&xevent)->window, &attrib);
-                /*x_max=attrib.width;
-                y_max=attrib.height;*/
                 SDL_UpdateCoordinates(attrib.width, attrib.height);
 			    XDeviceMotionEvent* move=(XDeviceMotionEvent*)&xevent;
                 SDL_SendMouseMotion(move->deviceid, 0, move->x,
