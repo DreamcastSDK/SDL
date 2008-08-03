@@ -48,9 +48,9 @@
     /* Used for the c_dfDIJoystick2 symbol (no imports are used) */
 #   pragma comment (lib, "dinput.lib")
 #endif
-#include <dxerr9.h>             /* From DirectX SDK 9c */
+#include <dxerr.h>
 #ifdef _MSC_VER
-#   pragma comment (lib, "dxerr9.lib")
+#   pragma comment (lib, "dxerr.lib")
 #endif
 
 /* an ISO hack for VisualC++ */
@@ -127,7 +127,7 @@ static void
 SetDIerror(const char *function, HRESULT code)
 {
     SDL_SetError("%s() [%s]: %s", function,
-                 DXGetErrorString9(code), DXGetErrorDescription9(code));
+                 DXGetErrorString(code), DXGetErrorDescription(code));
 }
 
 
