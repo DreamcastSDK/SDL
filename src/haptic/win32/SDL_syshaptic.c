@@ -34,9 +34,9 @@
 
 #define DIRECTINPUT_VERSION 0x0700 /* Need at least DirectX 7 for dwStartDelay */
 #include <dinput.h>
-#include <dxerr9.h>          /* From DirectX SDK 9c */
+#include <dxerr.h>
 #ifdef _MSC_VER
-#   pragma comment (lib, "dxerr9.lib")
+#   pragma comment (lib, "dxerr.lib")
 #endif /* _MSC_VER */
 
     /* an ISO hack for VisualC++ */
@@ -104,8 +104,8 @@ static void
 DI_SetError(const char *str, HRESULT err)
 {
    SDL_SetError( "Haptic: %s - %s: %s", str,
-                 DXGetErrorString9(err),
-                 DXGetErrorDescription9(err));
+                 DXGetErrorString(err),
+                 DXGetErrorDescription(err));
 }
 
 
