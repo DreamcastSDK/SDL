@@ -230,6 +230,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Release DirectInputDevice interface.
  *       - Set cooperative level.
  *       - Set data format.
+ *       - Get capabilities.
  *       - Acquire exclusiveness.
  *       - Reset actuators.
  *       - Get supported featuers.
@@ -286,6 +287,14 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto query_err;
    }
 
+   /* Get capabilities. */
+   ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
+                                              &haptic->hwdata->capabilities );
+   if (FAILED(ret)) {
+      DI_SetError("Getting device capabilities",ret);
+      goto acquire_err;
+   }
+
    /* Acquire the device. */
    ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
    if (FAILED(ret)) {
@@ -309,16 +318,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       DI_SetError("Enabling actuators",ret);
       goto acquire_err;
    }
-
-
-   /* Get capabilities. */
-   ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
-                                              &haptic->hwdata->capabilities );
-   if (FAILED(ret)) {
-      DI_SetError("Getting device capabilities",ret);
-      goto acquire_err;
-   }
-
 
    /* Get supported effects. */
    ret = IDirectInputDevice2_EnumEffects( haptic->hwdata->device, 
