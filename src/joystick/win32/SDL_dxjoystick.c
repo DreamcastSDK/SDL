@@ -67,7 +67,7 @@
 
 /* external variables referenced. */
 extern HINSTANCE SDL_Instance;
-extern HWND SDL_Window;
+extern HWND SDL_HelperWindow;
 
 
 /* local variables */
@@ -250,7 +250,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
      * though. */
     result =
         IDirectInputDevice2_SetCooperativeLevel(joystick->hwdata->
-                                                InputDevice, SDL_Window,
+                                                InputDevice, SDL_HelperWindow,
                                                 DISCL_EXCLUSIVE |
                                                 DISCL_BACKGROUND);
     if (FAILED(result)) {

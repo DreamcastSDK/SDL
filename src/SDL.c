@@ -51,6 +51,10 @@ extern void SDL_StartTicks(void);
 extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
 #endif
+#if defined(__WIN32__)
+extern int SDL_HelperWindowCreate(void);
+extern int SDL_HelperWindowDestroy(void);
+#endif
 
 /* The initialized subsystems */
 static Uint32 SDL_initialized = 0;
@@ -172,6 +176,12 @@ SDL_Init(Uint32 flags)
     /* Clear the error message */
     SDL_ClearError();
 
+#if defined(__WIN32__)
+    if (SDL_HelperWindowCreate() < 0) {
+        return -1;
+    }
+#endif
+
     /* Initialize the desired subsystems */
     if (SDL_InitSubSystem(flags) < 0) {
         return (-1);
@@ -242,6 +252,10 @@ SDL_Quit(void)
 #ifdef DEBUG_BUILD
     printf("[SDL_Quit] : Enter! Calling QuitSubSystem()\n");
     fflush(stdout);
+#endif
+
+#if defined(__WIN32__)
+    SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
