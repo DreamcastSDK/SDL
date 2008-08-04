@@ -420,18 +420,18 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 int
 SDL_HelperWindowCreate(void)
 {
-   HINSTANCE hInstance = pGetModuleHandleA(NULL);
+   HINSTANCE hInstance = GetModuleHandleA(NULL);
    const char *class_name = "SDLHelperWindowInputCatcher";
    const char *win_name = "SDLHelperWindowInputMsgWindow";
    WNDCLASSEX wce;
 
    ZeroMemory(&wce, sizeof (wce));
    wce.cbSize = sizeof(WNDCLASSEX);
-   wce.lpfnWndProc = RawWndProc;
+   wce.lpfnWndProc = NULL;
    wce.lpszClassName = class_name;
    wce.hInstance = hInstance;
 
-   SDL_HelperWindow = pCreateWindowExA(0, class_name, win_name, WS_OVERLAPPEDWINDOW,
+   SDL_HelperWindow = CreateWindowExA(0, class_name, win_name, WS_OVERLAPPEDWINDOW,
          CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
          CW_USEDEFAULT, HWND_MESSAGE, NULL, hInstance, NULL);
 
@@ -451,7 +451,7 @@ void
 SDL_HelperWindowDestroy(void)
 {
    if (SDL_HelperWindow) {
-      pDestroyWindow(SDL_HelperWindow);
+      DestroyWindow(SDL_HelperWindow);
       SDL_HelperWindow = NULL;
    }
 }
