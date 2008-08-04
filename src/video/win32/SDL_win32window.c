@@ -32,6 +32,7 @@
 
 /* Fake window to help with DirectInput events. */
 HWND SDL_HelperWindow = NULL;
+static ATOM SDL_HelperWindowClass = 0;
 
 
 static int
@@ -425,16 +426,24 @@ SDL_HelperWindowCreate(void)
    const char *win_name = "SDLHelperWindowInputMsgWindow";
    WNDCLASSEX wce;
 
+   /* Create the class. */
    ZeroMemory(&wce, sizeof (wce));
    wce.cbSize = sizeof(WNDCLASSEX);
    wce.lpfnWndProc = NULL;
    wce.lpszClassName = (LPCWSTR) class_name;
    wce.hInstance = hInstance;
 
+   /* Register the class. */
+   SDL_HelperWindowClass = RegisterClassExA(&wce);
+   if (SDL_HelperWindowClass == 0) {
+      SDL_SetError("Unable to create Helper Window Class: error %d.", GetLastError());
+      return -1;
+   }
+
+   /* Create the window. */
    SDL_HelperWindow = CreateWindowExA(0, class_name, win_name, WS_OVERLAPPEDWINDOW,
          CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
          CW_USEDEFAULT, HWND_MESSAGE, NULL, hInstance, NULL);
-
    if (SDL_HelperWindow == NULL) {
       SDL_SetError("Unable to create Helper Window: error %d.", GetLastError());
       return -1;
@@ -450,9 +459,16 @@ SDL_HelperWindowCreate(void)
 void
 SDL_HelperWindowDestroy(void)
 {
+   /* Destroy the window. */
    if (SDL_HelperWindow) {
       DestroyWindow(SDL_HelperWindow);
       SDL_HelperWindow = NULL;
+   }
+
+   /* Unregister the class. */
+   if (SDL_HelperWindowClass) {
+      UnregisterClassA(SDL_HelperWindowClass, GetModuleHandleA(NULL));
+      SDL_HelperWindowClass = 0;
    }
 }
 
