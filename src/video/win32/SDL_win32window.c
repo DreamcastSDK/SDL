@@ -428,7 +428,7 @@ SDL_HelperWindowCreate(void)
    ZeroMemory(&wce, sizeof (wce));
    wce.cbSize = sizeof(WNDCLASSEX);
    wce.lpfnWndProc = NULL;
-   wce.lpszClassName = class_name;
+   wce.lpszClassName = (LPCWSTR) class_name;
    wce.hInstance = hInstance;
 
    SDL_HelperWindow = CreateWindowExA(0, class_name, win_name, WS_OVERLAPPEDWINDOW,
