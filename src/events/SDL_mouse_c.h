@@ -56,6 +56,13 @@ struct SDL_Mouse
     /* Free the mouse when it's time */
     void (*FreeMouse) (SDL_Mouse * mouse);
 
+    /*data common for tablets*/
+    int pressure;
+    int pressure_max;
+    int pressure_min;
+    int tilt;/*for future use*/
+    int rotation;/*for future use*/
+
     /* Data common to all mice */
     SDL_WindowID focus;
     int which;
@@ -64,11 +71,7 @@ struct SDL_Mouse
     int z;/*for future use*/
     int xdelta;
     int ydelta;
-    int pressure;
-    int pressure_max;
-    int pressure_min;
-    int tilt;/*for future use*/
-    int rotation;/*for future use*/
+
     char* name;
     Uint8 buttonstate;
     SDL_bool relative_mode;

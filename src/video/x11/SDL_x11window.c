@@ -490,7 +490,6 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                       PointerMotionMask | KeyPressMask | KeyReleaseMask |
                       PropertyChangeMask | StructureNotifyMask |
                       KeymapStateMask | fevent));
-    XSelectExtensionEvent(data->display, w, SDL_XEvents, SDL_NumOfXEvents);
     }
 #else
     XMapWindow(data->display,w);
@@ -500,8 +499,10 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                   PointerMotionMask | KeyPressMask | KeyReleaseMask |
                   PropertyChangeMask | StructureNotifyMask |
                   KeymapStateMask));
-    XSelectExtensionEvent(data->display, w, SDL_XEvents, SDL_NumOfXEvents);
 #endif
+
+    /*we're informing the display what extension events we want to receive from it*/
+    XSelectExtensionEvent(data->display, w, SDL_XEvents, SDL_NumOfXEvents);
 
     return 0;
 }
