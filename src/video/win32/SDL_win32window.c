@@ -429,7 +429,7 @@ SDL_HelperWindowCreate(void)
    /* Create the class. */
    ZeroMemory(&wce, sizeof (wce));
    wce.cbSize = sizeof(WNDCLASSEX);
-   wce.lpfnWndProc = NULL;
+   wce.lpfnWndProc = DefWindowProcA;
    wce.lpszClassName = (LPCWSTR) SDL_HelperWindowClassName;
    wce.hInstance = hInstance;
 
