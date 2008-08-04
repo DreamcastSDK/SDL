@@ -436,7 +436,7 @@ SDL_HelperWindowCreate(void)
          CW_USEDEFAULT, HWND_MESSAGE, NULL, hInstance, NULL);
 
    if (SDL_HelperWindow == NULL) {
-      SDL_SetError("Unable to create Helper Window.");
+      SDL_SetError("Unable to create Helper Window: error %d.", GetLastError());
       return -1;
    }
 
