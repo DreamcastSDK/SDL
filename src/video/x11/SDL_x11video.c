@@ -220,7 +220,7 @@ VideoBootStrap X11_bootstrap = {
 int
 X11_VideoInit(_THIS)
 {
-    int i,index=0,c_not_needed;
+    int i,index=0,event_code;
     XEventClass xEvent;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -250,90 +250,46 @@ X11_VideoInit(_THIS)
         return -1;
     }
     X11_InitMouse(_this);
+
     /*we're generating the table of events that should be recognized*/
     for(i=0;i<SDL_NumOfXDevices;++i)
-    {   
-        DeviceKeyPress(SDL_XDevices[i],c_not_needed,xEvent);
-	    if (xEvent) SDL_XEvents[index++] = xEvent;
-	    DeviceKeyRelease(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
+    {  
+	    /*button events*/
+	    DeviceButtonPress(SDL_XDevices[i],event_code,xEvent);
+	    if (xEvent) 
+        {
+            SDL_XEvents[index++] = xEvent;
+            button_pressed=event_code;
+        }
+	    DeviceButtonRelease(SDL_XDevices[i],event_code,xEvent);
+	    if (xEvent)
+        {
+            SDL_XEvents[index++] = xEvent;
+            button_released=event_code;
+        }
 
-	/*focus events*/
-	DeviceFocusIn(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceFocusOut(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
+	    /*proximity events*/
+	    ProximityIn(SDL_XDevices[i],event_code,xEvent);
+	    if (xEvent)
+        {
+            SDL_XEvents[index++] = xEvent;
+            proximity_in=event_code;
+        }
+	    ProximityOut(SDL_XDevices[i],event_code,xEvent);
+	    if (xEvent)
+        {
+            SDL_XEvents[index++] = xEvent;
+            proximity_out=event_code;
+        }
 
-	/*button events*/
-	DeviceButtonPress(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) 
-    {
-        SDL_XEvents[index++] = xEvent;
-        button_pressed=c_not_needed;
-    }
-	DeviceButtonRelease(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent)
-    {
-        SDL_XEvents[index++] = xEvent;
-        button_released=c_not_needed;
-    }
+	    /*motion events*/
+	    DeviceMotionNotify(SDL_XDevices[i],event_code,xEvent);
+	    if (xEvent) 
+        {
+            SDL_XEvents[index++] = xEvent;
+            motion=event_code;
+        }
 
-	/*proximity events*/
-	ProximityIn(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent)
-    {
-        SDL_XEvents[index++] = xEvent;
-        proximity_in=c_not_needed;
-    }
-	ProximityOut(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent)
-    {
-        SDL_XEvents[index++] = xEvent;
-        proximity_out=c_not_needed;
-    }
-	/*motion events*/
-	DeviceMotionNotify(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) 
-    {
-        SDL_XEvents[index++] = xEvent;
-        motion=c_not_needed;
-    }
-
-	/*device state*/
-	DeviceStateNotify(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceMappingNotify(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	ChangeDeviceNotify(SDL_XDevices[i],c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-
-#if 0
-	/* this cuts the motion data down - not sure if this is useful */
-	DevicePointerMotionHint(SDL_XDevices[i],
-			c_not_neededINPUTEVENT_DEVICE_POINTER_MOTION_HINT],xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-#endif
-
-	/*button motion*/
-	DeviceButtonMotion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceButton1Motion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceButton2Motion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceButton3Motion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceButton4Motion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
-	DeviceButton5Motion(SDL_XDevices[i],
-			c_not_needed,xEvent);
-	if (xEvent) SDL_XEvents[index++] = xEvent;
     }
     SDL_NumOfXEvents=index;
 
