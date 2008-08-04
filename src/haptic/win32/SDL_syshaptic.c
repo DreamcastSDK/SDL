@@ -228,6 +228,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Open temporary DirectInputDevice interface.
  *       - Create DirectInputDevice2 interface.
  *       - Release DirectInputDevice interface.
+ *       - Set cooperative level.
  *       - Acquire exclusiveness.
  *       - Reset actuators.
  *       - Get supported featuers.
@@ -267,13 +268,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto creat_err;
    }
 
-   /* Acquire the device. */
-   ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
-   if (FAILED(ret)) {
-      DI_SetError("Acquiring DirectInput device",ret);
-      goto query_err;
-   }
-
    /* Grab it exclusively to use force feedback stuff. */
    ret =IDirectInputDevice2_SetCooperativeLevel( haptic->hwdata->device,
                                                  SDL_HelperWindow,
@@ -281,6 +275,13 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    if (FAILED(ret)) {
       DI_SetError("Setting cooperative level to exclusive",ret);
       goto acquire_err;
+   }
+
+   /* Acquire the device. */
+   ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
+   if (FAILED(ret)) {
+      DI_SetError("Acquiring DirectInput device",ret);
+      goto query_err;
    }
 
    /* Reset all actuators - just in case. */
