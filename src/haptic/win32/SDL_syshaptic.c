@@ -229,6 +229,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
  *       - Create DirectInputDevice2 interface.
  *       - Release DirectInputDevice interface.
  *       - Set cooperative level.
+ *       - Set data format.
  *       - Acquire exclusiveness.
  *       - Reset actuators.
  *       - Get supported featuers.
@@ -275,6 +276,14 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    if (FAILED(ret)) {
       DI_SetError("Setting cooperative level to exclusive",ret);
       goto acquire_err;
+   }
+
+   /* Set data format. */
+   ret = IDirectInputDevice2_SetDataFormat( haptic->hwdata->device,
+                                            &c_dfDIJoystick2 );
+   if (FAILED(ret)) {
+      DI_SetError("Setting data format",ret);
+      goto query_error;
    }
 
    /* Acquire the device. */
