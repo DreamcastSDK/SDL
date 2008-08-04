@@ -193,7 +193,7 @@ SDL_SYS_HapticName(int index)
  * Callback to get all supported effects.
  */
 #define EFFECT_TEST(e,s)   \
-if (&pei->guid == &(e))      \
+if (SDL_memcmp(&pei->guid,&(e),sizeof(GUID)==0)      \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
