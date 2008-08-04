@@ -66,7 +66,7 @@ static struct
 struct haptic_hwdata
 {
    LPDIRECTINPUTDEVICE2 device;
-   DIDEVCAPS capabilities;
+   /* DIDEVCAPS capabilities; */
 };
 
 
@@ -287,6 +287,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto query_err;
    }
 
+#if 0
    /* Get capabilities. */
    ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
                                               &haptic->hwdata->capabilities );
@@ -294,6 +295,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       DI_SetError("Getting device capabilities",ret);
       goto acquire_err;
    }
+#endif
 
    /* Acquire the device. */
    ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
