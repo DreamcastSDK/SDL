@@ -283,7 +283,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
                                             &c_dfDIJoystick2 );
    if (FAILED(ret)) {
       DI_SetError("Setting data format",ret);
-      goto query_error;
+      goto query_err;
    }
 
    /* Acquire the device. */
