@@ -30,6 +30,10 @@
 #include "SDL_syswm.h"
 
 
+/* Fake window to help with DirectInput events. */
+HWND SDL_HelperWindow = NULL;
+
+
 static int
 SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
 {
@@ -408,5 +412,49 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         return SDL_FALSE;
     }
 }
+
+
+/*
+ * Creates a HelperWindow used for DirectInput events.
+ */
+int
+SDL_HelperWindowCreate(void)
+{
+   HINSTANCE hInstance = pGetModuleHandleA(NULL);
+   const char *class_name = "SDLHelperWindowInputCatcher";
+   const char *win_name = "SDLHelperWindowInputMsgWindow";
+   WNDCLASSEX wce;
+
+   ZeroMemory(&wce, sizeof (wce));
+   wce.cbSize = sizeof(WNDCLASSEX);
+   wce.lpfnWndProc = RawWndProc;
+   wce.lpszClassName = class_name;
+   wce.hInstance = hInstance;
+
+   SDL_HelperWindow = pCreateWindowExA(0, class_name, win_name, WS_OVERLAPPEDWINDOW,
+         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+         CW_USEDEFAULT, HWND_MESSAGE, NULL, hInstance, NULL);
+
+   if (SDL_HelperWindow == NULL) {
+      SDL_SetError("Unable to create Helper Window.");
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
+ * Destroys the HelperWindow previously created with SDL_HelperWindowCreate.
+ */
+void
+SDL_HelperWindowDestroy(void)
+{
+   if (SDL_HelperWindow) {
+      pDestroyWindow(SDL_HelperWindow);
+      SDL_HelperWindow = NULL;
+   }
+}
+
 
 /* vi: set ts=4 sw=4 expandtab: */

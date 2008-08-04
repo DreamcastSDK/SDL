@@ -36,7 +36,9 @@
 #include <dinput.h>
 #include <dxerr.h>
 #ifdef _MSC_VER
-#   pragma comment (lib, "dxerr.lib")
+#  pragma comment (lib, "dinput8.lib")
+#  pragma comment (lib, "dxguid.lib")
+#  pragma comment (lib, "dxerr.lib")
 #endif /* _MSC_VER */
 
     /* an ISO hack for VisualC++ */
@@ -88,7 +90,7 @@ static LPDIRECTINPUT dinput = NULL;
  * External stuff.
  */
 extern HINSTANCE SDL_Instance;
-extern HWND SDL_Window;
+extern HWND SDL_HelperWindow;
 
 
 /*
@@ -274,7 +276,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
 
    /* Grab it exclusively to use force feedback stuff. */
    ret =IDirectInputDevice2_SetCooperativeLevel( haptic->hwdata->device,
-                                                 SDL_Window,
+                                                 SDL_HelperWindow,
                                                  DISCL_EXCLUSIVE | DISCL_BACKGROUND );
    if (FAILED(ret)) {
       DI_SetError("Setting cooperative level to exclusive",ret);
