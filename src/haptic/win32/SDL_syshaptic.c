@@ -66,6 +66,7 @@ static struct
 struct haptic_hwdata
 {
    LPDIRECTINPUTDEVICE2 device;
+   DWORD axes[3];
    /* DIDEVCAPS capabilities; */
 };
 
@@ -233,6 +234,7 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
 
    if ((dev->dwType & DIDFT_AXIS) && (dev->dwFlags & DIDOI_FFACTUATOR)) {
 
+      haptic->hwdata->axes[haptic->naxes] = dev->dwOfs;
       haptic->naxes++;
 
       /* Currently using the artificial limit of 3 axes. */
@@ -345,7 +347,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto acquire_err;
    }
 
-
    /* Enabling actuators. */
    ret = IDirectInputDevice2_SendForceFeedbackCommand( haptic->hwdata->device,
                                                        DISFFC_SETACTUATORSON );
@@ -374,13 +375,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    dipdw.dwData            = 10000;
    ret = IDirectInputDevice2_SetProperty( haptic->hwdata->device,        
                                           DIPROP_FFGAIN, &dipdw.diph );
-   if (FAILED(ret)) {
-      if (ret != DIERR_UNSUPPORTED) {
-         DI_SetError("Checking gain",ret);
-         goto acquire_err;
-      }
-   }
-   else { /* Gain is supported. */
+   if (!FAILED(ret)) { /* Gain is supported. */
       haptic->supported |= SDL_HAPTIC_GAIN;
    }
    dipdw.diph.dwObj        = 0;
@@ -388,21 +383,13 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    dipdw.dwData            = DIPROPAUTOCENTER_OFF;
    ret = IDirectInputDevice2_SetProperty( haptic->hwdata->device,
                                           DIPROP_AUTOCENTER, &dipdw.diph );
-   if (FAILED(ret)) {
-      if (ret != DIERR_UNSUPPORTED) {
-         DI_SetError("Checking autocenter",ret);
-         goto acquire_err;
-      }
-   }
-   else { /* Autocenter is supported. */
+   if (!FAILED(ret)) { /* Autocenter is supported. */
       haptic->supported |= SDL_HAPTIC_AUTOCENTER;
    }
-
 
    /* Check maximum effects. */
    haptic->neffects = 128; /* TODO actually figure this out. */
    haptic->nplaying = 128;
-
 
    /* Prepare effects memory. */
    haptic->effects = (struct haptic_effect *)
@@ -634,12 +621,12 @@ SDL_SYS_ToDIEFFECT( SDL_Haptic * haptic, DIEFFECT * dest, SDL_HapticEffect * src
          SDL_OutOfMemory();
          return -1;
       }
-      axes[0] = DIJOFS_X; /* Always at least one axis. */
+      axes[0] = haptic->hwdata->axes[0]; /* Always at least one axis. */
       if (dest->cAxes > 1) {
-         axes[1] = DIJOFS_Y;
+         axes[1] = haptic->hwdata->axes[1];
       }
       if (dest->cAxes > 2) {
-         axes[2] = DIJOFS_Z;
+         axes[2] = haptic->hwdata->axes[2];
       }
       dest->rgdwAxes = axes;
    }
