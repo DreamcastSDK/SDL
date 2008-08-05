@@ -152,7 +152,7 @@ SDL_SYS_HapticInit(void)
 
    /* Look for haptic devices. */
    ret = IDirectInput_EnumDevices( dinput,
-                                   DIDEVTYPE_DEVICE,
+                                   0, /* Not sure if this is legal, but gets all devices. */
                                    EnumHapticsCallback,
                                    NULL, DIEDFL_FORCEFEEDBACK | DIEDFL_ATTACHEDONLY);
    if (FAILED(ret)) {
