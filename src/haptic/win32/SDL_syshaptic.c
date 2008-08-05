@@ -196,7 +196,7 @@ SDL_SYS_HapticName(int index)
 if ((pei->guid.Data1 == e.Data1) &&   \
       (pei->guid.Data2 == e.Data2) && \
       (pei->guid.Data3 == e.Data3) && \
-      (SDL_strcmp(pei->guid.Data4,e.Data4)==0) \
+      (SDL_strcmp(pei->guid.Data4,e.Data4)==0)) \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
