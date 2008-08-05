@@ -83,6 +83,7 @@ FFStrError(HRESULT err)
    switch (err) {
       case FFERR_DEVICEFULL:
          return "device full";
+      /* This should be valid, but for some reason isn't defined... */
       /*case FFERR_DEVICENOTREG:
          return "device not registered";*/
       case FFERR_DEVICEPAUSED:
@@ -269,7 +270,7 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
 
 
 #define FF_TEST(ff, s) \
-if (features.supportedEffects & ff) supported |= s
+if (features.supportedEffects & (ff)) supported |= (s)
 /*
  * Gets supported features.
  */
@@ -1011,7 +1012,13 @@ SDL_SYS_HapticUpdateEffect(SDL_Haptic * haptic,
 
    /* Set the flags.  Might be worthwhile to diff temp with loaded effect and
     *  only change those parameters. */
-   flags = FFEP_ALLPARAMS;
+   flags = FFEP_DIRECTION |
+           FFEP_DURATION |
+           FFEP_ENVELOPE |
+           FFEP_STARTDELAY |
+           FFEP_TRIGGERBUTTON |
+           FFEP_TRIGGERREPEATINTERVAL |
+           FFEP_TYPESPECIFICPARAMS;
 
    /* Create the actual effect. */
    ret = FFEffectSetParameters(effect->hweffect->ref, &temp, flags);
