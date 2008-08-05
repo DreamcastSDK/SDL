@@ -208,6 +208,8 @@ extern DECLSPEC int SDLCALL SDL_GetNumOfMice(void);
 
 extern DECLSPEC char* SDLCALL SDL_GetMouseName(int index);
 
+extern DECLSPEC int SDLCALL SDL_GetCursorsNumber(int index);
+
 #define SDL_BUTTON(X)		(1 << ((X)-1))
 #define SDL_BUTTON_LEFT		1
 #define SDL_BUTTON_MIDDLE	2

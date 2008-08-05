@@ -180,6 +180,7 @@ typedef struct SDL_MouseMotionEvent
     int pressure_min;       /**< Minimum value of the pressure reported by the device*/
     int rotation;           /**<For future use */
     int tilt;               /**<For future use */
+    int cursor;             /**< The cursor being used in the event */
     int xrel;               /**< The relative motion in the X direction */
     int yrel;               /**< The relative motion in the Y direction */
     SDL_WindowID windowID;  /**< The window with mouse focus, if any */
