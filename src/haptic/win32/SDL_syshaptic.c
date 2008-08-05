@@ -577,6 +577,7 @@ SDL_SYS_ToDIEFFECT( SDL_Haptic * haptic, DIEFFECT * dest, SDL_HapticEffect * src
    dest->dwSize = sizeof(DIEFFECT); /* Set the structure size. */
    dest->dwSamplePeriod = 0; /* Not used by us. */
    dest->dwGain = 10000; /* Gain is set globally, not locally. */
+   dest->dwFlags = DIEFF_OBJECTOFFSETS; /* Seems obligatory. */
 
    /* Envelope. */
    envelope = SDL_malloc( sizeof(DIENVELOPE) );
