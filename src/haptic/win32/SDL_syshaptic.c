@@ -224,6 +224,28 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
 
 
 /*
+ * Callback to get supported axes.
+ */
+static BOOL CALLBACK
+DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
+{
+   SDL_Haptic *haptic = (SDL_Hapti *) pvRef;
+
+   if (dev->dwType & DIDFT_AXIS) {
+
+      haptic->naxes++;
+
+      /* Currently using the artificial limit of 3 axes. */
+      if (haptic->naxes >= 3) {
+         return DIENUM_STOP;
+      }
+   }
+
+   return DIENUM_CONTINUE;
+}
+
+
+/*
  * Opens the haptic device from the file descriptor.
  *
  *    Steps:
@@ -299,6 +321,15 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    }
 #endif
 
+   /* Get number of axes. */
+   ret = IDirectInputDevice2_EnumObjects( haptic->hwdata->device,
+                                          DI_DeviceObjectCallback,
+                                          haptic, DIDFT_AXIS );
+   if (FAILED(ret)) {
+      DI_SetError("Getting device axes",ret);
+      goto query_err;
+   }
+
    /* Acquire the device. */
    ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
    if (FAILED(ret)) {
@@ -352,6 +383,8 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    else { /* Gain is supported. */
       haptic->supported |= SDL_HAPTIC_GAIN;
    }
+   dipdw.diph.dwObj        = 0;
+   dipdw.diph.dwHow        = DIPH_DEVICE;
    dipdw.dwData            = DIPROPAUTOCENTER_OFF;
    ret = IDirectInputDevice2_SetProperty( haptic->hwdata->device,
                                           DIPROP_AUTOCENTER, &dipdw.diph );
