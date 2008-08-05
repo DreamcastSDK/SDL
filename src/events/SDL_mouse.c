@@ -52,7 +52,8 @@ SDL_GetMouse(int index)
 }
 
 int
-SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int pressure_min)
+SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,\
+int pressure_min, int ends)
 {
     SDL_Mouse **mice;
     int selected_mouse;
@@ -98,6 +99,8 @@ SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,int pressure_max,int
 	thanx to that, the users that don't want to use many mouses don't have to
 	worry about anything*/
     SDL_mice[index]->relative_mode=SDL_FALSE;
+    SDL_mice[index]->current_end=0;
+    SDL_mice[index]->total_ends=ends;
     SDL_SelectMouse(selected_mouse);
 
     return index;
@@ -460,6 +463,7 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
         event.motion.windowID = mouse->focus;
         event.motion.pressure_max=mouse->pressure_max;
         event.motion.pressure_min=mouse->pressure_min;
+		event.motion.cursor=SDL_mice[index]->current_end;
         posted = (SDL_PushEvent(&event) > 0);
     }
     last_x=x;
@@ -795,6 +799,25 @@ void SDL_UpdateCoordinates(int x, int y)
 {
     x_max=x;
     y_max=y;
+}
+
+void SDL_ChangeEnd(int id, int end)
+{
+	int index=SDL_GetIndexById(id);
+	SDL_mice[index]->current_end=end;
+}
+
+int SDL_GetCursorsNumber(int index)
+{
+	if(index>=SDL_num_mice)
+	{
+		return -1;
+	}
+	if(SDL_mice[index]==NULL)
+	{
+		return -1;
+	}
+	return SDL_mice[index]->total_ends;
 }
 /* vi: set ts=4 sw=4 expandtab: */
 

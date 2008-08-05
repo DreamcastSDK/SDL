@@ -32,7 +32,7 @@
 #include "SDL_vkeys.h"
 #include "../../events/SDL_events_c.h"
 #include <wintab.h>
-#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_CURSOR)
 #define PACKETMODE 0
 #include <pktdef.h>
 
@@ -141,6 +141,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			/*if we receive such data we need to update the pressure*/
 			if (WTPacket((HCTX)lParam, wParam, &packet))
 			{
+				SDL_ChangeEnd(tablet, (int)packet.pkCursor);
 				pressure=(int)packet.pkNormalPressure;
 			}
 		}

@@ -34,7 +34,7 @@
 #include "../../events/SDL_mouse_c.h"
 
 #include <wintab.h>
-#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_CURSOR)
 #define PACKETMODE 0
 #include <pktdef.h>
 
@@ -176,12 +176,14 @@ WIN_InitMouse(_THIS)
 	if(tablet==index)
 	{
 		AXIS pressure;
+		int cursors;
 		WTInfo(WTI_DEVICES,DVC_NPRESSURE, &pressure);
-		data->mouse = SDL_AddMouse(&mouse, index,device_name,pressure.axMax,pressure.axMin);
+		WTInfo(WTI_DEVICES,DVC_NCSRTYPES, &cursors);
+		data->mouse = SDL_AddMouse(&mouse, index,device_name,pressure.axMax,pressure.axMin,cursors);
 	}
 	else
 	{
-		data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0);
+		data->mouse = SDL_AddMouse(&mouse, index,device_name,0,0,1);
 	}
 	++index;
 

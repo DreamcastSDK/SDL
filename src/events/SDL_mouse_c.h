@@ -62,6 +62,8 @@ struct SDL_Mouse
     int pressure_min;
     int tilt;/*for future use*/
     int rotation;/*for future use*/
+    int total_ends;
+    int current_end;
 
     /* Data common to all mice */
     SDL_WindowID focus;
@@ -96,7 +98,8 @@ extern SDL_Mouse *SDL_GetMouse(int index);
 /* Add a mouse, possibly reattaching at a particular index (or -1),
    returning the index of the mouse, or -1 if there was an error.
  */
-extern int SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name, int pressure_max, int pressure_min);
+extern int SDL_AddMouse(const SDL_Mouse * mouse, int index, char* name,\
+ int pressure_max, int pressure_min, int ends);
 
 /* Remove a mouse at an index, clearing the slot for later */
 extern void SDL_DelMouse(int index);
@@ -128,6 +131,10 @@ extern int SDL_GetNumOfMice(void);
 extern char* SDL_GetMouseName(int index);
 
 extern void SDL_UpdateCoordinates(int x, int y);
+
+extern void SDL_ChangeEnd(int id, int end);
+
+extern int SDL_GetCursorsNumber(int index);
 
 #endif /* _SDL_mouse_c_h */
 
