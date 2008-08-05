@@ -568,14 +568,18 @@ SDL_SYS_SetDirection( DIEFFECT * effect, SDL_HapticDirection *dir, int naxes )
       case SDL_HAPTIC_CARTESIAN:
          effect->dwFlags |= DIEFF_CARTESIAN;
          rglDir[0] = dir->dir[0];
-         rglDir[1] = dir->dir[1];
-         rglDir[2] = dir->dir[2];
+         if (naxes > 1)
+            rglDir[1] = dir->dir[1];
+         if (naxes > 2)
+            rglDir[2] = dir->dir[2];
          return 0;
       case SDL_HAPTIC_SPHERICAL:
          effect->dwFlags |= DIEFF_SPHERICAL;
          rglDir[0] = dir->dir[0];
-         rglDir[1] = dir->dir[1];
-         rglDir[2] = dir->dir[2];
+         if (naxes > 1)
+            rglDir[1] = dir->dir[1];
+         if (naxes > 2)
+            rglDir[2] = dir->dir[2];
          return 0;
 
       default:
