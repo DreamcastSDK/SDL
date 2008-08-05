@@ -73,11 +73,11 @@ X11_InitMouse(_THIS)
                     /*if the device reports pressure, lets check it parameteres*/
                     if(valInfo->num_axes>2)
                     {
-                        data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,valInfo->axes[2].max_value,valInfo->axes[2].min_value);
+                        data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,valInfo->axes[2].max_value,valInfo->axes[2].min_value,1);
                     }
                     else
                     {
-                         data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,0,0);
+                         data->mouse = SDL_AddMouse(&mouse, index++,DevList[i].name,0,0,1);
                     }
                     break;
                 }
