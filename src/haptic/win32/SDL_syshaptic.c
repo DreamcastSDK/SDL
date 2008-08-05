@@ -575,7 +575,7 @@ SDL_SYS_SetDirection( DIEFFECT * effect, SDL_HapticDirection *dir, int naxes )
    }
 }
 
-#define CONVERT(x)   (((x)*10000) / 0x7FFF)
+#define CONVERT(x)   (((x) > 0x7FFF) ? 10000 : ((x)*10000) / 0x7FFF)
 /*
  * Creates the DIEFFECT from a SDL_HapticEffect.
  */
