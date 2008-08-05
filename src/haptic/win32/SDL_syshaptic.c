@@ -868,10 +868,10 @@ SDL_SYS_HapticFreeDIEFFECT( DIEFFECT * effect, int type )
 /*
  * Gets the effect type from the generic SDL haptic effect wrapper.
  */
-REFGUID
-SDL_SYS_HapticEffectType(struct haptic_effect * effect)
+static REFGUID
+SDL_SYS_HapticEffectType(SDL_HapticEffect * effect)
 {
-   switch (effect->effect.type) {
+   switch (effect->type) {
       case SDL_HAPTIC_CONSTANT:
          return &GUID_ConstantForce;
 
@@ -925,7 +925,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect * effect,
    HRESULT ret;
 
    /* Get the type. */
-   REFGUID type = SDL_SYS_HapticEffectType(effect);
+   REFGUID type = SDL_SYS_HapticEffectType(base);
    if (type == NULL) {
       goto err_hweffect;
    }
