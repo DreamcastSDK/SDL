@@ -231,7 +231,7 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
 {
    SDL_Haptic *haptic = (SDL_Haptic *) pvRef;
 
-   if (dev->dwType & DIDFT_AXIS) {
+   if ((dev->dwType & DIDFT_AXIS) && (dev->dwFlags & DIDOI_FFACTUATOR)) {
 
       haptic->naxes++;
 
