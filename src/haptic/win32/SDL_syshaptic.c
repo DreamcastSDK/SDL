@@ -229,7 +229,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
 static BOOL CALLBACK
 DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
 {
-   SDL_Haptic *haptic = (SDL_Hapti *) pvRef;
+   SDL_Haptic *haptic = (SDL_Haptic *) pvRef;
 
    if (dev->dwType & DIDFT_AXIS) {
 
