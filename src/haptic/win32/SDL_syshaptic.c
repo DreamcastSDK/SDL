@@ -203,7 +203,6 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
 {
    /* Prepare the haptic device. */
    SDL_Haptic *haptic = (SDL_Haptic*) pv;
-   haptic->supported = 0;
 
    /* Get supported. */
    EFFECT_TEST(GUID_Spring,         SDL_HAPTIC_SPRING);
