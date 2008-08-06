@@ -177,7 +177,7 @@ EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
          sizeof(DIDEVICEINSTANCE));
 
    /* Open the device */
-   ret = IDirectInput_CreateDevice( dinput, &pdidInstance.guidInstance,
+   ret = IDirectInput_CreateDevice( dinput, &pdidInstance->guidInstance,
                                     &device, NULL );
    if (FAILED(ret)) {
       /* DI_SetError("Creating DirectInput device",ret); */
