@@ -85,7 +85,7 @@ int SDL_SYS_HapticMouse(void);
  * Returns >0 if haptic capabilities are detected, 0 if haptic
  * capabilities aren't detected and -1 on error.
  */
-extern int SDL_JoystickIsHaptic(SDL_Joystick * joystick);
+extern int SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick);
 
 /*
  * Opens the haptic device for usage using the same device as
