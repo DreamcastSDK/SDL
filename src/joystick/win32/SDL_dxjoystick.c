@@ -52,7 +52,6 @@
 #define JOY_AXIS_THRESHOLD	(((AXIS_MAX)-(AXIS_MIN))/100)   /* 1% motion */
 
 /* external variables referenced. */
-extern HINSTANCE SDL_Instance;
 extern HWND SDL_HelperWindow;
 
 
@@ -117,8 +116,13 @@ SDL_SYS_JoystickInit(void)
     }
 
     /* Because we used CoCreateInstance, we need to Initialize it, first. */
+    instance = GetModuleHandle(NULL);
+    if (instance == NULL) {
+        SDL_SetError("GetModuleHandle() failed with error code %d.", GetLastError());
+        return (-1);
+    }
     result =
-        IDirectInput_Initialize(dinput, SDL_Instance, DIRECTINPUT_VERSION);
+        IDirectInput_Initialize(dinput, instance, DIRECTINPUT_VERSION);
 
     if (FAILED(result)) {
         SetDIerror("IDirectInput::Initialize", result);

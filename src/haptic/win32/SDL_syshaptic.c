@@ -91,7 +91,6 @@ static LPDIRECTINPUT dinput = NULL;
 /*
  * External stuff.
  */
-extern HINSTANCE SDL_Instance;
 extern HWND SDL_HelperWindow;
 
 
@@ -146,6 +145,7 @@ int
 SDL_SYS_HapticInit(void)
 {
    HRESULT ret;
+   HINSTANCE instance;
 
    if (dinput != NULL) { /* Already open. */
       SDL_SetError("Haptic: SubSystem already open.");
@@ -171,7 +171,12 @@ SDL_SYS_HapticInit(void)
    }
 
    /* Because we used CoCreateInstance, we need to Initialize it, first. */
-   ret = IDirectInput_Initialize(dinput, SDL_Instance, DIRECTINPUT_VERSION);
+   instance = GetModuleHandle(NULL);
+   if (instance == NULL) {
+      SDL_SetError("GetModuleHandle() failed with error code %d.", GetLastError());
+      return -1;
+   }
+   ret = IDirectInput_Initialize(dinput, instance, DIRECTINPUT_VERSION);
    if (FAILED(ret)) {
       DI_SetError("Initializing DirectInput device",ret);
       return -1;
