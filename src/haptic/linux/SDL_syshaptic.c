@@ -506,7 +506,7 @@ SDL_SYS_ToDirection( SDL_HapticDirection * dir )
 
       default:
          SDL_SetError("Haptic: Unsupported direction type.");
-         return -1;
+         return (Uint16)-1;
    }
 
    return 0;
@@ -537,7 +537,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_CONSTANT;
          dest->direction = SDL_SYS_ToDirection(&constant->direction);
-         if (dest->direction < 0) return -1;
+         if (dest->direction == (Uint16)-1) return -1;
 
          /* Replay */
          dest->replay.length = (constant->length == SDL_HAPTIC_INFINITY) ?
@@ -569,7 +569,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_PERIODIC;
          dest->direction = SDL_SYS_ToDirection(&periodic->direction);
-         if (dest->direction < 0) return -1;
+         if (dest->direction == (Uint16)-1) return -1;
          
          /* Replay */
          dest->replay.length = (periodic->length == SDL_HAPTIC_INFINITY) ? 
@@ -656,7 +656,7 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          /* Header */
          dest->type = FF_RAMP;
          dest->direction = SDL_SYS_ToDirection(&ramp->direction);
-         if (dest->direction < 0) return -1;
+         if (dest->direction == (Uint16)-1) return -1;
 
          /* Replay */
          dest->replay.length = (ramp->length == SDL_HAPTIC_INFINITY) ? 
