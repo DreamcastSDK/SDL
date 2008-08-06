@@ -331,6 +331,7 @@ typedef struct SDL_ProximityEvent
 {
     Uint8 which;
     Uint8 type;
+    int cursor;
     int x;
     int y;
 } SDL_ProximityEvent;

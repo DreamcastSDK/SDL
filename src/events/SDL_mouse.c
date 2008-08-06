@@ -338,6 +338,7 @@ int
 SDL_SendProximity(int id, int x, int y, int type)
 {
     int index=SDL_GetIndexById(id);
+    SDL_Mouse* mouse=SDL_GetMouse(index);
     int posted=0;
 	last_x=x;
 	last_y=y;
@@ -347,23 +348,24 @@ SDL_SendProximity(int id, int x, int y, int type)
         event.proximity.which=(Uint8)index;
         event.proximity.x=x;
         event.proximity.y=y;
+        event.proximity.cursor=mouse->current_end;
         event.type=type;
         event.proximity.type=type;
         posted = (SDL_PushEvent(&event) > 0);
         if(type==SDL_PROXIMITYIN)
         {
-            SDL_mice[index]->proximity=SDL_TRUE;
+            mouse->proximity=SDL_TRUE;
         }
         else
         {
-            SDL_mice[index]->proximity=SDL_FALSE;
+            mouse->proximity=SDL_FALSE;
         }
     }
     return posted;
 }
 
 int
-SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
+SDL_SendMouseMotion(int id, int relative, int x, int y,int pressure)
 {
     int index=SDL_GetIndexById(id);
     SDL_Mouse *mouse = SDL_GetMouse(index);
@@ -440,7 +442,7 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
     }
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
-    mouse->pressure=z;
+    mouse->pressure=pressure;
 
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
@@ -450,7 +452,8 @@ SDL_SendMouseMotion(int id, int relative, int x, int y,int z)
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE && SDL_mice[index]->proximity==SDL_TRUE) {
+    if (SDL_ProcessEvents[SDL_MOUSEMOTION] == SDL_ENABLE && \
+            mouse->proximity==SDL_TRUE) {
         SDL_Event event;
         event.motion.type = SDL_MOUSEMOTION;
 		event.motion.which = (Uint8) index;
