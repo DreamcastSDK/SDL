@@ -27,7 +27,7 @@
 #include "../SDL_syshaptic.h"
 #include "SDL_joystick.h"
 #include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
-/*#include "../../joystick/win32/SDL_sysjoystick_c.h"*/ /* For joystick hwdata */ 
+#include "../../joystick/win32/SDL_dxjoystick_c.h" /* For joystick hwdata */
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -67,7 +67,8 @@ static struct
 struct haptic_hwdata
 {
    LPDIRECTINPUTDEVICE2 device;
-   DWORD axes[3];
+   DWORD axes[3]; /* Axes to use. */
+   int is_joystick; /* Device is loaded as joystick. */
 };
 
 
@@ -109,6 +110,21 @@ DI_SetError(const char *str, HRESULT err)
    SDL_SetError( "Haptic: %s - %s: %s", str,
                  DXGetErrorString(err),
                  DXGetErrorDescription(err));
+}
+
+
+/*
+ * Checks to see if two GUID are the same.
+ */
+static int
+DI_GUIDIsSame(GUID * a, GUID * b)
+{
+   if (((a)->Data1 == (b)->Data1) &&
+         ((a)->Data2 == (b)->Data2) &&
+         ((a)->Data3 == (b)->Data3) &&
+         (SDL_strcmp((a)->Data4, (b)->Data4)==0))
+      return 1;
+   return 0;
 }
 
 
@@ -219,11 +235,8 @@ SDL_SYS_HapticName(int index)
 /*
  * Callback to get all supported effects.
  */
-#define EFFECT_TEST(e,s)   \
-if ((pei->guid.Data1 == e.Data1) &&   \
-      (pei->guid.Data2 == e.Data2) && \
-      (pei->guid.Data3 == e.Data3) && \
-      (SDL_strcmp(pei->guid.Data4,e.Data4)==0)) \
+#define EFFECT_TEST(e,s)               \
+if (DI_GUIDIsSame(&pei->guid, &(e)))   \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
@@ -280,16 +293,13 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
  *       - Open temporary DirectInputDevice interface.
  *       - Create DirectInputDevice2 interface.
  *       - Release DirectInputDevice interface.
- *       - Set cooperative level.
- *       - Set data format.
- *       - Acquire exclusiveness.
- *       - Reset actuators.
- *       - Get supported featuers.
+ *       - Call SDL_SYS_HapticOpenFromDevice2
  */
 static int
 SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
 {
    HRESULT ret;
+   int ret2;
    LPDIRECTINPUTDEVICE device;
    DIPROPDWORD dipdw;
 
@@ -321,6 +331,42 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto creat_err;
    }
 
+   ret2 = SDL_SYS_HapticOpenFromDevice2( haptic, haptic->hwdata->device );
+   if (ret2 < 0) {
+      goto query_err;
+   }
+
+   return 0;
+
+query_err:
+   IDirectInputDevice2_Release(haptic->hwdata->device);   
+creat_err:
+   if (haptic->hwdata != NULL) {
+      SDL_free(haptic->hwdata);
+      haptic->hwdata = NULL;                                              
+   }
+}
+
+
+/*
+ * Opens the haptic device from the file descriptor.
+ *
+ *    Steps:
+ *       - Set cooperative level.
+ *       - Set data format.
+ *       - Acquire exclusiveness.
+ *       - Reset actuators.
+ *       - Get supported featuers.
+ */
+static int
+SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2)
+
+{
+   HRESULT ret;
+
+   /* We'll use the device2 from now on. */
+   haptic->hwdata->device = device2;
+
    /* Grab it exclusively to use force feedback stuff. */
    ret =IDirectInputDevice2_SetCooperativeLevel( haptic->hwdata->device,
                                                  SDL_HelperWindow,
@@ -335,7 +381,7 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
                                             &c_dfDIJoystick2 );
    if (FAILED(ret)) {
       DI_SetError("Setting data format",ret);
-      goto query_err;
+      goto acquire_err;
    }
 
    /* Get number of axes. */
@@ -344,14 +390,14 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
                                           haptic, DIDFT_AXIS );
    if (FAILED(ret)) {
       DI_SetError("Getting device axes",ret);
-      goto query_err;
+      goto acquire_err;
    }
 
    /* Acquire the device. */
    ret = IDirectInputDevice2_Acquire(haptic->hwdata->device);
    if (FAILED(ret)) {
       DI_SetError("Acquiring DirectInput device",ret);
-      goto query_err;
+      goto acquire_err;
    }
 
    /* Reset all actuators - just in case. */
@@ -422,13 +468,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    /* Error handling */
 acquire_err:
    IDirectInputDevice2_Unacquire(haptic->hwdata->device);
-query_err:
-   IDirectInputDevice2_Release(haptic->hwdata->device);   
-creat_err:
-   if (haptic->hwdata != NULL) {
-      SDL_free(haptic->hwdata);
-      haptic->hwdata = NULL;                                              
-   }
    return -1;
 
 }
@@ -470,6 +509,10 @@ SDL_SYS_HapticMouse(void)
 int
 SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
+   if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
+      return SDL_TRUE;
+   }
+
    return SDL_FALSE;
 }
 
@@ -480,6 +523,24 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+   HRESULT ret;
+   DIDEVICEINSTANCE hap_instance, joy_instance;
+
+   /* Get the device instances. */
+   ret = IDirectInputDevice2_GetDeviceInfo( haptic->hwdata->device,
+                                            &hap_instance );
+   if (FAILED(ret)) {
+      return 0;
+   }
+   ret = IDirectInputDevice2_GetDeviceInfo( joystick->hwdata->InputDevice,
+                                            &joy_instance );
+   if (FAILED(ret)) {
+      return 0;
+   }
+
+   if (DI_GUIDIsSame(&hap_instance.guidInstance, &joy_instance.guidInstance))
+      return 1;
+
    return 0;
 }
 
@@ -490,7 +551,17 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-   return -1;
+   int ret;
+
+   ret = SDL_SYS_HapticOpenFromDevice2( haptic, joystick->hwdata->InputDevice );  
+   if (ret < 0) {
+      return -1;
+   }
+
+   /* It's using the joystick device. */
+   haptic->hwdata->is_joystick = 1;
+
+   return 0;
 }
 
 
@@ -509,7 +580,10 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
 
       /* Clean up */
       IDirectInputDevice2_Unacquire(haptic->hwdata->device);
-      IDirectInputDevice2_Release(haptic->hwdata->device);   
+      /* Only release if isn't grabbed by a joystick. */
+      if (haptic->hwdata->is_joystick == 0) {
+         IDirectInputDevice2_Release(haptic->hwdata->device);   
+      }
 
       /* Free */
       SDL_free(haptic->hwdata);
