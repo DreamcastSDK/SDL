@@ -67,7 +67,7 @@ struct haptic_hwdata
 {
    LPDIRECTINPUTDEVICE2 device;
    DWORD axes[3];
-   /* DIDEVCAPS capabilities; */
+   DIDEVCAPS capabilities;
 };
 
 
@@ -313,15 +313,14 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
       goto query_err;
    }
 
-#if 0
    /* Get capabilities. */
+   haptic->hwdata->capabilities.dwSize = sizeof(DIDEVCAPS);
    ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
                                               &haptic->hwdata->capabilities );
    if (FAILED(ret)) {
       DI_SetError("Getting device capabilities",ret);
       goto acquire_err;
    }
-#endif
 
    /* Get number of axes. */
    ret = IDirectInputDevice2_EnumObjects( haptic->hwdata->device,
