@@ -102,11 +102,11 @@ EV_IsHaptic(int fd)
 
    /* Convert supported features to SDL_HAPTIC platform-neutral features. */
    EV_TEST(FF_CONSTANT,   SDL_HAPTIC_CONSTANT);
-   EV_TEST(FF_PERIODIC,   SDL_HAPTIC_SINE |
-                          SDL_HAPTIC_SQUARE |
-                          SDL_HAPTIC_TRIANGLE |
-                          SDL_HAPTIC_SAWTOOTHUP |
-                          SDL_HAPTIC_SAWTOOTHDOWN);
+   EV_TEST(FF_SINE,       SDL_HAPTIC_SINE);
+   EV_TEST(FF_SQUARE,     SDL_HAPTIC_SQUARE);
+   EV_TEST(FF_TRIANGLE,   SDL_HAPTIC_TRIANGLE);
+   EV_TEST(FF_SAW_UP,     SDL_HAPTIC_SAWTOOTHUP);
+   EV_TEST(FF_SAW_DOWN,   SDL_HAPTIC_SAWTOOTHDOWN);
    EV_TEST(FF_RAMP,       SDL_HAPTIC_RAMP);
    EV_TEST(FF_SPRING,     SDL_HAPTIC_SPRING);
    EV_TEST(FF_FRICTION,   SDL_HAPTIC_FRICTION);
