@@ -59,7 +59,7 @@ X11_InitMouse(_THIS)
                     if(!newDevices)
                     {
                         SDL_OutOfMemory();
-                        return -1;
+                        return;
                     }
                     SDL_XDevices=newDevices;
                     SDL_XDevices[index]=XOpenDevice(data->display,DevList[i].id);
