@@ -27,7 +27,7 @@
 #include "../SDL_syshaptic.h"
 #include "SDL_joystick.h"
 #include "../../joystick/SDL_sysjoystick.h" /* For the real SDL_Joystick */
-#include "../../joystick/dawrin/SDL_sysjoystick_c.h" /* For joystick hwdata */ 
+#include "../../joystick/darwin/SDL_sysjoystick_c.h" /* For joystick hwdata */ 
 
 #include <IOKit/IOKitLib.h>
 #include <IOKit/hid/IOHIDKeys.h>
