@@ -55,6 +55,7 @@ static struct
 struct haptic_hwdata
 {
    FFDeviceObjectReference device; /* Hardware device. */
+   UInt8 axes[3];
 };
 
 
@@ -275,25 +276,27 @@ if (features.supportedEffects & (ff)) supported |= (s)
  * Gets supported features.
  */
 static unsigned int
-GetSupportedFeatures(FFDeviceObjectReference device,
-                     int *neffects, int *nplaying, int *naxes)
+GetSupportedFeatures(SDL_Haptic* haptic)
 {
    HRESULT ret;
+   FFDeviceObjectReference device;
    FFCAPABILITIES features;
    unsigned int supported;
    Uint32 val;
 
+   device = haptic->hwdata->device;
+
    ret = FFDeviceGetForceFeedbackCapabilities(device, &features);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Unable to get device's supported features.");
-      return 0;
+      return -1;
    }
 
    supported = 0;
 
    /* Get maximum effects. */
-   *neffects = features.storageCapacity;
-   *nplaying = features.playbackCapacity;
+   haptic->neffects = features.storageCapacity;
+   haptic->nplaying = features.playbackCapacity;
 
    /* Test for effects. */
    FF_TEST(FFCAP_ET_CONSTANTFORCE, SDL_HAPTIC_CONSTANT);
@@ -316,7 +319,7 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports gain: %s.",
                    FFStrError(ret));
-      return 0;
+      return -1;
    }
 
    /* Checks if supports autocenter. */
@@ -326,16 +329,20 @@ GetSupportedFeatures(FFDeviceObjectReference device,
    else if (ret != FFERR_UNSUPPORTED) {
       SDL_SetError("Haptic: Unable to get if device supports autocenter: %s.",
                    FFStrError(ret));
-      return 0;
+      return -1;
    }
 
    /* Check for axes, we have an artificial limit on axes */
-   *naxes = ((features.numFfAxes) > 3) ?
+   haptic->naxes = ((features.numFfAxes) > 3) ?
          3 : features.numFfAxes;
+   /* Actually store the axes we want to use */
+   SDL_memcpy( haptic->hwdata->axes, features.ffAxes, haptic->naxes * sizeof(Uint8));
 
    /* Always supported features. */
    supported |= SDL_HAPTIC_STATUS;
-   return supported;
+
+   haptic->supported = supported;
+   return 0;;
 }
 
 
@@ -346,6 +353,7 @@ static int
 SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
 {
    HRESULT ret;
+   int ret2;
 
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
@@ -365,10 +373,8 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
    }
 
    /* Get supported features. */
-   haptic->supported = GetSupportedFeatures( haptic->hwdata->device,
-                                             &haptic->neffects, &haptic->nplaying,
-                                             &haptic->naxes );
-   if (haptic->supported == 0) { /* Error since device supports nothing. */
+   ret2 = GetSupportedFeatures( haptic );
+   if (haptic->supported < 0) {
       goto open_err;
    }
 
@@ -622,12 +628,12 @@ SDL_SYS_ToFFEFFECT( SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src
          SDL_OutOfMemory();
          return -1;
       }
-      axes[0] = FFJOFS_X; /* Always at least one axis. */
+      axes[0] = haptic->hwdata->axes[0]; /* Always at least one axis. */
       if (dest->cAxes > 1) {
-         axes[1] = FFJOFS_Y;
+         axes[1] = haptic->hwdata->axes[1];
       }
       if (dest->cAxes > 2) {
-         axes[2] = FFJOFS_Z;
+         axes[2] = haptic->hwdata->axes[2];
       }
       dest->rgdwAxes = axes;
    }
