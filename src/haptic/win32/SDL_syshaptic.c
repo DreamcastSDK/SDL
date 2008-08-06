@@ -98,7 +98,18 @@ extern HWND SDL_HelperWindow;
 /*
  * Prototypes.
  */
+static void DI_SetError(const char *str, HRESULT err);
+static int DI_GUIDIsSame(const GUID * a, const GUID * b);
+static int SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance);
+static int SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2);
+static DWORD DIGetTriggerButton( Uint16 button );
+static int SDL_SYS_SetDirection( DIEFFECT * effect, SDL_HapticDirection *dir, int naxes );
+static int SDL_SYS_ToDIEFFECT( SDL_Haptic * haptic, DIEFFECT * dest, SDL_HapticEffect * src );
+static void SDL_SYS_HapticFreeDIEFFECT( DIEFFECT * effect, int type );
+static REFGUID SDL_SYS_HapticEffectType(SDL_HapticEffect * effect);
+/* Callbacks. */
 static BOOL CALLBACK EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext);
+static BOOL CALLBACK DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv);
 
 
 /* 
@@ -117,7 +128,7 @@ DI_SetError(const char *str, HRESULT err)
  * Checks to see if two GUID are the same.
  */
 static int
-DI_GUIDIsSame(GUID * a, GUID * b)
+DI_GUIDIsSame(const GUID * a, const GUID * b)
 {
    if (((a)->Data1 == (b)->Data1) &&
          ((a)->Data2 == (b)->Data2) &&
@@ -301,7 +312,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    HRESULT ret;
    int ret2;
    LPDIRECTINPUTDEVICE device;
-   DIPROPDWORD dipdw;
 
    /* Allocate the hwdata */
    haptic->hwdata = (struct haptic_hwdata *)
@@ -363,6 +373,7 @@ SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2)
 
 {
    HRESULT ret;
+   DIPROPDWORD dipdw;
 
    /* We'll use the device2 from now on. */
    haptic->hwdata->device = device2;
