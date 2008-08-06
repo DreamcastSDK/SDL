@@ -329,8 +329,8 @@ typedef struct SDL_ResizeEvent
 
 typedef struct SDL_ProximityEvent
 {
-    Uint8 which;
     Uint8 type;
+    Uint8 which;
     int cursor;
     int x;
     int y;
