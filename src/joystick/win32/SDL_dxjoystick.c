@@ -98,6 +98,7 @@ int
 SDL_SYS_JoystickInit(void)
 {
     HRESULT result;
+    HINSTANCE instance;
 
     SYS_NumJoysticks = 0;
 
