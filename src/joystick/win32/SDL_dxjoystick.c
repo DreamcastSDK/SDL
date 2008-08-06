@@ -38,20 +38,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#define DIRECTINPUT_VERSION 0x0500
-#include <dinput.h>
-#ifdef _MSC_VER
-    /* Used for the c_dfDIJoystick2 symbol (no imports are used) */
-#   pragma comment (lib, "dinput.lib")
-#endif
-#include <dxerr.h>
-#ifdef _MSC_VER
-#   pragma comment (lib, "dxerr.lib")
-#endif
+#include "SDL_dxjoystick_c.h"
 
 /* an ISO hack for VisualC++ */
 #ifdef _MSC_VER
@@ -60,7 +47,6 @@
 
 #define INPUT_QSIZE	32      /* Buffer up to 32 input messages */
 #define MAX_JOYSTICKS	8
-#define MAX_INPUTS	256     /* each joystick can have up to 256 inputs */
 #define AXIS_MIN	-32768  /* minimum value for axis coordinate */
 #define AXIS_MAX	32767   /* maximum value for axis coordinate */
 #define JOY_AXIS_THRESHOLD	(((AXIS_MAX)-(AXIS_MIN))/100)   /* 1% motion */
@@ -94,33 +80,6 @@ static int SDL_PrivateJoystickHat_Int(SDL_Joystick * joystick, Uint8 hat,
 static int SDL_PrivateJoystickButton_Int(SDL_Joystick * joystick,
                                          Uint8 button, Uint8 state);
 
-
-/* local types */
-typedef enum Type
-{ BUTTON, AXIS, HAT } Type;
-
-typedef struct input_t
-{
-    /* DirectInput offset for this input type: */
-    DWORD ofs;
-
-    /* Button, axis or hat: */
-    Type type;
-
-    /* SDL input offset: */
-    Uint8 num;
-} input_t;
-
-/* The private structure used to keep track of a joystick */
-struct joystick_hwdata
-{
-    LPDIRECTINPUTDEVICE2 InputDevice;
-    DIDEVCAPS Capabilities;
-    int buffered;
-
-    input_t Inputs[MAX_INPUTS];
-    int NumInputs;
-};
 
 /* Convert a DirectInput return code to a text message */
 static void
