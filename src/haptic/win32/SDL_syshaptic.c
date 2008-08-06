@@ -469,8 +469,11 @@ SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2)
    haptic->supported |= SDL_HAPTIC_STATUS;
 
    /* Check maximum effects. */
-   haptic->neffects = 128; /* TODO actually figure this out. */
-   haptic->nplaying = 128;
+   haptic->neffects = 128; /* This is not actually supported as thus under windows,
+                              there is no way to tell the number of EFFECTS that a
+                              device can hold, so we'll just use a "random" number
+                              instead and put warnings in SDL_haptic.h */
+   haptic->nplaying = 128; /* Even more impossible to get this then neffects. */
 
    /* Prepare effects memory. */
    haptic->effects = (struct haptic_effect *)
