@@ -882,13 +882,9 @@ SDL_SYS_ToDIEFFECT( SDL_Haptic * haptic, DIEFFECT * dest, SDL_HapticEffect * src
             return -1;                
          }                            
                                       
-         /* Envelope */
-/* TODO Check is envelope actually used.
-         envelope->dwAttackLevel = CONVERT(hap_condition->attack_level);
-         envelope->dwAttackTime = hap_condition->attack_length * 1000;
-         envelope->dwFadeLevel = CONVERT(hap_condition->fade_level);
-         envelope->dwFadeTime = hap_condition->fade_length * 1000;
-*/
+         /* Envelope - Not actually supported by most CONDITION implementations. */
+         SDL_free(dest->lpEnvelope);
+         dest->lpEnvelope = NULL;
 
          break;
 
