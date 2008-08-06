@@ -565,6 +565,16 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
    int ret;
 
+   /* Allocate the hwdata */
+   haptic->hwdata = (struct haptic_hwdata *)
+         SDL_malloc(sizeof(*haptic->hwdata));
+   if (haptic->hwdata == NULL) {
+      SDL_OutOfMemory();
+      return -1;
+   }
+   SDL_memset(haptic->hwdata, 0, sizeof(*haptic->hwdata));
+
+   /* Now open the device. */
    ret = SDL_SYS_HapticOpenFromDevice2( haptic, joystick->hwdata->InputDevice );  
    if (ret < 0) {
       return -1;
