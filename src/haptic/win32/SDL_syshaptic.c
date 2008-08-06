@@ -57,6 +57,7 @@ static struct
 {
    DIDEVICEINSTANCE instance;
    SDL_Haptic *haptic;
+   DIDEVCAPS capabilities;
 } SDL_hapticlist[MAX_HAPTICS];
 
 
@@ -67,7 +68,6 @@ struct haptic_hwdata
 {
    LPDIRECTINPUTDEVICE2 device;
    DWORD axes[3];
-   DIDEVCAPS capabilities;
 };
 
 
@@ -169,10 +169,36 @@ SDL_SYS_HapticInit(void)
 static BOOL CALLBACK
 EnumHapticsCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
+   HRESULT ret;
+   LPDIRECTINPUTDEVICE device;
+
+   /* Copy the instance over, useful for creating devices. */
    SDL_memcpy(&SDL_hapticlist[SDL_numhaptics].instance, pdidInstance,
          sizeof(DIDEVICEINSTANCE));
+
+   /* Open the device */
+   ret = IDirectInput_CreateDevice( dinput, &instance.guidInstance,
+                                    &device, NULL );
+   if (FAILED(ret)) {
+      /* DI_SetError("Creating DirectInput device",ret); */
+      return DIENUM_CONTINUE;
+   }
+
+   /* Get capabilities. */
+   SDL_hapticlist[SDL_numhaptics].capabilities.dwSize = sizeof(DIDEVCAPS);
+   ret = IDirectInputDevice_GetCapabilities( device,
+                                             &SDL_hapticlist[SDL_numhaptics].capabilities );
+   if (FAILED(ret)) {
+      /* DI_SetError("Getting device capabilities",ret); */
+      IDirectInputDevice_Release(device);
+      return DIENUM_CONTINUE;
+   }
+
+   /* Close up device and count it. */
+   IDirectInputDevice_Release(device);
    SDL_numhaptics++;
 
+   /* Watch out for hard limit. */
    if (SDL_numhaptics >= MAX_HAPTICS)
       return DIENUM_STOP;
 
@@ -256,7 +282,6 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
  *       - Release DirectInputDevice interface.
  *       - Set cooperative level.
  *       - Set data format.
- *       - Get capabilities.
  *       - Acquire exclusiveness.
  *       - Reset actuators.
  *       - Get supported featuers.
@@ -311,15 +336,6 @@ SDL_SYS_HapticOpenFromInstance(SDL_Haptic * haptic, DIDEVICEINSTANCE instance)
    if (FAILED(ret)) {
       DI_SetError("Setting data format",ret);
       goto query_err;
-   }
-
-   /* Get capabilities. */
-   haptic->hwdata->capabilities.dwSize = sizeof(DIDEVCAPS);
-   ret = IDirectInputDevice2_GetCapabilities( haptic->hwdata->device,
-                                              &haptic->hwdata->capabilities );
-   if (FAILED(ret)) {
-      DI_SetError("Getting device capabilities",ret);
-      goto acquire_err;
    }
 
    /* Get number of axes. */
@@ -435,6 +451,10 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 int
 SDL_SYS_HapticMouse(void)
 {
+   int i;
+
+   for (i=0; i<SDL_numhaptics; i++) {
+   }
    return -1;
 }
 
