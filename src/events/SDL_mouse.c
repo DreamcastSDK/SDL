@@ -174,9 +174,9 @@ SDL_SelectMouse(int index)
 }
 
 SDL_WindowID
-SDL_GetMouseFocusWindow()
+SDL_GetMouseFocusWindow(int index)
 {
-    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+    SDL_Mouse *mouse = SDL_GetMouse(index);
 
     if (!mouse) {
         return 0;
@@ -196,7 +196,7 @@ FlushMouseMotion(void *param, SDL_Event * event)
 }
 
 int
-SDL_SetRelativeMouseMode(SDL_bool enabled, int index)
+SDL_SetRelativeMouseMode(int index, SDL_bool enabled)
 {
     SDL_Mouse *mouse = SDL_GetMouse(index);
 
@@ -224,9 +224,9 @@ SDL_SetRelativeMouseMode(SDL_bool enabled, int index)
 }
 
 SDL_bool
-SDL_GetRelativeMouseMode()
+SDL_GetRelativeMouseMode(int index)
 {
-    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+    SDL_Mouse *mouse = SDL_GetMouse(index);
 
     if (!mouse) {
         return SDL_FALSE;
@@ -235,9 +235,9 @@ SDL_GetRelativeMouseMode()
 }
 
 Uint8
-SDL_GetMouseState(int *x, int *y)
+SDL_GetMouseState(int index, int *x, int *y)
 {
-    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+    SDL_Mouse *mouse = SDL_GetMouse(index);
 
     if (!mouse) {
         if (x) {
@@ -259,9 +259,9 @@ SDL_GetMouseState(int *x, int *y)
 }
 
 Uint8
-SDL_GetRelativeMouseState(int *x, int *y)
+SDL_GetRelativeMouseState(int index, int *x, int *y)
 {
-    SDL_Mouse *mouse = SDL_GetMouse(SDL_current_mouse);
+    SDL_Mouse *mouse = SDL_GetMouse(index);
 
     if (!mouse) {
         if (x) {
@@ -494,10 +494,6 @@ SDL_SendMouseButton(int id, Uint8 state, Uint8 button)
         mouse->buttonstate |= SDL_BUTTON(button);
         break;
     case SDL_RELEASED:
-        //if (!(mouse->buttonstate & SDL_BUTTON(button))) {
-        //    /* Ignore this event, no state change */
-        //    return 0;
-        //}*/
         type = SDL_MOUSEBUTTONUP;
         mouse->buttonstate &= ~SDL_BUTTON(button);
         break;
@@ -809,15 +805,22 @@ void SDL_ChangeEnd(int id, int end)
 
 int SDL_GetCursorsNumber(int index)
 {
-	if(index>=SDL_num_mice)
-	{
-		return -1;
-	}
-	if(SDL_mice[index]==NULL)
-	{
-		return -1;
-	}
-	return SDL_mice[index]->total_ends;
+	SDL_Mouse* mouse = SDL_GetMouse(index);
+    if(!mouse)
+    {
+        return -1;
+    }
+	return mouse->total_ends;
+}
+
+int SDL_GetCurrentCursor(int index)
+{
+    SDL_Mouse* mouse = SDL_GetMouse(index);
+    if(!mouse)
+    {
+        return -1;
+    }
+    return mouse->current_end;
 }
 /* vi: set ts=4 sw=4 expandtab: */
 
