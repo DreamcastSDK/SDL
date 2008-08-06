@@ -465,6 +465,9 @@ SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2)
       haptic->supported |= SDL_HAPTIC_AUTOCENTER;
    }
 
+   /* Status is always supported. */
+   haptic->supported |= SDL_HAPTIC_STATUS;
+
    /* Check maximum effects. */
    haptic->neffects = 128; /* TODO actually figure this out. */
    haptic->nplaying = 128;
@@ -1231,8 +1234,17 @@ SDL_SYS_HapticDestroyEffect(SDL_Haptic * haptic, struct haptic_effect * effect)
 int
 SDL_SYS_HapticGetEffectStatus(SDL_Haptic * haptic, struct haptic_effect * effect)
 {
-   SDL_SetError("Haptic: Status not supported.");
-   return -1;
+   HRESULT ret;
+   DWORD status;
+
+   ret = IDirectInputEffect_GetEffectStatus(effect->hweffect->ref, &status);
+   if (FAILED(ret)) {
+      DI_SetError("Getting effect status",ret);
+      return -1;
+   }
+
+   if (status == 0) return SDL_FALSE;
+   return SDL_TRUE;
 }
 
 
