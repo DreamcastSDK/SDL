@@ -51,56 +51,7 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
-
-struct recElement
-{
-    IOHIDElementCookie cookie;  /* unique value which identifies element, will NOT change */
-    long min;                   /* reported min value possible */
-    long max;                   /* reported max value possible */
-#if 0
-    /* TODO: maybe should handle the following stuff somehow? */
-
-    long scaledMin;             /* reported scaled min value possible */
-    long scaledMax;             /* reported scaled max value possible */
-    long size;                  /* size in bits of data return from element */
-    Boolean relative;           /* are reports relative to last report (deltas) */
-    Boolean wrapping;           /* does element wrap around (one value higher than max is min) */
-    Boolean nonLinear;          /* are the values reported non-linear relative to element movement */
-    Boolean preferredState;     /* does element have a preferred state (such as a button) */
-    Boolean nullState;          /* does element have null state */
-#endif                          /* 0 */
-
-    /* runtime variables used for auto-calibration */
-    long minReport;             /* min returned value */
-    long maxReport;             /* max returned value */
-
-    struct recElement *pNext;   /* next element in list */
-};
-typedef struct recElement recElement;
-
-struct joystick_hwdata
-{
-    IOHIDDeviceInterface **interface;   /* interface to device, NULL = no interface */
-
-    char product[256];          /* name of product */
-    long usage;                 /* usage page from IOUSBHID Parser.h which defines general usage */
-    long usagePage;             /* usage within above page from IOUSBHID Parser.h which defines specific usage */
-
-    long axes;                  /* number of axis (calculated, not reported by device) */
-    long buttons;               /* number of buttons (calculated, not reported by device) */
-    long hats;                  /* number of hat switches (calculated, not reported by device) */
-    long elements;              /* number of total elements (shouldbe total of above) (calculated, not reported by device) */
-
-    recElement *firstAxis;
-    recElement *firstButton;
-    recElement *firstHat;
-
-    int removed;
-    int uncentered;
-
-    struct joystick_hwdata *pNext;      /* next device */
-};
-typedef struct joystick_hwdata recDevice;
+#include "SDL_sysjoystick_c.h"
 
 
 /* Linked list of all available devices */
