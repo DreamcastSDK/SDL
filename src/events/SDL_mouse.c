@@ -349,7 +349,6 @@ SDL_SendProximity(int id, int x, int y, int type)
         event.proximity.x=x;
         event.proximity.y=y;
         event.proximity.cursor=mouse->current_end;
-        event.type=type;
         event.proximity.type=type;
         posted = (SDL_PushEvent(&event) > 0);
         if(type==SDL_PROXIMITYIN)
