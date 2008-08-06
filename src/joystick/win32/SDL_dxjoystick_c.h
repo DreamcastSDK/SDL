@@ -36,7 +36,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#define DIRECTINPUT_VERSION 0x0500
+#define DIRECTINPUT_VERSION 0x0700 /* Need version 7 for force feedback. */
 #include <dinput.h>
 #ifdef _MSC_VER
     /* Used for the c_dfDIJoystick2 symbol (no imports are used) */
