@@ -355,6 +355,7 @@ creat_err:
       SDL_free(haptic->hwdata);
       haptic->hwdata = NULL;                                              
    }
+   return -1;
 }
 
 
