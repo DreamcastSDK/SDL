@@ -853,6 +853,10 @@ extern DECLSPEC void SDLCALL SDL_HapticClose(SDL_Haptic * haptic);
  *
  * \brief Returns the number of effects a haptic device can store.
  *
+ * On some platforms this isn't fully supported, and therefore is an
+ *  aproximation.  Always check to see if your created effect was actually
+ *  created and do not rely solely on HapticNumEffects.
+ *
  *    \param haptic The haptic device to query effect max.
  *    \return The number of effects the haptic device can store or
  *            -1 on error.
@@ -866,6 +870,9 @@ extern DECLSPEC int SDLCALL SDL_HapticNumEffects(SDL_Haptic * haptic);
  * \fn int SDL_HapticNumEffectsPlaying(SDL_Haptic * haptic)
  *
  * \brief Returns the number of effects a haptic device can play at the same time.
+ *
+ * This is not supported on all platforms, but will always return a value.  Added
+ *  here for the sake of completness.
  *
  *    \param haptic The haptic device to query maximum playing effect.s
  *    \return The number of effects the haptic device can play at the same time
