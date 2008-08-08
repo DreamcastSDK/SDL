@@ -460,7 +460,7 @@ NDS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         SDL_SetError("Unsupported texture format");
     }
-printf("!NDS_UnlockTexture\n");
+printf("+NDS_UnlockTexture\n-NDS_UnlockTexture\n");
 }
 
 static void
@@ -502,9 +502,9 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 //    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     int i;
 printf("+NDS_RenderCopy\n");
-    for(i = 0; i <= 0xFFFF; ++i) {
+    /*for(i = 0; i <= 0xFFFF; ++i) {
         txdat->vram[i] = 0x8000|i;
-    }
+    }*/
     printf("/txdat->hw_index = %d\n", txdat->hw_index);
 #if 0
     if (txdat->dirty.list) {
