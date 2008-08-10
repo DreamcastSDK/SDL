@@ -649,7 +649,7 @@ SDL_SYS_JoystickInit(void)
 
         /* We have to do some storage of the io_service_t for
          * SDL_HapticOpenFromJoystick */
-        if (FFIsForceFeedback(device) == FF_OK) {
+        if (FFIsForceFeedback((io_service_t)device) == FF_OK) {
            device->ffservice = ioHIDDeviceObject;
         }
         else {

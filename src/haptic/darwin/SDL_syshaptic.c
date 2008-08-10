@@ -162,6 +162,11 @@ SDL_SYS_HapticInit(void)
    }
    /* IOServiceGetMatchingServices consumes dictionary. */
 
+   if (!iter) { /* No iterator. */
+      numhaptics = 0;
+      return 0;
+   }
+
    numhaptics = 0;
    while ((device = IOIteratorNext(iter)) != IO_OBJECT_NULL) {
 
@@ -459,7 +464,8 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-   if (IOObjectIsEqualTo(haptic->hwdata->device, joystick->hwdata->ffservice))
+   if (IOObjectIsEqualTo((io_object_t) haptic->hwdata->device,
+                                       joystick->hwdata->ffservice))
       return 1;
    return 0;
 }
