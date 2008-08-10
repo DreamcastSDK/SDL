@@ -48,6 +48,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <Carbon/Carbon.h>      /* for NewPtrClear, DisposePtr */
 
+/* For force feedback testing. */
+#include <ForceFeedback/ForceFeedback.h>
+#include <ForceFeedback/ForceFeedbackConstants.h>
+
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
