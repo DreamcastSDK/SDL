@@ -447,6 +447,8 @@ SDL_SYS_HapticMouse(void)
 int
 SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 {
+   if (joystick->hwdata->ffservice != 0)
+      return SDL_TRUE;
    return SDL_FALSE;
 }
 
@@ -457,6 +459,8 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
+   if (IOObjectIsEqualTo(haptic->hwdata->device, joystick->hwdata->ffservice))
+      return 1;
    return 0;
 }
 
@@ -467,7 +471,8 @@ SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
 int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
-   return -1;
+   return SDL_SYS_HapticOpenFromService(haptic,
+                joystick->hwdata->ffservice);
 }
 
 

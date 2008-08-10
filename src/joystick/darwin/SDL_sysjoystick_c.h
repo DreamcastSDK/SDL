@@ -60,6 +60,7 @@ typedef struct recElement recElement;
 
 struct joystick_hwdata
 {
+    io_service_t ffservice;             /* Interface for force feedback, 0 = no ff */
     IOHIDDeviceInterface **interface;   /* interface to device, NULL = no interface */
 
     char product[256];          /* name of product */

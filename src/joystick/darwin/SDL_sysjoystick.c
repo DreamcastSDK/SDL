@@ -545,6 +545,12 @@ HIDDisposeDevice(recDevice ** ppDevice)
         /* save next device prior to disposing of this device */
         pDeviceNext = (*ppDevice)->pNext;
 
+        /* free posible io_service_t */
+        if ((*ppDevice)->ffservice) {
+            IOObjectRelease((*ppDevice)->ffservice);
+            (*ppDevice)->ffservice = 0;
+        }
+
         /* free element lists */
         HIDDisposeElementList(&(*ppDevice)->firstAxis);
         HIDDisposeElementList(&(*ppDevice)->firstButton);
@@ -637,8 +643,16 @@ SDL_SYS_JoystickInit(void)
         if (!device)
             continue;
 
-        /* dump device object, it is no longer needed */
-        result = IOObjectRelease(ioHIDDeviceObject);
+        /* We have to do some storage of the io_service_t for
+         * SDL_HapticOpenFromJoystick */
+        if (FFIsForceFeedback(device) == FF_OK) {
+           device->ffservice = ioHIDDeviceObject;
+        }
+        else {
+           device->ffservice = 0;
+           /* dump device object, it is no longer needed */
+           result = IOObjectRelease(ioHIDDeviceObject);
+        }
 /*		if (KERN_SUCCESS != result)
 			HIDReportErrorNum ("IOObjectRelease error with ioHIDDeviceObject.", result);
 */
