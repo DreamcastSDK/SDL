@@ -43,9 +43,14 @@
  */
 static struct
 {
-   char name[256];
-   io_service_t dev;
-   SDL_Haptic *haptic;
+   char name[256]; /* Name of the device. */
+
+   io_service_t dev; /* Node we use to create the device. */
+   SDL_Haptic *haptic; /* Haptic currently assosciated with it. */
+   
+   /* Usage pages for determining if it's a mouse or not. */
+   long usage;
+   long usagePage;
 } SDL_hapticlist[MAX_HAPTICS];
 
 
@@ -143,6 +148,8 @@ SDL_SYS_HapticInit(void)
    io_iterator_t iter;
    CFDictionaryRef match;
    io_service_t device;
+   CFMutableDictionaryRef hidProperties;
+   CFTypeRef refCF;
 
    /* Clear all the memory. */
    SDL_memset(SDL_hapticlist, 0, sizeof(SDL_hapticlist));
@@ -162,7 +169,7 @@ SDL_SYS_HapticInit(void)
    }
    /* IOServiceGetMatchingServices consumes dictionary. */
 
-   if (!iter) { /* No iterator. */
+   if (!IOIteratorIsValid(iter)) { /* No iterator. */
       numhaptics = 0;
       return 0;
    }
@@ -172,9 +179,35 @@ SDL_SYS_HapticInit(void)
 
       /* Check for force feedback. */
       if (FFIsForceFeedback(device) == FF_OK) {
+
+         /* Set basic device data. */
          HIDGetDeviceProduct(device, SDL_hapticlist[numhaptics].name);
          SDL_hapticlist[numhaptics].dev = device;
          SDL_hapticlist[numhaptics].haptic = NULL;
+
+         /* Set usage pages. */
+         hidProperties = 0;
+         refCF = 0;
+         result = IORegistryEntryCreateCFProperties(device,
+               &hidProperties, kCFAllocatorDefault, kNilOptions);
+         if ((result == KERN_SUCCESS) && hidProperties) {
+            refCF = CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDPrimaryUsagePageKey));
+            if (refCF) {
+               if (!CFNumberGetValue(refCF, kCFNumberLongType,
+                     &SDL_hapticlist[numhaptics].usagePage))
+                  SDL_SetError("Haptic: CFNumberGetValue error retrieving pDevice->usagePage.");
+               refCF = CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDPrimaryUsageKey));
+               if (refCF) {
+                  if (!CFNumberGetValue(refCF, kCFNumberLongType,
+                        &SDL_hapticlist[numhaptics].usage))
+                     SDL_SetError("Haptic: CFNumberGetValue error retrieving pDevice->usage.");
+               }
+            }
+            CFRelease(hidProperties);
+         }
+
+
+         /* Device has been added. */
          numhaptics++;
       }
       else { /* Free the unused device. */
@@ -246,7 +279,7 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
          if (refCF) {
             if (!CFStringGetCString(refCF, name, 256,
                                     CFStringGetSystemEncoding())) {
-               SDL_SetError("CFStringGetCString error retrieving pDevice->product.");
+               SDL_SetError("Haptic: CFStringGetCString error retrieving pDevice->product.");
                return -1;
             }
          }
@@ -254,16 +287,16 @@ HIDGetDeviceProduct(io_service_t dev, char *name)
          CFRelease(usbProperties);
       }
       else {
-         SDL_SetError("IORegistryEntryCreateCFProperties failed to create usbProperties.");
+         SDL_SetError("Haptic: IORegistryEntryCreateCFProperties failed to create usbProperties.");
          return -1;
       }
 
       /* Release stuff. */
       if (kIOReturnSuccess != IOObjectRelease(parent2)) {
-         SDL_SetError("IOObjectRelease error with parent2.");
+         SDL_SetError("Haptic: IOObjectRelease error with parent2.");
       }
       if (kIOReturnSuccess != IOObjectRelease(parent1))  {
-         SDL_SetError("IOObjectRelease error with parent1.");
+         SDL_SetError("Haptic: IOObjectRelease error with parent1.");
       }
    }
    else {
@@ -442,6 +475,14 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 int
 SDL_SYS_HapticMouse(void)
 {
+   int i;
+
+   for (i=0; i<SDL_numhaptics; i++) {
+      if ((SDL_hapticlist[i].usagePage == kHIDPage_GenericDesktop) &&
+            (SDL_hapticlist[i].usage == kHIDUsage_GD_Mouse))
+         return i;
+   }
+
    return -1;
 }
 
