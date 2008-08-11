@@ -647,20 +647,6 @@ SDL_SYS_JoystickInit(void)
         if (!device)
             continue;
 
-        /* We have to do some storage of the io_service_t for
-         * SDL_HapticOpenFromJoystick */
-        if (FFIsForceFeedback((io_service_t)device) == FF_OK) {
-           device->ffservice = ioHIDDeviceObject;
-        }
-        else {
-           device->ffservice = 0;
-           /* dump device object, it is no longer needed */
-           result = IOObjectRelease(ioHIDDeviceObject);
-        }
-/*		if (KERN_SUCCESS != result)
-			HIDReportErrorNum ("IOObjectRelease error with ioHIDDeviceObject.", result);
-*/
-
         /* Filter device list to non-keyboard/mouse stuff */
         if ((device->usagePage != kHIDPage_GenericDesktop) ||
             ((device->usage != kHIDUsage_GD_Joystick &&
@@ -671,6 +657,15 @@ SDL_SYS_JoystickInit(void)
             HIDDisposeDevice(&device);
             DisposePtr((Ptr) device);
             continue;
+        }
+
+        /* We have to do some storage of the io_service_t for
+         * SDL_HapticOpenFromJoystick */
+        if (FFIsForceFeedback(ioHIDDeviceObject) == FF_OK) {
+           device->ffservice = ioHIDDeviceObject;
+        }
+        else {
+           device->ffservice = 0;
         }
 
         /* Add device to the end of the list */
