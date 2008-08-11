@@ -2,9 +2,13 @@
 #LibSDL 1.3 porting and enhancements by Darren Alton (lifning)
 #LibSDL 1.2.9 DS porting by Troy Davis(GPF)
 
-ifeq ($(strip $(DEVKITARM)),)
-$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM)
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment (available from http://www.devkitpro.org). export DEVKITPRO=<path to>devkitPro")
 endif
+ifeq ($(strip $(DEVKITARM)),)
+DEVKITARM = $(DEVKITPRO)/devkitARM
+endif
+PATH := $(PATH):$(DEVKITARM)/bin
 
 CC = arm-eabi-gcc
 AR = arm-eabi-ar
