@@ -195,17 +195,16 @@ SDL_SYS_HapticInit(void)
             if (refCF) {
                if (!CFNumberGetValue(refCF, kCFNumberLongType,
                      &SDL_hapticlist[numhaptics].usagePage))
-                  SDL_SetError("Haptic: CFNumberGetValue error retrieving pDevice->usagePage.");
+                  SDL_SetError("Haptic: Recieving device's usage page.");
                refCF = CFDictionaryGetValue(hidProperties, CFSTR(kIOHIDPrimaryUsageKey));
                if (refCF) {
                   if (!CFNumberGetValue(refCF, kCFNumberLongType,
                         &SDL_hapticlist[numhaptics].usage))
-                     SDL_SetError("Haptic: CFNumberGetValue error retrieving pDevice->usage.");
+                     SDL_SetError("Haptic: Recieving device's usage.");
                }
             }
             CFRelease(hidProperties);
          }
-
 
          /* Device has been added. */
          numhaptics++;
