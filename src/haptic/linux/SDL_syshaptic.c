@@ -30,23 +30,19 @@
 #include "../../joystick/linux/SDL_sysjoystick_c.h" /* For joystick hwdata */ 
 
 #include <unistd.h> /* close */
-#include <linux/input.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <linux/limits.h>
+#include <linux/input.h> /* Force feedback linux stuff. */
+#include <fcntl.h> /* O_RDWR */
 #include <limits.h> /* INT_MAX */
-#include <string.h>
-#include <errno.h>
-#include <math.h>
+#include <errno.h> /* errno, strerror */
+#include <math.h> /* atan2 */
 
+/* Just in case. */
 #ifndef M_PI
 #  define M_PI     3.14159265358979323846
 #endif
 
 
-#define MAX_HAPTICS  32
+#define MAX_HAPTICS  32 /* It's doubtful someone has more then 32 evdev */
 
 
 /*
@@ -54,8 +50,8 @@
  */
 static struct
 {
-   char *fname;
-   SDL_Haptic *haptic;
+   char *fname; /* Dev path name (like /dev/input/event1) */
+   SDL_Haptic *haptic; /* Assosciated haptic. */
 } SDL_hapticlist[MAX_HAPTICS];
 
 
@@ -64,7 +60,7 @@ static struct
  */
 struct haptic_hwdata
 {
-   int fd;
+   int fd; /* File descriptor of the device. */
    char *fname; /* Points to the name in SDL_hapticlist. */
 };
 
@@ -348,6 +344,7 @@ SDL_SYS_HapticMouse(void)
          return -1;
       }
 
+      /* Is it a mouse? */
       if (EV_IsMouse(fd)) {
          close(fd);
          return i;
@@ -469,6 +466,10 @@ SDL_SYS_ToButton( Uint16 button )
 
    ff_button = 0;
 
+   /*
+    * Not sure what the proper syntax is because this actually isn't implemented
+    * in the current kernel from what I've seen (2.6.26).
+    */
    if (button != 0) {
       ff_button = BTN_GAMEPAD + button - 1;
    }
@@ -647,6 +648,10 @@ SDL_SYS_ToFFEffect( struct ff_effect * dest, SDL_HapticEffect * src )
          dest->u.condition[1].left_coeff = condition->left_coeff[1];  
          dest->u.condition[1].deadband = CLAMP(condition->deadband[1]);
          dest->u.condition[1].center = condition->center[1];
+
+         /*
+          * There is no envelope in the linux force feedback api for conditions.
+          */
 
          break;
 
