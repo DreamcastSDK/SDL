@@ -29,37 +29,35 @@
 
 #define DEBUG_CONVERT
 
-/* Perform fractional multiplication of two 32-bit integers to produce a 32-bit result. Assumes sizeof(long) = 4 */
-/*#define SDL_FixMpy32(v1, v2, dest) { \
-			long a, b, c, d; \
-			long x, y; \
-			a = (v1 >> 16) & 0xffff; \
-			b = v1 & 0xffff; \
-			c = (v2 >> 16); \
-			d = v2 & 0xffff; \
-			x = a * d + c * b; \
-			y = (((b*d) >> 16) & 0xffff) + x; \
-			dest = ((y >> 16) & 0xffff) + (a * c); \
-		}*/
-/* TODO: Check if 64-bit type exists. If not, see http://www.8052.com/mul16.phtml or http://www.cs.uaf.edu/~cs301/notes/Chapter5/node5.html */
+/* These are fractional multiplication routines. That is, their inputs
+   are two numbers in the range [-1, 1) and the result falls in that
+   same range. The output is the same size as the inputs, i.e.
+   32-bit x 32-bit = 32-bit.
+ */
 
 /* We hope here that the right shift includes sign extension */
 #ifdef SDL_HAS_64BIT_Type		
 #define SDL_FixMpy32(a, b) ((((Sint64)a * (Sint64)b) >> 31) & 0xffffffff)
 #else
-/* need to do something more complicated here */
+/* If we don't have the 64-bit type, do something more complicated. See http://www.8052.com/mul16.phtml or http://www.cs.uaf.edu/~cs301/notes/Chapter5/node5.html */
 #define SDL_FixMpy32(a, b) ((((Sint64)a * (Sint64)b) >> 31) & 0xffffffff)
 #endif
-/* Confirmed that SDL_FixMpy16 works, need to check 8 and 32 */
 #define SDL_FixMpy16(a, b) ((((Sint32)a * (Sint32)b) >> 14) & 0xffff)
 #define SDL_FixMpy8(a, b) ((((Sint16)a * (Sint16)b) >> 7) & 0xff)
-/* Everything is signed! */
-#define SDL_Make_1_7(a) (Sint8)(a * 127.0f)
-#define SDL_Make_1_15(a) (Sint16)(a * 32767.0f)
-#define SDL_Make_1_31(a) (Sint32)(a * 2147483647.0f)
-#define SDL_Make_2_6(a) (Sint8)(a * 63.0f)
-#define SDL_Make_2_14(a) (Sint16)(a * 16383.0f)
-#define SDL_Make_2_30(a) (Sint32)(a * 1073741823.0f)
+/* This macro just makes the floating point filtering code not have to be a special case. */
+#define SDL_FloatMpy(a, b) (a * b)
+
+/* These macros take floating point numbers in the range [-1.0f, 1.0f) and
+   represent them as fixed-point numbers in that same range. There's no
+   checking that the floating point argument is inside the appropriate range.
+ */
+
+#define SDL_Make_1_7(a) (Sint8)(a * 128.0f)
+#define SDL_Make_1_15(a) (Sint16)(a * 32768.0f)
+#define SDL_Make_1_31(a) (Sint32)(a * 2147483648.0f)
+#define SDL_Make_2_6(a) (Sint8)(a * 64.0f)
+#define SDL_Make_2_14(a) (Sint16)(a * 16384.0f)
+#define SDL_Make_2_30(a) (Sint32)(a * 1073741824.0f)
 
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
@@ -1442,6 +1440,11 @@ int SDL_BuildIIRLowpass(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 }
 
 /* Apply the lowpass IIR filter to the given SDL_AudioCVT struct */
+/* This was implemented because it would be much faster than the fir filter, 
+   but it doesn't seem to have a steep enough cutoff so we'd need several
+   cascaded biquads, which probably isn't a great idea. Therefore, this
+   function can probably be discarded.
+*/
 static void SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	Uint32 i, n;
 	
@@ -1524,7 +1527,8 @@ static void SDL_FilterIIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 #undef iir_fix
 }
 
-/* Apply the windowed sinc FIR filter to the given SDL_AudioCVT struct */
+/* Apply the windowed sinc FIR filter to the given SDL_AudioCVT struct.
+*/
 static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	int n = 8 * cvt->len_cvt / SDL_AUDIO_BITSIZE(format);
 	int m = cvt->len_sinc;
@@ -1534,9 +1538,28 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 	   Note: We can make a big optimization here by taking advantage
 	   of the fact that the signal is zero stuffed, so we can do
 	   significantly fewer multiplications and additions. However, this
-	   depends on the zero stuffing ratio, so it may not pay off.
+	   depends on the zero stuffing ratio, so it may not pay off. This would
+	   basically be a polyphase filter.
 	*/
-	/* We only calculate the values of samples which are 0 (mod len_div) because those are the only ones used */
+	/* One other way to do this fast is to look at the fir filter from a different angle:
+	   After we zero stuff, we have input of all zeroes, except for every len_mult
+	   sample. If we choose a sinc length equal to len_mult, then the fir filter becomes
+	   much more simple: we're just taking a windowed sinc, shifting it to start at each
+	   len_mult sample, and scaling it by the value of that sample. If we do this, then
+	   we don't even need to worry about the sample histories, and the inner loop here is
+	   unnecessary. This probably sacrifices some quality but could really speed things up as well.
+	*/
+	/* We only calculate the values of samples which are 0 (mod len_div) because
+	   those are the only ones used. All the other ones are discarded in the
+	   third step of resampling. This is a huge speedup. As a warning, though,
+	   if for some reason this is used elsewhere where there are no samples discarded,
+	   the output will not be corrrect if len_div is not 1. To make this filter a
+	   generic FIR filter, simply remove the if statement "if(i % cvt->len_div == 0)"
+	   around the inner loop so that every sample is processed.
+	*/
+	/* This is basically just a FIR filter. i.e. for input x_n and m coefficients,
+	   y_n = x_n*sinc_0 + x_(n-1)*sinc_1 +  x_(n-2)*sinc_2 + ... + x_(n-m+1)*sinc_(m-1)
+	*/
 #define filter_sinc(type, mult) { \
 			type *sinc = (type *)cvt->coeff; \
 			type *state = (type *)cvt->state_buf; \
@@ -1553,20 +1576,8 @@ static void SDL_FilterFIR(SDL_AudioCVT * cvt, SDL_AudioFormat format) {
 			} \
 		}
 	
-	/* If it's floating point, do it normally, otherwise used fixed-point code */
 	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
-		float *sinc = (float *)cvt->coeff;
-		float *state = (float *)cvt->state_buf;
-		float *buf = (float *)cvt->buf;
-		
-		for(i = 0; i < n; ++i) {
-			state[cvt->state_pos] = buf[i];
-			buf[i] = 0.0f;
-			for(j = 0; j < m; ++j) {
-				buf[i] += sinc[j] * state[(cvt->state_pos + j) % m];
-			}
-			cvt->state_pos = (cvt->state_pos + 1) % m;
-		}
+		filter_sinc(float, SDL_FloatMpy);
 	} else {
 		switch (SDL_AUDIO_BITSIZE(format)) {
 			case 8:
@@ -1609,7 +1620,7 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	cvt->len_sinc = m + 1;
 	
 	/* Allocate the floating point windowed sinc. */
-	fSinc = (float *)malloc(m * sizeof(float));
+	fSinc = (float *)malloc((m + 1) * sizeof(float));
 	if( fSinc == NULL ) {
 		return -1;
 	}
@@ -1635,9 +1646,10 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 		}
 		norm_sum += fabs(fSinc[i]);
 	}
-		
+	
+	norm_fact = 1.0f / norm_sum;
+	
 #define convert_fixed(type, fix) { \
-		norm_fact = 0.5f / norm_sum; \
 		type *dst = (type *)cvt->coeff; \
 		for( i = 0; i <= m; ++i ) { \
 			dst[i] = fix(fSinc[i] * norm_fact); \
@@ -1647,7 +1659,6 @@ SDL_BuildWindowedSinc(SDL_AudioCVT * cvt, SDL_AudioFormat format, unsigned int m
 	/* If we're using floating point, we only need to normalize */
 	if(SDL_AUDIO_ISFLOAT(format) && SDL_AUDIO_BITSIZE(format) == 32) {
 		float *fDest = (float *)cvt->coeff;
-		norm_fact = 1.0f / norm_sum;
 		for(i = 0; i <= m; ++i) {
 			fDest[i] = fSinc[i] * norm_fact;
 		}
@@ -1685,7 +1696,7 @@ inline int SDL_GCD(int a, int b) {
 	return a;
 }
 
-/* Perform proper resampling */
+/* Perform proper resampling. This is pretty slow but it's the best-sounding method. */
 static void SDLCALL
 SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 {
@@ -1718,7 +1729,9 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         } \
     }
 
-	// Step 1: Zero stuff the conversion buffer
+	/* Step 1: Zero stuff the conversion buffer. This upsamples by a factor of len_mult,
+	   creating aliasing at frequencies above the original nyquist frequency.
+	 */
 #ifdef DEBUG_CONVERT
 	printf("Zero-stuffing by a factor of %u\n", cvt->len_mult);
 #endif
@@ -1736,12 +1749,12 @@ SDL_Resample(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 	
 	cvt->len_cvt *= cvt->len_mult;
 
-	// Step 2: Use either a windowed sinc FIR filter or IIR lowpass filter to remove all alias frequencies
-	QSDL_FilterFIR( cvt, format );
+	/* Step 2: Use a windowed sinc FIR filter (lowpass filter) to remove the alias
+	   frequencies. This is the slow part.
+	 */
+	SDL_FilterFIR( cvt, format );
 	
-	// OPTIMIZATION: we only need to calculate the non-discarded samples. This could be a big speedup!
-	
-	// Step 3: Discard unnecessary samples
+	/* Step 3: Now downsample by discarding samples. */
 
 #ifdef DEBUG_CONVERT
 	printf("Discarding samples by a factor of %u\n", cvt->len_div);
@@ -1855,18 +1868,20 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             /* Uh oh.. */ ;
         }
     }
-
-    /* Do rate conversion */
-	int rate_gcd;
-	rate_gcd = SDL_GCD(src_rate, dst_rate);
-	cvt->len_mult = dst_rate / rate_gcd;
-	cvt->len_div = src_rate / rate_gcd;
-	cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
-	cvt->filters[cvt->filter_index++] = SDL_Resample;
-	//SDL_BuildIIRLowpass(cvt, dst_fmt);
-	SDL_BuildWindowedSinc(cvt, dst_fmt, 768);
 	
-    /*cvt->rate_incr = 0.0;
+    /* Do rate conversion */
+	if( src_rate != dst_rate ) {
+		int rate_gcd;
+		rate_gcd = SDL_GCD(src_rate, dst_rate);
+		cvt->len_mult = dst_rate / rate_gcd;
+		cvt->len_div = src_rate / rate_gcd;
+		cvt->len_ratio = (double)cvt->len_mult / (double)cvt->len_div;
+		cvt->filters[cvt->filter_index++] = SDL_Resample;
+		SDL_BuildWindowedSinc(cvt, dst_fmt, 768);
+	}
+	
+/*
+    cvt->rate_incr = 0.0;
     if ((src_rate / 100) != (dst_rate / 100)) {
         Uint32 hi_rate, lo_rate;
         int len_mult;
@@ -1917,15 +1932,15 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             len_ratio = 2.0;
         }*/
         /* If hi_rate = lo_rate*2^x then conversion is easy */
-        /*while (((lo_rate * 2) / 100) <= (hi_rate / 100)) {
+     /*   while (((lo_rate * 2) / 100) <= (hi_rate / 100)) {
             cvt->filters[cvt->filter_index++] = rate_cvt;
             cvt->len_mult *= len_mult;
             lo_rate *= 2;
             cvt->len_ratio *= len_ratio;
         }*/
         /* We may need a slow conversion here to finish up */
-        /*if ((lo_rate / 100) != (hi_rate / 100)) {*/
-#if 1
+    /*    if ((lo_rate / 100) != (hi_rate / 100)) {
+#if 1*/
             /* The problem with this is that if the input buffer is
                say 1K, and the conversion rate is say 1.1, then the
                output buffer is 1.1K, which may not be an acceptable
@@ -1933,7 +1948,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
              */
             /* For now, punt and hope the rate distortion isn't great.
              */
-#else
+/*#else
             if (src_rate < dst_rate) {
                 cvt->rate_incr = (double) lo_rate / hi_rate;
                 cvt->len_mult *= 2;
@@ -1944,7 +1959,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
             }
             cvt->filters[cvt->filter_index++] = SDL_RateSLOW;
 #endif
-/*        }
+        }
     }*/
 
     /* Set up the filter information */
@@ -1962,6 +1977,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 #undef SDL_FixMpy8
 #undef SDL_FixMpy16
 #undef SDL_FixMpy32
+#undef SDL_FloatMpy
 #undef SDL_Make_1_7
 #undef SDL_Make_1_15
 #undef SDL_Make_1_31

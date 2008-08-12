@@ -1717,6 +1717,7 @@
 			mainGroup = 0867D691FE84028FC02AAC07 /* SDLFramework */;
 			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				BECDF5FE0761BA81005FE872 /* Framework */,
 				BECDF66D0761BA81005FE872 /* Static Library */,
