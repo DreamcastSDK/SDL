@@ -256,6 +256,58 @@ finalize_audio_entry_points(void)
 #undef FILL_STUB
 }
 
+/* Streaming functions (for when the input and output buffer sizes are different) */
+/* Write [length] bytes from buf into the streamer */
+void SDL_StreamWrite(SDL_AudioStreamer * stream, Uint8 * buf, int length) {
+	int i;
+	
+	for(i = 0; i < length; ++i) {
+		stream->buffer[stream->write_pos] = buf[i];
+		++stream->write_pos;
+	}
+}
+
+/* Read [length] bytes out of the streamer into buf */
+void SDL_StreamRead(SDL_AudioStreamer * stream, Uint8 * buf, int length) {
+	int i;
+	
+	for(i = 0; i < length; ++i) {
+		buf[i] = stream->buffer[stream->read_pos];
+		++stream->read_pos;
+	}
+}
+
+int SDL_StreamLength(SDL_AudioStreamer * stream) {
+	return (stream->write_pos - stream->read_pos) % stream->max_len;
+}
+
+/* Initialize the stream by allocating the buffer and setting the read/write heads to the beginning */
+int SDL_StreamInit(SDL_AudioStreamer * stream, int max_len) {
+	int i;
+
+	/* First try to allocate the buffer */
+	stream->buffer = (Uint8 *)malloc(max_len);
+	if(stream->buffer == NULL) {
+		return -1;
+	}
+	
+	stream->max_len = max_len;
+	stream->read_pos = 0;
+	stream->write_pos = 0;
+	
+	/* Zero out the buffer */
+	for(i = 0; i < max_len; ++i) {
+		stream->buffer[i] = 0;
+	}
+}
+
+/* Deinitialize the stream simply by freeing the buffer */
+void SDL_StreamDeinit(SDL_AudioStreamer * stream) {
+	if(stream->buffer != NULL) {
+		free(stream->buffer);
+	}
+}
+
 
 /* The general mixing thread function */
 int SDLCALL
