@@ -2186,13 +2186,15 @@ case "$host" in
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
-          case $ARCH in
-            linux)
-                AC_DEFINE(SDL_HAPTIC_LINUX)
-                SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
-                have_haptic=yes
-            ;;
-          esac
+           if test x$use_input_events = xyes; then
+             case $ARCH in
+               linux)
+                   AC_DEFINE(SDL_HAPTIC_LINUX)
+                   SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
+                   have_haptic=yes
+               ;;
+             esac
+           fi
         fi
         # Set up files for the cdrom library
         if test x$enable_cdrom = xyes; then
