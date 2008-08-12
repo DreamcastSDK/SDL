@@ -42,12 +42,4 @@ typedef struct
 } SDL_AudioTypeFilters;
 extern const SDL_AudioTypeFilters sdl_audio_type_filters[];
 
-/* Streamer */
-typedef struct
-{
-	Uint8 *buffer;
-	int max_len;				// the maximum length in bytes
-	int read_pos, write_pos;	// the position of the write and read heads in bytes
-} SDL_AudioStreamer;
-
 /* vi: set ts=4 sw=4 expandtab: */

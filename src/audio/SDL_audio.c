@@ -282,7 +282,7 @@ int SDL_StreamLength(SDL_AudioStreamer * stream) {
 }
 
 /* Initialize the stream by allocating the buffer and setting the read/write heads to the beginning */
-int SDL_StreamInit(SDL_AudioStreamer * stream, int max_len) {
+int SDL_StreamInit(SDL_AudioStreamer * stream, int max_len, Uint8 silence) {
 	int i;
 
 	/* First try to allocate the buffer */
@@ -297,7 +297,7 @@ int SDL_StreamInit(SDL_AudioStreamer * stream, int max_len) {
 	
 	/* Zero out the buffer */
 	for(i = 0; i < max_len; ++i) {
-		stream->buffer[i] = 0;
+		stream->buffer[i] = silence;
 	}
 }
 
@@ -339,6 +339,8 @@ SDL_RunAudio(void *devicep)
         silence = device->spec.silence;
         stream_len = device->spec.size;
     }
+	
+	/* Determine if the streamer is necessary here */
 
     /* Loop, filling the audio buffers */
     while (device->enabled) {
