@@ -120,7 +120,6 @@
 		FD689F1F0E26E5D900F90B21 /* SDL_uikitopengles.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0F0E26E5D900F90B21 /* SDL_uikitopengles.m */; };
 		FD689F200E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F100E26E5D900F90B21 /* SDL_uikitvideo.h */; };
 		FD689F210E26E5D900F90B21 /* SDL_uikitvideo.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */; };
-		FD689F220E26E5D900F90B21 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F120E26E5D900F90B21 /* SDL_uikitview.h */; };
 		FD689F230E26E5D900F90B21 /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F130E26E5D900F90B21 /* SDL_uikitview.m */; };
 		FD689F240E26E5D900F90B21 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */; };
 		FD689F250E26E5D900F90B21 /* SDL_uikitwindow.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */; };
@@ -134,7 +133,6 @@
 		FD689F2F0E26E5D900F90B21 /* SDL_uikitopengles.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0F0E26E5D900F90B21 /* SDL_uikitopengles.m */; };
 		FD689F300E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F100E26E5D900F90B21 /* SDL_uikitvideo.h */; };
 		FD689F310E26E5D900F90B21 /* SDL_uikitvideo.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */; };
-		FD689F320E26E5D900F90B21 /* SDL_uikitview.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F120E26E5D900F90B21 /* SDL_uikitview.h */; };
 		FD689F330E26E5D900F90B21 /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F130E26E5D900F90B21 /* SDL_uikitview.m */; };
 		FD689F340E26E5D900F90B21 /* SDL_uikitwindow.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */; };
 		FD689F350E26E5D900F90B21 /* SDL_uikitwindow.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */; };
@@ -202,6 +200,7 @@
 		FDAAC4C90E2D4EE5001DB1D8 /* SDL_cdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4C40E2D4EC7001DB1D8 /* SDL_cdrom.c */; };
 		FDAAC4CB0E2D4EEF001DB1D8 /* SDL_syscdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4AB0E2D4EC7001DB1D8 /* SDL_syscdrom.c */; };
 		FDAAC4CC0E2D4EEF001DB1D8 /* SDL_cdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4C40E2D4EC7001DB1D8 /* SDL_cdrom.c */; };
+		FDBB1F070E3E91AF00B928D0 /* SDL_uikitkeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */; };
 		FDBB64840E159B23003B3114 /* SDL_systimer.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99BA2D0DD52EDC00FB1D6B /* SDL_systimer.h */; };
 		FDBB64850E159B23003B3114 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99BD570DD5352400FB1D6B /* SDL_config_iphoneos.h */; };
 		FDBB64860E159B23003B3114 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99B8CC0DD52EB400FB1D6B /* begin_code.h */; };
@@ -348,6 +347,7 @@
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		FD0BBFEF0E3933DD00D833B1 /* SDL_uikitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitview.h; sourceTree = "<group>"; };
 		FD1EF0520DEA7BAC001E9768 /* SDL_syscond.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_syscond.c; sourceTree = "<group>"; };
 		FD1EF0530DEA7BAC001E9768 /* SDL_sysmutex.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysmutex.c; sourceTree = "<group>"; };
 		FD1EF0540DEA7BAC001E9768 /* SDL_sysmutex_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysmutex_c.h; sourceTree = "<group>"; };
@@ -377,7 +377,6 @@
 		FD689F0F0E26E5D900F90B21 /* SDL_uikitopengles.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitopengles.m; sourceTree = "<group>"; };
 		FD689F100E26E5D900F90B21 /* SDL_uikitvideo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitvideo.h; sourceTree = "<group>"; };
 		FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvideo.m; sourceTree = "<group>"; };
-		FD689F120E26E5D900F90B21 /* SDL_uikitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitview.h; sourceTree = "<group>"; };
 		FD689F130E26E5D900F90B21 /* SDL_uikitview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitview.m; sourceTree = "<group>"; };
 		FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitwindow.h; sourceTree = "<group>"; };
 		FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitwindow.m; sourceTree = "<group>"; };
@@ -534,7 +533,10 @@
 		FDB9E4060DEB81870027A75A /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		FDB9E40C0DEB81970027A75A /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		FDB9E4CC0DEB84540027A75A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitkeyboard.h; sourceTree = "<group>"; };
+		FDBB1F060E3E91AF00B928D0 /* SDL_uikitkeyboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitkeyboard.m; sourceTree = "<group>"; };
 		FDBB65210E159B23003B3114 /* libSDLSimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLSimulator.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		FDC261780E3A3FC8001C4554 /* keyinfotable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyinfotable.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -641,8 +643,11 @@
 				FD689F0F0E26E5D900F90B21 /* SDL_uikitopengles.m */,
 				FD689F100E26E5D900F90B21 /* SDL_uikitvideo.h */,
 				FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */,
-				FD689F120E26E5D900F90B21 /* SDL_uikitview.h */,
+				FDC261780E3A3FC8001C4554 /* keyinfotable.h */,
+				FD0BBFEF0E3933DD00D833B1 /* SDL_uikitview.h */,
 				FD689F130E26E5D900F90B21 /* SDL_uikitview.m */,
+				FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */,
+				FDBB1F060E3E91AF00B928D0 /* SDL_uikitkeyboard.m */,
 				FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */,
 				FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */,
 				FD689F160E26E5D900F90B21 /* SDL_uikitopenglview.h */,
@@ -1036,7 +1041,6 @@
 				FD689F1C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */,
 				FD689F1E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */,
 				FD689F200E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */,
-				FD689F220E26E5D900F90B21 /* SDL_uikitview.h in Headers */,
 				FD689F240E26E5D900F90B21 /* SDL_uikitwindow.h in Headers */,
 				FD689F260E26E5D900F90B21 /* SDL_uikitopenglview.h in Headers */,
 				FD689F3E0E26E5F600F90B21 /* SDL_glesfuncs.h in Headers */,
@@ -1117,13 +1121,13 @@
 				FD689F2C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */,
 				FD689F2E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */,
 				FD689F300E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */,
-				FD689F320E26E5D900F90B21 /* SDL_uikitview.h in Headers */,
 				FD689F340E26E5D900F90B21 /* SDL_uikitwindow.h in Headers */,
 				FD689F360E26E5D900F90B21 /* SDL_uikitopenglview.h in Headers */,
 				FD689F410E26E5F600F90B21 /* SDL_glesfuncs.h in Headers */,
 				FD689F430E26E5F600F90B21 /* SDL_renderer_gles.h in Headers */,
 				FD689FD10E26E9D400F90B21 /* SDL_uikitappdelegate.h in Headers */,
 				FD8BD7AD0E27DCA400B52CD5 /* SDL_opengles.h in Headers */,
+				FDBB1F070E3E91AF00B928D0 /* SDL_uikitkeyboard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
