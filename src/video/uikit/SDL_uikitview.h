@@ -42,4 +42,18 @@
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
 
+#if SDL_IPHONE_KEYBOARD
+- (void)showKeyboard;
+- (void)hideKeyboard;
+- (void)initializeKeyboard;
+@property (readonly) BOOL keyboardVisible;
+#endif 
+
 @end
+
+#if SDL_IPHONE_KEYBOARD
+extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardShow(SDL_WindowID windowID);
+extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardHide(SDL_WindowID windowID);
+extern DECLSPEC SDL_bool SDLCALL SDL_iPhoneKeyboardIsShown(SDL_WindowID windowID);
+extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardToggle(SDL_WindowID windowID);
+#endif
