@@ -41,12 +41,20 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
     return SDL_LoadFunction(RTLD_DEFAULT, proc);
 }
 
+/*
+	note that SDL_GL_Delete context makes it current without passing the window
+*/
 int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
 	
-	SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-	
-	[data->view setCurrentContext];
+	if (context) {
+		SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+		[data->view setCurrentContext];
+	}
+	else {
+		[EAGLContext setCurrentContext: nil];
+	}
+		
     return 0;
 }
 
