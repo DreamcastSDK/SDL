@@ -156,7 +156,6 @@
 		FDB651CE0E43D19800F688B5 /* space.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = space.bmp; sourceTree = "<group>"; };
 		FDB651CF0E43D19800F688B5 /* stroke.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = stroke.bmp; sourceTree = "<group>"; };
 		FDB6520C0E43D1F300F688B5 /* Keyboard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Keyboard.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		FDB6520E0E43D1F300F688B5 /* Info copy.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info copy.plist"; sourceTree = "<group>"; };
 		FDB652110E43D21A00F688B5 /* keyboard.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = keyboard.c; sourceTree = "<group>"; };
 		FDB652C60E43E25900F688B5 /* kromasky_16x16.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; path = kromasky_16x16.bmp; sourceTree = "<group>"; };
 		FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -318,7 +317,6 @@
 				FD787AA00E22A5CC003E8E36 /* Default.png */,
 				FD925B180E0F276600E92347 /* Icon.png */,
 				8D1107310486CEB800E47090 /* Info.plist */,
-				FDB6520E0E43D1F300F688B5 /* Info copy.plist */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -349,7 +347,6 @@
 		FD77A0040E26BC0500F39101 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				FDC52EE40E284410008D768C /* fireworks.c */,
 				FD77A0050E26BC0500F39101 /* accelerometer.c */,
 				FD77A0060E26BC0500F39101 /* common.c */,
 				FD77A0070E26BC0500F39101 /* common.h */,
@@ -357,6 +354,7 @@
 				FD77A0090E26BC0500F39101 /* mixer.c */,
 				FD77A00A0E26BC0500F39101 /* rectangles.c */,
 				FD77A00B0E26BC0500F39101 /* touch.c */,
+				FDC52EE40E284410008D768C /* fireworks.c */,
 				FDB652110E43D21A00F688B5 /* keyboard.c */,
 			);
 			path = src;
