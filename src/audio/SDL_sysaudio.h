@@ -68,6 +68,7 @@ typedef struct SDL_AudioDriver
     SDL_AudioDriverImpl impl;
 } SDL_AudioDriver;
 
+
 /* Streamer */
 typedef struct
 {
