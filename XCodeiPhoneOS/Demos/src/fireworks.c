@@ -5,135 +5,100 @@
  */
 
 #include "SDL.h"
-#include "math.h"
+#include "SDL_opengles.h"
 #include "common.h"
 #include <math.h>
 #include <time.h>
-#include <OpenGLES/ES1/gl.h>
 
 #define MILLESECONDS_PER_FRAME 16	/* about 60 frames per second */
-#define ACCEL 0.0001f
-#define WIND_RESISTANCE 0.00005f
-#define MAX_PARTICLES 2000
-#define VEL_BEFORE_EXPLODE 0.0f
+#define ACCEL 0.0001f				/* acceleration due to gravity, units in pixels per millesecond squared */
+#define WIND_RESISTANCE 0.00005f	/* acceleration per unit velocity due to wind resistance */
+#define MAX_PARTICLES 2000			/* maximum number of particles displayed at once */
 
-SDL_TextureID flashTextureID;
-
-
+static GLuint particleTextureID;	/* OpenGL particle texture id */
+static SDL_bool pointSizeExtensionSupported; /* is GL_OES_point_size_array supported ? */
+/* 
+	used to describe what type of particle a given struct particle is.
+	emitter - this particle flies up, shooting off trail particles, then finally explodes into dust particles.
+	trail	- shoots off, following emitter particle
+	dust	- radiates outwards from emitter explosion
+*/
 enum particleType {
 	emitter = 0,
 	trail,
 	dust
 };
-
-struct glformat {
-	int SDL_GL_RED_SIZE;
-	int SDL_GL_GREEN_SIZE;
-	int SDL_GL_BLUE_SIZE;
-	int SDL_GL_ALPHA_SIZE;
-	int SDL_GL_BUFFER_SIZE;
-	int SDL_GL_DOUBLEBUFFER;
-	int SDL_GL_DEPTH_SIZE;
-	int SDL_GL_STENCIL_SIZE;
-	int SDL_GL_ACCUM_RED_SIZE;
-	int SDL_GL_ACCUM_GREEN_SIZE;
-	int SDL_GL_ACCUM_BLUE_SIZE;
-	int SDL_GL_ACCUM_ALPHA_SIZE;
-	int SDL_GL_STEREO;
-	int SDL_GL_MULTISAMPLEBUFFERS;
-	int SDL_GL_MULTISAMPLESAMPLES;
-	int SDL_GL_ACCELERATED_VISUAL;
-	int SDL_GL_RETAINED_BACKING;
-};
-
+/*
+	struct particle is used to describe each particle displayed on screen
+*/
 struct particle {
+	GLfloat x;					/* x position of particle */
+	GLfloat y;					/* y position of particle */
+	GLubyte color[4];			/* rgba color of particle */
+	GLfloat size;				/* size of particle in pixels */
+	GLfloat xvel;				/* x velocity of particle in pixels per milesecond */
+	GLfloat yvel;				/* y velocity of particle in pixels per millescond */
+	int isActive;				/* if not active, then particle is overwritten */
+	enum particleType type;		/* see enum particleType */
+} particles[MAX_PARTICLES];		/* this array holds all our particles */
 
-	GLfloat x;
-	GLfloat y;
-	GLubyte color[4];
-	GLfloat size;
-	GLfloat xvel;
-	GLfloat yvel;
-	int isActive;
-	enum particleType type;
-	int framesSinceEmission;
-} particles[MAX_PARTICLES];
+static int num_active_particles; /* how many members of the particle array are actually being drawn / animated? */
 
-void spawnParticleFromEmitter(struct particle *emitter);
+/* function declarations */
+void spawnTrailFromEmitter(struct particle *emitter);
+void spawnEmitterParticle(GLfloat x, GLfloat y);
 void explodeEmitter(struct particle *emitter);
+void initializeParticles(void);
+void initializeTexture();
+int	nextPowerOfTwo(int x);
+void drawParticles();
+void stepParticles(void);
 
-static int num_active_particles;
-
-static void getError(const char *prefix)
-{
-    const char *error;
-	
-	GLenum result = glGetError();
-	if (result == GL_NO_ERROR)
-		return;
-	
-    switch (result) {
-		case GL_NO_ERROR:
-			error = "GL_NO_ERROR";
-			break;
-		case GL_INVALID_ENUM:
-			error = "GL_INVALID_ENUM";
-			break;
-		case GL_INVALID_VALUE:
-			error = "GL_INVALID_VALUE";
-			break;
-		case GL_INVALID_OPERATION:
-			error = "GL_INVALID_OPERATION";
-			break;
-		case GL_STACK_OVERFLOW:
-			error = "GL_STACK_OVERFLOW";
-			break;
-		case GL_STACK_UNDERFLOW:
-			error = "GL_STACK_UNDERFLOW";
-			break;
-		case GL_OUT_OF_MEMORY:
-			error = "GL_OUT_OF_MEMORY";
-			break;
-		default:
-			error = "UNKNOWN";
-			break;
-    }
-    printf("%s: %s\n", prefix, error);
+/*	helper function (used in texture loading)
+	returns next power of two greater than or equal to x
+*/
+int nextPowerOfTwo(int x) {
+	int val=1;
+	while (val < x) {
+		val *= 2;
+	}
+	return val;
 }
-
-void render(void) {
-		
-	/* draw the background */
-	glClear(GL_COLOR_BUFFER_BIT);
-	
+/*	
+	steps each active particle by timestep MILLESECONDS_PER_FRAME
+*/
+void stepParticles(void) {
+	int i;
 	struct particle *slot = particles;
 	struct particle *curr = particles;
-	int i;
 	for (i=0; i<num_active_particles; i++) {
+		/* is the particle actually active, or is it marked for deletion? */
 		if (curr->isActive) {
-			
+			/* is the particle off the screen? */
 			if (curr->y > SCREEN_HEIGHT) curr->isActive = 0;
-			if (curr->y < 0) curr->isActive = 0;
+			else if (curr->y < 0) curr->isActive = 0;
 			if (curr->x > SCREEN_WIDTH) curr->isActive = 0;
-			if (curr->x < 0) curr->isActive = 0;
+			else if (curr->x < 0) curr->isActive = 0;
 
+			/* step velocity, then step position */
 			curr->yvel += ACCEL * MILLESECONDS_PER_FRAME;
 			curr->xvel += 0.0f;
 			curr->y += curr->yvel * MILLESECONDS_PER_FRAME;
 			curr->x += curr->xvel * MILLESECONDS_PER_FRAME;
 			
+			/* particle behavior */
 			if (curr->type == emitter) {
-				spawnParticleFromEmitter(curr);
-				curr->framesSinceEmission = 0;
-				if (curr->yvel > -VEL_BEFORE_EXPLODE) {
+				/* if we're an emitter, spawn a trail */
+				spawnTrailFromEmitter(curr);
+				/* if we've reached our peak, explode */
+				if (curr->yvel > 0.0) {
 					explodeEmitter(curr);
 				}
-				curr->framesSinceEmission++;
 			}
 			else {
-				
 				float speed = sqrt(curr->xvel*curr->xvel + curr->yvel*curr->yvel);
-				
+				/*	if wind resistance is not powerful enough to stop us completely,
+					then apply winde resistance, otherwise just stop us completely */
 				if (WIND_RESISTANCE * MILLESECONDS_PER_FRAME < speed) {
 					float normx = curr->xvel / speed;
 					float normy = curr->yvel / speed;
@@ -141,260 +106,285 @@ void render(void) {
 					curr->yvel -= normy * WIND_RESISTANCE * MILLESECONDS_PER_FRAME;
 				}
 				else {
-					curr->xvel = 0;
-					curr->yvel = 0;
+					curr->xvel = curr->yvel = 0; /* stop particle */
 				}
 				
-				if (curr->color[3] <= MILLESECONDS_PER_FRAME * 0.0005f * 255) {
+				if (curr->color[3] <= MILLESECONDS_PER_FRAME * 0.1275f) {
+					/* if this next step will cause us to fade out completely
+					 then just mark for deletion */
 					curr->isActive = 0;
-
 				}
 				else {
-					curr->color[3] -= MILLESECONDS_PER_FRAME * 0.0005f * 255;
+					/* otherwise, let's fade a bit more */
+					curr->color[3] -= MILLESECONDS_PER_FRAME * 0.1275f;
 				}
 				
+				/* if we're a dust particle, shrink our size */
 				if (curr->type == dust)
 					curr->size -= MILLESECONDS_PER_FRAME * 0.010f;
 				
 			}
 			
-			*(slot++) = *curr;
-		}
+			/* if we're still active, pack ourselves in the array next
+			   to the last active guy (pack the array tightly) */
+			if (curr->isActive)
+				*(slot++) = *curr;
+		} /* endif (curr->isActive) */
 		curr++;
 	}
+	/* the number of active particles is computed as the difference between
+	   old number of active particles, where slot points, and the 
+	   new size of the array, where particles points */
 	num_active_particles = slot - particles;
+}
+/*
+	This draws all the particles shown on screen
+*/
+void drawParticles() {
 	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, 1);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, sizeof(struct particle), particles + 0);
-	getError("vertices");
+	/* draw the background */
+	glClear(GL_COLOR_BUFFER_BIT);
 	
-	glEnableClientState(GL_COLOR_ARRAY);
+	/* set up the position and color pointers */
+	glVertexPointer(2, GL_FLOAT, sizeof(struct particle), particles);
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(struct particle), particles[0].color);
-	getError("colors");
-
-	glEnableClientState(GL_POINT_SIZE_ARRAY_OES);
-	getError("enable client state");
-	glPointSizePointerOES(GL_FLOAT, sizeof(struct particle), &(particles[0].size));	
-	getError("point size");
-
-	glEnable(GL_POINT_SPRITE_OES);
+	
+	if (pointSizeExtensionSupported) {
+		/* pass in our array of point sizes */
+		glPointSizePointerOES(GL_FLOAT, sizeof(struct particle), &(particles[0].size));
+	}
+	
+	/* draw our particles! */
 	glDrawArrays(GL_POINTS, 0, num_active_particles);	
-	getError("glDrawArrays");
-
-		
+	
 	/* update screen */
-	SDL_RenderPresent();
+	SDL_RenderPresent();	
 	
 }
-
-void printOpenGLAttributes(struct glformat *format) {
-	printf("\tSDL_GL_RED_SIZE = %d\n", format->SDL_GL_RED_SIZE);
-	printf("\tSDL_GL_GREEN_SIZE = %d\n", format->SDL_GL_GREEN_SIZE);
-	printf("\tSDL_GL_BLUE_SIZE = %d\n", format->SDL_GL_BLUE_SIZE);
-	printf("\tSDL_GL_ALPHA_SIZE = %d\n", format->SDL_GL_ALPHA_SIZE);
-	printf("\tSDL_GL_BUFFER_SIZE = %d\n", format->SDL_GL_BUFFER_SIZE);
-	printf("\tSDL_GL_DOUBLEBUFFER = %d\n", format->SDL_GL_DOUBLEBUFFER);
-	printf("\tSDL_GL_DEPTH_SIZE = %d\n", format->SDL_GL_DEPTH_SIZE);
-	printf("\tSDL_GL_STENCIL_SIZE = %d\n", format->SDL_GL_STENCIL_SIZE);
-	printf("\tSDL_GL_ACCUM_RED_SIZE = %d\n", format->SDL_GL_ACCUM_RED_SIZE);
-	printf("\tSDL_GL_ACCUM_GREEN_SIZE = %d\n", format->SDL_GL_ACCUM_GREEN_SIZE);
-	printf("\tSDL_GL_ACCUM_BLUE_SIZE = %d\n", format->SDL_GL_ACCUM_BLUE_SIZE);
-	printf("\tSDL_GL_ACCUM_ALPHA_SIZE = %d\n", format->SDL_GL_ACCUM_ALPHA_SIZE);
-	printf("\tSDL_GL_STEREO = %d\n", format->SDL_GL_STEREO);
-	printf("\tSDL_GL_MULTISAMPLEBUFFERS = %d\n", format->SDL_GL_MULTISAMPLEBUFFERS);
-	printf("\tSDL_GL_MULTISAMPLESAMPLES = %d\n", format->SDL_GL_MULTISAMPLESAMPLES);
-	printf("\tSDL_GL_ACCELERATED_VISUAL = %d\n", format->SDL_GL_ACCELERATED_VISUAL);
-	printf("\tSDL_GL_RETAINED_BACKING = %d\n", format->SDL_GL_RETAINED_BACKING);	
-}
-
-void setOpenGLAttributes(struct glformat *format) {
-	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, format->SDL_GL_RED_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, format->SDL_GL_GREEN_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, format->SDL_GL_BLUE_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, format->SDL_GL_ALPHA_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, format->SDL_GL_BUFFER_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, format->SDL_GL_DOUBLEBUFFER);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, format->SDL_GL_DEPTH_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, format->SDL_GL_STENCIL_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_ACCUM_RED_SIZE, format->SDL_GL_ACCUM_RED_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_ACCUM_GREEN_SIZE, format->SDL_GL_ACCUM_GREEN_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_ACCUM_BLUE_SIZE, format->SDL_GL_ACCUM_BLUE_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, format->SDL_GL_ACCUM_ALPHA_SIZE);
-	SDL_GL_SetAttribute(SDL_GL_STEREO, format->SDL_GL_STEREO);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, format->SDL_GL_MULTISAMPLEBUFFERS);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, format->SDL_GL_MULTISAMPLESAMPLES);
-	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, format->SDL_GL_ACCELERATED_VISUAL);
-	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, format->SDL_GL_RETAINED_BACKING);
-}
-
-void getOpenGLAttributes(struct glformat *format) {
-		
-	SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &(format->SDL_GL_RED_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &(format->SDL_GL_GREEN_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &(format->SDL_GL_BLUE_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &(format->SDL_GL_ALPHA_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_BUFFER_SIZE, &(format->SDL_GL_BUFFER_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_DOUBLEBUFFER, &(format->SDL_GL_DOUBLEBUFFER));
-	SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &(format->SDL_GL_DEPTH_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &(format->SDL_GL_STENCIL_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_ACCUM_RED_SIZE, &(format->SDL_GL_ACCUM_RED_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_ACCUM_GREEN_SIZE, &(format->SDL_GL_ACCUM_GREEN_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_ACCUM_BLUE_SIZE, &(format->SDL_GL_ACCUM_BLUE_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_ACCUM_ALPHA_SIZE, &(format->SDL_GL_ACCUM_ALPHA_SIZE));
-	SDL_GL_GetAttribute(SDL_GL_STEREO, &(format->SDL_GL_STEREO));
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &(format->SDL_GL_MULTISAMPLEBUFFERS));
-	SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &(format->SDL_GL_MULTISAMPLESAMPLES));
-	SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &(format->SDL_GL_ACCELERATED_VISUAL));
-	SDL_GL_GetAttribute(SDL_GL_RETAINED_BACKING, &(format->SDL_GL_RETAINED_BACKING));
-}
-
+/*
+	This causes an emitter to explode in a circular bloom of dust particles
+*/
 void explodeEmitter(struct particle *emitter) {
-
+	/* first off, we're done with this particle, so turn active off */
 	emitter->isActive = 0;
-	
 	int i;
 	for (i=0; i<200; i++) {
 		
-		if (num_active_particles >= MAX_PARTICLES) return;
+		if (num_active_particles >= MAX_PARTICLES)
+			return;
 		
+		/* come up with a random angle and speed for new particle */
 		float theta = randomFloat(0, 2.0f * 3.141592);
-		float max = 3.0f;
-		float speed = randomFloat(0.00, powf(0.17, max));
-		speed = powf(speed, 1.0f / max);
+		float exponent = 3.0f;
+		float speed = randomFloat(0.00, powf(0.17, exponent));
+		speed = powf(speed, 1.0f / exponent);
 		
+		/*select the particle at the end of our array */
 		struct particle *p = &particles[num_active_particles];
+		
+		/* set the particles properties */
 		p->xvel = speed * cos(theta);
 		p->yvel = speed * sin(theta);
 		p->x = emitter->x + emitter->xvel;
 		p->y = emitter->y + emitter->yvel;
 		p->isActive = 1;
 		p->type = dust;
+		p->size = 15;
+		/* inherit emitter's color */
 		p->color[0] = emitter->color[0];
 		p->color[1] = emitter->color[1];
 		p->color[2] = emitter->color[2];
 		p->color[3] = 255;
-
-		p->size = 15;
-		
+		/* our array has expanded at the end */
 		num_active_particles++;
-		
 	}
 	
 }
-
-void spawnParticleFromEmitter(struct particle *emitter) {
+/*
+	This spawns a trail particle from an emitter
+*/
+void spawnTrailFromEmitter(struct particle *emitter) {
 	
-	if (num_active_particles >= MAX_PARTICLES) return;
-	
+	if (num_active_particles >= MAX_PARTICLES)
+		return;
+		
+	/* select the particle at the slot at the end of our array */
 	struct particle *p = &particles[num_active_particles];
+	
+	/* set position and velocity to roughly that of the emitter */
 	p->x = emitter->x + randomFloat(-3.0, 3.0);
 	p->y = emitter->y + emitter->size / 2.0f;
 	p->xvel = emitter->xvel + randomFloat(-0.005, 0.005);
 	p->yvel = emitter->yvel + 0.1;
+	
+	/* set the color to a random-ish orangy type color */
 	p->color[0] = (0.8f + randomFloat(-0.1, 0.0)) * 255;
 	p->color[1] = (0.4f + randomFloat(-0.1, 0.1)) * 255;
 	p->color[2] = (0.0f + randomFloat(0.0, 0.2)) * 255;
 	p->color[3] = (0.7f) * 255;
+	
+	/* set other attributes */
 	p->size = 10;
 	p->type = trail;
 	p->isActive = 1;
+	
+	/* our array has expanded at the end */
 	num_active_particles++;
 	
 }
-	
-void spawnEmitterParticle(int x, int y) {
+/*
+	spawns a new emitter particle at the bottom of the screen
+    destined for the point (x,y).
+*/
+void spawnEmitterParticle(GLfloat x, GLfloat y) {
 
-	if (num_active_particles >= MAX_PARTICLES) return;
+	if (num_active_particles >= MAX_PARTICLES)
+		return;
 	
+	/* find particle at endpoint of array */
 	struct particle *p = &particles[num_active_particles];
+	
+	/* set the color randomly */
+	switch(rand() % 4) {
+		case 0:
+			p->color[0] = 255;
+			p->color[1] = 100;
+			p->color[2] = 100;
+			break;
+		case 1:
+			p->color[0] = 100;
+			p->color[1] = 255;
+			p->color[2] = 100;
+			break;
+		case 2:
+			p->color[0] = 100;
+			p->color[1] = 100;
+			p->color[2] = 255;
+			break;
+		case 3:
+			p->color[0] = 255;
+			p->color[1] = 150;
+			p->color[2] = 50;
+			break;						
+	}	
+	p->color[3] = 255;
+	/* set position to (x, SCREEN_HEIGHT) */
 	p->x = x;
 	p->y = SCREEN_HEIGHT;
+	/* set velocity so that terminal point is (x,y) */
 	p->xvel = 0;
-	p->yvel = -sqrt(2*ACCEL*(SCREEN_HEIGHT-y) + VEL_BEFORE_EXPLODE * VEL_BEFORE_EXPLODE);
-	p->color[0] = 1.0 * 255;
-	p->color[1] = 0.4 * 255;
-	p->color[2] = 0.4 * 255;
-	p->color[3] = 1.0f * 255;
+	p->yvel = -sqrt(2*ACCEL*(SCREEN_HEIGHT-y));
+	/* set other attributes */
 	p->size = 10;
 	p->type = emitter;
-	p->framesSinceEmission = 0;
 	p->isActive = 1;
+	/* our array has expanded at the end */
 	num_active_particles++;
 }
 
+/* just sets the endpoint of the particle array to element zero */
 void initializeParticles(void) {
-	
 	num_active_particles = 0;
-	
 }
 
 /*
- loads the brush texture
+	loads the particle texture
  */
 void initializeTexture() {
-	SDL_Surface *bmp_surface;
+	
+	int bpp;								/* texture bits per pixel */
+	Uint32 Rmask, Gmask, Bmask, Amask;		/* masks for pixel format passed into OpenGL */
+	SDL_Surface *bmp_surface;				/* the bmp is loaded here */
+	SDL_Surface *bmp_surface_rgba8888;		/* this serves as a destination to convert the BMP
+											to format passed into OpenGL */
+	
 	bmp_surface = SDL_LoadBMP("stroke.bmp");
 	if (bmp_surface == NULL) {
 		fatalError("could not load stroke.bmp");
 	}
-	flashTextureID = SDL_CreateTextureFromSurface(SDL_PIXELFORMAT_ABGR8888, bmp_surface);
+
+	/* Grab info about format that will be passed into OpenGL */
+	SDL_PixelFormatEnumToMasks(SDL_PIXELFORMAT_ABGR8888, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
+	/* Create surface that will hold pixels passed into OpenGL */
+	bmp_surface_rgba8888 = SDL_CreateRGBSurface(0, bmp_surface->w, bmp_surface->h, bpp, Rmask, Gmask, Bmask, Amask);	
+	/* Blit to this surface, effectively converting the format */
+	SDL_BlitSurface(bmp_surface, NULL, bmp_surface_rgba8888, NULL);
+	
+	glGenTextures(1, &particleTextureID);
+	glBindTexture(GL_TEXTURE_2D, particleTextureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,\
+		nextPowerOfTwo(bmp_surface->w),\
+		nextPowerOfTwo(bmp_surface->h),\
+		0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	/* this is where we actually pass in the pixel data */
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bmp_surface->w, bmp_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, bmp_surface_rgba8888->pixels);
+	
+	/* free bmp surface and converted bmp surface */
 	SDL_FreeSurface(bmp_surface);
-	if (flashTextureID == 0) {
-		fatalError("could not create brush texture");
-	}
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	SDL_FreeSurface(bmp_surface_rgba8888);
+
 }
 
 int main(int argc, char *argv[]) {
 	
-	SDL_WindowID windowID;	/* ID of main window */
-	Uint32 startFrame;		/* time frame began to process */
-	Uint32 endFrame;		/* time frame ended processing */
-	Uint32 delay;			/* time to pause waiting to draw next frame */
-	int done;				/* should we clean up and exit? */
-	
-	struct glformat requested, obtained;
+	SDL_WindowID windowID;		/* ID of main window */
+	Uint32 startFrame;			/* time frame began to process */
+	Uint32 endFrame;			/* time frame ended processing */
+	Uint32 delay;				/* time to pause waiting to draw next frame */
+	int done;					/* should we clean up and exit? */
 	
 	/* initialize SDL */
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		fatalError("Could not initialize SDL");
 	}
-	
+	/* seed the random number generator */
 	srand(time(NULL));
-	
-	SDL_GL_LoadLibrary(NULL);
-		
-	SDL_memset(&requested, 0, sizeof(requested));
-	requested.SDL_GL_RED_SIZE = 5;
-	requested.SDL_GL_GREEN_SIZE = 6; 
-	requested.SDL_GL_BLUE_SIZE = 5;
-	requested.SDL_GL_ALPHA_SIZE = 0;
-	requested.SDL_GL_DEPTH_SIZE = 0;
-	requested.SDL_GL_RETAINED_BACKING = 0;
-	requested.SDL_GL_ACCELERATED_VISUAL = 1;	
-	
-	setOpenGLAttributes(&requested);
-	
+	/*	
+		request some OpenGL parameters
+		that may speed drawing
+	*/
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 0);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 0);
+	SDL_GL_SetAttribute(SDL_GL_RETAINED_BACKING, 0);
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
 	/* create main window and renderer */
 	windowID = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,\
 								SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_BORDERLESS);
 	SDL_CreateRenderer(windowID, 0, 0);		
 	
-	printf("Requested:\n");
-	printOpenGLAttributes(&requested);
-	
-	printf("obtained:\n");
-	getOpenGLAttributes(&obtained);
-	printOpenGLAttributes(&obtained);	
-	
+	/* load the particle texture */
 	initializeTexture();
 
+	/*	check if GL_POINT_SIZE_ARRAY_OES is supported
+		this is used to give each particle its own size
+	*/
+	pointSizeExtensionSupported = SDL_GL_ExtensionSupported("GL_OES_point_size_array");
+	
+	/* set up some OpenGL state */
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	glEnableClientState(GL_VERTEX_ARRAY);	
+	glEnableClientState(GL_COLOR_ARRAY);
+	
+	glEnable(GL_POINT_SPRITE_OES);
+	glTexEnvi(GL_POINT_SPRITE_OES, GL_COORD_REPLACE_OES, 1);
+	
+	if (pointSizeExtensionSupported) {
+		/* we use this to set the sizes of all the particles */
+		glEnableClientState(GL_POINT_SIZE_ARRAY_OES);
+	}
+	else {
+		/* if extension not available then all particles have size 10 */
+		glPointSize(10);
+	}
+	
 	done = 0;
 	/* enter main loop */
 	while(!done) {
@@ -405,7 +395,6 @@ int main(int argc, char *argv[]) {
 				done = 1;
             }
 			if (event.type == SDL_MOUSEBUTTONDOWN) {
-				printf("mouse down\n");
 				int which = event.button.which;
 				int x, y;
 				SDL_SelectMouse(which);
@@ -413,7 +402,8 @@ int main(int argc, char *argv[]) {
 				spawnEmitterParticle(x, y);
 			}
         }
-		render();
+		stepParticles();
+		drawParticles();
 		endFrame = SDL_GetTicks();
 		
 		/* figure out how much time we have left, and then sleep */
@@ -424,15 +414,12 @@ int main(int argc, char *argv[]) {
 		if (delay > 0) {
 			SDL_Delay(delay);
 		}
-			
-		//SDL_Delay(delay);
 	}
 	
 	/* delete textures */
-	
+	glDeleteTextures(1, &particleTextureID);
 	/* shutdown SDL */
 	SDL_Quit();
 	
 	return 0;
-	
 }
