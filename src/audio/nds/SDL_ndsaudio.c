@@ -50,6 +50,7 @@ NDSAUD_PlayDevice(_THIS)
     sound->vol = 127;    /* volume [0..127] for [min..max] */
     sound->pan = 64;     /* balance [0..127] for [left..right] */
     sound->format = 0;   /* 0 for 16-bit, 1 for 8-bit */
+    /*playSound(sound);*/
     /* stub */
 }
 
