@@ -319,6 +319,7 @@ SDL_RunAudio(void *devicep)
     void *udata;
     void (SDLCALL * fill) (void *userdata, Uint8 * stream, int len);
     int silence;
+	int stream_max_len;
 	
 	/* For streaming when the buffer sizes don't match up */
 	Uint8 *istream;
@@ -332,20 +333,42 @@ SDL_RunAudio(void *devicep)
     fill = device->spec.callback;
     udata = device->spec.userdata;
 
+	/* By default do not stream */
+	device->use_streamer = 0;
+
     if (device->convert.needed) {
         if (device->convert.src_format == AUDIO_U8) {
             silence = 0x80;
         } else {
             silence = 0;
         }
-        stream_len = device->convert.len;
+		
+		/* If the result of the conversion alters the length, i.e. resampling is being used, use the streamer */
+		if(device->convert.len_mult != 1 || device->convert.len_div != 1) {
+			/* The streamer's maximum length should be twice whichever is larger: spec.size or len_cvt */
+			stream_max_len = 2 * device->spec.size;
+			if(device->convert.len_mult > device->convert.len_div) {
+				stream_max_len *= device->convert.len_mult;
+				stream_max_len /= device->convert.len_div;
+			}
+			if(SDL_StreamInit(&device->streamer, stream_max_len, silence) < 0) return -1;
+			device->use_streamer = 1;
+			
+			/* istream_len should be the length of what we grab from the callback and feed to conversion,
+			    so that we get close to spec_size. I.e. we want device.spec_size = istream_len * u / d
+			*/
+			istream_len = device->spec.size * device->convert.len_div / device->convert.len_mult;
+		}
+		
+        /* stream_len = device->convert.len; */
+		stream_len = device->spec.size;
     } else {
         silence = device->spec.silence;
         stream_len = device->spec.size;
     }
 	
 	/* Determine if the streamer is necessary here */
-	if(device->use_streamer) {
+	if(device->use_streamer == 1) {
 		/* This code is almost the same as the old code. The difference is, instead of reding
 		   directly from the callback into "stream", then converting and sending the audio off,
 		   we go: callback -> "istream" -> (conversion) -> streamer -> stream -> device.
@@ -361,6 +384,20 @@ SDL_RunAudio(void *devicep)
 		while (device->enabled) {
 			/* Only read in audio if the streamer doesn't have enough already (if it does not have enough samples to output) */
 			if(SDL_StreamLength(&device->streamer) < stream_len) {
+				/* Set up istream */
+				if (device->convert.needed) {
+					if (device->convert.buf) {
+						istream = device->convert.buf;
+					} else {
+						continue;
+					}
+				} else {
+					istream = current_audio.impl.GetDeviceBuf(device);
+					if (istream == NULL) {
+						istream = device->fake_stream;
+					}
+				}
+			
 				/* Read from the callback into the _input_ stream */
 				if (!device->paused) {
 					SDL_mutexP(device->mixer_lock);
@@ -371,12 +408,11 @@ SDL_RunAudio(void *devicep)
 				 /* Convert the audio if necessary and write to the streamer */
 				if (device->convert.needed) {
 					SDL_ConvertAudio(&device->convert);
-					istream = current_audio.impl.GetDeviceBuf(device);
 					if (istream == NULL) {
 						istream = device->fake_stream;
 					}
-					SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt);
-					SDL_StreamWrite(&device->streamer, istream, device->convert.len_cvt);
+					/*SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt);*/
+					SDL_StreamWrite(&device->streamer, device->convert.buf, device->convert.len_cvt);
 				} else {
 					SDL_StreamWrite(&device->streamer, istream, istream_len);
 				}
@@ -467,6 +503,9 @@ SDL_RunAudio(void *devicep)
 
     /* Wait for the audio to drain.. */
     current_audio.impl.WaitDone(device);
+	
+	/* If necessary, deinit the streamer */
+	if(device->use_streamer == 1) SDL_StreamDeinit(&device->streamer);
 
     return (0);
 }
