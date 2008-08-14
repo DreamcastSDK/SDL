@@ -39,7 +39,7 @@
 
 #include <wintab.h>
 /*we're telling wintab that we want to receive movement, button events and pressure information in packets*/
-#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE)
+#define PACKETDATA ( PK_X | PK_Y | PK_BUTTONS | PK_NORMAL_PRESSURE | PK_CURSOR)
 #define PACKETMODE 0
 #include <pktdef.h>
 
