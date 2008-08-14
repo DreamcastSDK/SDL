@@ -54,6 +54,7 @@ WIN_InitMouse(_THIS)
 	int tmp=0;
 	char* buffer=NULL;
 	char* tab="wacom";/*since windows does't give us handles to tablets, we have to detect a tablet by it's name*/
+	const char *rdp = "rdp_mou";
 
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
@@ -78,6 +79,7 @@ WIN_InitMouse(_THIS)
 
 	for(i=0;i<devCount;++i)
 	{
+		int is_rdp=0;
 		int j;
 		int k;
 		char *default_device_name="Pointing device xx";
@@ -110,7 +112,6 @@ WIN_InitMouse(_THIS)
 		{
 			continue;
 		}
-
 		buffer+=4;
 		tmp-=4;
 
@@ -132,6 +133,35 @@ WIN_InitMouse(_THIS)
 	SDL_memcpy(key_name, reg_key_root, SDL_strlen (reg_key_root));
     SDL_memcpy(key_name + (SDL_strlen (reg_key_root)), buffer, j + 1);
     
+	l=SDL_strlen(key_name);
+	is_rdp=0;
+	if(l>=7)
+	{
+		for(j=0;j<l-7;++j)
+		{
+			for(k=0;k<7;++k)
+			{
+				if(rdp[k]!=SDL_tolower((unsigned char)key_name[j+k]))
+				{
+					break;
+				}
+			}
+			if(k==7)
+			{
+				is_rdp=1;
+				break;
+			}
+		}
+	}
+	if(is_rdp==1)
+	{
+		SDL_free(buffer);
+		SDL_free(key_name);
+		SDL_free(device_name);
+		is_rdp=0;
+		continue;
+	}
+	
 	/*we're opening the registry key to get the mouse name*/
 
 	rc = RegOpenKeyExA(HKEY_LOCAL_MACHINE, key_name, 0, KEY_READ, &hkey);
@@ -197,7 +227,6 @@ WIN_InitMouse(_THIS)
 void
 WIN_QuitMouse(_THIS)
 {
-	int i;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 	/*let's delete all of the mouses*/
 	SDL_MouseQuit();
