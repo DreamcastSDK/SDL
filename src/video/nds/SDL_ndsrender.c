@@ -109,6 +109,8 @@ typedef struct
     int hw_index;
     struct { int hdx, hdy, vdx, vdy, pitch, bpp; } dim;
     u16 *vram;
+    u16 *system_ram_copy;
+    int size;
 } NDS_TextureData;
 
 
@@ -269,7 +271,8 @@ printf("+NDS_CreateTexture\n");
                 txdat->dim.bpp = bpp;
                 txdat->vram = (u16*)(data->sub ?
                     BG_BMP_RAM_SUB(whichbg) : BG_BMP_RAM(whichbg));
-                for(i = 0; i < 60; ++i) swiWaitForVBlank();
+                txdat->size = txdat->dim.pitch * texture->h;
+                txdat->system_ram_copy = SDL_malloc(txdat->size);
             } else {
                 SDL_SetError("Out of NDS backgrounds.");
                 printf("ran out.\n");
@@ -320,7 +323,7 @@ printf("+NDS_UpdateTexture\n");
         /* IMPORTANT! copy the new pixels into the sprite or bg. */
         src = (Uint8 *) pixels;
         dst =
-            (Uint8 *) txdat->vram + rect->y * txdat->dim.pitch +
+            (Uint8 *) txdat->system_ram_copy + rect->y * txdat->dim.pitch +
             rect->x * (txdat->dim.bpp/8);
         length = rect->w * (txdat->dim.bpp/8);
         for (row = 0; row < rect->h; ++row) {
@@ -350,8 +353,8 @@ printf("+NDS_LockTexture\n");
             /*SDL_AddDirtyRect(&txdat->dirty, rect);*/
         }
 
-        *pixels = (void *) ((u8 *)txdat->vram + rect->y * txdat->dim.pitch
-                            + rect->x * (txdat->dim.bpp/8));
+        *pixels = (void *) ((u8 *)txdat->system_ram_copy + rect->y
+                            * txdat->dim.pitch + rect->x * (txdat->dim.bpp/8));
         *pitch = txdat->dim.pitch;
         printf("  pixels = %08x\n", (u32)*pixels);
 printf("-NDS_LockTexture\n");
@@ -403,8 +406,8 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
-//    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-//    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     int i;
     int bpp = SDL_BYTESPERPIXEL(texture->format);
     int pitch = txdat->dim.pitch;
@@ -431,10 +434,19 @@ static void
 NDS_RenderPresent(SDL_Renderer * renderer)
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
-    /* Send the data to the display TODO */
-    /* shouldn't it already be there at this point?
+    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
+    int i;
+    /* Send the data to the display TODO :
+       shouldn't it already be there at this point?
        I guess set the BG's and sprites "visible" flags here. */
 printf("+NDS_RenderPresent\n");
+
+    for(i = 0; i < 64; ++i) {
+        SDL_Texture * tx = display->textures[i];
+        NDS_TextureData * txdat = (NDS_TextureData*)tx->driverdata;
+        SDL_memcpy(txdat->vram, txdat->system_ram_copy, txdat->size);
+    }
 
     /* vsync for NDS */
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
@@ -453,6 +465,7 @@ printf("+NDS_DestroyTexture\n");
         /* free anything else allocated for texture */
         NDS_TextureData *txdat = texture->driverdata;
         /*SDL_FreeDirtyRects(&txdat->dirty);*/
+        SDL_free(txdat->system_ram_copy);
         SDL_free(txdat);
     }
 printf("-NDS_DestroyTexture\n");
