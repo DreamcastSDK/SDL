@@ -24,11 +24,6 @@
 #define _SDL_config_iphoneos_h
 
 #include "SDL_platform.h"
-#include "stdio.h" // contains def for size_t
-
-/* This is the minimal configuration that can be used to build SDL */
-
-#include <stdarg.h>
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
@@ -36,28 +31,23 @@ typedef signed short int16_t;
 typedef unsigned short uint16_t;
 typedef signed int int32_t;
 typedef unsigned int uint32_t;
-
-#ifndef size_t
-typedef unsigned int size_t;
-#endif
-
 typedef unsigned long uintptr_t;
 
-/* enable keyboard support */
+/* enable iPhone keyboard support */
 #define SDL_IPHONE_KEYBOARD 1
 
 /* enable OpenGL ES */
 #define SDL_VIDEO_OPENGL_ES	1
-
 #define SDL_VIDEO_RENDER_OGL_ES	1
 
-#define SDL_HAS_64BIT_TYPE	0
+#define SDL_HAS_64BIT_TYPE	1
 
 /* Enable various timer systems */
 #define SDL_TIMER_UNIX	1
 
-/* Enable the dummy audio driver (src/audio/dummy/\*.c) */
+/* enable iPhone version of Core Audio driver */
 #define SDL_AUDIO_DRIVER_COREAUDIOIPHONE 1
+/* Enable the dummy audio driver (src/audio/dummy/\*.c) */
 #define SDL_AUDIO_DRIVER_DUMMY	1
 
 /* Enable Unix style SO loading */
@@ -66,25 +56,17 @@ typedef unsigned long uintptr_t;
 /* Enable the stub cdrom driver (src/cdrom/dummy/\*.c) */
 #define SDL_CDROM_DISABLED	1
 
-/* Set max recognized G-force from acceleromter
-   (necessary for mapping floating point accelerometer
-    data to Sint16 joystick data)
+/* 
+	Set max recognized G-force from acceleromter
+	See src/joystick/uikit/SDLUIAccelerationDelegate.m for notes on why this is needed
  */
 #define SDL_IPHONE_MAX_GFORCE 5.0
-/*
-	Enable (or disable) emulation of multiple mice through multi-touch
-*/
+/* Enable emulation of multiple mice through multi-touch */
 #define SDL_IPHONE_MULTIPLE_MICE 1
 /* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
 #define SDL_LOADSO_DISABLED	1
 
-/* Enable the stub thread support (src/thread/generic/\*.c) */
-//#define SDL_THREADS_DISABLED	0
-
-/* Enable the stub timer support (src/timer/dummy/\*.c) */
-//#define SDL_TIMERS_DISABLED	0
-
-/* supported video drivers */
+/* Supported video drivers */
 #define SDL_VIDEO_DRIVER_UIKIT	1
 #define SDL_VIDEO_DRIVER_DUMMY	1
 
