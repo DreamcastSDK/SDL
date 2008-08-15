@@ -347,15 +347,15 @@
 		FD77A0040E26BC0500F39101 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				FD77A0050E26BC0500F39101 /* accelerometer.c */,
 				FD77A0060E26BC0500F39101 /* common.c */,
 				FD77A0070E26BC0500F39101 /* common.h */,
-				FD77A0080E26BC0500F39101 /* happy.c */,
-				FD77A0090E26BC0500F39101 /* mixer.c */,
 				FD77A00A0E26BC0500F39101 /* rectangles.c */,
+				FD77A0080E26BC0500F39101 /* happy.c */,
+				FD77A0050E26BC0500F39101 /* accelerometer.c */,
 				FD77A00B0E26BC0500F39101 /* touch.c */,
-				FDC52EE40E284410008D768C /* fireworks.c */,
+				FD77A0090E26BC0500F39101 /* mixer.c */,
 				FDB652110E43D21A00F688B5 /* keyboard.c */,
+				FDC52EE40E284410008D768C /* fireworks.c */,
 			);
 			path = src;
 			sourceTree = "<group>";
