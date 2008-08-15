@@ -20,8 +20,8 @@
     slouken@libsdl.org
 */
 
-#ifndef _SDL_config_minimal_h
-#define _SDL_config_minimal_h
+#ifndef _SDL_config_iphoneos_h
+#define _SDL_config_iphoneos_h
 
 #include "SDL_platform.h"
 #include "stdio.h" // contains def for size_t
@@ -38,7 +38,7 @@ typedef signed int int32_t;
 typedef unsigned int uint32_t;
 
 #ifndef size_t
-//typedef unsigned int size_t;
+typedef unsigned int size_t;
 #endif
 
 typedef unsigned long uintptr_t;
@@ -92,8 +92,6 @@ typedef unsigned long uintptr_t;
 #define SDL_THREAD_PTHREAD	1
 #define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX	1
 
-#endif /* _SDL_config_iPhone_h */
-
 #define HAVE_ALLOCA_H		1
 #define HAVE_SYS_TYPES_H	1
 #define HAVE_STDIO_H	1
@@ -145,3 +143,5 @@ typedef unsigned long uintptr_t;
 #define HAVE_SIGACTION	1
 #define HAVE_SETJMP	1
 #define HAVE_NANOSLEEP	1
+
+#endif /* _SDL_config_iphoneos_h */
