@@ -11,7 +11,12 @@
 #define MILLESECONDS_PER_FRAME 16	/* about 60 frames per second */
 #define DAMPING 0.5f;				/* after bouncing off a wall, damping coefficient determines final speed */
 #define FRICTION 0.0008f			/* coefficient of acceleration that opposes direction of motion */
-#define GRAVITY_CONSTANT 0.02f		/* how sensitive the ship is to the accelerometer */
+#define GRAVITY_CONSTANT 0.004f		/* how sensitive the ship is to the accelerometer */
+
+/*	If we aren't on an iPhone, then this definition ought to yield reasonable behavior */
+#ifndef SDL_IPHONE_MAX_GFORCE
+#define SDL_IPHONE_MAX_GFORCE 5.0f
+#endif
 
 static SDL_Joystick *accelerometer; /* used for controlling the ship */
 
@@ -26,20 +31,25 @@ static SDL_TextureID spaceID=0;		/* texture for space (background */
 
 void render(void) {
 		
+	
 	/* get joystick (accelerometer) axis values and normalize them */
-	float amax = (float)(0x7FFF); /* largest Sint16 number */
-	float ax = SDL_JoystickGetAxis(accelerometer, 0) / amax; 
-	float ay = -SDL_JoystickGetAxis(accelerometer, 1) / amax; 
+	float ax = SDL_JoystickGetAxis(accelerometer, 0); 
+	float ay = -SDL_JoystickGetAxis(accelerometer, 1); 
 		
 	/* ship screen constraints */
 	Uint32 minx = 0.0f;
 	Uint32 maxx = SCREEN_WIDTH - ship.rect.w;
 	Uint32 miny = 0.0f;
 	Uint32 maxy = SCREEN_HEIGHT - ship.rect.h;	
-		
-	/* update velocity from accelerometer */
-	ship.vx += ax * GRAVITY_CONSTANT * MILLESECONDS_PER_FRAME;
-	ship.vy += ay * GRAVITY_CONSTANT * MILLESECONDS_PER_FRAME;
+
+#define SINT16_MAX ((float)(0x7FFF))
+
+	/* update velocity from accelerometer
+	   the factor SDL_IPHONE_MAX_G_FORCE / SINT16_MAX converts between 
+	   SDL's units reported from the joytick, and units of g-force, as reported by the accelerometer
+	*/
+	ship.vx += ax * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT * MILLESECONDS_PER_FRAME;
+	ship.vy += ay * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT * MILLESECONDS_PER_FRAME;
 	
 	float speed = sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
 	
