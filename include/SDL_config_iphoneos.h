@@ -66,9 +66,15 @@ typedef unsigned long uintptr_t;
 /* Enable the stub cdrom driver (src/cdrom/dummy/\*.c) */
 #define SDL_CDROM_DISABLED	1
 
-/* Enable the stub joystick driver (src/joystick/dummy/\*.c) */
-//#define SDL_JOYSTICK_DISABLED	1
-
+/* Set max recognized G-force from acceleromter
+   (necessary for mapping floating point accelerometer
+    data to Sint16 joystick data)
+ */
+#define SDL_IPHONE_MAX_GFORCE 5.0
+/*
+	Enable (or disable) emulation of multiple mice through multi-touch
+*/
+#define SDL_IPHONE_MULTIPLE_MICE 1
 /* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
 #define SDL_LOADSO_DISABLED	1
 
