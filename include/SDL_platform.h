@@ -59,15 +59,26 @@
 #endif
 
 #if defined(__APPLE__)
-#include "targetconditionals.h" /* Mac OS X 10.3 and later */
+/* lets us know what version of Mac OS X we're compiling on */
+#include "AvailabilityMacros.h" 
+#ifdef MAC_OS_X_VERSION_10_3
+#include "targetconditionals.h" /* this header is in 10.3 or later */
 #if TARGET_OS_IPHONE
+/* if compiling for iPhone */
 #undef __IPHONEOS__
 #define __IPHONEOS__ 1
 #undef __MACOSX__
 #else
+/* if not compiling for iPhone */
 #undef __MACOSX__
 #define __MACOSX__	1
 #endif /* TARGET_OS_IPHONE */
+#else
+/* if earlier verion of Mac OS X than version 10.3 */
+#undef __MACOSX__
+#define __MACOSX__	1
+#endif
+
 #endif /* defined(__APPLE__) */
 
 #if defined(__NetBSD__)
