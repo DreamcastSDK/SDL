@@ -7,6 +7,7 @@
 //
 
 #import "SDLUIAccelerationDelegate.h"
+#import "../../../include/SDL_config_iphoneos.h"
 
 static SDLUIAccelerationDelegate *sharedDelegate=nil;
 
@@ -32,21 +33,20 @@ static SDLUIAccelerationDelegate *sharedDelegate=nil;
 
 -(void)getLastOrientation:(Sint16 *)data {
 
-#define MAX_G_FORCE 5.0
-#define MAX_SINT16 0x7FFF	
+	#define MAX_SINT16 0x7FFF	
 
-	if (x > MAX_G_FORCE) x = MAX_G_FORCE;
-	else if (x < -MAX_G_FORCE) x = -MAX_G_FORCE;
+	if (x > SDL_IPHONE_MAX_GFORCE) x = SDL_IPHONE_MAX_GFORCE;
+	else if (x < -SDL_IPHONE_MAX_GFORCE) x = -SDL_IPHONE_MAX_GFORCE;
 
-	if (y > MAX_G_FORCE) y = MAX_G_FORCE;
-	else if (y < -MAX_G_FORCE) y = -MAX_G_FORCE;
+	if (y > SDL_IPHONE_MAX_GFORCE) y = SDL_IPHONE_MAX_GFORCE;
+	else if (y < -SDL_IPHONE_MAX_GFORCE) y = -SDL_IPHONE_MAX_GFORCE;
 
-	if (z > MAX_G_FORCE) z = MAX_G_FORCE;
-	else if (z < -MAX_G_FORCE) z = -MAX_G_FORCE;
+	if (z > SDL_IPHONE_MAX_GFORCE) z = SDL_IPHONE_MAX_GFORCE;
+	else if (z < -SDL_IPHONE_MAX_GFORCE) z = -SDL_IPHONE_MAX_GFORCE;
 	
-	data[0] = (x / MAX_G_FORCE) * MAX_SINT16;
-	data[1] = (y / MAX_G_FORCE) * MAX_SINT16;
-	data[2] = (z / MAX_G_FORCE) * MAX_SINT16;
+	data[0] = (x / SDL_IPHONE_MAX_GFORCE) * MAX_SINT16;
+	data[1] = (y / SDL_IPHONE_MAX_GFORCE) * MAX_SINT16;
+	data[2] = (z / SDL_IPHONE_MAX_GFORCE) * MAX_SINT16;
 
 }
 
