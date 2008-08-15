@@ -26,7 +26,11 @@
 #include "SDL_mouse_c.h"
 #include "SDL_events.h"
 
-#define MAX_SIMULTANEOUS_TOUCHES 5
+#if SDL_IPHONE_MULTIPLE_MICE
+	#define MAX_SIMULTANEOUS_TOUCHES 5
+#else
+	#define MAX_SIMULTANEOUS_TOUCHES 1
+#endif
 
 @interface SDL_uikitview : UIView<UITextFieldDelegate> {
 		
