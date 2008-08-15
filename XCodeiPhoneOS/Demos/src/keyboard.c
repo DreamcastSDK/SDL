@@ -261,10 +261,14 @@ int main(int argc, char *argv[]) {
 				/* draw our updates to the screen */
 				SDL_RenderPresent();
 				break;
+#ifdef __IPHONEOS__
 			case SDL_MOUSEBUTTONUP:
-				/* mouse up toggles keyboard */
+				/*	mouse up toggles onscreen keyboard visibility
+					this function is available ONLY on iPhone OS
+				 */
 				SDL_iPhoneKeyboardToggle(windowID);
 				break;
+#endif
 		}
 	}
 	cleanup();
