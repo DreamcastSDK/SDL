@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
-
-#include "SDL.h"
+#include <fat.h>
+#include <SDL/SDL.h>
 
 #define NUM_SPRITES	100
 #define MAX_SPEED 	1
@@ -97,8 +97,8 @@ MoveSprites(SDL_Surface * screen, Uint32 background)
 
             Uint32 color = SDL_MapRGB(screen->format, 255, 0, 0);
             SDL_Rect r;
-            r.x =
-                (sin((float) t * 2 * 3.1459) + 1.0) / 2.0 * (screen->w - 20);
+            r.x = t;
+/* (sin((float) t * 2 * 3.1459) + 1.0) / 2.0 * (screen->w - 20); */
             r.y = 0;
             r.w = 20;
             r.h = screen->h;
@@ -162,7 +162,7 @@ main(int argc, char *argv[])
     int i, done;
     SDL_Event event;
     Uint32 then, now, frames;
-
+    fatInitDefault();
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
