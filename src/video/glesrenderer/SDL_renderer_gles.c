@@ -278,12 +278,10 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 	
 	if (SDL_GL_ExtensionSupported("GL_OES_draw_texture")) {
-		printf("using draw texture\n");
 		data->GL_OES_draw_texture_supported = SDL_TRUE;
 		data->useDrawTexture = SDL_TRUE;
 	}
 	else {
-		printf("not using draw texture\n");
 		data->GL_OES_draw_texture_supported = SDL_FALSE;
 		data->useDrawTexture = SDL_FALSE;
 	}	
@@ -309,11 +307,7 @@ static int GL_ActivateRenderer(SDL_Renderer * renderer)
 		
     GL_RenderData *data = (GL_RenderData *)renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-		
-	if (data->context == NULL) {
-		printf("Context is null, dude\n");
-	}
-		
+				
     if (SDL_GL_MakeCurrent(window->id, data->context) < 0) {
         return -1;
     }
