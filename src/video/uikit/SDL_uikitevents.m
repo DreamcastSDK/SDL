@@ -50,7 +50,7 @@ UIKit_PumpEvents(_THIS)
 	 
 	 */	
 	if (setjmp(*jump_env()) != 0) {
-		NSLog(@"Bam! We're back");
+		//NSLog(@"Bam! We're back");
 	}
 	else {
 		SInt32 result;

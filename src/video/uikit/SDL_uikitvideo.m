@@ -118,8 +118,6 @@ int
 UIKit_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
-
-	printf("UIKit Video init!");
 		
 	_this->gl_config.driver_loaded = 1;
 

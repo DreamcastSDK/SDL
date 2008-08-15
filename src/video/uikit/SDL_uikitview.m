@@ -144,9 +144,7 @@
 
 /* UITextFieldDelegate related methods */
 - (void)initializeKeyboard {
-	
-	NSLog(@"Text field init");
-	
+		
 	textField = [[UITextField alloc] initWithFrame: CGRectZero];
 	textField.delegate = self;
 	/* placeholder so there is something to delete! */

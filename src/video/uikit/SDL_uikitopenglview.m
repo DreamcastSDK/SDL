@@ -119,13 +119,9 @@
 		}
 			
 		if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-			NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
 			return NO;
 		}
 		/* end create buffers */
-		
-		NSLog(@"Done initializing ...");
-		
 	}
 	return self;
 }
@@ -137,9 +133,7 @@
 
 - (void)swapBuffers {
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	if (![context presentRenderbuffer:GL_RENDERBUFFER_OES]) {
-		NSLog(@"Could not swap buffers");
-	}
+	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
 
