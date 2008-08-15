@@ -34,7 +34,36 @@
 static int
 NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
-    return 1;                   /* always succeeds. */
+    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
+    int valid_datatype = 0;
+
+    this->hidden = SDL_malloc(sizeof(*(this->hidden)));
+    if(!this->hidden) {
+        SDL_OutOfMemory();
+        return 0;
+    }
+    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+
+    while ((!valid_datatype) && (test_format)) {
+        this->spec.format = test_format;
+        switch (test_format) {
+            case AUDIO_S8:
+            /*case AUDIO_S16LSB:*/
+                valid_datatype = 1;
+                break;
+            default:
+               test_format = SDL_NextAudioFormat();
+               break;
+        }
+    }
+
+    /* set the generic sound parameters */
+    setGenericSound(22050,  /* sample rate */
+                    127,    /* volume */
+                    64,     /* panning/balance */
+                    0);     /* sound format*/
+
+    return 1;
 }
 
 static void
@@ -44,21 +73,23 @@ NDSAUD_PlayDevice(_THIS)
     if(!sound) {
         SDL_OutOfMemory();
     }
-    sound->data = NULL;  /* pointer to raw audio data */
-    sound->len = 0;      /* size of raw data pointed to above */
-    sound->rate = 22050; /* sample rate = 22050Hz */
-    sound->vol = 127;    /* volume [0..127] for [min..max] */
-    sound->pan = 64;     /* balance [0..127] for [left..right] */
-    sound->format = 0;   /* 0 for 16-bit, 1 for 8-bit */
-    /*playSound(sound);*/
-    /* stub */
+
+    playGenericSound(this->hidden->mixbuf, this->hidden->mixlen);
+
+//    sound->data = this->hidden->mixbuf;/* pointer to raw audio data */
+//    sound->len = this->hidden->mixlen; /* size of raw data pointed to above */
+//    sound->rate = 22050; /* sample rate = 22050Hz */
+//    sound->vol = 127;    /* volume [0..127] for [min..max] */
+//    sound->pan = 64;     /* balance [0..127] for [left..right] */
+//    sound->format = 0;   /* 0 for 16-bit, 1 for 8-bit */
+//    playSound(sound);
 }
 
 
 static Uint8 *
 NDSAUD_GetDeviceBuf(_THIS)
-{
-    /* stub */
+{   /* is this right? */
+    return this->hidden->mixbuf;
 }
 
 static void

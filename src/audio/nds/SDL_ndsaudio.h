@@ -25,12 +25,14 @@
 #define _SDL_ndsaudio_h
 
 #include "../SDL_sysaudio.h"
+#include <nds/arm9/sound.h>
 
 /* Hidden "this" pointer for the audio functions */
 #define _THIS	SDL_AudioDevice *this
 
 struct SDL_PrivateAudioData
 {
+    TransferSoundData* sound;
     /* The file descriptor for the audio device */
     Uint8 *mixbuf;
     Uint32 mixlen;
