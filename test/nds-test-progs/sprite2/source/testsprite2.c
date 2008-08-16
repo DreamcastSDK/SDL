@@ -7,7 +7,7 @@
 #include <fat.h>
 #include "common.h"
 
-#define NUM_SPRITES	100
+#define NUM_SPRITES	10
 #define MAX_SPEED 	1
 
 static CommonState *state;
@@ -149,7 +149,10 @@ main(int argc, char *argv[])
     int i, done;
     SDL_Event event;
     Uint32 then, now, frames;
+
+    consoleDemoInit(); puts("Hello world!  Initializing FAT...");
     fatInitDefault();
+
     /* Initialize parameters */
     num_sprites = NUM_SPRITES;
 

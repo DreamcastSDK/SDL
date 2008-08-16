@@ -7,7 +7,7 @@
 #include <fat.h>
 #include <SDL/SDL.h>
 
-#define NUM_SPRITES	100
+#define NUM_SPRITES	10
 #define MAX_SPEED 	1
 
 SDL_Surface *sprite;
@@ -162,18 +162,21 @@ main(int argc, char *argv[])
     int i, done;
     SDL_Event event;
     Uint32 then, now, frames;
+
+    consoleDemoInit(); puts("Hello world!  Initializing FAT...");
     fatInitDefault();
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
+    puts("* initialized SDL");
 
     numsprites = NUM_SPRITES;
-    videoflags = SDL_SWSURFACE | SDL_ANYFORMAT;
-    width = 640;
-    height = 480;
-    video_bpp = 8;
+    videoflags = SDL_SWSURFACE /*| SDL_ANYFORMAT*/;
+    width = 256;
+    height = 192;
+    video_bpp = 15;
     debug_flip = 0;
     while (argc > 1) {
         --argc;
@@ -214,11 +217,14 @@ main(int argc, char *argv[])
                 width, height, SDL_GetError());
         quit(2);
     }
+    screen->flags &= ~SDL_PREALLOC;
+    puts("* set video mode");
 
     /* Load the sprite */
     if (LoadSprite("icon.bmp") < 0) {
         quit(1);
     }
+    puts("* loaded sprite");
 
     /* Allocate memory for the sprite info */
     mem = (Uint8 *) malloc(4 * sizeof(SDL_Rect) * numsprites);
@@ -286,25 +292,15 @@ main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
     sprites_visible = 0;
+    puts("hello!");
     while (!done) {
         /* Check for events */
         ++frames;
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_MOUSEBUTTONDOWN:
-                SDL_WarpMouse(screen->w / 2, screen->h / 2);
-                break;
-            case SDL_KEYDOWN:
-                /* Any keypress quits the app... */
-            case SDL_QUIT:
-                done = 1;
-                break;
-            default:
-                break;
-            }
-        }
+        printf(".");
+        swiWaitForVBlank();
         MoveSprites(screen, background);
     }
+    puts("goodbye!");
     SDL_FreeSurface(sprite);
     free(mem);
 
