@@ -24,7 +24,6 @@
 #import <OpenGLES/EAGLDrawable.h>
 #import "SDL_uikitopenglview.h"
 
-// A class extension to declare private methods
 @interface SDL_uikitopenglview (privateMethods)
 
 - (BOOL) createFramebuffer;
@@ -36,15 +35,11 @@
 @implementation SDL_uikitopenglview
 
 @synthesize context;
-// You must implement this
+
 + (Class)layerClass {
 	return [CAEAGLLayer class];
 }
 
-/*
-	stencilBits ignored.
-	Right now iPhone stencil buffer doesn't appear supported.  Maybe it will be in the future ... who knows.
-*/
 - (id)initWithFrame:(CGRect)frame \
 	  retainBacking:(BOOL)retained \
 	  rBits:(int)rBits \
