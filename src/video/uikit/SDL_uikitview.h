@@ -54,10 +54,3 @@
 #endif 
 
 @end
-
-#if SDL_IPHONE_KEYBOARD
-extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardShow(SDL_WindowID windowID);
-extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardHide(SDL_WindowID windowID);
-extern DECLSPEC SDL_bool SDLCALL SDL_iPhoneKeyboardIsShown(SDL_WindowID windowID);
-extern DECLSPEC int SDLCALL SDL_iPhoneKeyboardToggle(SDL_WindowID windowID);
-#endif
