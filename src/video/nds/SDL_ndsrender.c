@@ -42,10 +42,10 @@
 #define SPRITE_ANGLE_MASK 0x01FF
 
 void
-NDS_OAM_Update(tOAM *oam)
+NDS_OAM_Update(tOAM *oam, int sub)
 {
     DC_FlushAll();
-    dmaCopyHalfWords(SPRITE_DMA_CHANNEL, oam->spriteBuffer, OAM,
+    dmaCopyHalfWords(SPRITE_DMA_CHANNEL, oam->spriteBuffer, sub?OAM_SUB:OAM,
                      SPRITE_COUNT * sizeof(SpriteEntry));
 }
 
@@ -62,7 +62,7 @@ NDS_OAM_RotateSprite(SpriteRotation *spriteRotation, u16 angle)
 }
 
 void
-NDS_OAM_Init(tOAM *oam)
+NDS_OAM_Init(tOAM *oam, int sub)
 {
     int i;
     for(i = 0; i < SPRITE_COUNT; i++) {
@@ -74,7 +74,7 @@ NDS_OAM_Init(tOAM *oam)
         NDS_OAM_RotateSprite(&(oam->matrixBuffer[i]), 0);
     }
     swiWaitForVBlank();
-    NDS_OAM_Update(oam);
+    NDS_OAM_Update(oam, sub);
 }
 
 void
@@ -173,7 +173,7 @@ typedef struct
 typedef struct
 {
     enum { NDSTX_BG, NDSTX_SPR } type; /* represented in a bg or sprite. */
-    int hw_index; /* sprite: index in the OAM.  bg: 2 or 3. */
+    int hw_index; /* sprite: index in the OAM. /  bg: 2 or 3. */
     struct
     {
         int hdx, hdy, vdx, vdy; /* affine transformation, used for scaling. */
@@ -208,6 +208,11 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
         case SDL_PIXELFORMAT_ABGR1555:
         case SDL_PIXELFORMAT_BGR555:
             /* okay */
+            break;
+        case SDL_PIXELFORMAT_RGB555:
+        case SDL_PIXELFORMAT_RGB565:
+        case SDL_PIXELFORMAT_ARGB1555:
+            /* we'll take these too for now */
             break;
         default:
             printf("DEBUG: wrong display format!\n");
@@ -272,7 +277,8 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->bg = &BACKGROUND_SUB;
     }
     data->bg_taken[2] = data->bg_taken[3] = 0;
-    NDS_OAM_Init(&(data->oam_copy)); /* init sprites. */
+
+    NDS_OAM_Init(&(data->oam_copy), data->sub); /* init sprites. */
 
     TRACE("-NDS_CreateRenderer\n");
     return renderer;
@@ -313,30 +319,39 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     /* conditional statements on w/h to place it as bg/sprite
        depending on which one it fits. */
     if(texture->w <= 64 && texture->h <= 64) {
-        /* TODO: implement sprites similar to how BG's are.
-           they have a similar affine transformation matrix
-           (hdx,hdy,vdx,vdy) as the backgrounds, so it should
-           be similar enough to handle with the same driverdata. */
+        int whichspr = -1;
         printf("Tried to make a sprite.\n");
         txdat->type = NDSTX_SPR;
+        for(i = 0; i < SPRITE_COUNT; ++i) {
+            if(data->oam_copy.spriteBuffer[i].attribute[0] & ATTR0_DISABLED) {
+                whichspr = i;
+                break;
+            }
+        }
+        if(whichspr >= 0) {
+            SpriteEntry *sprent = &(data->oam_copy.spriteBuffer[whichspr]);
+
+            texture->driverdata = SDL_calloc(1, sizeof(NDS_TextureData));
+            txdat = (NDS_TextureData*)texture->driverdata;
+            if(!txdat) {
+                SDL_OutOfMemory();
+                return -1;
+            }
+
+            sprent->objMode = OBJMODE_BITMAP;
+            sprent->posX = 0; sprent->posY = 0;
+            sprent->colMode = OBJCOLOR_16; /* OBJCOLOR_256 for INDEX8 */
+            if(whichspr < MATRIX_COUNT) {
+                sprent->isRotoscale = 1;
+                sprent->rsMatrixIdx = whichspr;
+            }
+        }
     } else if(texture->w <= 256 && texture->h <= 256) {
         int whichbg = -1, base = 0;
         if(!data->bg_taken[2]) {
             whichbg = 2;
-            data->bg->bg2_rotation.xdx = 0x100;
-            data->bg->bg2_rotation.xdy = 0;
-            data->bg->bg2_rotation.ydx = 0;
-            data->bg->bg2_rotation.ydy = 0x100;
-            data->bg->bg2_rotation.centerX = 0;
-            data->bg->bg2_rotation.centerY = 0;
         } else if(!data->bg_taken[3]) {
             whichbg = 3;
-            data->bg->bg3_rotation.xdx = 0x100;
-            data->bg->bg3_rotation.xdy = 0;
-            data->bg->bg3_rotation.ydx = 0;
-            data->bg->bg3_rotation.ydy = 0x100;
-            data->bg->bg3_rotation.centerX = 0;
-            data->bg->bg3_rotation.centerY = 0;
             base = 4;
         }
         if(whichbg >= 0) {
@@ -362,7 +377,7 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             txdat->hw_index = whichbg;
             txdat->dim.hdx = 0x100; txdat->dim.hdy = 0;
             txdat->dim.vdx = 0;     txdat->dim.vdy = 0x100;
-            txdat->dim.pitch = 256 * ((bpp+1)/8);
+            txdat->dim.pitch = texture->w * ((bpp+1)/8);
             txdat->dim.bpp = bpp;
             txdat->vram_pixels = (u16*)(data->sub ?
                 BG_BMP_RAM_SUB(base) : BG_BMP_RAM(base));
@@ -405,7 +420,7 @@ NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     Uint8 *src, *dst;
     int row; size_t length;
     TRACE("+NDS_UpdateTexture\n");
-    if(!texture) { printf("OH BOY!!!\n"); return -1; }
+
     txdat = (NDS_TextureData *) texture->driverdata;
 
     src = (Uint8 *) pixels;
@@ -413,10 +428,15 @@ NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         (Uint8 *) txdat->vram_pixels + rect->y * txdat->dim.pitch +
         rect->x * ((txdat->dim.bpp+1)/8);
     length = rect->w * ((txdat->dim.bpp+1)/8);
-    for (row = 0; row < rect->h; ++row) {
-        SDL_memcpy(dst, src, length);
-        src += pitch;
-        dst += txdat->dim.pitch;
+
+    if(rect->w == texture->w) {
+        dmaCopy(src, dst, length*rect->h);
+    } else {
+        for (row = 0; row < rect->h; ++row) {
+            dmaCopy(src, dst, length);
+            src += pitch;
+            dst += txdat->dim.pitch;
+        }
     }
 
     TRACE("-NDS_UpdateTexture\n");
@@ -429,17 +449,12 @@ NDS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                int *pitch)
 {
     NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
-    int i;
     TRACE("+NDS_LockTexture\n");
-    if (markDirty) {
-        printf("wanted to mark dirty\n");
-        /* TODO: figure out how to handle this! */
-        /*SDL_AddDirtyRect(&txdat->dirty, rect);*/
-    }
 
     *pixels = (void *) ((u8 *)txdat->vram_pixels + rect->y
                         * txdat->dim.pitch + rect->x * ((txdat->dim.bpp+1)/8));
     *pitch = txdat->dim.pitch;
+
     TRACE("-NDS_LockTexture\n");
     return 0;
 }
@@ -448,8 +463,6 @@ static void
 NDS_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     TRACE("+NDS_UnlockTexture\n");
-    /* TODO: should I be doing something here, somehow, now that the pixels
-             should have been "written" between LockTexture and this? */
     TRACE("-NDS_UnlockTexture\n");
 }
 
@@ -499,16 +512,29 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 
     TRACE("+NDS_RenderCopy\n");
     if(txdat->type == NDSTX_BG) {
-        bg_rotation *tmpbg = (txdat->hw_index == 2) ?
+        bg_rotation *bgrot = (txdat->hw_index == 2) ?
             &(data->bg->bg2_rotation) : &(data->bg->bg3_rotation);
-        tmpbg->xdx = txdat->dim.hdx;
-        tmpbg->xdy = txdat->dim.hdy;
-        tmpbg->ydx = txdat->dim.vdx;
-        tmpbg->ydy = txdat->dim.vdy;
-        tmpbg->centerX = 0;
-        tmpbg->centerY = 0;
+        bgrot->xdx = txdat->dim.hdx;
+        bgrot->xdy = txdat->dim.hdy;
+        bgrot->ydx = txdat->dim.vdx;
+        bgrot->ydy = txdat->dim.vdy;
+        bgrot->centerX = 0;
+        bgrot->centerY = 0;
+
+        data->bg->scroll[txdat->hw_index].x = dstrect->x;
+        data->bg->scroll[txdat->hw_index].y = dstrect->y;
     } else {
-        /* sprites not implemented yet */
+        /* sprites not fully implemented yet */
+        SpriteEntry *spr = &(data->oam_copy.spriteBuffer[txdat->hw_index]);
+        spr->posX = dstrect->x;
+        spr->posY = dstrect->y;
+        if(txdat->hw_index < MATRIX_COUNT) {
+            SpriteRotation *sprot = &(data->oam_copy.matrixBuffer[txdat->hw_index]);
+            sprot->hdx = txdat->dim.hdx;
+            sprot->hdy = txdat->dim.hdy;
+            sprot->vdx = txdat->dim.vdx;
+            sprot->vdy = txdat->dim.vdy;
+        }
         printf("tried to RenderCopy a sprite.\n");
     }
     TRACE("-NDS_RenderCopy\n");
@@ -523,19 +549,10 @@ NDS_RenderPresent(SDL_Renderer * renderer)
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
-    int i;
+
     TRACE("+NDS_RenderPresent\n");
-
-    {
-        SDL_Texture * tx = display->textures[i];
-        NDS_TextureData * txdat = (NDS_TextureData*)tx->driverdata;
-        /* Send the data to the display TODO :
-           shouldn't it already be there at this point?  from lock/unlock
-           giving it the direct address in VRAM of the bg's.
-           I guess set the BG's and sprites "visible" flags here,
-           if applicable. */
-    }
-
+    /* update sprites */
+    NDS_OAM_Update(&(data->oam_copy), data->sub);
     /* vsync for NDS */
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
         swiWaitForVBlank();
@@ -547,14 +564,10 @@ static void
 NDS_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     TRACE("+NDS_DestroyTexture\n");
-    if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
-        SDL_SetError("Unsupported texture format");
-    } else {
-        /* free anything else allocated for texture */
-        NDS_TextureData *txdat = texture->driverdata;
-        /*SDL_FreeDirtyRects(&txdat->dirty);*/
-        SDL_free(txdat);
-    }
+    /* free anything else allocated for texture */
+    NDS_TextureData *txdat = texture->driverdata;
+    /*SDL_FreeDirtyRects(&txdat->dirty);*/
+    SDL_free(txdat);
     TRACE("-NDS_DestroyTexture\n");
 }
 
@@ -569,20 +582,15 @@ NDS_DestroyRenderer(SDL_Renderer * renderer)
     TRACE("+NDS_DestroyRenderer\n");
     if (data) {
         /* TODO: free anything else relevant. */
-        /*for (i = 0; i < SDL_arraysize(data->texture); ++i) {
-            if (data->texture[i]) {
-                DestroyTexture(data->renderer, data->texture[i]);
-            }
-        }
-        if (data->surface.format) {
+        /*if (data->surface.format) {
             SDL_SetSurfacePalette(&data->surface, NULL);
             SDL_FreeFormat(data->surface.format);
         }
         if (display->palette) {
             SDL_DelPaletteWatch(display->palette, DisplayPaletteChanged,
                                 data);
-        }
-        SDL_FreeDirtyRects(&data->dirty);*/
+        }*/
+        /*SDL_FreeDirtyRects(&data->dirty);*/
         SDL_free(data);
     }
     SDL_free(renderer);
