@@ -20,6 +20,7 @@ int main(void) {
 	SDL_Joystick *stick;
 	SDL_Event event;
 	SDL_Rect rect = {8,8,240,176};
+	int i;
 
 	consoleDemoInit();
 	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK) < 0) {
@@ -27,23 +28,22 @@ int main(void) {
 		puts(SDL_GetError());
 		return 1;
 	}
-	puts("* initialized SDL\n"); delay(1);
-
-	screen = SDL_SetVideoMode(256, 192, 16, SDL_SWSURFACE);
+	puts("* initialized SDL\n");
+	screen = SDL_SetVideoMode(256, 192, 15, SDL_SWSURFACE);
 	if(!screen) {
 		puts("# error setting video mode");
 		puts(SDL_GetError());
 		return 2;
 	}
-	puts("* set video mode\n"); delay(1);
-
+	screen->flags &= ~SDL_PREALLOC;
+	puts("* set video mode\n");
 	stick = SDL_JoystickOpen(0);
 	if(stick == NULL) {
 		puts("# error opening joystick");
 		puts(SDL_GetError());
 //		return 3;
 	}
-	puts("* opened joystick"); delay(1);
+	puts("* opened joystick");
 	SDL_FillRect(screen, &rect, RGB15(0,0,31)|0x8000);
 	SDL_Flip(screen);
 
