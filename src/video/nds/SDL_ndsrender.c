@@ -121,8 +121,8 @@ static int NDS_SetTextureBlendMode(SDL_Renderer * renderer,
 static int NDS_SetTextureScaleMode(SDL_Renderer * renderer,
                                   SDL_Texture * texture);
 static int NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                            const SDL_Rect * rect, const void *pixels,
-                            int pitch);
+                          const SDL_Rect * rect, const void *pixels,
+                          int pitch);
 static int NDS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, int markDirty, void **pixels,
                           int *pitch);
@@ -144,7 +144,10 @@ static void NDS_DestroyRenderer(SDL_Renderer * renderer);
 SDL_RenderDriver NDS_RenderDriver = {
     NDS_CreateRenderer,
     {   "nds", /* char* name */
-        (SDL_RENDERER_SINGLEBUFFER|SDL_RENDERER_ACCELERATED), /* u32 flags */
+        (SDL_RENDERER_SINGLEBUFFER |
+         SDL_RENDERER_ACCELERATED |
+         SDL_RENDERER_PRESENTDISCARD |
+         SDL_RENDERER_PRESENTVSYNC), /* u32 flags */
         (SDL_TEXTUREMODULATE_NONE), /* u32 mod_modes */
         (SDL_TEXTUREBLENDMODE_MASK), /* u32 blend_modes */
         (SDL_TEXTURESCALEMODE_FAST), /* u32 scale_modes */
@@ -181,28 +184,6 @@ typedef struct
     /*int size;*/
 } NDS_TextureData;
 
-
-
-void sdlds_splash() {
-    int i;
-    printf("splash!\n");
-	BG3_CR = BG_BMP16_256x256|BG_BMP_BASE(0);
-    BG3_XDX = 1 << 8; BG3_XDY = 0 << 8;
-    BG3_YDX = 0 << 8; BG3_YDY = 1 << 8;
-    BG3_CX = 0 << 8;  BG3_CY = 0 << 8;
-    for(i = 0; i < 256*192; ++i) {
-        ((u16*)BG_BMP_RAM(0))[i] = i|0x8000;
-    }
-    printf("one... two...\n");
-    for(i = 0; i < 120; ++i) {
-        swiWaitForVBlank();
-    }
-    for(i = 0; i < 256*192; ++i) {
-        ((u16*)BG_BMP_RAM(0))[i] = 0;
-    }
-    BG3_CR = 0;
-    printf("done splash!\n");
-}
 
 
 SDL_Renderer *
@@ -293,9 +274,8 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->bg_taken[2] = data->bg_taken[3] = 0;
     NDS_OAM_Init(&(data->oam_copy)); /* init sprites. */
 
-    sdlds_splash();
-
     TRACE("-NDS_CreateRenderer\n");
+    printf("renderer is %x\n", (u32)(renderer->UpdateTexture));
     return renderer;
 }
 
@@ -344,8 +324,20 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         int whichbg = -1, base = 0;
         if(!data->bg_taken[2]) {
             whichbg = 2;
+            data->bg->bg2_rotation.xdx = 0x100;
+            data->bg->bg2_rotation.xdy = 0;
+            data->bg->bg2_rotation.ydx = 0;
+            data->bg->bg2_rotation.ydy = 0x100;
+            data->bg->bg2_rotation.centerX = 0;
+            data->bg->bg2_rotation.centerY = 0;
         } else if(!data->bg_taken[3]) {
             whichbg = 3;
+            data->bg->bg3_rotation.xdx = 0x100;
+            data->bg->bg3_rotation.xdy = 0;
+            data->bg->bg3_rotation.ydx = 0;
+            data->bg->bg3_rotation.ydy = 0x100;
+            data->bg->bg3_rotation.centerX = 0;
+            data->bg->bg3_rotation.centerY = 0;
             base = 4;
         }
         if(whichbg >= 0) {
@@ -371,10 +363,23 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             txdat->hw_index = whichbg;
             txdat->dim.hdx = 0x100; txdat->dim.hdy = 0;
             txdat->dim.vdx = 0;     txdat->dim.vdy = 0x100;
-            txdat->dim.pitch = 256 * (bpp/8);
+            txdat->dim.pitch = 256 * ((bpp+1)/8);
             txdat->dim.bpp = bpp;
             txdat->vram_pixels = (u16*)(data->sub ?
                 BG_BMP_RAM_SUB(base) : BG_BMP_RAM(base));
+
+            /* TESTING PURPOSES ONLY!!!
+               shows that the texture is set up properly on the screen. */
+            for(i = 0; i < 256*192; ++i) {
+                txdat->vram_pixels[i] = RGB15(31,31,0)|0x8000;
+            }
+            printf("--one... two...\n");
+            for(i = 0; i < 120; ++i) {
+                swiWaitForVBlank();
+            }
+            for(i = 0; i < 256*192; ++i) {
+                txdat->vram_pixels[i] = 0;
+            }
             /*txdat->size = txdat->dim.pitch * texture->h;*/
         } else {
             SDL_SetError("Out of NDS backgrounds.");
@@ -409,16 +414,18 @@ static int
 NDS_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, const void *pixels, int pitch)
 {
-    NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+    NDS_TextureData *txdat;
     Uint8 *src, *dst;
     int row; size_t length;
     TRACE("+NDS_UpdateTexture\n");
+    if(!texture) { printf("OH BOY!!!\n"); return -1; }
+    txdat = (NDS_TextureData *) texture->driverdata;
 
     src = (Uint8 *) pixels;
     dst =
         (Uint8 *) txdat->vram_pixels + rect->y * txdat->dim.pitch +
-        rect->x * (txdat->dim.bpp/8);
-    length = rect->w * (txdat->dim.bpp/8);
+        rect->x * ((txdat->dim.bpp+1)/8);
+    length = rect->w * ((txdat->dim.bpp+1)/8);
     for (row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
         src += pitch;
@@ -444,10 +451,8 @@ NDS_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     *pixels = (void *) ((u8 *)txdat->vram_pixels + rect->y
-                        * txdat->dim.pitch + rect->x * (txdat->dim.bpp/8));
+                        * txdat->dim.pitch + rect->x * ((txdat->dim.bpp+1)/8));
     *pitch = txdat->dim.pitch;
-    printf("  pixels = %08x\n", (u32)*pixels);
-    printf("  vram = %08x\n", (u32)(txdat->vram_pixels));
     TRACE("-NDS_LockTexture\n");
     return 0;
 }
@@ -517,8 +522,8 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         tmpbg->centerY = 0;
     } else {
         /* sprites not implemented yet */
+        printf("tried to RenderCopy a sprite.\n");
     }
-    printf("  txdat->hw_index = %d\n", txdat->hw_index);
     TRACE("-NDS_RenderCopy\n");
 
     return 0;
