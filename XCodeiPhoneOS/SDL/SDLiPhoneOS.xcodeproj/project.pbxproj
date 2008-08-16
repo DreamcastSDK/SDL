@@ -29,6 +29,8 @@
 		FD1EF05B0DEA7BAC001E9768 /* SDL_syssem.c in Sources */ = {isa = PBXBuildFile; fileRef = FD1EF0550DEA7BAC001E9768 /* SDL_syssem.c */; };
 		FD1EF05C0DEA7BAC001E9768 /* SDL_systhread.c in Sources */ = {isa = PBXBuildFile; fileRef = FD1EF0560DEA7BAC001E9768 /* SDL_systhread.c */; };
 		FD1EF05D0DEA7BAC001E9768 /* SDL_systhread_c.h in Headers */ = {isa = PBXBuildFile; fileRef = FD1EF0570DEA7BAC001E9768 /* SDL_systhread_c.h */; };
+		FD24846C0E5655AE0021E198 /* SDL_uikitkeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FD24846B0E5655AE0021E198 /* SDL_uikitkeyboard.h */; };
+		FD24846D0E5655AE0021E198 /* SDL_uikitkeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FD24846B0E5655AE0021E198 /* SDL_uikitkeyboard.h */; };
 		FD3F495B0DEA5B2100C5B771 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99BD570DD5352400FB1D6B /* SDL_config_iphoneos.h */; };
 		FD3F495C0DEA5B2100C5B771 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99B8CC0DD52EB400FB1D6B /* begin_code.h */; };
 		FD3F495D0DEA5B2100C5B771 /* close_code.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99B8CD0DD52EB400FB1D6B /* close_code.h */; };
@@ -112,8 +114,6 @@
 		FD689F060E26E5B600F90B21 /* SDL_sysjoystick.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F000E26E5B600F90B21 /* SDL_sysjoystick.m */; };
 		FD689F070E26E5B600F90B21 /* SDLUIAccelerationDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F010E26E5B600F90B21 /* SDLUIAccelerationDelegate.h */; };
 		FD689F080E26E5B600F90B21 /* SDLUIAccelerationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F020E26E5B600F90B21 /* SDLUIAccelerationDelegate.m */; };
-		FD689F1A0E26E5D900F90B21 /* jump.c in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0A0E26E5D900F90B21 /* jump.c */; };
-		FD689F1B0E26E5D900F90B21 /* jump.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0B0E26E5D900F90B21 /* jump.h */; };
 		FD689F1C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0C0E26E5D900F90B21 /* SDL_uikitevents.h */; };
 		FD689F1D0E26E5D900F90B21 /* SDL_uikitevents.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */; };
 		FD689F1E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0E0E26E5D900F90B21 /* SDL_uikitopengles.h */; };
@@ -125,8 +125,6 @@
 		FD689F250E26E5D900F90B21 /* SDL_uikitwindow.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */; };
 		FD689F260E26E5D900F90B21 /* SDL_uikitopenglview.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F160E26E5D900F90B21 /* SDL_uikitopenglview.h */; };
 		FD689F270E26E5D900F90B21 /* SDL_uikitopenglview.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F170E26E5D900F90B21 /* SDL_uikitopenglview.m */; };
-		FD689F2A0E26E5D900F90B21 /* jump.c in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0A0E26E5D900F90B21 /* jump.c */; };
-		FD689F2B0E26E5D900F90B21 /* jump.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0B0E26E5D900F90B21 /* jump.h */; };
 		FD689F2C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0C0E26E5D900F90B21 /* SDL_uikitevents.h */; };
 		FD689F2D0E26E5D900F90B21 /* SDL_uikitevents.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */; };
 		FD689F2E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */ = {isa = PBXBuildFile; fileRef = FD689F0E0E26E5D900F90B21 /* SDL_uikitopengles.h */; };
@@ -200,7 +198,6 @@
 		FDAAC4C90E2D4EE5001DB1D8 /* SDL_cdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4C40E2D4EC7001DB1D8 /* SDL_cdrom.c */; };
 		FDAAC4CB0E2D4EEF001DB1D8 /* SDL_syscdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4AB0E2D4EC7001DB1D8 /* SDL_syscdrom.c */; };
 		FDAAC4CC0E2D4EEF001DB1D8 /* SDL_cdrom.c in Sources */ = {isa = PBXBuildFile; fileRef = FDAAC4C40E2D4EC7001DB1D8 /* SDL_cdrom.c */; };
-		FDBB1F070E3E91AF00B928D0 /* SDL_uikitkeyboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */; };
 		FDBB64840E159B23003B3114 /* SDL_systimer.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99BA2D0DD52EDC00FB1D6B /* SDL_systimer.h */; };
 		FDBB64850E159B23003B3114 /* SDL_config_iphoneos.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99BD570DD5352400FB1D6B /* SDL_config_iphoneos.h */; };
 		FDBB64860E159B23003B3114 /* begin_code.h in Headers */ = {isa = PBXBuildFile; fileRef = FD99B8CC0DD52EB400FB1D6B /* begin_code.h */; };
@@ -324,6 +321,10 @@
 		FDBB650F0E159B23003B3114 /* SDL_nullrender.c in Sources */ = {isa = PBXBuildFile; fileRef = FDA685F70DF244C800F98A1A /* SDL_nullrender.c */; };
 		FDBB65100E159B23003B3114 /* SDL_nullvideo.c in Sources */ = {isa = PBXBuildFile; fileRef = FDA685F90DF244C800F98A1A /* SDL_nullvideo.c */; };
 		FDBB65110E159B23003B3114 /* SDL_joystick.c in Sources */ = {isa = PBXBuildFile; fileRef = FD5F9D1E0E0E08B3008E885B /* SDL_joystick.c */; };
+		FDC656460E560DF800311C8E /* jumphack.c in Sources */ = {isa = PBXBuildFile; fileRef = FDC656440E560DF800311C8E /* jumphack.c */; };
+		FDC656470E560DF800311C8E /* jumphack.h in Headers */ = {isa = PBXBuildFile; fileRef = FDC656450E560DF800311C8E /* jumphack.h */; };
+		FDC656480E560DF800311C8E /* jumphack.c in Sources */ = {isa = PBXBuildFile; fileRef = FDC656440E560DF800311C8E /* jumphack.c */; };
+		FDC656490E560DF800311C8E /* jumphack.h in Headers */ = {isa = PBXBuildFile; fileRef = FDC656450E560DF800311C8E /* jumphack.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -354,6 +355,7 @@
 		FD1EF0550DEA7BAC001E9768 /* SDL_syssem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_syssem.c; sourceTree = "<group>"; };
 		FD1EF0560DEA7BAC001E9768 /* SDL_systhread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systhread.c; sourceTree = "<group>"; };
 		FD1EF0570DEA7BAC001E9768 /* SDL_systhread_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_systhread_c.h; sourceTree = "<group>"; };
+		FD24846B0E5655AE0021E198 /* SDL_uikitkeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitkeyboard.h; sourceTree = "<group>"; };
 		FD3F4A700DEA620800C5B771 /* SDL_getenv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_getenv.c; sourceTree = "<group>"; };
 		FD3F4A710DEA620800C5B771 /* SDL_iconv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iconv.c; sourceTree = "<group>"; };
 		FD3F4A720DEA620800C5B771 /* SDL_malloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_malloc.c; sourceTree = "<group>"; };
@@ -369,8 +371,6 @@
 		FD689F000E26E5B600F90B21 /* SDL_sysjoystick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysjoystick.m; sourceTree = "<group>"; };
 		FD689F010E26E5B600F90B21 /* SDLUIAccelerationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDLUIAccelerationDelegate.h; sourceTree = "<group>"; };
 		FD689F020E26E5B600F90B21 /* SDLUIAccelerationDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDLUIAccelerationDelegate.m; sourceTree = "<group>"; };
-		FD689F0A0E26E5D900F90B21 /* jump.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jump.c; sourceTree = "<group>"; };
-		FD689F0B0E26E5D900F90B21 /* jump.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jump.h; sourceTree = "<group>"; };
 		FD689F0C0E26E5D900F90B21 /* SDL_uikitevents.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitevents.h; sourceTree = "<group>"; };
 		FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitevents.m; sourceTree = "<group>"; };
 		FD689F0E0E26E5D900F90B21 /* SDL_uikitopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitopengles.h; sourceTree = "<group>"; };
@@ -533,10 +533,10 @@
 		FDB9E4060DEB81870027A75A /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		FDB9E40C0DEB81970027A75A /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		FDB9E4CC0DEB84540027A75A /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
-		FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitkeyboard.h; sourceTree = "<group>"; };
-		FDBB1F060E3E91AF00B928D0 /* SDL_uikitkeyboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitkeyboard.m; sourceTree = "<group>"; };
 		FDBB65210E159B23003B3114 /* libSDLSimulator.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLSimulator.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FDC261780E3A3FC8001C4554 /* keyinfotable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyinfotable.h; sourceTree = "<group>"; };
+		FDC656440E560DF800311C8E /* jumphack.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = jumphack.c; sourceTree = "<group>"; };
+		FDC656450E560DF800311C8E /* jumphack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = jumphack.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -635,8 +635,8 @@
 		FD689F090E26E5D900F90B21 /* uikit */ = {
 			isa = PBXGroup;
 			children = (
-				FD689F0B0E26E5D900F90B21 /* jump.h */,
-				FD689F0A0E26E5D900F90B21 /* jump.c */,
+				FDC656450E560DF800311C8E /* jumphack.h */,
+				FDC656440E560DF800311C8E /* jumphack.c */,
 				FD689F0C0E26E5D900F90B21 /* SDL_uikitevents.h */,
 				FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */,
 				FD689F0E0E26E5D900F90B21 /* SDL_uikitopengles.h */,
@@ -644,10 +644,9 @@
 				FD689F100E26E5D900F90B21 /* SDL_uikitvideo.h */,
 				FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */,
 				FDC261780E3A3FC8001C4554 /* keyinfotable.h */,
+				FD24846B0E5655AE0021E198 /* SDL_uikitkeyboard.h */,
 				FD0BBFEF0E3933DD00D833B1 /* SDL_uikitview.h */,
 				FD689F130E26E5D900F90B21 /* SDL_uikitview.m */,
-				FDBB1F050E3E91AF00B928D0 /* SDL_uikitkeyboard.h */,
-				FDBB1F060E3E91AF00B928D0 /* SDL_uikitkeyboard.m */,
 				FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */,
 				FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */,
 				FD689F160E26E5D900F90B21 /* SDL_uikitopenglview.h */,
@@ -1037,7 +1036,6 @@
 				FD5F9D310E0E08B3008E885B /* SDL_sysjoystick.h in Headers */,
 				FD689EFC0E26E57800F90B21 /* SDL_coreaudio_iphone.h in Headers */,
 				FD689F040E26E5B600F90B21 /* SDLUIAccelerationDelegate.h in Headers */,
-				FD689F1B0E26E5D900F90B21 /* jump.h in Headers */,
 				FD689F1C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */,
 				FD689F1E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */,
 				FD689F200E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */,
@@ -1047,6 +1045,8 @@
 				FD689F400E26E5F600F90B21 /* SDL_renderer_gles.h in Headers */,
 				FD689FCF0E26E9D400F90B21 /* SDL_uikitappdelegate.h in Headers */,
 				FD8BD7AC0E27DCA400B52CD5 /* SDL_opengles.h in Headers */,
+				FDC656490E560DF800311C8E /* jumphack.h in Headers */,
+				FD24846D0E5655AE0021E198 /* SDL_uikitkeyboard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1117,7 +1117,6 @@
 				FDBB64C80E159B23003B3114 /* SDL_sysjoystick.h in Headers */,
 				FD689EFE0E26E57800F90B21 /* SDL_coreaudio_iphone.h in Headers */,
 				FD689F070E26E5B600F90B21 /* SDLUIAccelerationDelegate.h in Headers */,
-				FD689F2B0E26E5D900F90B21 /* jump.h in Headers */,
 				FD689F2C0E26E5D900F90B21 /* SDL_uikitevents.h in Headers */,
 				FD689F2E0E26E5D900F90B21 /* SDL_uikitopengles.h in Headers */,
 				FD689F300E26E5D900F90B21 /* SDL_uikitvideo.h in Headers */,
@@ -1127,7 +1126,8 @@
 				FD689F430E26E5F600F90B21 /* SDL_renderer_gles.h in Headers */,
 				FD689FD10E26E9D400F90B21 /* SDL_uikitappdelegate.h in Headers */,
 				FD8BD7AD0E27DCA400B52CD5 /* SDL_opengles.h in Headers */,
-				FDBB1F070E3E91AF00B928D0 /* SDL_uikitkeyboard.h in Headers */,
+				FDC656470E560DF800311C8E /* jumphack.h in Headers */,
+				FD24846C0E5655AE0021E198 /* SDL_uikitkeyboard.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1301,7 +1301,6 @@
 				FD689EFB0E26E57800F90B21 /* SDL_coreaudio_iphone.c in Sources */,
 				FD689F030E26E5B600F90B21 /* SDL_sysjoystick.m in Sources */,
 				FD689F050E26E5B600F90B21 /* SDLUIAccelerationDelegate.m in Sources */,
-				FD689F1A0E26E5D900F90B21 /* jump.c in Sources */,
 				FD689F1D0E26E5D900F90B21 /* SDL_uikitevents.m in Sources */,
 				FD689F1F0E26E5D900F90B21 /* SDL_uikitopengles.m in Sources */,
 				FD689F210E26E5D900F90B21 /* SDL_uikitvideo.m in Sources */,
@@ -1313,6 +1312,7 @@
 				FD8BD8250E27E25900B52CD5 /* SDL_sysloadso.c in Sources */,
 				FDAAC4C80E2D4EE5001DB1D8 /* SDL_syscdrom.c in Sources */,
 				FDAAC4C90E2D4EE5001DB1D8 /* SDL_cdrom.c in Sources */,
+				FDC656480E560DF800311C8E /* jumphack.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1387,7 +1387,6 @@
 				FD689EFD0E26E57800F90B21 /* SDL_coreaudio_iphone.c in Sources */,
 				FD689F060E26E5B600F90B21 /* SDL_sysjoystick.m in Sources */,
 				FD689F080E26E5B600F90B21 /* SDLUIAccelerationDelegate.m in Sources */,
-				FD689F2A0E26E5D900F90B21 /* jump.c in Sources */,
 				FD689F2D0E26E5D900F90B21 /* SDL_uikitevents.m in Sources */,
 				FD689F2F0E26E5D900F90B21 /* SDL_uikitopengles.m in Sources */,
 				FD689F310E26E5D900F90B21 /* SDL_uikitvideo.m in Sources */,
@@ -1397,6 +1396,7 @@
 				FD689F420E26E5F600F90B21 /* SDL_renderer_gles.c in Sources */,
 				FD689FD00E26E9D400F90B21 /* SDL_uikitappdelegate.m in Sources */,
 				FD8BD82C0E27E25900B52CD5 /* SDL_sysloadso.c in Sources */,
+				FDC656460E560DF800311C8E /* jumphack.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
