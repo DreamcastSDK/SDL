@@ -43,6 +43,13 @@
 #include "SDL_ndsevents_c.h"
 #include "SDL_ndsrender_c.h"
 
+
+
+#define TRACE
+//#define TRACE printf
+
+
+
 #define NDSVID_DRIVER_NAME "nds"
 
 /* Initialization/Query functions */
@@ -72,7 +79,7 @@ NDS_CreateDevice(int devindex)
     SDL_VideoDevice *device;
     /*printf("NDS_CreateDevice(%d)\n", devindex); */
 
-printf("+NDS_CreateDevice\n");
+    TRACE("+NDS_CreateDevice\n");
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -93,7 +100,7 @@ printf("+NDS_CreateDevice\n");
 
     device->free = NDS_DeleteDevice;
 
-printf("-NDS_CreateDevice\n");
+    TRACE("-NDS_CreateDevice\n");
     return device;
 }
 
@@ -108,7 +115,7 @@ NDS_VideoInit(_THIS)
     SDL_DisplayMode mode;
     int i;
 
-    printf("+NDS_VideoInit\n");
+    TRACE("+NDS_VideoInit\n");
     /* simple 256x192x16x60 for now */
     mode.w = 256;
     mode.h = 192;
@@ -128,14 +135,15 @@ NDS_VideoInit(_THIS)
     powerON(POWER_ALL_2D);    irqInit();
     irqEnable(IRQ_VBLANK);
     NDS_SetDisplayMode(_this, &mode);
-    printf("-NDS_VideoInit\n");
+
+    TRACE("-NDS_VideoInit\n");
     return 0;
 }
 
 static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
-    printf("+NDS_SetDisplayMode\n");
+    TRACE("+NDS_SetDisplayMode\n");
     /* right now this function is just hard-coded for 256x192 ABGR1555 */
     videoSetMode(MODE_5_2D |
                  DISPLAY_BG2_ACTIVE |
@@ -163,14 +171,14 @@ NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
                                                         when multi-head is
                                                         introduced in render */
 
-    printf("-NDS_SetDisplayMode\n");
+    TRACE("-NDS_SetDisplayMode\n");
     return 0;
 }
 
 void
 NDS_VideoQuit(_THIS)
 {
-    printf("+NDS_VideoQuit\n");
+    TRACE("+NDS_VideoQuit\n");
     videoSetMode(DISPLAY_SCREEN_OFF);
     videoSetModeSub(DISPLAY_SCREEN_OFF);
     vramSetMainBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
@@ -179,7 +187,7 @@ NDS_VideoQuit(_THIS)
     vramSetBankG(VRAM_G_LCD);
     vramSetBankH(VRAM_H_LCD);
     vramSetBankI(VRAM_I_LCD);
-    printf("-NDS_VideoQuit\n");
+    TRACE("-NDS_VideoQuit\n");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
