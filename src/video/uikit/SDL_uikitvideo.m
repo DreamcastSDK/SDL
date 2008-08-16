@@ -21,21 +21,6 @@
 */
 #include "SDL_config.h"
 
-/* Dummy SDL video driver implementation; this is just enough to make an
- *  SDL-based application THINK it's got a working video driver, for
- *  applications that call SDL_Init(SDL_INIT_VIDEO) when they don't need it,
- *  and also for use as a collection of stubs when porting SDL to a new
- *  platform for which you haven't yet written a valid video driver.
- *
- * This is also a great way to determine bottlenecks: if you think that SDL
- *  is a performance problem for a given platform, enable this driver, and
- *  then see if your application runs faster without video overhead.
- *
- * Initial work by Ryan C. Gordon (icculus@icculus.org). A good portion
- *  of this was cut-and-pasted from Stephane Peter's work in the AAlib
- *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
- */
-
 #include "SDL_video.h"
 #include "SDL_mouse.h"
 #include "../SDL_sysvideo.h"
