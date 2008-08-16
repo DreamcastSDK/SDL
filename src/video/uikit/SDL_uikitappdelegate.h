@@ -23,8 +23,8 @@
 #import <UIKit/UIKit.h>
 #import "SDL_uikitopenglview.h"
 
-@interface SDLUIKitDelegate:NSObject < UIApplicationDelegate > {
-	UIWindow       *window;
+@interface SDLUIKitDelegate:NSObject<UIApplicationDelegate> {
+	UIWindow *window;
 }
 
 @property (readwrite, retain) UIWindow *window;
