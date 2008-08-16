@@ -21,9 +21,6 @@
 */
 #include "SDL_config.h"
 
-/* Being a null driver, there's no event stream. We just define stubs for
-   most of the API. */
-
 #include "SDL.h"
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
@@ -32,7 +29,7 @@
 #include "SDL_uikitevents.h"
 
 #import <Foundation/Foundation.h>
-#include "jump.h"
+#include "jumphack.h"
 
 void
 UIKit_PumpEvents(_THIS)
@@ -47,17 +44,13 @@ UIKit_PumpEvents(_THIS)
 		So what we do is that in the UIApplicationDelegate class (SDLUIApplicationDelegate),
 		when the delegate receives the ApplicationWillTerminate message, we execute
 		a longjmp statement to get back here, preventing an immediate exit.
-	 
 	 */	
-	if (setjmp(*jump_env()) != 0) {
-		//NSLog(@"Bam! We're back");
-	}
-	else {
+	if (setjmp(*jump_env()) == 0) {
+		/* if we're setting the jump, rather than jumping back */
 		SInt32 result;
 		do {
 			result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE);
 		} while(result == kCFRunLoopRunHandledSource);
-
 	}
 
 }
