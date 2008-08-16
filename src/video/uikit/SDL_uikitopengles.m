@@ -24,7 +24,7 @@
 #include "SDL_uikitopenglview.h"
 #include "SDL_uikitappdelegate.h"
 #include "SDL_uikitwindow.h"
-#include "jump.h"
+#include "jumphack.h"
 #include "SDL_sysvideo.h"
 #include "SDL_loadso.h"
 #include <dlfcn.h>
@@ -61,7 +61,11 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 int
 UIKit_GL_LoadLibrary(_THIS, const char *path)
 {
-	/* shouldn't be passing a path into this function */
+	/* 
+		shouldn't be passing a path into this function 
+		why?  Because we've already loaded the library
+		and because the SDK forbids loading an external SO
+	*/
     if (path != NULL) {
 		SDL_SetError("iPhone GL Load Library just here for compatibility");
 		return -1;
@@ -95,6 +99,7 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 
 	SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 	
+	/* construct our view, passing in SDL's OpenGL configuration data */
 	view = [[SDL_uikitopenglview alloc] initWithFrame: [[UIScreen mainScreen] applicationFrame] \
 									retainBacking: _this->gl_config.retained_backing \
 									rBits: _this->gl_config.red_size \
@@ -102,11 +107,10 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 									bBits: _this->gl_config.blue_size \
 									aBits: _this->gl_config.alpha_size \
 									depthBits: _this->gl_config.depth_size];
-
-	view.multipleTouchEnabled = YES;
-
+	
 	data->view = view;
-
+	
+	/* add the view to our window */
 	[data->uiwindow addSubview: view ];
 	
 	/* Don't worry, the window retained the view */
