@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <nds.h>
+#include <fat.h>
 #include "common.h"
 
 #define NUM_SPRITES	100
@@ -148,7 +149,7 @@ main(int argc, char *argv[])
     int i, done;
     SDL_Event event;
     Uint32 then, now, frames;
-
+    fatInitDefault();
     /* Initialize parameters */
     num_sprites = NUM_SPRITES;
 
