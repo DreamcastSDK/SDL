@@ -28,7 +28,7 @@ int main(void) {
 		puts(SDL_GetError());
 		return 1;
 	}
-	puts("* initialized SDL\n");
+	puts("* initialized SDL");
 	screen = SDL_SetVideoMode(256, 192, 15, SDL_SWSURFACE);
 	if(!screen) {
 		puts("# error setting video mode");
@@ -36,7 +36,7 @@ int main(void) {
 		return 2;
 	}
 	screen->flags &= ~SDL_PREALLOC;
-	puts("* set video mode\n");
+	puts("* set video mode");
 	stick = SDL_JoystickOpen(0);
 	if(stick == NULL) {
 		puts("# error opening joystick");

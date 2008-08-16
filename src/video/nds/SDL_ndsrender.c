@@ -275,7 +275,6 @@ NDS_CreateRenderer(SDL_Window * window, Uint32 flags)
     NDS_OAM_Init(&(data->oam_copy)); /* init sprites. */
 
     TRACE("-NDS_CreateRenderer\n");
-    printf("renderer is %x\n", (u32)(renderer->UpdateTexture));
     return renderer;
 }
 
@@ -368,18 +367,6 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             txdat->vram_pixels = (u16*)(data->sub ?
                 BG_BMP_RAM_SUB(base) : BG_BMP_RAM(base));
 
-            /* TESTING PURPOSES ONLY!!!
-               shows that the texture is set up properly on the screen. */
-            for(i = 0; i < 256*192; ++i) {
-                txdat->vram_pixels[i] = RGB15(31,31,0)|0x8000;
-            }
-            printf("--one... two...\n");
-            for(i = 0; i < 120; ++i) {
-                swiWaitForVBlank();
-            }
-            for(i = 0; i < 256*192; ++i) {
-                txdat->vram_pixels[i] = 0;
-            }
             /*txdat->size = txdat->dim.pitch * texture->h;*/
         } else {
             SDL_SetError("Out of NDS backgrounds.");
