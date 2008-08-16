@@ -341,10 +341,22 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             sprent->objMode = OBJMODE_BITMAP;
             sprent->posX = 0; sprent->posY = 0;
             sprent->colMode = OBJCOLOR_16; /* OBJCOLOR_256 for INDEX8 */
+
+            /* the first 32 sprites get transformation matrices.
+               first come, first served */
             if(whichspr < MATRIX_COUNT) {
                 sprent->isRotoscale = 1;
                 sprent->rsMatrixIdx = whichspr;
             }
+
+            sprent->objShape = OBJSHAPE_SQUARE;
+            if(texture->w/2 >= texture->h) {
+                sprent->objShape = OBJSHAPE_WIDE;
+            } else if(texture->h/2 >= texture->w) {
+                sprent->objShape = OBJSHAPE_TALL;
+            }
+        } else {
+            SDL_SetError("Out of NDS sprites.");
         }
     } else if(texture->w <= 256 && texture->h <= 256) {
         int whichbg = -1, base = 0;
@@ -385,7 +397,6 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             /*txdat->size = txdat->dim.pitch * texture->h;*/
         } else {
             SDL_SetError("Out of NDS backgrounds.");
-            printf("ran out.\n");
         }
     } else {
         SDL_SetError("Texture too big for NDS hardware.");
@@ -393,7 +404,6 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     TRACE("-NDS_CreateTexture\n");
     if (!texture->driverdata) {
-        SDL_SetError("Couldn't create NDS render driver data.");
         return -1;
     }
 

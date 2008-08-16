@@ -2,13 +2,26 @@
 #include <SDL/SDL.h>
 #if defined(NDS) || defined(__NDS__) || defined (__NDS)
 #include <nds.h>
+#include <fat.h>
 #else
 #define swiWaitForVBlank() 
 #define consoleDemoInit() 
+#define fatInitDefault() 
 #define RGB15(r,g,b) SDL_MapRGB(screen->format,((r)<<3),((g)<<3),((b)<<3))
 #endif
 
-void delay(int s) {
+void splash(SDL_Surface *screen, int s) {
+	SDL_Surface *logo;
+	SDL_Rect area = {0,0,256,192};
+
+	logo = SDL_LoadBMP("sdl.bmp");
+	if(!logo) {
+		printf("Couldn't splash.\n");
+		return;
+	}
+	/*logo->flags &= ~SDL_PREALLOC;*/
+	SDL_BlitSurface(logo, NULL, screen, &area);
+	SDL_Flip(screen);
 	while(s-- > 0) {
 		int i = 60;
 		while(--i) swiWaitForVBlank();
@@ -22,7 +35,8 @@ int main(void) {
 	SDL_Rect rect = {8,8,240,176};
 	int i;
 
-	consoleDemoInit();
+	consoleDemoInit(); puts("Hello world!  Initializing FAT...");
+	fatInitDefault();
 	if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK) < 0) {
 		puts("# error initializing SDL");
 		puts(SDL_GetError());
@@ -44,6 +58,9 @@ int main(void) {
 //		return 3;
 	}
 	puts("* opened joystick");
+
+	/*splash(screen, 3);*/
+
 	SDL_FillRect(screen, &rect, RGB15(0,0,31)|0x8000);
 	SDL_Flip(screen);
 
@@ -66,7 +83,7 @@ int main(void) {
 			break;
 			default: break;
 		}
-		printf("joy_%d\n", event.jbutton.which);
+		printf("joy_%d, at %d\n", event.jbutton.which, SDL_GetTicks());
 		SDL_Flip(screen);
 		break;
 		case SDL_QUIT: SDL_Quit(); return 0;
