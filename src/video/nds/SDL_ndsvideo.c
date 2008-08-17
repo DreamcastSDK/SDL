@@ -150,6 +150,8 @@ NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
                  DISPLAY_BG3_ACTIVE |
                  DISPLAY_BG_EXT_PALETTE |
                  DISPLAY_SPR_1D_LAYOUT |
+                 DISPLAY_SPR_1D_BMP |
+                 DISPLAY_SPR_1D_BMP_SIZE_256 | /* try 128 if 256 is trouble. */
                  DISPLAY_SPR_ACTIVE |
                  DISPLAY_SPR_EXT_PALETTE); /* display on main core
                                               with lots of flags set for

@@ -7,6 +7,8 @@
 #include <fat.h>
 #include "common.h"
 
+#include "icon_bmp_bin.h"
+
 #define NUM_SPRITES	10
 #define MAX_SPEED 	1
 
@@ -77,6 +79,24 @@ LoadSprite(char *file)
 
     /* We're ready to roll. :) */
     return (0);
+}
+
+int LoadSprite2(const u8* ptr, int size) {
+    int i;
+    SDL_Rect r = {0,0,32,32};
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_SelectRenderer(state->windows[i]);
+        sprites[i] = SDL_CreateTexture(SDL_PIXELFORMAT_ABGR1555,
+                                       SDL_TEXTUREACCESS_STATIC, r.w, r.h);
+        if (!sprites[i]) {
+            fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
+            return -1;
+        }
+        SDL_UpdateTexture(sprites[i], &r, ptr, r.w*2);
+        SDL_SetTextureBlendMode(sprites[i], blendMode);
+        SDL_SetTextureScaleMode(sprites[i], scaleMode);
+    }
+    return 0;
 }
 
 void
@@ -236,7 +256,8 @@ main(int argc, char *argv[])
         SDL_SelectRenderer(state->windows[i]);
         SDL_RenderFill(0xA0, 0xA0, 0xA0, 0xFF, NULL);
     }
-    if (LoadSprite("icon.bmp") < 0) {
+    if (LoadSprite2(icon_bmp_bin, icon_bmp_bin_size) < 0) {
+        printf("errored.\n");
         quit(2);
     }
 

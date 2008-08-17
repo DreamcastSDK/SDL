@@ -330,6 +330,8 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
         if(whichspr >= 0) {
             SpriteEntry *sprent = &(data->oam_copy.spriteBuffer[whichspr]);
+            int maxside = texture->w > texture->h ? texture->w : texture->h;
+            int pitch;
 
             texture->driverdata = SDL_calloc(1, sizeof(NDS_TextureData));
             txdat = (NDS_TextureData*)texture->driverdata;
@@ -349,12 +351,44 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                 sprent->rsMatrixIdx = whichspr;
             }
 
+            /* containing shape (square or 2:1 rectangles) */
             sprent->objShape = OBJSHAPE_SQUARE;
             if(texture->w/2 >= texture->h) {
                 sprent->objShape = OBJSHAPE_WIDE;
             } else if(texture->h/2 >= texture->w) {
                 sprent->objShape = OBJSHAPE_TALL;
             }
+
+            /* size in pixels */
+            /* FIXME: "pitch" is hardcoded for 2bytes per pixel. */
+            sprent->objSize = OBJSIZE_64;
+            pitch = 128;
+            if(maxside <= 8) {
+                sprent->objSize = OBJSIZE_8;
+                pitch = 16;
+            } else if(maxside <= 16) {
+                sprent->objSize = OBJSIZE_16;
+                pitch = 32;
+            } else if(maxside <= 32) {
+                sprent->objSize = OBJSIZE_32;
+                pitch = 64;
+            }
+
+            /* FIXME: this is hard-coded and will obviously only work for one
+               sprite-texture.  tells it to look at the beginning of SPRITE_GFX
+               for its pixels. */
+            sprent->tileIdx = 0;
+
+            /* now for the texture data */
+            txdat->type = NDSTX_SPR;
+            txdat->hw_index = whichspr;
+            txdat->dim.hdx = 0x100; txdat->dim.hdy = 0;
+            txdat->dim.vdx = 0;     txdat->dim.vdy = 0x100;
+            txdat->dim.pitch = pitch;
+            txdat->dim.bpp = bpp;
+            txdat->vram_pixels = (u16*)(data->sub ?
+                SPRITE_GFX_SUB : SPRITE_GFX); /* FIXME: use tileIdx*boundary
+                                                 to point to proper location */
         } else {
             SDL_SetError("Out of NDS sprites.");
         }
@@ -374,9 +408,7 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                 return -1;
             }
 
-            /* TODO: maybe this should be in RenderPresent or RenderCopy
-               instead, copying from a malloc'd system RAM pixel buffer. */
-            /* this is hard-coded to being 256x256 for now. */
+            /* this is hard-coded to being 256x256 ABGR1555 for now. */
             data->bg->control[whichbg] = (bpp == 8) ?
                 BG_BMP8_256x256 : BG_BMP16_256x256;
 
@@ -389,7 +421,7 @@ NDS_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             txdat->hw_index = whichbg;
             txdat->dim.hdx = 0x100; txdat->dim.hdy = 0;
             txdat->dim.vdx = 0;     txdat->dim.vdy = 0x100;
-            txdat->dim.pitch = texture->w * ((bpp+1)/8);
+            txdat->dim.pitch = 512;
             txdat->dim.bpp = bpp;
             txdat->vram_pixels = (u16*)(data->sub ?
                 BG_BMP_RAM_SUB(base) : BG_BMP_RAM(base));
@@ -538,7 +570,7 @@ NDS_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         SpriteEntry *spr = &(data->oam_copy.spriteBuffer[txdat->hw_index]);
         spr->posX = dstrect->x;
         spr->posY = dstrect->y;
-        if(txdat->hw_index < MATRIX_COUNT) {
+        if(txdat->hw_index < MATRIX_COUNT && spr->isRotoscale) {
             SpriteRotation *sprot = &(data->oam_copy.matrixBuffer[txdat->hw_index]);
             sprot->hdx = txdat->dim.hdx;
             sprot->hdy = txdat->dim.hdy;
@@ -573,9 +605,9 @@ NDS_RenderPresent(SDL_Renderer * renderer)
 static void
 NDS_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
+    NDS_TextureData *txdat = texture->driverdata;
     TRACE("+NDS_DestroyTexture\n");
     /* free anything else allocated for texture */
-    NDS_TextureData *txdat = texture->driverdata;
     /*SDL_FreeDirtyRects(&txdat->dirty);*/
     SDL_free(txdat);
     TRACE("-NDS_DestroyTexture\n");
@@ -585,8 +617,8 @@ static void
 NDS_DestroyRenderer(SDL_Renderer * renderer)
 {
     NDS_RenderData *data = (NDS_RenderData *) renderer->driverdata;
-    /*SDL_Window *window = SDL_GetWindowFromID(renderer->window);
-    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);*/
+    SDL_Window *window = SDL_GetWindowFromID(renderer->window);
+    SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     int i;
 
     TRACE("+NDS_DestroyRenderer\n");
@@ -623,8 +655,8 @@ static int
 NDS_GetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
                      SDL_Color * colors, int firstcolor, int ncolors)
 {
-    TRACE("+NDS_GetTexturePalette\n");
     NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
+    TRACE("+NDS_GetTexturePalette\n");
     TRACE("-NDS_GetTexturePalette\n");
     return 0;
 }
