@@ -116,8 +116,8 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 	/* Don't worry, the window retained the view */
 	[view release];
 	
-	if ( UIKit_GL_MakeCurrent(_this, window, NULL) < 0 ) {
-        UIKit_GL_DeleteContext(_this, NULL);
+	if ( UIKit_GL_MakeCurrent(_this, window, view) < 0 ) {
+        UIKit_GL_DeleteContext(_this, view);
         return NULL;
     }
 		
