@@ -369,6 +369,7 @@
 			FD7A1F320E1983FB00F069E4 = FD7A1F320E1983FB00F069E4 /* PBXTextBookmark */;
 			FD7E21210E59F37600D876C9 /* PBXTextBookmark */ = FD7E21210E59F37600D876C9 /* PBXTextBookmark */;
 			FD7E212A0E59F3F300D876C9 /* PBXTextBookmark */ = FD7E212A0E59F3F300D876C9 /* PBXTextBookmark */;
+			FD7E212D0E59F65800D876C9 /* PBXTextBookmark */ = FD7E212D0E59F65800D876C9 /* PBXTextBookmark */;
 			FD831A360E0CEBD300AD337D = FD831A360E0CEBD300AD337D /* PBXTextBookmark */;
 			FD831A370E0CEBD300AD337D = FD831A370E0CEBD300AD337D /* PBXTextBookmark */;
 			FD831A3E0E0CEBD300AD337D = FD831A3E0E0CEBD300AD337D /* PBXTextBookmark */;
@@ -3724,6 +3725,16 @@
 		vrLen = 1627;
 		vrLoc = 0;
 	};
+	FD7E212D0E59F65800D876C9 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
+		name = "SDL_config_macosx.h: 6";
+		rLen = 0;
+		rLoc = 155;
+		rType = 0;
+		vrLen = 1627;
+		vrLoc = 0;
+	};
 	FD831A360E0CEBD300AD337D /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = FDA685F60DF244C800F98A1A /* SDL_nullevents_c.h */;
@@ -4146,7 +4157,7 @@
 	FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {864, 1750}}";
-			sepNavSelRange = "{1017, 18}";
+			sepNavSelRange = "{155, 0}";
 			sepNavVisRange = "{0, 1627}";
 		};
 	};
