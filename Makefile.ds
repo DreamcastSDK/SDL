@@ -67,7 +67,7 @@ src/thread/nds/SDL_syscond.c \
 src/thread/nds/SDL_sysmutex.c \
 src/thread/nds/SDL_syssem.c \
 src/thread/nds/SDL_systhread.c \
-src/timer/dummy/SDL_systimer.c \
+src/timer/nds/SDL_systimer.c \
 src/timer/SDL_timer.c \
 src/video/nds/SDL_ndsevents.c \
 src/video/nds/SDL_ndsrender.c \

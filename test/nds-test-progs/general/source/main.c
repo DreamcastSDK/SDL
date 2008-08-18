@@ -32,7 +32,7 @@ int main(void) {
 	SDL_Surface *screen;
 	SDL_Joystick *stick;
 	SDL_Event event;
-	SDL_Rect rect = {8,8,240,176};
+	SDL_Rect rect = {0,0,256,192};
 	int i;
 
 	consoleDemoInit(); puts("Hello world!  Initializing FAT...");
@@ -68,23 +68,14 @@ int main(void) {
 	while(SDL_PollEvent(&event))
 	switch(event.type) {
 		case SDL_JOYBUTTONDOWN:
-		switch(event.jbutton.which) {
-			case 0:
-			SDL_FillRect(screen, &rect, RGB15(31,0,0)|0x8000);
-			break;
-			case 1:
-			SDL_FillRect(screen, &rect, RGB15(0,31,0)|0x8000);
-			break;
-			case 2:
-			SDL_FillRect(screen, &rect, RGB15(0,0,31)|0x8000);
-			break;
-			case 3:
-			SDL_FillRect(screen, &rect, RGB15(0,0,0)|0x8000);
-			break;
-			default: break;
-		}
-		printf("joy_%d, at %d\n", event.jbutton.which, SDL_GetTicks());
-		SDL_Flip(screen);
+			SDL_FillRect(screen, &rect, (u16)rand()|0x8000);
+			SDL_Flip(screen);
+			if(rect.w > 8) {
+				rect.x += 4; rect.y += 3;
+				rect.w -= 8; rect.h -= 6;
+			}
+			printf("button %d pressed at %d ticks\n",
+			       event.jbutton.which, SDL_GetTicks());
 		break;
 		case SDL_QUIT: SDL_Quit(); return 0;
 		default: break;
