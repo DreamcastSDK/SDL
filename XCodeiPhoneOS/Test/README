@@ -1,3 +1,5 @@
+TestiPhoneOS.xcodeproj contains targets to compile many of the SDL test programs for iPhone OS.  Most of these test programs work fine, with the following exceptions:
+
 testalpha:
 	Program crashes.  Problem appears to effect Mac OS X as well.
 
@@ -11,7 +13,7 @@ testpalette:
 	"SDL error: blitting boat: Blit combination not supported."  Happens on Mac OS X as well.
 
 testsprite2: 
-	SDL_CreateTextureFromSurface requests an ARGB pixel format ... needs ABGR!
+	SDL_CreateTextureFromSurface requests an ARGB pixel format, but iPhone's SDL video driver only supports ABGR.
 
 testwin:
 	Behaves as it does under Mac OS X ... not sure if that is correctly or not.
