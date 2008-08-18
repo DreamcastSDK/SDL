@@ -231,6 +231,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -269,29 +271,12 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateExpansionKey</key>
 							<array>
 								<string>29B97314FDCFA39411CA2CEA</string>
-								<string>FD99B8BC0DD52E5C00FB1D6B</string>
-								<string>FD99B8BD0DD52E6D00FB1D6B</string>
-								<string>FDA682420DF2374D00F98A1A</string>
-								<string>FD689F090E26E5D900F90B21</string>
-								<string>29B97323FDCFA39411CA2CEA</string>
-								<string>FD99BCEF0DD532AE00FB1D6B</string>
-								<string>FD24837E0E563A930021E198</string>
-								<string>FD24842D0E56552F0021E198</string>
 								<string>1C37FBAC04509CD000000102</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
-							<array>
-								<array>
-									<integer>127</integer>
-									<integer>125</integer>
-									<integer>122</integer>
-									<integer>121</integer>
-									<integer>117</integer>
-									<integer>0</integer>
-								</array>
-							</array>
+							<array/>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
-							<string>{{0, 1461}, {327, 902}}</string>
+							<string>{{0, 0}, {327, 902}}</string>
 						</dict>
 						<key>PBXTopSmartGroupGIDs</key>
 						<array/>
@@ -312,7 +297,7 @@
 							<real>305</real>
 						</array>
 						<key>RubberWindowFrame</key>
-						<string>378 67 1274 961 0 0 1680 1028 </string>
+						<string>99 67 1274 961 0 0 1680 1028 </string>
 					</dict>
 					<key>Module</key>
 					<string>PBXSmartGroupTreeModule</string>
@@ -323,14 +308,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>glext.h</string>
+								<string>SDL_config_macosx.h</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -338,11 +321,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>glext.h</string>
+										<string>SDL_config_macosx.h</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>FD24846A0E56554C0021E198</string>
+										<string>FD9026E90E59F1AE00937A6D</string>
 										<key>history</key>
 										<array>
 											<string>FD3F49A60DEA5B7200C5B771</string>
@@ -544,7 +527,9 @@
 											<string>FD2484570E56554C0021E198</string>
 											<string>FD2484580E56554C0021E198</string>
 											<string>FD2484590E56554C0021E198</string>
-											<string>FD24845A0E56554C0021E198</string>
+											<string>FD24846E0E56AA510021E198</string>
+											<string>FD46E13A0E59E94C002C449D</string>
+											<string>FD9026E50E59EBED00937A6D</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -711,60 +696,17 @@
 											<string>FDC656B50E561A4200311C8E</string>
 											<string>FDC656E90E56252500311C8E</string>
 											<string>FD24836E0E563A350021E198</string>
-											<string>FD2483FC0E5648150021E198</string>
-											<string>FD2483FD0E5648150021E198</string>
-											<string>FD2483FE0E5648150021E198</string>
-											<string>FD2483FF0E5648150021E198</string>
-											<string>FD2484000E5648150021E198</string>
-											<string>FD2484010E5648150021E198</string>
-											<string>FD2484020E5648150021E198</string>
-											<string>FD2484030E5648150021E198</string>
-											<string>FD2484040E5648150021E198</string>
-											<string>FD2484050E5648150021E198</string>
-											<string>FD2484060E5648150021E198</string>
-											<string>FD2484070E5648150021E198</string>
-											<string>FD2484080E5648150021E198</string>
-											<string>FD2484090E5648150021E198</string>
-											<string>FD24840A0E5648150021E198</string>
 											<string>FD24840B0E5648150021E198</string>
-											<string>FD24840C0E5648150021E198</string>
-											<string>FD24840D0E5648150021E198</string>
-											<string>FD24840E0E5648150021E198</string>
-											<string>FD24840F0E5648150021E198</string>
-											<string>FD2484100E5648150021E198</string>
-											<string>FD2484110E5648150021E198</string>
-											<string>FD2484120E5648150021E198</string>
-											<string>FD2484130E5648150021E198</string>
-											<string>FD2484140E5648150021E198</string>
 											<string>FD2484150E5648150021E198</string>
-											<string>FD2484160E5648150021E198</string>
-											<string>FD2484170E5648150021E198</string>
 											<string>FD2484180E5648150021E198</string>
 											<string>FD2484190E5648150021E198</string>
 											<string>FD24841A0E5648150021E198</string>
 											<string>FD24841B0E5648150021E198</string>
-											<string>FD24841C0E5648150021E198</string>
-											<string>FD24841D0E5648150021E198</string>
 											<string>FD24841E0E5648150021E198</string>
 											<string>FD24841F0E5648150021E198</string>
-											<string>FD2484200E5648150021E198</string>
-											<string>FD2484210E5648150021E198</string>
 											<string>FD2484220E5648150021E198</string>
-											<string>FD24845B0E56554C0021E198</string>
-											<string>FD24845C0E56554C0021E198</string>
-											<string>FD24845D0E56554C0021E198</string>
-											<string>FD24845E0E56554C0021E198</string>
-											<string>FD24845F0E56554C0021E198</string>
-											<string>FD2484600E56554C0021E198</string>
-											<string>FD2484610E56554C0021E198</string>
-											<string>FD2484620E56554C0021E198</string>
 											<string>FD2484630E56554C0021E198</string>
-											<string>FD2484640E56554C0021E198</string>
-											<string>FD2484650E56554C0021E198</string>
-											<string>FD2484660E56554C0021E198</string>
-											<string>FD2484670E56554C0021E198</string>
-											<string>FD2484680E56554C0021E198</string>
-											<string>FD2484690E56554C0021E198</string>
+											<string>FD46E13C0E59E94C002C449D</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -778,7 +720,7 @@
 								<key>Frame</key>
 								<string>{{0, 0}, {925, 752}}</string>
 								<key>RubberWindowFrame</key>
-								<string>378 67 1274 961 0 0 1680 1028 </string>
+								<string>99 67 1274 961 0 0 1680 1028 </string>
 							</dict>
 							<key>Module</key>
 							<string>PBXNavigatorGroup</string>
@@ -798,7 +740,7 @@
 								<key>Frame</key>
 								<string>{{0, 757}, {925, 163}}</string>
 								<key>RubberWindowFrame</key>
-								<string>378 67 1274 961 0 0 1680 1028 </string>
+								<string>99 67 1274 961 0 0 1680 1028 </string>
 							</dict>
 							<key>Module</key>
 							<string>XCDetailModule</string>
@@ -822,9 +764,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>FD2483800E563A9A0021E198</string>
+				<string>FD9026E70E59EBED00937A6D</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>FD2483810E563A9A0021E198</string>
+				<string>FD9026E80E59EBED00937A6D</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -958,11 +900,10 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1C530D57069F1CE1000CFCEE</string>
 		<string>/Users/hfutrell/iPhoneSource/gsoc2008_iphone/XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
-	<string>378 67 1274 961 0 0 1680 1028 </string>
+	<string>99 67 1274 961 0 0 1680 1028 </string>
 	<key>WindowToolsV3</key>
 	<array>
 		<dict>
