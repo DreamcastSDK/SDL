@@ -231,6 +231,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -274,12 +276,11 @@
 								<string>FDA682420DF2374D00F98A1A</string>
 								<string>FD689F090E26E5D900F90B21</string>
 								<string>1C37FBAC04509CD000000102</string>
-								<string>FDB8BFAB0E5A0F3700980157</string>
+								<string>FDE5C16F0E5A1635006FB265</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>125</integer>
 									<integer>122</integer>
 									<integer>119</integer>
 								</array>
@@ -317,14 +318,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>SDL_main.h</string>
+								<string>SDL_video.c</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -332,11 +331,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>SDL_main.h</string>
+										<string>SDL_video.c</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>FDB8BFF30E5A0F7300980157</string>
+										<string>FDE5C1960E5A16A3006FB265</string>
 										<key>history</key>
 										<array>
 											<string>FD3F49A60DEA5B7200C5B771</string>
@@ -471,7 +470,6 @@
 											<string>FDBB1FBA0E3E95A200B928D0</string>
 											<string>FDBB1FBB0E3E95A200B928D0</string>
 											<string>FDBB1FBC0E3E95A200B928D0</string>
-											<string>FDF9EAE40E3F6790001061AB</string>
 											<string>FDF9EBD10E3F7E8B001061AB</string>
 											<string>FDF9EBDC0E3F7F8E001061AB</string>
 											<string>FDB653620E43EDAD00F688B5</string>
@@ -537,11 +535,10 @@
 											<string>FD4931710E5A031900ADD790</string>
 											<string>FD4931720E5A031900ADD790</string>
 											<string>FD4931730E5A031900ADD790</string>
-											<string>FD4931740E5A031900ADD790</string>
 											<string>FD4931750E5A031900ADD790</string>
 											<string>FDB8BFAC0E5A0F3700980157</string>
-											<string>FDB8BFAD0E5A0F3700980157</string>
-											<string>FD978C130E33E05E000AEA3F</string>
+											<string>FDB8C01E0E5A161000980157</string>
+											<string>FD49317B0E5A031900ADD790</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -695,7 +692,6 @@
 											<string>FDC262A70E3A6273001C4554</string>
 											<string>FDBB1FE60E3E95A200B928D0</string>
 											<string>FDBB1FEA0E3E95A200B928D0</string>
-											<string>FDF9EAEC0E3F6790001061AB</string>
 											<string>FDB6528B0E43D8CB00F688B5</string>
 											<string>FDC6558F0E5601D800311C8E</string>
 											<string>FDC6562D0E560CF600311C8E</string>
@@ -719,9 +715,6 @@
 											<string>FD2484630E56554C0021E198</string>
 											<string>FD46E13C0E59E94C002C449D</string>
 											<string>FD4931770E5A031900ADD790</string>
-											<string>FD49317B0E5A031900ADD790</string>
-											<string>FDB8BFAE0E5A0F3700980157</string>
-											<string>FDB8BFAF0E5A0F3700980157</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -779,9 +772,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>FDB8BFB10E5A0F3700980157</string>
+				<string>FDE5C1930E5A1690006FB265</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>FDB8BFB20E5A0F3700980157</string>
+				<string>FDE5C1940E5A1690006FB265</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -915,6 +908,7 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
+		<string>FD99B8910DD52DD100FB1D6B</string>
 		<string>/Users/hfutrell/iPhoneSource/gsoc2008_iphone/XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
@@ -959,7 +953,7 @@
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
-								<string>{{0, 179}, {1438, 96}}</string>
+								<string>{{0, 95}, {1438, 180}}</string>
 								<key>PBXProjectModuleGUID</key>
 								<string>XCMainBuildResultsModuleGUID</string>
 								<key>PBXProjectModuleLabel</key>
@@ -997,7 +991,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>FD99B8910DD52DD100FB1D6B</string>
-				<string>FDB8BF950E5A070700980157</string>
+				<string>FDE5C1950E5A1690006FB265</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
