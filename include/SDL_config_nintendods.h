@@ -110,7 +110,7 @@ typedef unsigned __PTRDIFF_TYPE__ uintptr_t;
 #define SDL_THREADS_DISABLED	1
 
 /* Enable various timer systems */
-#define SDL_TIMERS_DISABLED	1
+#define SDL_TIMER_NDS	1
 
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_NDS	1

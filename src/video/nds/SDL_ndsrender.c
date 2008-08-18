@@ -656,8 +656,7 @@ NDS_GetTexturePalette(SDL_Renderer * renderer, SDL_Texture * texture,
                      SDL_Color * colors, int firstcolor, int ncolors)
 {
     NDS_TextureData *txdat = (NDS_TextureData *) texture->driverdata;
-    TRACE("+NDS_GetTexturePalette\n");
-    TRACE("-NDS_GetTexturePalette\n");
+    TRACE("!NDS_GetTexturePalette\n");
     return 0;
 }
 

@@ -28,7 +28,10 @@
 
 #include "SDL_timer.h"
 #include "../SDL_timer_c.h"
+#include "../SDL_systimer.h"
 
+/* Data to handle a single periodic alarm */
+static int timer_alive = 0;
 static Uint32 timer_ticks;
 
 void
@@ -57,10 +60,6 @@ SDL_Delay(Uint32 ms)
     }
 }
 
-/* Data to handle a single periodic alarm */
-static int timer_alive = 0;
-static int timer_ticks = 0;
-
 static int
 RunTimer(void *unused)
 {
@@ -72,8 +71,8 @@ RunTimer(void *unused)
     return (0);
 }
 
-void NDS_TimerInterrupt() {
-    printf("timer irq\n");
+void NDS_TimerInterrupt(void) {
+	timer_ticks++;
 }
 
 /* This is only called if the event thread is not running */
@@ -82,9 +81,10 @@ SDL_SYS_TimerInit(void)
 {
     timer_alive = 1;
     timer_ticks = 0;
-    TIMER_CR(0) = TIMER_DIV_1024 | TIMER_IRQ_REQ;
-    TIMER_DATA(0) = TIMER_FREQ_1024(1000);
-    irqSet(IRQ_TIMER1, NDS_TimerInterrupt);
+    TIMER_CR(3) = TIMER_DIV_1024 | TIMER_IRQ_REQ;
+    TIMER_DATA(3) = TIMER_FREQ_1024(1000);
+    irqSet(IRQ_TIMER3, NDS_TimerInterrupt);
+    irqEnable(IRQ_TIMER3);
     return 0;
 }
 
@@ -92,22 +92,23 @@ void
 SDL_SYS_TimerQuit(void)
 {
     if (timer_alive) {
-        TIMER_CR(0) = 0;
+        TIMER_CR(3) = 0;
     }
     timer_alive = 0;
+    irqDisable(IRQ_TIMER3);
 }
 
 int
 SDL_SYS_StartTimer(void)
 {
-    TIMER_CR(0) |= TIMER_ENABLE;
+    TIMER_CR(3) |= TIMER_ENABLE;
     return 0;
 }
 
 void
 SDL_SYS_StopTimer(void)
 {
-    TIMER_CR(0) &= ~TIMER_ENABLE;
+    TIMER_CR(3) &= ~TIMER_ENABLE;
     return;
 }
 
