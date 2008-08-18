@@ -270,7 +270,7 @@
 							<array>
 								<string>29B97314FDCFA39411CA2CEA</string>
 								<string>1C37FBAC04509CD000000102</string>
-								<string>FD7E21200E59F37600D876C9</string>
+								<string>FD49315A0E59FE3500ADD790</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
@@ -331,7 +331,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>FD7E212D0E59F65800D876C9</string>
+										<string>FD49315B0E59FE5200ADD790</string>
 										<key>history</key>
 										<array>
 											<string>FD3F49A60DEA5B7200C5B771</string>
@@ -535,7 +535,7 @@
 											<string>FD2484590E56554C0021E198</string>
 											<string>FD24846E0E56AA510021E198</string>
 											<string>FD46E13A0E59E94C002C449D</string>
-											<string>FD9026E90E59F1AE00937A6D</string>
+											<string>FD49314D0E59FC4800ADD790</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -770,9 +770,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>FD7E21220E59F37600D876C9</string>
+				<string>FD49315C0E59FE5200ADD790</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>FD7E21230E59F37600D876C9</string>
+				<string>FD49315D0E59FE5200ADD790</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -906,7 +906,6 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>FD99B8910DD52DD100FB1D6B</string>
 		<string>/Users/hfutrell/iPhoneSource/gsoc2008_iphone/XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj</string>
 	</array>
 	<key>WindowString</key>

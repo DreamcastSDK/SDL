@@ -1481,12 +1481,16 @@
 		FDB043B40E2689CC00F5B3F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "";
+				PRODUCT_NAME = Template;
 			};
 			name = Debug;
 		};
 		FDB043B50E2689CC00F5B3F9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "";
+				PRODUCT_NAME = Template;
 			};
 			name = Release;
 		};

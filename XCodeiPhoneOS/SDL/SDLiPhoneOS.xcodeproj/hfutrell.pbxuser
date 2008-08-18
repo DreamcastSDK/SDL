@@ -70,7 +70,7 @@
 				PBXFileTableDataSourceColumnSortingKey = PBXFindDataSource_LocationID;
 				PBXFileTableDataSourceColumnWidthsKey = (
 					200,
-					522.20849609375,
+					700.20849609375,
 				);
 				PBXFileTableDataSourceColumnsKey = (
 					PBXFindDataSource_MessageID,
@@ -139,8 +139,8 @@
 					PBXFileDataSource_Warnings_ColumnID,
 				);
 			};
-			PBXPerProjectTemplateStateSaveDate = 240775984;
-			PBXWorkspaceStateSaveDate = 240775984;
+			PBXPerProjectTemplateStateSaveDate = 240778805;
+			PBXWorkspaceStateSaveDate = 240778805;
 		};
 		perUserProjectItems = {
 			FD0BC1640E3948BF00D833B1 = FD0BC1640E3948BF00D833B1 /* PBXTextBookmark */;
@@ -312,6 +312,8 @@
 			FD411B990E256B8800DAC0C9 = FD411B990E256B8800DAC0C9 /* PBXTextBookmark */;
 			FD46E13A0E59E94C002C449D = FD46E13A0E59E94C002C449D /* PBXTextBookmark */;
 			FD46E13C0E59E94C002C449D = FD46E13C0E59E94C002C449D /* PBXTextBookmark */;
+			FD49314D0E59FC4800ADD790 = FD49314D0E59FC4800ADD790 /* PBXTextBookmark */;
+			FD49315B0E59FE5200ADD790 /* PBXTextBookmark */ = FD49315B0E59FE5200ADD790 /* PBXTextBookmark */;
 			FD4B40E00E23D0F500365AA6 = FD4B40E00E23D0F500365AA6 /* PBXTextBookmark */;
 			FD4B40E20E23D0F500365AA6 = FD4B40E20E23D0F500365AA6 /* PBXTextBookmark */;
 			FD50346A0DEE6CBE00AF4946 = FD50346A0DEE6CBE00AF4946 /* PBXTextBookmark */;
@@ -367,9 +369,7 @@
 			FD7A1EEC0E196DA400F069E4 = FD7A1EEC0E196DA400F069E4 /* PBXTextBookmark */;
 			FD7A1EED0E196DA400F069E4 = FD7A1EED0E196DA400F069E4 /* PBXTextBookmark */;
 			FD7A1F320E1983FB00F069E4 = FD7A1F320E1983FB00F069E4 /* PBXTextBookmark */;
-			FD7E21210E59F37600D876C9 /* PBXTextBookmark */ = FD7E21210E59F37600D876C9 /* PBXTextBookmark */;
-			FD7E212A0E59F3F300D876C9 /* PBXTextBookmark */ = FD7E212A0E59F3F300D876C9 /* PBXTextBookmark */;
-			FD7E212D0E59F65800D876C9 /* PBXTextBookmark */ = FD7E212D0E59F65800D876C9 /* PBXTextBookmark */;
+			FD7E212D0E59F65800D876C9 = FD7E212D0E59F65800D876C9 /* PBXTextBookmark */;
 			FD831A360E0CEBD300AD337D = FD831A360E0CEBD300AD337D /* PBXTextBookmark */;
 			FD831A370E0CEBD300AD337D = FD831A370E0CEBD300AD337D /* PBXTextBookmark */;
 			FD831A3E0E0CEBD300AD337D = FD831A3E0E0CEBD300AD337D /* PBXTextBookmark */;
@@ -385,8 +385,6 @@
 			FD8BDA460E2804E900B52CD5 = FD8BDA460E2804E900B52CD5 /* PBXTextBookmark */;
 			FD8BDA920E2807B600B52CD5 = FD8BDA920E2807B600B52CD5 /* PBXTextBookmark */;
 			FD8BDA940E2807B600B52CD5 = FD8BDA940E2807B600B52CD5 /* PBXTextBookmark */;
-			FD9026E50E59EBED00937A6D = FD9026E50E59EBED00937A6D /* PBXTextBookmark */;
-			FD9026E90E59F1AE00937A6D = FD9026E90E59F1AE00937A6D /* PBXTextBookmark */;
 			FD9232440E148DF0000CF752 = FD9232440E148DF0000CF752 /* PBXTextBookmark */;
 			FD96AE7D0E30125D00721DC8 = FD96AE7D0E30125D00721DC8 /* PBXTextBookmark */;
 			FD96AE830E30125D00721DC8 = FD96AE830E30125D00721DC8 /* PBXTextBookmark */;
@@ -2928,6 +2926,26 @@
 		vrLen = 1203;
 		vrLoc = 0;
 	};
+	FD49314D0E59FC4800ADD790 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
+		name = "SDL_config_macosx.h: 12";
+		rLen = 0;
+		rLoc = 489;
+		rType = 0;
+		vrLen = 1627;
+		vrLoc = 0;
+	};
+	FD49315B0E59FE5200ADD790 /* PBXTextBookmark */ = {
+		isa = PBXTextBookmark;
+		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
+		name = "SDL_config_macosx.h: 30";
+		rLen = 0;
+		rLoc = 1039;
+		rType = 0;
+		vrLen = 1627;
+		vrLoc = 0;
+	};
 	FD4B40E00E23D0F500365AA6 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = FD99B9970DD52EDC00FB1D6B /* SDL_mouse.c */;
@@ -3705,26 +3723,6 @@
 		vrLen = 1308;
 		vrLoc = 0;
 	};
-	FD7E21210E59F37600D876C9 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
-		name = "SDL_config_macosx.h: 29";
-		rLen = 18;
-		rLoc = 1017;
-		rType = 0;
-		vrLen = 1627;
-		vrLoc = 0;
-	};
-	FD7E212A0E59F3F300D876C9 /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
-		name = "SDL_config_macosx.h: 29";
-		rLen = 18;
-		rLoc = 1017;
-		rType = 0;
-		vrLen = 1627;
-		vrLoc = 0;
-	};
 	FD7E212D0E59F65800D876C9 /* PBXTextBookmark */ = {
 		isa = PBXTextBookmark;
 		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
@@ -3918,26 +3916,6 @@
 		rLoc = 0;
 		rType = 0;
 		vrLen = 1639;
-		vrLoc = 0;
-	};
-	FD9026E50E59EBED00937A6D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
-		name = "SDL_config_macosx.h: 29";
-		rLen = 18;
-		rLoc = 1017;
-		rType = 0;
-		vrLen = 1627;
-		vrLoc = 0;
-	};
-	FD9026E90E59F1AE00937A6D /* PBXTextBookmark */ = {
-		isa = PBXTextBookmark;
-		fRef = FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */;
-		name = "SDL_config_macosx.h: 29";
-		rLen = 18;
-		rLoc = 1017;
-		rType = 0;
-		vrLen = 1627;
 		vrLoc = 0;
 	};
 	FD9232440E148DF0000CF752 /* PBXTextBookmark */ = {
@@ -4157,7 +4135,7 @@
 	FD99B8D30DD52EB400FB1D6B /* SDL_config_macosx.h */ = {
 		uiCtxt = {
 			sepNavIntBoundsRect = "{{0, 0}, {864, 1750}}";
-			sepNavSelRange = "{155, 0}";
+			sepNavSelRange = "{1039, 0}";
 			sepNavVisRange = "{0, 1627}";
 		};
 	};
