@@ -272,9 +272,16 @@
 							<array>
 								<string>29B97314FDCFA39411CA2CEA</string>
 								<string>1C37FBAC04509CD000000102</string>
+								<string>FD7E21200E59F37600D876C9</string>
 							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
-							<array/>
+							<array>
+								<array>
+									<integer>11</integer>
+									<integer>8</integer>
+									<integer>5</integer>
+								</array>
+							</array>
 							<key>PBXSmartGroupTreeModuleOutlineStateVisibleRectKey</key>
 							<string>{{0, 0}, {327, 902}}</string>
 						</dict>
@@ -325,7 +332,7 @@
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>FD9026E90E59F1AE00937A6D</string>
+										<string>FD7E212A0E59F3F300D876C9</string>
 										<key>history</key>
 										<array>
 											<string>FD3F49A60DEA5B7200C5B771</string>
@@ -529,7 +536,7 @@
 											<string>FD2484590E56554C0021E198</string>
 											<string>FD24846E0E56AA510021E198</string>
 											<string>FD46E13A0E59E94C002C449D</string>
-											<string>FD9026E50E59EBED00937A6D</string>
+											<string>FD9026E90E59F1AE00937A6D</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -764,9 +771,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>FD9026E70E59EBED00937A6D</string>
+				<string>FD7E21220E59F37600D876C9</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>FD9026E80E59EBED00937A6D</string>
+				<string>FD7E21230E59F37600D876C9</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -900,6 +907,7 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
+		<string>FD99B8910DD52DD100FB1D6B</string>
 		<string>/Users/hfutrell/iPhoneSource/gsoc2008_iphone/XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
@@ -919,14 +927,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CD0528F0623707200166675</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>SDL_renderer_gles.c</string>
+								<string></string>
 								<key>StatusBarVisibility</key>
 								<true/>
 							</dict>
@@ -943,10 +949,12 @@
 							<string>587pt</string>
 						</dict>
 						<dict>
+							<key>BecomeActive</key>
+							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXBuildLogShowsTranscriptDefaultKey</key>
-								<string>{{0, 233}, {1438, 42}}</string>
+								<string>{{0, 221}, {1438, 54}}</string>
 								<key>PBXProjectModuleGUID</key>
 								<string>XCMainBuildResultsModuleGUID</string>
 								<key>PBXProjectModuleLabel</key>
@@ -984,7 +992,7 @@
 			<key>TableOfContents</key>
 			<array>
 				<string>FD99B8910DD52DD100FB1D6B</string>
-				<string>FD2483370E56395D0021E198</string>
+				<string>FD7E21260E59F3C500D876C9</string>
 				<string>1CD0528F0623707200166675</string>
 				<string>XCMainBuildResultsModuleGUID</string>
 			</array>
