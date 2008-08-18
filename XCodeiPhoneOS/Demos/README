@@ -26,7 +26,7 @@ Touch (touch.c):
 
 Mixer (mixer.c):
 
-	Displays several rectangular buttons which can be used as a virtual drumset.  Demonstrates how you can play .wav sounds in SDL and how you can use SDL_MixAudioFormat to build a software mixer that can play multiple sounds at once.
+	Displays several rectangular buttons which can be used as a virtual drumkit.  Demonstrates how you can play .wav sounds in SDL and how you can use SDL_MixAudioFormat to build a software mixer that can play multiple sounds at once.
 
 Keyboard (keyboard.c):
 
