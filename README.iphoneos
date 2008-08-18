@@ -4,7 +4,7 @@ Building the Simple DirectMedia Layer for iPhone OS 2.0
 
 Requirements: Mac OS X v10.5 or later and the iPhone SDK.
 
-To build SDL for iPhone, simply open the XCode Project (XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj), select the target you wish to build, and hit 'build'.  You can also build in a CLI environment using the xcodebuild command line tool, if you wish. 
+To build SDL for iPhone, just open the XCode Project (XCodeiPhoneOS/SDL/SDLiPhoneOS.xcodeproj), select the target you wish to build, and hit 'build'.  You can also build in a CLI environment using the xcodebuild command line tool, if you wish. 
 
 There are three build targets:
 - StaticLibiPhoneOS:
@@ -12,24 +12,23 @@ There are three build targets:
 - StaticLibSimulator:
 	Build SDL as a statically linked (x86) library for the iPhone Simulator
 - Template:
-	Package a project template together with the SDL for iPhone static libraries and copies of the SDL headers.  The template includes proper references to the SDL library, skeleton code for a basic SDL program, and placeholder graphics for the application icon and startup screen.
-
-Be advised that you'll most likely need to build both StaticLibiPhoneOS.a and StaticLibSimulator.a before you compile any projects that use SDL for iPhone.
+	Package a project template together with the SDL for iPhone static libraries and copies of the SDL headers.  The template includes proper references to the SDL library and headers, skeleton code for a basic SDL program, and placeholder graphics for the application icon and startup screen.
 
 ==============================================================================
 Using the Simple DirectMedia Layer for iPhone OS 2.0
 ==============================================================================
 
-Here's probably the easiest method:
+Here is the easiest method:
 1.  Build the SDL libraries (libSDLiPhoneOS.a and libSDLSimulator.a) and the iPhone SDL Application template.
-1.  Install the iPhone SDL Application template (recommended directory is /Developer/Platforms/iPhoneOS.platform/Developer/Library/XCode/Project Templates/SDL Application/)
-2.  Start a new project using the template (SDL will be automatically included in your project)
+1.  Install the iPhone SDL Application template by copying it to one of XCode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iPhoneOS.platform/Developer/Library/XCode/Project Templates/" and placing it there.
+2.  Start a new project using the template.  The project should be immediately ready for use with SDL.
 
-Here's a more manual method:
-1.  Create a new iPhone project
-2.  Build the SDL libraries (libSDLiPhoneOS.a and libSDLSimulator.a) and include them in your project.  XCode will ignore the library that is not currently of the correct architecture, hence your app will work both on iPhone and in the iPhone Simulator.
-3.  include the SDL header files in your project.
-4.  Remove main.m and replace it with a new main.m (or main.c) which is coded like a normal SDL program.  To replace main.m with a main.c, you must tell XCode not to use the project prefix file, which includes references to Cocoa Touch.
+Here is a more manual method:
+1.  Create a new iPhone view based application.
+2.  Build the SDL static libraries (libSDLiPhoneOS.a and libSDLSimulator.a) for iPhone and include them in your project.  XCode will ignore the library that is not currently of the correct architecture, hence your app will work both on iPhone and in the iPhone Simulator.
+3.  Include the SDL header files in your project.
+4.  Remove the ApplicationDelegate.h and ApplicationDelegate.m files -- SDL for iPhone provides its own UIApplicationDelegate.  Remove MainWindow.xib -- SDL for iPhone produces its user interface programmatically.
+5.  Delete the contents of main.m and program your app as a regular SDL program instead.  You may replace main.m with your own main.c, but you must tell XCode not to use the project prefix file, as it includes Objective-C code.
 
 ==============================================================================
 Notes -- Touch Input
@@ -37,7 +36,7 @@ Notes -- Touch Input
 
 Touch input in SDL for iPhone OS is presently exposed through SDL's mouse input API.  Multi-touch input is reported as multiple mice, with each touch associated with a specific mouse.  This association stays coherent from the time the touch starts to the time a touch ends.
 
-By default, multi-touch is turned ON.  This requires some care, because if you simply respond to mouse events without checking which mouse caused the event, you may end up fetching data from the wrong mouse, ie, an incorrect or invalid touch.  To turn multi-touch OFF, you can recompile SDL for iPhone with the macro SDL_IPHONE_MULTIPLE_MICE (found in SDL_config_iphoneos.h) set to 0.
+By default, multi-touch is turned ON.  This requires some care, because if you simply respond to mouse events without checking which mouse caused the event, you may end up fetching data from the wrong mouse, ie, from an incorrect or invalid touch.  To turn multi-touch OFF, you can recompile SDL for iPhone with the macro SDL_IPHONE_MULTIPLE_MICE (found in SDL_config_iphoneos.h) set to 0.
 
 ==============================================================================
 Notes -- Accelerometer as Joystick
@@ -51,19 +50,19 @@ The main thing to note when using the accelerometer with SDL is that while the i
 Notes -- OpenGL ES
 ==============================================================================
 
-Your SDL application for iPhone uses OpenGL ES by default.
+Your SDL application for iPhone uses OpenGL ES for video by default.
 
-OpenGL ES for iPhone supports two display pixel formats, RGBA8 and RGB565.  By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute.
+OpenGL ES for iPhone supports two display pixel formats, RGBA8 and RGB565, which provide a 32 bit and 16 bit color buffer respectively.  By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute.
 
-If your application doesn't use the depth buffer, you may also find significant performance improvement by setting SDL_GL_DEPTH_SIZE to 0.
+If your application doesn't use OpenGL's depth buffer, you may find significant performance improvement by setting SDL_GL_DEPTH_SIZE to 0.
 
-Finally, if your application completely redraws the screen each from, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 1.
+Finally, if your application completely redraws the screen each frame, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 1.
 
 ==============================================================================
 Notes -- Keyboard
 ==============================================================================
 
-SDL for iPhone contains several additional functions related to keyboard functionality.  These functions are not part of the SDL standard API, but are necessary for revealing and hiding the iPhone's virtual onscreen keyboard.  You can use them in your own applications by including a copy of the SDL_uikitkeyboard.h header in your project.
+SDL for iPhone contains several additional functions related to keyboard visibility.  These functions are not part of the SDL standard API, but are necessary for revealing and hiding the iPhone's virtual onscreen keyboard.  You can use them in your own applications by including a copy of the SDL_uikitkeyboard.h header (located in src/video/uikit) in your project.
 
 int SDL_iPhoneKeyboardShow(SDL_WindowID windowID) 
 	-- reveals the onscreen keyboard.  Returns 0 on success and -1 on error.
@@ -78,9 +77,9 @@ int SDL_iPhoneKeyboardToggle(SDL_WindowID windowID)
 Notes -- Reading and Writing files
 ==============================================================================
 
-Each application installed on iPhone resides in a sandbox which includes its own Application Home directory.  For each installed application, the system generates a unique name for the application home director, which appears as a long, incomprehensible string of numbers.
+Each application installed on iPhone resides in a sandbox which includes its own Application Home directory.  Your application may not access files outside this directory.
 
-Once your application is installed, the directory tree looks like:
+Once your application is installed its directory tree looks like:
 
 MySDLApp Home/
 	MySDLApp.app
@@ -89,7 +88,7 @@ MySDLApp Home/
 		Preferences/
 	tmp/
 
-When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory, however -- instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".  
+When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory.  Instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".  
 
 More information on this subject is available here:
 http://developer.apple.com/iphone/library/documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/ApplicationEnvironment/chapter_6_section_3.html#//apple_ref/doc/uid/TP40007072-CH7-SW21
