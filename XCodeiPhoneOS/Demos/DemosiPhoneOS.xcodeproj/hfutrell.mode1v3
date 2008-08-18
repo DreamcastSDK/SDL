@@ -231,6 +231,8 @@
 			<key>Layout</key>
 			<array>
 				<dict>
+					<key>BecomeActive</key>
+					<true/>
 					<key>ContentConfiguration</key>
 					<dict>
 						<key>PBXBottomSmartGroupGIDs</key>
@@ -274,7 +276,7 @@
 							<key>PBXSmartGroupTreeModuleOutlineStateSelectionKey</key>
 							<array>
 								<array>
-									<integer>13</integer>
+									<integer>9</integer>
 									<integer>4</integer>
 									<integer>0</integer>
 								</array>
@@ -310,14 +312,12 @@
 					<key>Dock</key>
 					<array>
 						<dict>
-							<key>BecomeActive</key>
-							<true/>
 							<key>ContentConfiguration</key>
 							<dict>
 								<key>PBXProjectModuleGUID</key>
 								<string>1CE0B20306471E060097A5F4</string>
 								<key>PBXProjectModuleLabel</key>
-								<string>fireworks.c</string>
+								<string>accelerometer.c</string>
 								<key>PBXSplitModuleInNavigatorKey</key>
 								<dict>
 									<key>Split0</key>
@@ -325,11 +325,11 @@
 										<key>PBXProjectModuleGUID</key>
 										<string>1CE0B20406471E060097A5F4</string>
 										<key>PBXProjectModuleLabel</key>
-										<string>fireworks.c</string>
+										<string>accelerometer.c</string>
 										<key>_historyCapacity</key>
 										<integer>0</integer>
 										<key>bookmark</key>
-										<string>FD2483D20E5645240021E198</string>
+										<string>FDB8C0060E5A0F7500980157</string>
 										<key>history</key>
 										<array>
 											<string>FD15019E0E08EBCB003BDF25</string>
@@ -346,15 +346,15 @@
 											<string>FD1BB2CD0E5378AF00D21E30</string>
 											<string>FDA429770E5505E00041B6FA</string>
 											<string>FDA429780E5505E00041B6FA</string>
-											<string>FD24839F0E563B2A0021E198</string>
-											<string>FD2483BF0E5645240021E198</string>
-											<string>FD2483C00E5645240021E198</string>
-											<string>FD2483C10E5645240021E198</string>
-											<string>FD2483C20E5645240021E198</string>
 											<string>FD2483C30E5645240021E198</string>
 											<string>FD2483C40E5645240021E198</string>
-											<string>FD2483C50E5645240021E198</string>
-											<string>FD2483C60E5645240021E198</string>
+											<string>FDB8BFF40E5A0F7500980157</string>
+											<string>FDB8BFF50E5A0F7500980157</string>
+											<string>FDB8BFF60E5A0F7500980157</string>
+											<string>FDB8BFF70E5A0F7500980157</string>
+											<string>FDB8BFF80E5A0F7500980157</string>
+											<string>FDB8BFF90E5A0F7500980157</string>
+											<string>FDB8BFFA0E5A0F7500980157</string>
 										</array>
 										<key>prevStack</key>
 										<array>
@@ -377,18 +377,17 @@
 											<string>FD1BB2D20E5378AF00D21E30</string>
 											<string>FDA4297B0E5505E00041B6FA</string>
 											<string>FDA4297C0E5505E00041B6FA</string>
-											<string>FD2483A00E563B2A0021E198</string>
-											<string>FD2483C70E5645240021E198</string>
-											<string>FD2483C80E5645240021E198</string>
-											<string>FD2483C90E5645240021E198</string>
-											<string>FD2483CA0E5645240021E198</string>
-											<string>FD2483CB0E5645240021E198</string>
-											<string>FD2483CC0E5645240021E198</string>
-											<string>FD2483CD0E5645240021E198</string>
-											<string>FD2483CE0E5645240021E198</string>
-											<string>FD2483CF0E5645240021E198</string>
-											<string>FD2483D00E5645240021E198</string>
-											<string>FD2483D10E5645240021E198</string>
+											<string>FDB8BFFB0E5A0F7500980157</string>
+											<string>FDB8BFFC0E5A0F7500980157</string>
+											<string>FDB8BFFD0E5A0F7500980157</string>
+											<string>FDB8BFFE0E5A0F7500980157</string>
+											<string>FDB8BFFF0E5A0F7500980157</string>
+											<string>FDB8C0000E5A0F7500980157</string>
+											<string>FDB8C0010E5A0F7500980157</string>
+											<string>FDB8C0020E5A0F7500980157</string>
+											<string>FDB8C0030E5A0F7500980157</string>
+											<string>FDB8C0040E5A0F7500980157</string>
+											<string>FDB8C0050E5A0F7500980157</string>
 										</array>
 									</dict>
 									<key>SplitCount</key>
@@ -446,9 +445,9 @@
 			</array>
 			<key>TableOfContents</key>
 			<array>
-				<string>FD2483A20E563B2A0021E198</string>
+				<string>FDB8C0070E5A0F7500980157</string>
 				<string>1CE0B1FE06471DED0097A5F4</string>
-				<string>FD2483A30E563B2A0021E198</string>
+				<string>FDB8C0080E5A0F7500980157</string>
 				<string>1CE0B20306471E060097A5F4</string>
 				<string>1CE0B20506471E060097A5F4</string>
 			</array>
@@ -582,8 +581,6 @@
 	<integer>5</integer>
 	<key>WindowOrderList</key>
 	<array>
-		<string>1CD10A99069EF8BA00B06720</string>
-		<string>1C530D57069F1CE1000CFCEE</string>
 		<string>/Users/hfutrell/iPhoneSource/gsoc2008_iphone/XCodeiPhoneOS/Demos/DemosiPhoneOS.xcodeproj</string>
 	</array>
 	<key>WindowString</key>
