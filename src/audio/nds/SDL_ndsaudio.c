@@ -31,6 +31,8 @@
 #include "../SDL_audio_c.h"
 #include "SDL_ndsaudio.h"
 
+#define TRACE printf
+
 static int
 NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
@@ -44,6 +46,7 @@ NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
+    TRACE("+NDSAUD_OpenDevice\n");
     while ((!valid_datatype) && (test_format)) {
         this->spec.format = test_format;
         switch (test_format) {
@@ -63,6 +66,7 @@ NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
                     64,     /* panning/balance */
                     0);     /* sound format*/
 
+    TRACE("-NDSAUD_OpenDevice\n");
     return 1;
 }
 
@@ -73,9 +77,11 @@ NDSAUD_PlayDevice(_THIS)
     if(!sound) {
         SDL_OutOfMemory();
     }
+    TRACE("+NDSAUD_PlayDevice\n");
 
     playGenericSound(this->hidden->mixbuf, this->hidden->mixlen);
 
+    TRACE("-NDSAUD_PlayDevice\n");
 //    sound->data = this->hidden->mixbuf;/* pointer to raw audio data */
 //    sound->len = this->hidden->mixlen; /* size of raw data pointed to above */
 //    sound->rate = 22050; /* sample rate = 22050Hz */
@@ -89,6 +95,7 @@ NDSAUD_PlayDevice(_THIS)
 static Uint8 *
 NDSAUD_GetDeviceBuf(_THIS)
 {   /* is this right? */
+    TRACE("!NDSAUD_GetDeviceBuf\n");
     return this->hidden->mixbuf;
 }
 
@@ -96,29 +103,39 @@ static void
 NDSAUD_WaitDevice(_THIS)
 {
     /* stub */
+    TRACE("!NDSAUD_WaitDevice\n");
 }
 
 static void
 NDSAUD_CloseDevice(_THIS)
 {
     /* stub */
+    TRACE("!NDSAUD_CloseDevice\n");
 }
 
 static int
 NDSAUD_Init(SDL_AudioDriverImpl * impl)
 {
+    TRACE("+NDSAUD_Init\n");
+
     /* Set the function pointers */
     impl->OpenDevice = NDSAUD_OpenDevice;
     impl->PlayDevice = NDSAUD_PlayDevice;
     impl->WaitDevice = NDSAUD_WaitDevice;
     impl->GetDeviceBuf = NDSAUD_GetDeviceBuf;
     impl->CloseDevice = NDSAUD_CloseDevice;
+
+    /* and the capabilities */
+    impl->HasCaptureSupport = 1;
     impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultInputDevice = 1;
+
+    TRACE("-NDSAUD_Init\n");
     return 1;
 }
 
 AudioBootStrap NDSAUD_bootstrap = {
-    "nds", "SDL NDS audio driver", NDSAUD_Init, 1
+    "nds", "SDL NDS audio driver", NDSAUD_Init, 0 /*1?*/
 };
 
 /* vi: set ts=4 sw=4 expandtab: */
