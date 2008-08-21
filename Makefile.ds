@@ -28,13 +28,14 @@ CFLAGS	=	-mthumb -mthumb-interwork \
 		-DARM9 -D__NDS__ -I$(DEVKITPRO)/libnds/include -DENABLE_NDS -DNO_SIGNAL_H -DDISABLE_THREADS -DPACKAGE=\"SDL\" -DVERSION=\"1.3\" -DHAVE_ALLOCA_H=1 -DHAVE_ALLOCA=1 \
 		-Iinclude -Isrc -Isrc/audio -Isrc/cdrom -Isrc/endian -Isrc/events -Isrc/joystick -Isrc/thread/nds -Isrc/thread -Isrc/timer -Isrc/video
 
+#src/audio/disk/SDL_diskaudio.c \
+#src/audio/dummy/SDL_dummyaudio.c \
+
 SRCS = \
 src/SDL.c \
 src/SDL_compat.c \
 src/SDL_error.c \
 src/SDL_fatal.c \
-src/audio/disk/SDL_diskaudio.c \
-src/audio/dummy/SDL_dummyaudio.c \
 src/audio/nds/SDL_ndsaudio.c \
 src/audio/SDL_audio.c \
 src/audio/SDL_audiocvt.c \
