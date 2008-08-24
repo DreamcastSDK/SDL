@@ -890,4 +890,24 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
 }
 
 
+/*
+ * Pausing is not supported atm by linux.
+ */
+int
+SDL_SYS_HapticPause(SDL_Haptic * haptic)
+{
+   return -1;
+}
+
+
+/*
+ * Unpausing is not supported atm by linux.
+ */
+int
+SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
+{
+   return -1;
+}
+
+
 #endif /* SDL_HAPTIC_LINUX */

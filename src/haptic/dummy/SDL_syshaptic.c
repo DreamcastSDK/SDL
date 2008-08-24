@@ -159,5 +159,19 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    return -1;
 }
 
+int
+SDL_SYS_HapticPause(SDL_Haptic * haptic)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
+int
+SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
+{
+   SDL_SetError("Logic error: No haptic devices available.");
+   return -1;
+}
+
 
 #endif /* SDL_HAPTIC_DUMMY || SDL_HAPTIC_DISABLED */
