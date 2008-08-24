@@ -376,7 +376,7 @@ GetSupportedFeatures(SDL_Haptic* haptic)
    SDL_memcpy( haptic->hwdata->axes, features.ffAxes, haptic->naxes * sizeof(Uint8));
 
    /* Always supported features. */
-   supported |= SDL_HAPTIC_STATUS;
+   supported |= SDL_HAPTIC_STATUS | SDL_HAPTIC_PAUSE;
 
    haptic->supported = supported;
    return 0;;
@@ -1221,7 +1221,44 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    }
   
    return 0;
+}
 
+
+/*
+ * Pauses the device.
+ */
+int
+SDL_SYS_HapticPause(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   ret = FFDeviceSendForceFeedbackCommand(haptic->hwdata->device,
+         FFSFFC_PAUSE);
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Error pausing device: %s.", FFStrError(ret));
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
+ * Unpauses the device.
+ */
+int
+SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   ret = FFDeviceSendForceFeedbackCommand(haptic->hwdata->device,
+         FFSFFC_CONTINUE);
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Error pausing device: %s.", FFStrError(ret));
+      return -1;
+   }
+
+   return 0;
 }
 
 

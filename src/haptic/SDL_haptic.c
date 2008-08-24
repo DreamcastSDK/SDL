@@ -638,4 +638,38 @@ SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter )
    return 0;
 }
 
+/*
+ * Pauses the haptic device.
+ */
+int
+SDL_HapticPause(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(haptic)) {
+      return -1;
+   }
+
+   if ((haptic->supported & SDL_HAPTIC_PAUSE) == 0) {
+      SDL_SetError("Haptic: Device does not support setting pausing.");
+      return -1;
+   }
+
+   return SDL_SYS_HapticPause(haptic);
+}
+
+/*
+ * Unpauses the haptic device.
+ */
+int
+SDL_HapticUnpause(SDL_Haptic * haptic)
+{
+   if (!ValidHaptic(haptic)) {
+      return -1;
+   }
+
+   if ((haptic->supported & SDL_HAPTIC_PAUSE) == 0) {
+      return 0; /* Not going to be paused, so we pretend it's unpaused. */
+   }
+
+   return SDL_SYS_HapticUnpause(haptic);
+}
 

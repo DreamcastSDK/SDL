@@ -240,6 +240,15 @@ typedef struct _SDL_Haptic SDL_Haptic;
  * \sa SDL_HapticGetEffectStatus
  */
 #define SDL_HAPTIC_STATUS     (1<<14) /* Device can be queried for effect status */
+/**
+ * \def SDL_HAPTIC_PAUSE
+ *
+ * \brief Device can be paused.
+ *
+ * \sa SDL_HapticPause
+ * \sa SDL_HapticUnpause
+ */
+#define SDL_HAPTIC_PAUSE      (1<<15) /* Device can be paused. */
 
 
 /*
@@ -1067,6 +1076,38 @@ extern DECLSPEC int SDLCALL SDL_HapticSetGain(SDL_Haptic * haptic, int gain);
  * \sa SDL_HapticQuery
  */
 extern DECLSPEC int SDLCALL SDL_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter);
+
+/**
+ * \fn extern DECLSPEC int SDLCALL SDL_HapticPause(SDL_Haptic * haptic)
+ *
+ * \brief Pauses the haptic device.
+ *
+ * Device must support the SDL_HAPTIC_PAUSE feature.  Call SDL_HapticUnpause
+ *  to resume playback.
+ *
+ * Do not modify the effects nor add new ones while the device is paused.
+ *  That can cause all sorts of weird errors.
+ *
+ *    \param haptic Haptic device to pause.
+ *    \return 0 on success or -1 on error.
+ *
+ * \sa SDL_HapticUnpause
+ */
+extern DECLSPEC int SDLCALL SDL_HapticPause(SDL_Haptic * haptic);
+
+/**
+ * \fn extern DECLSPEC int SDLCALL SDL_HapticUnpause(SDL_Haptic * haptic)
+ *
+ * \brief Unpauses the haptic device.
+ *
+ * Call to unpause after SDL_HapticPause.
+ *
+ *    \param haptic Haptic device to pause.
+ *     \return 0 on success or -1 on error.
+ *
+ * \sa SDL_HapticPause
+ */
+extern DECLSPEC int SDLCALL SDL_HapticUnpause(SDL_Haptic * haptic);
 
 
 /* Ends C function definitions when using C++ */

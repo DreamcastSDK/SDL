@@ -466,7 +466,7 @@ SDL_SYS_HapticOpenFromDevice2(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE2 device2)
    }
 
    /* Status is always supported. */
-   haptic->supported |= SDL_HAPTIC_STATUS;
+   haptic->supported |= SDL_HAPTIC_STATUS | SDL_HAPTIC_PAUSE;
 
    /* Check maximum effects. */
    haptic->neffects = 128; /* This is not actually supported as thus under windows,
@@ -1301,7 +1301,46 @@ SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic, int autocenter)
    }
   
    return 0;
+}
 
+
+/*
+ * Pauses the device.
+ */
+int
+SDL_SYS_HapticPause(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   /* Pause the device. */
+   ret = IDirectInputDevice2_SendForceFeedbackCommand( haptic->hwdata->device,
+                                                       DISFFC_PAUSE );
+   if (FAILED(ret)) {
+      DI_SetError("Pausing the device",ret);
+      return -1;
+   }
+   
+   return 0;
+}
+
+
+/*
+ * Pauses the device.
+ */
+int
+SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   /* Unpause the device. */
+   ret = IDirectInputDevice2_SendForceFeedbackCommand( haptic->hwdata->device,
+                                                       DISFFC_CONTINUE );
+   if (FAILED(ret)) {
+      DI_SetError("Pausing the device",ret);
+      return -1;
+   }
+   
+   return 0;
 }
 
 

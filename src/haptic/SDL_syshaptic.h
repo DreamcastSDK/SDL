@@ -180,4 +180,17 @@ extern int SDL_SYS_HapticSetGain(SDL_Haptic * haptic, int gain);
 extern int SDL_SYS_HapticSetAutocenter(SDL_Haptic * haptic,
                                        int autocenter);
 
+/*
+ * Pauses the haptic device.
+ *
+ * Returns 0 on success, -1 on error.
+ */
+extern int SDL_SYS_HapticPause(SDL_Haptic * haptic);
+
+/*
+ * Unpauses the haptic device.
+ *
+ * Returns 0 on success, -1 on error.
+ */
+extern int SDL_SYS_HapticUnpause(SDL_Haptic * haptic);
 
