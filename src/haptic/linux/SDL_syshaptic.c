@@ -916,16 +916,18 @@ SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
 int
 SDL_SYS_HapticStopAll(SDL_Haptic * haptic)
 {
-   int i, ret;;
+   int i, ret;
 
+   /* Linux does not support this natively so we have to loop. */
    for (i=0; i<haptic->neffects; i++) {
-      ret = SDL_SYS_HapticStopEffect(haptic, &haptic->effects[i]);
-      if (ret < 0) {
-         SDL_SetError("Haptic: Error while trying to stop all playing effects.");
-         return -1;
+      if (haptic->effects[i].hweffect != NULL) {
+         ret = SDL_SYS_HapticStopEffect(haptic, &haptic->effects[i]);
+         if (ret < 0) {
+            SDL_SetError("Haptic: Error while trying to stop all playing effects.");
+            return -1;
+         }
       }
    }
-
    return 0;
 }
 
