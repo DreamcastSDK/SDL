@@ -1233,7 +1233,7 @@ SDL_SYS_HapticPause(SDL_Haptic * haptic)
    HRESULT ret;
 
    ret = FFDeviceSendForceFeedbackCommand(haptic->hwdata->device,
-         FFSFFC_PAUSE);
+                                          FFSFFC_PAUSE);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Error pausing device: %s.", FFStrError(ret));
       return -1;
@@ -1252,9 +1252,28 @@ SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
    HRESULT ret;
 
    ret = FFDeviceSendForceFeedbackCommand(haptic->hwdata->device,
-         FFSFFC_CONTINUE);
+                                          FFSFFC_CONTINUE);
    if (ret != FF_OK) {
       SDL_SetError("Haptic: Error pausing device: %s.", FFStrError(ret));
+      return -1;
+   }
+
+   return 0;
+}
+
+
+/*
+ * Stops all currently playing effects.
+ */
+int
+SDL_SYS_HapticStopAll(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   ret = FFDeviceSendForceFeedbackCommand(haptic->hwdata->device,
+                                          FFSFFC_STOPALL); 
+   if (ret != FF_OK) {
+      SDL_SetError("Haptic: Error stopping device: %s.", FFStrError(ret));
       return -1;
    }
 
