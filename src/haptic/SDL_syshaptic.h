@@ -194,3 +194,10 @@ extern int SDL_SYS_HapticPause(SDL_Haptic * haptic);
  */
 extern int SDL_SYS_HapticUnpause(SDL_Haptic * haptic);
 
+/*
+ * Stops all the currently playing haptic effects on the device.
+ *
+ * Returns 0 on success, -1 on error.
+ */
+extern int SDL_SYS_HapticStopAll(SDL_Haptic * haptic);
+

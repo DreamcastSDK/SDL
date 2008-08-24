@@ -764,6 +764,8 @@ extern DECLSPEC const char *SDLCALL SDL_HapticName(int device_index);
  * \sa SDL_HapticClose
  * \sa SDL_HapticSetGain
  * \sa SDL_HapticSetAutocenter
+ * \sa SDL_HapticPause
+ * \sa SDL_HapticStopAll
  */
 extern DECLSPEC SDL_Haptic *SDLCALL SDL_HapticOpen(int device_index);
 
@@ -1080,7 +1082,7 @@ extern DECLSPEC int SDLCALL SDL_HapticSetAutocenter(SDL_Haptic * haptic, int aut
 /**
  * \fn extern DECLSPEC int SDLCALL SDL_HapticPause(SDL_Haptic * haptic)
  *
- * \brief Pauses the haptic device.
+ * \brief Pauses a haptic device.
  *
  * Device must support the SDL_HAPTIC_PAUSE feature.  Call SDL_HapticUnpause
  *  to resume playback.
@@ -1098,16 +1100,26 @@ extern DECLSPEC int SDLCALL SDL_HapticPause(SDL_Haptic * haptic);
 /**
  * \fn extern DECLSPEC int SDLCALL SDL_HapticUnpause(SDL_Haptic * haptic)
  *
- * \brief Unpauses the haptic device.
+ * \brief Unpauses a haptic device.
  *
  * Call to unpause after SDL_HapticPause.
  *
  *    \param haptic Haptic device to pause.
- *     \return 0 on success or -1 on error.
+ *    \return 0 on success or -1 on error.
  *
  * \sa SDL_HapticPause
  */
 extern DECLSPEC int SDLCALL SDL_HapticUnpause(SDL_Haptic * haptic);
+
+/**
+ * \fn extern DECSLPEC int SDLCALL SDL_HapticStopAll(SDL_Haptic * haptic)
+ *
+ * \brief Stops all the currently playing effects on a haptic device.
+ *
+ *    \param haptic Haptic device to stop.
+ *    \return 0 on success or -1 on error.
+ */
+extern DECLSPEC int SDLCALL SDL_HapticStopAll(SDL_Haptic * haptic);
 
 
 /* Ends C function definitions when using C++ */

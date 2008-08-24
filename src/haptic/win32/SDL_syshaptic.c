@@ -1344,4 +1344,24 @@ SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
 }
 
 
+/*
+ * Stops all the playing effects on the device.
+ */
+int
+SDL_SYS_HapticUnpause(SDL_Haptic * haptic)
+{
+   HRESULT ret;
+
+   /* Try to stop the effects. */
+   ret = IDirectInputDevice2_SendForceFeedbackCommand( haptic->hwdata->device,
+                                                       DISFFC_STOPALL );
+   if (FAILED(ret)) {
+      DI_SetError("Stopping the device",ret);
+      return -1;
+   }
+   
+   return 0;
+}
+
+
 #endif /* SDL_HAPTIC_DINPUT */
