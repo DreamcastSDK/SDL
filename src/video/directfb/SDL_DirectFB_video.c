@@ -323,8 +323,8 @@ DirectFB_VideoInit(_THIS)
         SDL_DFB_CHECKERR(dfb->GetScreen(dfb, devdata->screenid[i], &screen));
 
         devdata->aux = i;
-        SDL_DFB_CHECKERR(screen->
-                         EnumDisplayLayers(screen, &cbLayers, devdata));
+        SDL_DFB_CHECKERR(screen->EnumDisplayLayers
+                         (screen, &cbLayers, devdata));
         screen->GetSize(screen, &tcw[i], &tch[i]);
         screen->Release(screen);
     }
@@ -339,12 +339,12 @@ DirectFB_VideoInit(_THIS)
 
     for (i = 0; i < devdata->numscreens; i++) {
         //SDL_DFB_CHECKERR( dfb->GetDisplayLayer (dfb, DLID_PRIMARY, &layer) );
-        SDL_DFB_CHECKERR(dfb->
-                         GetDisplayLayer(dfb, devdata->gralayer[i], &layer));
+        SDL_DFB_CHECKERR(dfb->GetDisplayLayer
+                         (dfb, devdata->gralayer[i], &layer));
         //SDL_DFB_CHECKERR( dfb->CreateInputEventBuffer (dfb, DICAPS_ALL, DFB_FALSE, &events) );
 
-        SDL_DFB_CHECKERR(layer->
-                         SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE));
+        SDL_DFB_CHECKERR(layer->SetCooperativeLevel
+                         (layer, DLSCL_ADMINISTRATIVE));
         layer->EnableCursor(layer, 1);
         SDL_DFB_CHECKERR(layer->SetCursorOpacity(layer, 0xC0));
         SDL_DFB_CHECKERR(layer->SetCooperativeLevel(layer, DLSCL_SHARED));
@@ -379,8 +379,8 @@ DirectFB_VideoInit(_THIS)
         /* Enumerate the available fullscreen modes */
         SDL_DFB_CALLOC(dispdata->modelist, DFB_MAX_MODES,
                        sizeof(SDL_DisplayMode));
-        SDL_DFB_CHECKERR(dfb->
-                         EnumVideoModes(dfb, EnumModesCallback, &display));
+        SDL_DFB_CHECKERR(dfb->EnumVideoModes
+                         (dfb, EnumModesCallback, &display));
 
         SDL_AddVideoDisplay(&display);
     }
@@ -434,13 +434,14 @@ DirectFB_VideoQuit(_THIS)
         DFB_DisplayData *dispdata =
             (DFB_DisplayData *) _this->displays[i].driverdata;
         if (dispdata->layer) {
-            SDL_DFB_CHECK(dispdata->layer->
-                          SetCooperativeLevel(dispdata->layer,
-                                              DLSCL_ADMINISTRATIVE));
-            SDL_DFB_CHECK(dispdata->layer->
-                          SetCursorOpacity(dispdata->layer, 0x00));
-            SDL_DFB_CHECK(dispdata->layer->
-                          SetCooperativeLevel(dispdata->layer, DLSCL_SHARED));
+            SDL_DFB_CHECK(dispdata->
+                          layer->SetCooperativeLevel(dispdata->layer,
+                                                     DLSCL_ADMINISTRATIVE));
+            SDL_DFB_CHECK(dispdata->
+                          layer->SetCursorOpacity(dispdata->layer, 0x00));
+            SDL_DFB_CHECK(dispdata->
+                          layer->SetCooperativeLevel(dispdata->layer,
+                                                     DLSCL_SHARED));
         }
         SDL_DFB_RELEASE(dispdata->layer);
 
@@ -580,8 +581,8 @@ DirectFB_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
     DFBDisplayLayerConfigFlags fail = 0;
     DFBResult ret;
 
-    SDL_DFB_CHECKERR(data->layer->
-                     SetCooperativeLevel(data->layer, DLSCL_ADMINISTRATIVE));
+    SDL_DFB_CHECKERR(data->layer->SetCooperativeLevel(data->layer,
+                                                      DLSCL_ADMINISTRATIVE));
 
     SDL_DFB_CHECKERR(data->layer->GetConfiguration(data->layer, &config));
     config.flags = DLCONF_WIDTH | DLCONF_HEIGHT | DLCONF_BUFFERMODE;
@@ -606,8 +607,8 @@ DirectFB_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
     SDL_DFB_DEBUG("Trace\n");
     config.flags &= ~fail;
     SDL_DFB_CHECKERR(data->layer->SetConfiguration(data->layer, &config));
-    SDL_DFB_CHECKERR(data->layer->
-                     SetCooperativeLevel(data->layer, DLSCL_ADMINISTRATIVE));
+    SDL_DFB_CHECKERR(data->layer->SetCooperativeLevel(data->layer,
+                                                      DLSCL_ADMINISTRATIVE));
 
     /* Double check */
     SDL_DFB_CHECKERR(data->layer->GetConfiguration(data->layer, &rconfig));
@@ -653,11 +654,11 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     SDL_DFB_CALLOC(window->driverdata, 1, sizeof(DFB_WindowData));
     windata = (DFB_WindowData *) window->driverdata;
 
-    SDL_DFB_CHECKERR(devdata->dfb->
-                     SetCooperativeLevel(devdata->dfb, DFSCL_NORMAL));
-    SDL_DFB_CHECKERR(dispdata->layer->
-                     SetCooperativeLevel(dispdata->layer,
-                                         DLSCL_ADMINISTRATIVE));
+    SDL_DFB_CHECKERR(devdata->
+                     dfb->SetCooperativeLevel(devdata->dfb, DFSCL_NORMAL));
+    SDL_DFB_CHECKERR(dispdata->
+                     layer->SetCooperativeLevel(dispdata->layer,
+                                                DLSCL_ADMINISTRATIVE));
 
     /* Fill the window description. */
     if (window->x == SDL_WINDOWPOS_CENTERED) {
@@ -697,8 +698,8 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     desc.surface_caps = DSCAPS_DOUBLE | DSCAPS_TRIPLE;  //| DSCAPS_PREMULTIPLIED;
 
     /* Create the window. */
-    SDL_DFB_CHECKERR(dispdata->layer->
-                     CreateWindow(dispdata->layer, &desc, &windata->window));
+    SDL_DFB_CHECKERR(dispdata->layer->CreateWindow(dispdata->layer, &desc,
+                                                   &windata->window));
 
     windata->window->GetOptions(windata->window, &wopts);
 #if (DIRECTFB_MAJOR_VERSION == 1) && (DIRECTFB_MINOR_VERSION >= 0)
@@ -716,12 +717,13 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
 
     windata->window->SetOptions(windata->window, wopts);
     /* Get the window's surface. */
-    SDL_DFB_CHECKERR(windata->window->
-                     GetSurface(windata->window, &windata->surface));
+    SDL_DFB_CHECKERR(windata->
+                     window->GetSurface(windata->window, &windata->surface));
     windata->window->SetOpacity(windata->window, 0xFF);
-    SDL_DFB_CHECKERR(windata->window->
-                     CreateEventBuffer(windata->window,
-                                       &(windata->eventbuffer)));
+    SDL_DFB_CHECKERR(windata->window->CreateEventBuffer(windata->window,
+                                                        &
+                                                        (windata->
+                                                         eventbuffer)));
     SDL_DFB_CHECKERR(windata->window->
                      EnableEvents(windata->window,
                                   DWET_POSITION | DWET_SIZE | DWET_CLOSE |
@@ -784,6 +786,7 @@ DirectFB_SetWindowTitle(_THIS, SDL_Window * window)
     //return -1;
 
 }
+
 static void
 DirectFB_SetWindowPosition(_THIS, SDL_Window * window)
 {
@@ -805,6 +808,7 @@ DirectFB_SetWindowSize(_THIS, SDL_Window * window)
     if (!(window->flags & SDL_WINDOW_FULLSCREEN))
         windata->window->Resize(windata->window, window->w, window->h);
 }
+
 static void
 DirectFB_ShowWindow(_THIS, SDL_Window * window)
 {
@@ -827,6 +831,7 @@ DirectFB_HideWindow(_THIS, SDL_Window * window)
     windata->window->SetOpacity(windata->window, 0);
 
 }
+
 static void
 DirectFB_RaiseWindow(_THIS, SDL_Window * window)
 {
@@ -848,6 +853,7 @@ DirectFB_MaximizeWindow(_THIS, SDL_Window * window)
     SDL_Unsupported();
 
 }
+
 static void
 DirectFB_MinimizeWindow(_THIS, SDL_Window * window)
 {
@@ -869,6 +875,7 @@ DirectFB_RestoreWindow(_THIS, SDL_Window * window)
     SDL_Unsupported();
 
 }
+
 static void
 DirectFB_SetWindowGrab(_THIS, SDL_Window * window)
 {
@@ -1097,8 +1104,8 @@ DirectFB_GL_SwapWindow(_THIS, SDL_Window * window)
         devdata->glFlush();
 
     SDL_DFB_CHECKERR(windata->gl_context->Unlock(windata->gl_context));
-    SDL_DFB_CHECKERR(windata->surface->
-                     Flip(windata->surface, &region, DSFLIP_ONSYNC));
+    SDL_DFB_CHECKERR(windata->
+                     surface->Flip(windata->surface, &region, DSFLIP_ONSYNC));
     SDL_DFB_CHECKERR(windata->gl_context->Lock(windata->gl_context));
 
     return;

@@ -752,6 +752,7 @@ SDL_InvalidateMap(SDL_BlitMap * map)
         map->info.table = NULL;
     }
 }
+
 int
 SDL_MapSurface(SDL_Surface * src, SDL_Surface * dst)
 {

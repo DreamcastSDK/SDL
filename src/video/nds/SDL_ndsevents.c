@@ -40,12 +40,12 @@ NDS_PumpEvents(_THIS)
 {
     scanKeys();
     /* TODO: defer click-age */
-    if(keysDown() & KEY_TOUCH) {
+    if (keysDown() & KEY_TOUCH) {
         SDL_SendMouseButton(0, SDL_PRESSED, 0);
-    } else if(keysUp() & KEY_TOUCH) {
+    } else if (keysUp() & KEY_TOUCH) {
         SDL_SendMouseButton(0, SDL_RELEASED, 0);
     }
-    if(keysHeld() & KEY_TOUCH) {
+    if (keysHeld() & KEY_TOUCH) {
         touchPosition t = touchReadXY();
         SDL_SendMouseMotion(0, 0, t.px, t.py);
     }

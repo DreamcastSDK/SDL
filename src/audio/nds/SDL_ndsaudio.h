@@ -32,7 +32,7 @@
 
 struct SDL_PrivateAudioData
 {
-    TransferSoundData* sound;
+    TransferSoundData *sound;
     /* The file descriptor for the audio device */
     Uint8 *mixbuf;
     Uint32 mixlen;
