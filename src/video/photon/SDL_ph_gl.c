@@ -322,10 +322,10 @@ ph_SetupOpenGLContext(_THIS, int width, int height, int bpp, Uint32 flags)
                                                      gl_config.accum_blue_size
                                                      +
                                                      this->
-                                                     gl_config.accum_green_size
-                                                     +
-                                                     this->
-                                                     gl_config.accum_alpha_size);
+                                                     gl_config.
+                                                     accum_green_size +
+                                                     this->gl_config.
+                                                     accum_alpha_size);
     }
 
     /* Stereo mode */
