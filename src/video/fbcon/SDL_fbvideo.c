@@ -82,6 +82,7 @@ static const SDL_Rect checkres[] = {
     {0, 0, 320, 240},
     {0, 0, 320, 200}
 };
+
 static const struct
 {
     int xres;
@@ -822,6 +823,7 @@ print_vinfo(struct fb_var_screeninfo *vinfo)
     fprintf(stderr, "\talpha: %d/%d\n", vinfo->transp.length,
             vinfo->transp.offset);
 }
+
 static void
 print_finfo(struct fb_fix_screeninfo *finfo)
 {
@@ -1189,6 +1191,7 @@ FB_InitHWSurfaces(_THIS, SDL_Surface * screen, char *base, int size)
     screen->hwdata = (struct private_hwdata *) &surfaces;
     return (0);
 }
+
 static void
 FB_FreeHWSurfaces(_THIS)
 {
@@ -1279,6 +1282,7 @@ FB_AllocHWSurface(_THIS, SDL_Surface * surface)
     surface->hwdata = (struct private_hwdata *) bucket;
     return (0);
 }
+
 static void
 FB_FreeHWSurface(_THIS, SDL_Surface * surface)
 {
@@ -1348,6 +1352,7 @@ FB_LockHWSurface(_THIS, SDL_Surface * surface)
     }
     return (0);
 }
+
 static void
 FB_UnlockHWSurface(_THIS, SDL_Surface * surface)
 {

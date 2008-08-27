@@ -969,6 +969,7 @@ switch_vt_prep(_THIS)
     ioctl(keyboard_fd, KDSETMODE, KD_TEXT);
     ioctl(keyboard_fd, VT_UNLOCKSWITCH, 1);
 }
+
 static void
 switch_vt_done(_THIS)
 {
@@ -994,6 +995,7 @@ switch_vt_done(_THIS)
                          (SDL_APPACTIVE | SDL_APPINPUTFOCUS |
                           SDL_APPMOUSEFOCUS));
 }
+
 static void
 switch_vt(_THIS, unsigned short which)
 {

@@ -163,7 +163,8 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
 
-    consoleDemoInit(); puts("Hello world!  Initializing FAT...");
+    consoleDemoInit();
+    puts("Hello world!  Initializing FAT...");
     fatInitDefault();
     /* Initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -173,7 +174,7 @@ main(int argc, char *argv[])
     puts("* initialized SDL");
 
     numsprites = NUM_SPRITES;
-    videoflags = SDL_SWSURFACE /*| SDL_ANYFORMAT*/;
+    videoflags = SDL_SWSURFACE /*| SDL_ANYFORMAT */ ;
     width = 256;
     height = 192;
     video_bpp = 15;

@@ -226,8 +226,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 
     result =
         IDirectInput_CreateDevice(dinput,
-                                  &SYS_Joystick[joystick->index].
-                                  guidInstance, &device, NULL);
+                                  &SYS_Joystick[joystick->index].guidInstance,
+                                  &device, NULL);
     if (FAILED(result)) {
         SetDIerror("IDirectInput::CreateDevice", result);
         return (-1);
@@ -236,8 +236,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
     /* Now get the IDirectInputDevice2 interface, instead. */
     result = IDirectInputDevice_QueryInterface(device,
                                                &IID_IDirectInputDevice2,
-                                               (LPVOID *) & joystick->
-                                               hwdata->InputDevice);
+                                               (LPVOID *) & joystick->hwdata->
+                                               InputDevice);
     /* We are done with this object.  Use the stored one from now on. */
     IDirectInputDevice_Release(device);
 
@@ -249,8 +249,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
     /* Aquire shared access. Exclusive access is required for forces,
      * though. */
     result =
-        IDirectInputDevice2_SetCooperativeLevel(joystick->hwdata->
-                                                InputDevice, SDL_Window,
+        IDirectInputDevice2_SetCooperativeLevel(joystick->hwdata->InputDevice,
+                                                SDL_Window,
                                                 DISCL_EXCLUSIVE |
                                                 DISCL_BACKGROUND);
     if (FAILED(result)) {
@@ -289,8 +289,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick)
 
         /* reset all accuators. */
         result =
-            IDirectInputDevice2_SendForceFeedbackCommand(joystick->hwdata->
-                                                         InputDevice,
+            IDirectInputDevice2_SendForceFeedbackCommand(joystick->
+                                                         hwdata->InputDevice,
                                                          DISFFC_RESET);
 
         if (FAILED(result)) {
@@ -481,9 +481,8 @@ SDL_SYS_JoystickUpdate_Polled(SDL_Joystick * joystick)
 
         case BUTTON:
             SDL_PrivateJoystickButton_Int(joystick, in->num,
-                                          (Uint8) (state.
-                                                   rgbButtons[in->ofs -
-                                                              DIJOFS_BUTTON0]
+                                          (Uint8) (state.rgbButtons[in->ofs -
+                                                                    DIJOFS_BUTTON0]
                                                    ? SDL_PRESSED :
                                                    SDL_RELEASED));
             break;
@@ -539,8 +538,8 @@ SDL_SYS_JoystickUpdate_Buffered(SDL_Joystick * joystick)
                 break;
             case BUTTON:
                 SDL_PrivateJoystickButton(joystick, in->num,
-                                          (Uint8) (evtbuf[i].
-                                                   dwData ? SDL_PRESSED :
+                                          (Uint8) (evtbuf[i].dwData ?
+                                                   SDL_PRESSED :
                                                    SDL_RELEASED));
                 break;
             case HAT:

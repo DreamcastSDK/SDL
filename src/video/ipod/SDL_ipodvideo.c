@@ -682,6 +682,7 @@ C_lcd_wait_write(void)
         } while (C_timer_check(start, 1000) == 0);
     }
 }
+
 static void
 C_lcd_cmd_data(int cmd, int data)
 {
@@ -776,11 +777,13 @@ iPod_UpdateRects(_THIS, int nrects, SDL_Rect * rects)
                         ~(3 << (2 * (x % 4)));
                     ipod_scr[y * (lcd_width / 4) + x / 4] |=
                         (((Uint8 *) (SDL_VideoSurface->pixels))[y *
-                                                                SDL_VideoSurface->
-                                                                pitch
+                                                                SDL_VideoSurface->pitch
                                                                 +
-                                                                x] &
-                         3) << (2 * (x % 4));
+                                                                x] & 3) << (2
+                                                                            *
+                                                                            (x
+                                                                             %
+                                                                             4));
                 }
             }
         }

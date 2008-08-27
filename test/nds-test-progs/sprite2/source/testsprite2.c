@@ -81,9 +81,11 @@ LoadSprite(char *file)
     return (0);
 }
 
-int LoadSprite2(const u8* ptr, int size) {
+int
+LoadSprite2(const u8 * ptr, int size)
+{
     int i;
-    SDL_Rect r = {0,0,32,32};
+    SDL_Rect r = { 0, 0, 32, 32 };
     for (i = 0; i < state->num_windows; ++i) {
         SDL_SelectRenderer(state->windows[i]);
         sprites[i] = SDL_CreateTexture(SDL_PIXELFORMAT_ABGR1555,
@@ -92,7 +94,7 @@ int LoadSprite2(const u8* ptr, int size) {
             fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
             return -1;
         }
-        SDL_UpdateTexture(sprites[i], &r, ptr, r.w*2);
+        SDL_UpdateTexture(sprites[i], &r, ptr, r.w * 2);
         SDL_SetTextureBlendMode(sprites[i], blendMode);
         SDL_SetTextureScaleMode(sprites[i], scaleMode);
     }
@@ -170,7 +172,8 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
 
-    consoleDemoInit(); puts("Hello world!  Initializing FAT...");
+    consoleDemoInit();
+    puts("Hello world!  Initializing FAT...");
     fatInitDefault();
 
     /* Initialize parameters */

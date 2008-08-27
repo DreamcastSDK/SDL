@@ -31,8 +31,6 @@
 #include "../SDL_audio_c.h"
 #include "SDL_ndsaudio.h"
 
-#define TRACE printf
-
 static int
 NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
 {
@@ -40,48 +38,44 @@ NDSAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     int valid_datatype = 0;
 
     this->hidden = SDL_malloc(sizeof(*(this->hidden)));
-    if(!this->hidden) {
+    if (!this->hidden) {
         SDL_OutOfMemory();
         return 0;
     }
     SDL_memset(this->hidden, 0, (sizeof *this->hidden));
 
-    TRACE("+NDSAUD_OpenDevice\n");
     while ((!valid_datatype) && (test_format)) {
         this->spec.format = test_format;
         switch (test_format) {
-            case AUDIO_S8:
-            /*case AUDIO_S16LSB:*/
-                valid_datatype = 1;
-                break;
-            default:
-               test_format = SDL_NextAudioFormat();
-               break;
+        case AUDIO_S8:
+            /*case AUDIO_S16LSB: */
+            valid_datatype = 1;
+            break;
+        default:
+            test_format = SDL_NextAudioFormat();
+            break;
         }
     }
 
     /* set the generic sound parameters */
-    setGenericSound(22050,  /* sample rate */
-                    127,    /* volume */
-                    64,     /* panning/balance */
-                    0);     /* sound format*/
+    setGenericSound(22050,      /* sample rate */
+                    127,        /* volume */
+                    64,         /* panning/balance */
+                    0);         /* sound format */
 
-    TRACE("-NDSAUD_OpenDevice\n");
     return 1;
 }
 
 static void
 NDSAUD_PlayDevice(_THIS)
 {
-    TransferSoundData* sound = SDL_malloc(sizeof(TransferSoundData));
-    if(!sound) {
+    TransferSoundData *sound = SDL_malloc(sizeof(TransferSoundData));
+    if (!sound) {
         SDL_OutOfMemory();
     }
-    TRACE("+NDSAUD_PlayDevice\n");
 
     playGenericSound(this->hidden->mixbuf, this->hidden->mixlen);
-
-    TRACE("-NDSAUD_PlayDevice\n");
+#if 0
 //    sound->data = this->hidden->mixbuf;/* pointer to raw audio data */
 //    sound->len = this->hidden->mixlen; /* size of raw data pointed to above */
 //    sound->rate = 22050; /* sample rate = 22050Hz */
@@ -89,35 +83,31 @@ NDSAUD_PlayDevice(_THIS)
 //    sound->pan = 64;     /* balance [0..127] for [left..right] */
 //    sound->format = 0;   /* 0 for 16-bit, 1 for 8-bit */
 //    playSound(sound);
+#endif
 }
 
 
 static Uint8 *
 NDSAUD_GetDeviceBuf(_THIS)
-{   /* is this right? */
-    TRACE("!NDSAUD_GetDeviceBuf\n");
-    return this->hidden->mixbuf;
+{
+    return this->hidden->mixbuf;        /* is this right? */
 }
 
 static void
 NDSAUD_WaitDevice(_THIS)
 {
     /* stub */
-    TRACE("!NDSAUD_WaitDevice\n");
 }
 
 static void
 NDSAUD_CloseDevice(_THIS)
 {
     /* stub */
-    TRACE("!NDSAUD_CloseDevice\n");
 }
 
 static int
 NDSAUD_Init(SDL_AudioDriverImpl * impl)
 {
-    TRACE("+NDSAUD_Init\n");
-
     /* Set the function pointers */
     impl->OpenDevice = NDSAUD_OpenDevice;
     impl->PlayDevice = NDSAUD_PlayDevice;
@@ -130,12 +120,11 @@ NDSAUD_Init(SDL_AudioDriverImpl * impl)
     impl->OnlyHasDefaultOutputDevice = 1;
     impl->OnlyHasDefaultInputDevice = 1;
 
-    TRACE("-NDSAUD_Init\n");
     return 1;
 }
 
 AudioBootStrap NDSAUD_bootstrap = {
-    "nds", "SDL NDS audio driver", NDSAUD_Init, 0 /*1?*/
+    "nds", "SDL NDS audio driver", NDSAUD_Init, 0       /*1? */
 };
 
 /* vi: set ts=4 sw=4 expandtab: */

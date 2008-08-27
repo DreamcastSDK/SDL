@@ -171,31 +171,38 @@ SDL_AudioDetectDevices_Default(int iscapture)
 {
     return -1;
 }
+
 static void
 SDL_AudioThreadInit_Default(_THIS)
 {                               /* no-op. */
 }
+
 static void
 SDL_AudioWaitDevice_Default(_THIS)
 {                               /* no-op. */
 }
+
 static void
 SDL_AudioPlayDevice_Default(_THIS)
 {                               /* no-op. */
 }
+
 static Uint8 *
 SDL_AudioGetDeviceBuf_Default(_THIS)
 {
     return NULL;
 }
+
 static void
 SDL_AudioWaitDone_Default(_THIS)
 {                               /* no-op. */
 }
+
 static void
 SDL_AudioCloseDevice_Default(_THIS)
 {                               /* no-op. */
 }
+
 static void
 SDL_AudioDeinitialize_Default(void)
 {                               /* no-op. */

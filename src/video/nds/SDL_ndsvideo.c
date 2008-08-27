@@ -23,7 +23,7 @@
 
 /* SDL Nintendo DS video driver implementation
  * based on dummy driver:
- * Initial work by Ryan C. Gordon (icculus@icculus.org). A good portion
+ *  Initial work by Ryan C. Gordon (icculus@icculus.org). A good portion
  *  of this was cut-and-pasted from Stephane Peter's work in the AAlib
  *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
  */
@@ -43,13 +43,6 @@
 #include "SDL_ndsevents_c.h"
 #include "SDL_ndsrender_c.h"
 
-
-
-#define TRACE
-//#define TRACE printf
-
-
-
 #define NDSVID_DRIVER_NAME "nds"
 
 /* Initialization/Query functions */
@@ -62,9 +55,7 @@ static void NDS_VideoQuit(_THIS);
 static int
 NDS_Available(void)
 {
-    /*const char *envr = SDL_getenv("SDL_VIDEODRIVER");*/
-    /*printf("NDS_Available()\n"); */
-    return (1);
+    return (1);                 /* always here */
 }
 
 static void
@@ -77,9 +68,7 @@ static SDL_VideoDevice *
 NDS_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-    /*printf("NDS_CreateDevice(%d)\n", devindex); */
 
-    TRACE("+NDS_CreateDevice\n");
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
@@ -100,7 +89,6 @@ NDS_CreateDevice(int devindex)
 
     device->free = NDS_DeleteDevice;
 
-    TRACE("-NDS_CreateDevice\n");
     return device;
 }
 
@@ -115,7 +103,6 @@ NDS_VideoInit(_THIS)
     SDL_DisplayMode mode;
     int i;
 
-    TRACE("+NDS_VideoInit\n");
     /* simple 256x192x16x60 for now */
     mode.w = 256;
     mode.h = 192;
@@ -125,62 +112,49 @@ NDS_VideoInit(_THIS)
 
     SDL_AddBasicVideoDisplay(&mode);
     SDL_AddRenderDriver(0, &NDS_RenderDriver);
-    /*SDL_AddBasicVideoDisplay(&mode); two screens, same mode. uncomment later
-    SDL_AddRenderDriver(1, &NDS_RenderDriver);*/
 
     SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
 
-    /* hackish stuff to get things up and running for now, and for a console */
-    powerON(POWER_ALL_2D);    irqInit();
+    powerON(POWER_ALL_2D);
+    irqInit();
     irqEnable(IRQ_VBLANK);
     NDS_SetDisplayMode(_this, &mode);
 
-    TRACE("-NDS_VideoInit\n");
     return 0;
 }
 
 static int
 NDS_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
-    TRACE("+NDS_SetDisplayMode\n");
     /* right now this function is just hard-coded for 256x192 ABGR1555 */
-    videoSetMode(MODE_5_2D |
-                 DISPLAY_BG2_ACTIVE |
-                 DISPLAY_BG3_ACTIVE |
-                 DISPLAY_BG_EXT_PALETTE |
-                 DISPLAY_SPR_1D_LAYOUT |
-                 DISPLAY_SPR_1D_BMP |
-                 DISPLAY_SPR_1D_BMP_SIZE_256 | /* try 128 if 256 is trouble. */
-                 DISPLAY_SPR_ACTIVE |
-                 DISPLAY_SPR_EXT_PALETTE); /* display on main core
-                                              with lots of flags set for
-                                              flexibility/capacity to render */
+    videoSetMode(MODE_5_2D | DISPLAY_BG2_ACTIVE | DISPLAY_BG3_ACTIVE | DISPLAY_BG_EXT_PALETTE | DISPLAY_SPR_1D_LAYOUT | DISPLAY_SPR_1D_BMP | DISPLAY_SPR_1D_BMP_SIZE_256 |      /* (try 128 if 256 is trouble.) */
+                 DISPLAY_SPR_ACTIVE | DISPLAY_SPR_EXT_PALETTE); /* display on main core
+                                                                   with lots of flags set for
+                                                                   flexibility/capacity to render */
 
     /* hopefully these cover all the various things we might need to do */
     vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
     vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
     vramSetBankC(VRAM_C_SUB_BG_0x06200000);
-    vramSetBankD(VRAM_D_MAIN_BG_0x06040000); /* not a typo. vram d can't sub */
+    vramSetBankD(VRAM_D_MAIN_BG_0x06040000);    /* not a typo. vram d can't sub */
     vramSetBankE(VRAM_E_MAIN_SPRITE);
     vramSetBankF(VRAM_F_OBJ_EXT_PALETTE);
     vramSetBankG(VRAM_G_BG_EXT_PALETTE);
     vramSetBankH(VRAM_H_SUB_BG_EXT_PALETTE);
     vramSetBankI(VRAM_I_SUB_SPRITE);
 
-    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE); /* debug text on sub
-                                                        TODO: this will change
-                                                        when multi-head is
-                                                        introduced in render */
+    videoSetModeSub(MODE_0_2D | DISPLAY_BG0_ACTIVE);    /* debug text on sub
+                                                           TODO: this will change
+                                                           when multi-head is
+                                                           introduced in render */
 
-    TRACE("-NDS_SetDisplayMode\n");
     return 0;
 }
 
 void
 NDS_VideoQuit(_THIS)
 {
-    TRACE("+NDS_VideoQuit\n");
     videoSetMode(DISPLAY_SCREEN_OFF);
     videoSetModeSub(DISPLAY_SCREEN_OFF);
     vramSetMainBanks(VRAM_A_LCD, VRAM_B_LCD, VRAM_C_LCD, VRAM_D_LCD);
@@ -189,7 +163,6 @@ NDS_VideoQuit(_THIS)
     vramSetBankG(VRAM_G_LCD);
     vramSetBankH(VRAM_H_LCD);
     vramSetBankI(VRAM_I_LCD);
-    TRACE("-NDS_VideoQuit\n");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

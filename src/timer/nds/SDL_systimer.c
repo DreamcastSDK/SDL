@@ -37,7 +37,7 @@ static Uint32 timer_ticks;
 void
 SDL_StartTicks(void)
 {
-    if(!timer_alive) {
+    if (!timer_alive) {
         SDL_SYS_TimerInit();
         SDL_SYS_StartTimer();
     }
@@ -55,8 +55,9 @@ void
 SDL_Delay(Uint32 ms)
 {
     Uint32 start = SDL_GetTicks();
-    while(timer_alive) {
-        if((SDL_GetTicks() - start) >= ms) break;
+    while (timer_alive) {
+        if ((SDL_GetTicks() - start) >= ms)
+            break;
     }
 }
 
@@ -71,8 +72,10 @@ RunTimer(void *unused)
     return (0);
 }
 
-void NDS_TimerInterrupt(void) {
-	timer_ticks++;
+void
+NDS_TimerInterrupt(void)
+{
+    timer_ticks++;
 }
 
 /* This is only called if the event thread is not running */
