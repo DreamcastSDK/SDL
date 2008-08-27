@@ -2503,19 +2503,24 @@ os2fslib_SetVideoMode(_THIS, SDL_Surface * current,
                                        pModeInfoFound->uiXResolution,
                                        pModeInfoFound->uiYResolution,
                                        pModeInfoFound->uiBPP, ((unsigned int)
-                                                               pModeInfoFound->PixelFormat.ucRedMask)
+                                                               pModeInfoFound->
+                                                               PixelFormat.
+                                                               ucRedMask)
                                        << pModeInfoFound->PixelFormat.
                                        ucRedPosition, ((unsigned int)
                                                        pModeInfoFound->
-                                                       PixelFormat.ucGreenMask)
+                                                       PixelFormat.
+                                                       ucGreenMask)
                                        << pModeInfoFound->PixelFormat.
                                        ucGreenPosition, ((unsigned int)
                                                          pModeInfoFound->
-                                                         PixelFormat.ucBlueMask)
+                                                         PixelFormat.
+                                                         ucBlueMask)
                                        << pModeInfoFound->PixelFormat.
                                        ucBluePosition, ((unsigned int)
                                                         pModeInfoFound->
-                                                        PixelFormat.ucAlphaMask)
+                                                        PixelFormat.
+                                                        ucAlphaMask)
                                        << pModeInfoFound->PixelFormat.
                                        ucAlphaPosition);
 
