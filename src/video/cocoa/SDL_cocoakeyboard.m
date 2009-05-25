@@ -61,7 +61,26 @@
 @end
 
 @implementation SDLTranslatorResponder
-- (void) doCommandBySelector:(SEL) myselector {}
+
+- (void) insertText:(id) aString
+{
+    const char *str;
+
+    NSLog(@"insertText: %@", aString);
+
+    if ([aString isKindOfClass: [NSAttributedString class]])
+        str = [[aString string] UTF8String];
+    else
+        str = [aString UTF8String];
+
+    SDL_SendKeyboardText(0, str);
+}
+
+- (void) doCommandBySelector:(SEL) myselector
+{
+    NSLog(@"doCommandBySelector, passed down");
+    [super doCommandBySelector: myselector];
+}
 @end
 
 /* This is the original behavior, before support was added for 
@@ -510,12 +529,22 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         }
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
+            NSLog(@"interpretKeyEvents");
+            if (! [[data->fieldEdit superview] isEqual: [[event window] contentView]])
+            {
+                NSLog(@"add fieldEdit to window contentView");
+                [data->fieldEdit removeFromSuperview];
+                [[[event window] contentView] addSubview: data->fieldEdit];
+                [[event window] makeFirstResponder: data->fieldEdit];
+            }
             [data->fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
+#if 0
             text = [[event characters] UTF8String];
             if(text && *text) {
                 SDL_SendKeyboardText(data->keyboard, text);
                 [data->fieldEdit setString:@""];
             }
+#endif
         }
         break;
     case NSKeyUp:
