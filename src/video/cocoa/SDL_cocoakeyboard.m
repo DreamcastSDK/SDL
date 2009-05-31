@@ -56,6 +56,9 @@
 
 @interface SDLTranslatorResponder : NSTextView
 {
+    NSString *_markedText;
+    NSRange   _markedRange;
+    NSRange   _selectedRange;
 }
 - (void) doCommandBySelector:(SEL)myselector;
 @end
@@ -68,6 +71,8 @@
 
     NSLog(@"insertText: %@", aString);
 
+    /* Could be NSString or NSAttributedString, so we have
+     * to test and convert it before return as SDL event */
     if ([aString isKindOfClass: [NSAttributedString class]])
         str = [[aString string] UTF8String];
     else
@@ -81,6 +86,84 @@
     NSLog(@"doCommandBySelector, passed down");
     [super doCommandBySelector: myselector];
 }
+
+- (BOOL) hasMarkedText
+{
+    return _markedText != nil;
+}
+
+- (NSRange) markedRange
+{
+    return _markedRange;
+}
+
+- (NSRange) selectedRange
+{
+    return _selectedRange;
+}
+
+- (void) setMarkedText:(id) aString
+         selectedRange:(NSRange) selRange
+{
+    if ([aString isKindOfClass: [NSAttributedString class]])
+        aString = [aString string];
+
+    if ([aString length] == 0)
+    {
+        [self unmarkText];
+        return;
+    }
+
+    if (_markedText != aString)
+    {
+        [_markedText release];
+        _markedText = [aString retain];
+    }
+
+    _selectedRange = selRange;
+    _markedRange = NSMakeRange(0, [aString length]);
+
+    NSLog(@"setMarkedText: %@, (%d, %d)", _markedText,
+          selRange.location, selRange.length);
+}
+
+- (void) unmarkText
+{
+    [_markedText release];
+    _markedText = nil;
+}
+
+- (NSRect) firstRectForCharacterRange: (NSRange) theRange
+{
+    return NSMakeRect(0, 0, 0, 0);
+}
+
+- (NSAttributedString *) attributedSubstringFromRange: (NSRange) theRange
+{
+    return nil;
+}
+
+- (NSInteger) conversationIdentifier
+{
+    return (NSInteger) self;
+}
+
+// This method returns the index for character that is 
+// nearest to thePoint.  thPoint is in screen coordinate system.
+- (NSUInteger) characterIndexForPoint:(NSPoint) thePoint
+{
+    return 0;
+}
+
+// This method is the key to attribute extension. 
+// We could add new attributes through this method.
+// NSInputServer examines the return value of this
+// method & constructs appropriate attributed string.
+- (NSArray *) validAttributesForMarkedText
+{
+    return [NSArray array];
+}
+
 @end
 
 /* This is the original behavior, before support was added for 
