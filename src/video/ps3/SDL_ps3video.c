@@ -57,8 +57,8 @@ int SPE_Start(_THIS, spu_data_t * spe_data);
 int SPE_Stop(_THIS, spu_data_t * spe_data);
 int SPE_Boot(_THIS, spu_data_t * spe_data);
 int SPE_Shutdown(_THIS, spu_data_t * spe_data);
-int SPE_SendMsg(_THIS, spu_data_t * spe_data, unsigned int msg);
-int SPE_WaitForMsg(_THIS, spu_data_t * spe_data, unsigned int msg);
+int SPE_SendMsg(spu_data_t * spe_data, unsigned int msg);
+int SPE_WaitForMsg(spu_data_t * spe_data, unsigned int msg);
 void SPE_RunContext(void *thread_argp);
 
 /* Stores the SPE executable name of fb_writer_spu */
@@ -262,7 +262,7 @@ int SPE_Start(_THIS, spu_data_t * spe_data)
   }
 
   if (spe_data->keepalive)
-    SPE_WaitForMsg(_this, spe_data, SPU_READY);
+    SPE_WaitForMsg(spe_data, SPU_READY);
 }
 
 
@@ -311,7 +311,7 @@ int SPE_Boot(_THIS, spu_data_t * spe_data)
 int SPE_Shutdown(_THIS, spu_data_t * spe_data)
 {
   if (spe_data->keepalive && spe_data->booted) {
-    SPE_SendMsg(_this, spe_data, SPU_EXIT);
+    SPE_SendMsg(spe_data, SPU_EXIT);
     SPE_Stop(_this, spe_data);
   }
 
@@ -327,7 +327,7 @@ int SPE_Shutdown(_THIS, spu_data_t * spe_data)
 }
 
 /* Send message to the SPE via mailboxe */
-int SPE_SendMsg(_THIS, spu_data_t * spe_data, unsigned int msg)
+int SPE_SendMsg(spu_data_t * spe_data, unsigned int msg)
 {
   deprintf(2, "[PS3->SPU] Sending message %u to %s\n", msg, spe_data->program_name);
   /* Send one message, block until message was sent */
@@ -345,7 +345,7 @@ int SPE_SendMsg(_THIS, spu_data_t * spe_data, unsigned int msg)
 
 
 /* Read 1 message from SPE, block until at least 1 message was received */
-int SPE_WaitForMsg(_THIS, spu_data_t * spe_data, unsigned int msg)
+int SPE_WaitForMsg(spu_data_t * spe_data, unsigned int msg)
 {
   deprintf(2, "[PS3->SPU] Waiting for message from %s\n", spe_data->program_name);
   unsigned int out_messages[1];
