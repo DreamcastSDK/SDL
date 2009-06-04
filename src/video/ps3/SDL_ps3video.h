@@ -56,8 +56,8 @@
 /* SPU thread data */
 typedef struct spu_data {
     spe_context_ptr_t ctx;
-    pthread_t thread;
     spe_program_handle_t program;
+    pthread_t thread;
     char * program_name;
     unsigned int booted;
     unsigned int keepalive;
