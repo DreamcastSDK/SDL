@@ -38,28 +38,6 @@
 
 #include <asm/ps3fb.h>
 
-/* Debugging
- * 0: No debug messages
- * 1: Video debug messages
- * 2: SPE debug messages
- * 3: Memory adresses
- */
-#define DEBUG_LEVEL 2
-
-#ifdef DEBUG_LEVEL
-#define deprintf( level, fmt, args... ) \
-    do \
-{ \
-    if ( (unsigned)(level) <= DEBUG_LEVEL ) \
-    { \
-        fprintf( stdout, fmt, ##args ); \
-        fflush( stdout ); \
-    } \
-} while ( 0 )
-#else
-#define deprintf( level, fmt, args... )
-#endif
-
 /* SDL surface based renderer implementation */
 
 static SDL_Renderer *SDL_PS3_CreateRenderer(SDL_Window * window,
@@ -158,8 +136,8 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_zerop(data);
 
-    renderer->CreateTexture = PS3_CreateTexture;
-    renderer->DestroyTexture = PS3_DestroyTexture;
+    //renderer->CreateTexture = PS3_CreateTexture;
+    //renderer->DestroyTexture = PS3_DestroyTexture;
     renderer->RenderPoint = SDL_PS3_RenderPoint;
     renderer->RenderLine = SDL_PS3_RenderLine;
     renderer->RenderFill = SDL_PS3_RenderFill;
@@ -171,6 +149,9 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->window = window->id;
     renderer->driverdata = data;
     Setup_SoftwareRenderer(renderer);
+
+    deprintf(1, "window->w = %u\n", window->w);
+    deprintf(1, "window->h = %u\n", window->h);
 
     data->double_buffering = 0;
 
@@ -341,11 +322,20 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         SDL_Rect real_srcrect = *srcrect;
         SDL_Rect real_dstrect = *dstrect;
 
-        /* For testing */
-        int width = 1280;
-        int height = 720;
-        void *pixels = (void *)memalign(16, height * data->screens[0]->pitch);
-        SDL_memset(pixels, 0x42, height * data->screens[0]->pitch);
+        deprintf(1, "surface->w = %u\n", surface->w); // FIXME: surface->w changes to 32
+        deprintf(1, "surface->h = %u\n", surface->h);
+
+        deprintf(1, "srcrect->w = %u\n", srcrect->w);
+        deprintf(1, "srcrect->h = %u\n", srcrect->h);
+        deprintf(1, "dstrect->w = %u\n", dstrect->w);
+        deprintf(1, "dstrect->h = %u\n", dstrect->h);
+
+        deprintf(1, "txdata->bpp = %u\n", txdata->bpp);
+        deprintf(1, "texture->format (bpp) = %u\n", SDL_BYTESPERPIXEL(texture->format));
+
+        /* For testing, align pixels */
+        void *pixels = (void *)memalign(16, dstrect->h * data->screens[0]->pitch);
+        SDL_memcpy(pixels, surface->pixels, dstrect->h * data->screens[0]->pitch);
 
         /* Get screeninfo */
         struct fb_fix_screeninfo fb_finfo;
@@ -364,19 +354,22 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
             txdata->bpp = fb_vinfo.red.length + fb_vinfo.green.length + fb_vinfo.blue.length;
 
         /* Adjust centering */
-        data->bounded_width = width < fb_vinfo.xres ? width : fb_vinfo.xres;
-        data->bounded_height = height < fb_vinfo.yres ? height : fb_vinfo.yres;
+        data->bounded_width = window->w < fb_vinfo.xres ? window->w : fb_vinfo.xres;
+        data->bounded_height = window->h < fb_vinfo.yres ? window->h : fb_vinfo.yres;
         data->offset_left = (fb_vinfo.xres - data->bounded_width) >> 1;
         data->offset_top = (fb_vinfo.yres - data->bounded_height) >> 1;
-        data->center[0] = devdata->frame_buffer + data->offset_left * txdata->bpp/8 +
+        data->center[0] = devdata->frame_buffer + data->offset_left * /*txdata->bpp/8*/ 4 +
                     data->offset_top * fb_finfo.line_length;
         data->center[1] = data->center[0] + fb_vinfo.yres * fb_finfo.line_length;
+
+        deprintf(1, "offset_left = %u\n", data->offset_left);
+        deprintf(1, "offset_top = %u\n", data->offset_top);
 
         /* Set SPU parms for copying the surface to framebuffer */
         devdata->fb_parms->data = (unsigned char *)pixels;
         devdata->fb_parms->center = data->center[data->current_screen];
         devdata->fb_parms->out_line_stride = fb_finfo.line_length;
-        devdata->fb_parms->in_line_stride = surface->w * txdata->bpp / 8;
+        devdata->fb_parms->in_line_stride = dstrect->w * /*txdata->bpp / 8*/4;
         devdata->fb_parms->bounded_input_height = data->bounded_height;
         devdata->fb_parms->bounded_input_width = data->bounded_width;
         devdata->fb_parms->fb_pixel_size = txdata->bpp / 8;
@@ -390,7 +383,8 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         SPE_WaitForMsg(devdata->fb_thread_data, SPU_FIN);
         free(pixels);
 
-        return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
+        return 0;
+        //return SDL_LowerBlit(surface, &real_srcrect, target, &real_dstrect);
     }
 }
 
