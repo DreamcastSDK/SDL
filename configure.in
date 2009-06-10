@@ -1522,7 +1522,7 @@ CheckPS3()
       AC_DEFINE(SDL_VIDEO_DRIVER_PS3)
       SOURCES="$SOURCES $srcdir/src/video/ps3/*.c"
       EXTRA_CFLAGS="$EXTRA_CFLAGS -I/opt/cell/sdk/usr/include"
-      EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/cell/sdk/usr/lib -lspe2 -lfb_writer_spu"
+      EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/cell/sdk/usr/lib -lspe2 -lfb_writer_spu -lyuv2rgb_spu"
       have_video=yes
     fi   
   fi

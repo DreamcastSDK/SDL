@@ -15,8 +15,8 @@ SPU_CFLAGS=-W -Wall -Winline -Wno-main -I. -I /usr/spu/include -I /opt/cell/sdk/
 PREFIX=/usr/lib
 
 
-all: libfb_writer_spu.a libfb_writer_spu.so
-#				libyuv2rgb_spu.so libyuv2rgb_spu.a \
+all: libfb_writer_spu.a libfb_writer_spu.so \
+				libyuv2rgb_spu.so libyuv2rgb_spu.a
 #				libbilin_scaler_spu.so libbilin_scaler_spu.a
 
 
@@ -55,24 +55,24 @@ libbilin_scaler_spu.a: bilin_scaler_spu-embed.o
 libbilin_scaler_spu.so: bilin_scaler_spu-embed.o
 	$(PPU_LD) -o libbilin_scaler_spu.so -shared -soname=libbilin_scaler_spu.so bilin_scaler_spu-embed.o
 
-install: libfb_writer_spu.a libfb_writer_spu.so
-#				libyuv2rgb_spu.so libyuv2rgb_spu.a \
+install: libfb_writer_spu.a libfb_writer_spu.so \
+				libyuv2rgb_spu.so libyuv2rgb_spu.a
 #				libbilin_scaler_spu.so libbilin_scaler_spu.a
 	$(INSTALL) -c -m 0755 libfb_writer_spu.so $(PREFIX)/.
 	$(INSTALL) -c -m 0655 libfb_writer_spu.a $(PREFIX)/.
-#	$(INSTALL) -c -m 0755 libyuv2rgb_spu.so $(PREFIX)/.
-#	$(INSTALL) -c -m 0655 libyuv2rgb_spu.a $(PREFIX)/.
+	$(INSTALL) -c -m 0755 libyuv2rgb_spu.so $(PREFIX)/.
+	$(INSTALL) -c -m 0655 libyuv2rgb_spu.a $(PREFIX)/.
 #	$(INSTALL) -c -m 0755 libbilin_scaler_spu.so $(PREFIX)/.
 #	$(INSTALL) -c -m 0655 libbilin_scaler_spu.a $(PREFIX)/.
 
 
-uninstall: $(PREFIX)/libfb_writer_spu.so $(PREFIX)/libfb_writer_spu.a
-#		$(PREFIX)/libyuv2rgb_spu.so $(PREFIX)/libyuv2rgb_spu.a \
+uninstall: $(PREFIX)/libfb_writer_spu.so $(PREFIX)/libfb_writer_spu.a \
+		$(PREFIX)/libyuv2rgb_spu.so $(PREFIX)/libyuv2rgb_spu.a
 #		$(PREFIX)/libbilin_scaler_spu.so $(PREFIX)/libbilin_scaler_spu.a
 	rm -f $(PREFIX)/libfb_writer_spu.a
 	rm -f $(PREFIX)/libfb_writer_spu.so
-#	rm -f $(PREFIX)/libyuv2rgb_spu.so
-#	rm -f $(PREFIX)/libyuv2rgb_spu.a
+	rm -f $(PREFIX)/libyuv2rgb_spu.so
+	rm -f $(PREFIX)/libyuv2rgb_spu.a
 #	rm -f $(PREFIX)/libbilin_scaler_spu.so
 #	rm -f $(PREFIX)/libbilin_scaler_spu.a
 

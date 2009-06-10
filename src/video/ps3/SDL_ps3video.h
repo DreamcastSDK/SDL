@@ -21,12 +21,11 @@
 */
 #include "SDL_config.h"
 
-#include <libspe2.h>
-
 #ifndef _SDL_ps3video_h
 #define _SDL_ps3video_h
 
 #include "../SDL_sysvideo.h"
+#include "SDL_ps3spe_c.h"
 
 /* Debugging
  * 0: No debug messages
@@ -52,19 +51,6 @@
 
 /* Default framebuffer device on PS3 */
 #define PS3DEV "/dev/fb0"
-
-/* SPU thread data */
-typedef struct spu_data {
-    spe_context_ptr_t ctx;
-    spe_program_handle_t program;
-    pthread_t thread;
-    char * program_name;
-    unsigned int booted;
-    unsigned int keepalive;
-    unsigned int entry;
-    int error_code;
-    void * argp;
-} spu_data_t;
 
 /* Private display data */
 typedef struct SDL_VideoData

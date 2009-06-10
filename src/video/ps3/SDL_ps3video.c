@@ -33,16 +33,15 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
-#include "spulibs/spu_common.h"
 
 #include "SDL_ps3video.h"
+#include "SDL_ps3spe_c.h"
 #include "SDL_ps3events_c.h"
 #include "SDL_ps3render_c.h"
 
 #include <fcntl.h>
 #include <linux/fb.h>
 #include <asm/ps3fb.h>
-#include <libspe2.h>
 #include <sys/mman.h>
 
 #define PS3VID_DRIVER_NAME "ps3"
@@ -51,15 +50,6 @@
 static int PS3_VideoInit(_THIS);
 static int PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
 static void PS3_VideoQuit(_THIS);
-
-/* SPU specific functions */
-int SPE_Start(_THIS, spu_data_t * spe_data);
-int SPE_Stop(_THIS, spu_data_t * spe_data);
-int SPE_Boot(_THIS, spu_data_t * spe_data);
-int SPE_Shutdown(_THIS, spu_data_t * spe_data);
-int SPE_SendMsg(spu_data_t * spe_data, unsigned int msg);
-int SPE_WaitForMsg(spu_data_t * spe_data, unsigned int msg);
-void SPE_RunContext(void *thread_argp);
 
 /* Stores the SPE executable name of fb_writer_spu */
 extern spe_program_handle_t fb_writer_spu;
@@ -167,7 +157,7 @@ PS3_VideoInit(_THIS)
     data->fb_thread_data->keepalive = 1;
     data->fb_thread_data->booted = 0;
 
-    SPE_Start(_this, data->fb_thread_data);
+    SPE_Start(data->fb_thread_data);
 
     /* Open the device */
     data->fbdev = open(PS3DEV, O_RDWR);
@@ -198,7 +188,7 @@ PS3_VideoInit(_THIS)
         SDL_SetError("[PS3] Can't mmap for %s", PS3DEV);
         return (0);
     } else {
-        //current->flags |= SDL_DOUBLEBUF;
+        /* Enable double buffering */
     }
 
     /* Blank screen */
@@ -220,6 +210,8 @@ PS3_VideoQuit(_THIS)
 {
     deprintf(1, "PS3_VideoQuit()\n");
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    /* Unmap framebuffer */
     if (data->frame_buffer) {
         struct fb_fix_screeninfo fb_finfo;
         if (ioctl(data->fbdev, FBIOGET_FSCREENINFO, &fb_finfo) != -1) {
@@ -228,154 +220,21 @@ PS3_VideoQuit(_THIS)
         }
     }
 
+    /* Shutdown SPE and related resources */
     if (data->fb_parms)
         free((void *)data->fb_parms);
     if (data->fb_thread_data) {
-        SPE_Shutdown(_this, data->fb_thread_data);
+        SPE_Shutdown(data->fb_thread_data);
         free((void *)data->fb_thread_data);
     }
-}
 
-
-/*
- * SPE handling
- */
-
-/* Start the SPE thread */
-int SPE_Start(_THIS, spu_data_t * spe_data)
-{
-  deprintf(2, "[PS3->SPU] Start SPE: %s\n", spe_data->program_name);
-  if (!(spe_data->booted))
-    SPE_Boot(_this, spe_data);
-
-  /* To allow re-running of context, spe_ctx_entry has to be set before each call */
-  spe_data->entry = SPE_DEFAULT_ENTRY;
-  spe_data->error_code = 0;
-
-  /* Create SPE thread and run */
-  deprintf(2, "[PS3->SPU] Create Thread: %s\n", spe_data->program_name);
-  if (pthread_create
-      (&spe_data->thread, NULL, (void *)&SPE_RunContext, (void *)spe_data)) {
-    deprintf(2, "[PS3->SPU] Could not create pthread for spe: %s\n", spe_data->program_name);
-    SDL_SetError("[PS3->SPU] Could not create pthread for spe");
-    return -1;
-  }
-
-  if (spe_data->keepalive)
-    SPE_WaitForMsg(spe_data, SPU_READY);
-}
-
-
-/* Stop the SPE thread */
-int SPE_Stop(_THIS, spu_data_t * spe_data)
-{
-  deprintf(2, "[PS3->SPU] Stop SPE: %s\n", spe_data->program_name);
-  /* Wait for SPE thread to complete */
-  deprintf(2, "[PS3->SPU] Wait for SPE thread to complete: %s\n", spe_data->program_name);
-  if (pthread_join(spe_data->thread, NULL)) {
-    deprintf(2, "[PS3->SPU] Failed joining the thread: %s\n", spe_data->program_name);
-    SDL_SetError("[PS3->SPU] Failed joining the thread");
-    return -1;
-  }
-
-  return 0;
-}
-
-/* Create SPE context and load program */
-int SPE_Boot(_THIS, spu_data_t * spe_data)
-{
-  /* Create SPE context */
-  deprintf(2, "[PS3->SPU] Create SPE Context: %s\n", spe_data->program_name);
-  spe_data->ctx = spe_context_create(0, NULL);
-  if (spe_data->ctx == NULL) {
-    deprintf(2, "[PS3->SPU] Failed creating SPE context: %s\n", spe_data->program_name);
-    SDL_SetError("[PS3->SPU] Failed creating SPE context");
-    return -1;
-  }
-
-  /* Load SPE object into SPE local store */
-  deprintf(2, "[PS3->SPU] Load Program into SPE: %s\n", spe_data->program_name);
-  if (spe_program_load(spe_data->ctx, &spe_data->program)) {
-    deprintf(2, "[PS3->SPU] Failed loading program into SPE context: %s\n", spe_data->program_name);
-    SDL_SetError
-        ("[PS3->SPU] Failed loading program into SPE context");
-    return -1;
-  }
-  spe_data->booted = 1;
-  deprintf(2, "[PS3->SPU] SPE boot successful\n");
-
-  return 0;
-}
-
-/* (Stop and) shutdown the SPE */
-int SPE_Shutdown(_THIS, spu_data_t * spe_data)
-{
-  if (spe_data->keepalive && spe_data->booted) {
-    SPE_SendMsg(spe_data, SPU_EXIT);
-    SPE_Stop(_this, spe_data);
-  }
-
-  /* Destroy SPE context */
-  deprintf(2, "[PS3->SPU] Destroy SPE context: %s\n", spe_data->program_name);
-  if (spe_context_destroy(spe_data->ctx)) {
-    deprintf(2, "[PS3->SPU] Failed destroying context: %s\n", spe_data->program_name);
-    SDL_SetError("[PS3->SPU] Failed destroying context");
-    return -1;
-  }
-  deprintf(2, "[PS3->SPU] SPE shutdown successful: %s\n", spe_data->program_name);
-  return 0;
-}
-
-/* Send message to the SPE via mailboxe */
-int SPE_SendMsg(spu_data_t * spe_data, unsigned int msg)
-{
-  deprintf(2, "[PS3->SPU] Sending message %u to %s\n", msg, spe_data->program_name);
-  /* Send one message, block until message was sent */
-  unsigned int spe_in_mbox_msgs[1];
-  spe_in_mbox_msgs[0] = msg;
-  int in_mbox_write = spe_in_mbox_write(spe_data->ctx, spe_in_mbox_msgs, 1, SPE_MBOX_ALL_BLOCKING);
-
-  if (1 > in_mbox_write) {
-    deprintf(2, "[PS3->SPU] No message could be written to %s\n", spe_data->program_name);
-    SDL_SetError("[PS3->SPU] No message could be written");
-    return -1;
-  }
-  return 0;
-}
-
-
-/* Read 1 message from SPE, block until at least 1 message was received */
-int SPE_WaitForMsg(spu_data_t * spe_data, unsigned int msg)
-{
-  deprintf(2, "[PS3->SPU] Waiting for message from %s\n", spe_data->program_name);
-  unsigned int out_messages[1];
-  while (!spe_out_mbox_status(spe_data->ctx));
-  int mbox_read = spe_out_mbox_read(spe_data->ctx, out_messages, 1);
-  deprintf(2, "[PS3->SPU] Got message from %s, message was %u\n", spe_data->program_name, out_messages[0]);
-  if (out_messages[0] == msg)
-    return 0;
-  else
-    return -1;
-}
-
-/* Re-runnable invocation of the spe_context_run call */
-void SPE_RunContext(void *thread_argp)
-{ 
-  /* argp is the pointer to argument to be passed to the SPE program */
-  spu_data_t *args = (spu_data_t *) thread_argp;
-  deprintf(3, "[PS3->SPU] void* argp=0x%x\n", (unsigned int)args->argp);
-  
-  /* Run it.. */
-  deprintf(2, "[PS3->SPU] Run SPE program: %s\n", args->program_name);
-  if (spe_context_run
-      (args->ctx, &args->entry, 0, (void *)args->argp, NULL,
-       NULL) < 0) {
-    deprintf(2, "[PS3->SPU] Failed running SPE context: %s\n", args->program_name);
-    SDL_SetError("[PS3->SPU] Failed running SPE context: %s", args->program_name);
-    exit(1);
-  }
-
-  pthread_exit(NULL);
+    /* Close device */
+    if (data->fbdev > 0) {
+        /* Give control of frame buffer back to kernel */
+        ioctl(data->fbdev, PS3FB_IOCTL_OFF, 0);
+        close(data->fbdev);
+        data->fbdev = -1;
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
