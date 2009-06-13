@@ -49,6 +49,8 @@
 /* Initialization/Query functions */
 static int PS3_VideoInit(_THIS);
 static int PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
+void PS3_InitModes(_THIS);
+void PS3_GetDisplayModes(_THIS);
 static void PS3_VideoQuit(_THIS);
 
 /* Stores the SPE executable name of fb_writer_spu */
@@ -104,6 +106,7 @@ PS3_CreateDevice(int devindex)
     device->VideoInit = PS3_VideoInit;
     device->VideoQuit = PS3_VideoQuit;
     device->SetDisplayMode = PS3_SetDisplayMode;
+    device->GetDisplayModes = PS3_GetDisplayModes;
     device->PumpEvents = PS3_PumpEvents;
 
     device->free = PS3_DeleteDevice;
@@ -125,10 +128,9 @@ PS3_VideoInit(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayMode mode;
 
+#if 0
     /* Use a fake 32-bpp desktop mode */
     mode.format = SDL_PIXELFORMAT_RGB888;
-    //mode.w = 1024;
-    //mode.h = 768;
     mode.w = 1920;
     mode.h = 1080;
     mode.refresh_rate = 0;
@@ -136,8 +138,11 @@ PS3_VideoInit(_THIS)
     SDL_AddBasicVideoDisplay(&mode);
     SDL_AddRenderDriver(0, &SDL_PS3_RenderDriver);
 
-    SDL_zero(mode);
+    //SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
+    display.desktop_mode = mode;
+    display.current_mode = mode;
+#endif
 
     /* 
      *PS3 stuff 
@@ -194,6 +199,10 @@ PS3_VideoInit(_THIS)
     /* Blank screen */
     memset(data->frame_buffer, 0x00, fb_finfo.smem_len);
 
+    PS3_InitModes(_this);
+
+    SDL_AddRenderDriver(0, &SDL_PS3_RenderDriver);
+
     /* We're done! */
     return 0;
 }
@@ -202,7 +211,72 @@ static int
 PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
     deprintf(1, "PS3_SetDisplayMode()\n");
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    SDL_DisplayData *dispdata = (SDL_DisplayData *) mode->driverdata;
+
+    if (ioctl(data->fbdev, PS3FB_IOCTL_SETMODE, (unsigned long)&dispdata->mode)) {
+        SDL_SetError("Could not set videomode");
+        return -1;
+    }
     return 0;
+}
+
+void PS3_GetDisplayModes(_THIS) {
+    deprintf(1, "PS3_GetDisplayModes()\n");
+}
+
+void
+PS3_InitModes(_THIS)
+{
+    deprintf(1, "PS3_InitModes()\n");
+    SDL_VideoDisplay display;
+    SDL_DisplayMode mode, mode1080p;
+    SDL_DisplayData *displaydata;
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    displaydata = (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
+    if (!displaydata) {
+        return;
+    }
+
+    struct ps3fb_ioctl_res res;
+    if (ioctl(data->fbdev, PS3FB_IOCTL_SCREENINFO, &res)) {
+        SDL_SetError("Can't get PS3FB_IOCTL_SCREENINFO");
+    }
+    mode.format = SDL_PIXELFORMAT_RGB888;
+    mode.refresh_rate = 0;
+    mode.w = res.xres;
+    mode.h = res.yres;
+
+    int vid = 0;
+    if (ioctl(data->fbdev, PS3FB_IOCTL_GETMODE, (unsigned long)&vid)) {
+        SDL_SetError("Can't get PS3FB_IOCTL_GETMODE");
+    }
+    printf("PS3FB_IOCTL_GETMODE = %u\n", vid);
+
+    displaydata->mode = vid;
+    mode.driverdata = displaydata;
+
+    SDL_zero(display);
+    display.desktop_mode = mode;
+    display.current_mode = mode;
+
+    SDL_AddVideoDisplay(&display);
+    SDL_AddDisplayMode(_this->current_display, &mode);
+
+    mode1080p.format = SDL_PIXELFORMAT_RGB888;
+    mode1080p.refresh_rate = 0;
+    mode1080p.w = 1920;
+    mode1080p.h = 1080;
+
+    displaydata = (SDL_DisplayData *) SDL_malloc(sizeof(*displaydata));
+    if (!displaydata) {
+        return;
+    }
+
+    displaydata->mode = 133;
+    mode1080p.driverdata = displaydata;
+    SDL_AddDisplayMode(_this->current_display, &mode1080p);
 }
 
 void

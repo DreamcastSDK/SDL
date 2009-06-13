@@ -27,6 +27,9 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_ps3spe_c.h"
 
+#include <linux/fb.h>
+#include <asm/ps3fb.h>
+
 /* Debugging
  * 0: No debug messages
  * 1: Video debug messages
@@ -64,6 +67,12 @@ typedef struct SDL_VideoData
     /* Framebuffer transfer data */
     volatile struct fb_writer_parms_t * fb_parms __attribute__((aligned(128)));
 } SDL_VideoData;
+
+typedef struct
+{
+    unsigned long mode;
+    struct ps3fb_ioctl_res res;
+} SDL_DisplayData;
 
 #endif /* _SDL_ps3video_h */
 
