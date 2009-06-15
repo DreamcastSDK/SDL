@@ -9,7 +9,7 @@ PPU_AR=/usr/bin/ar
 PPU_LD=/usr/bin/ld
 INSTALL=/usr/bin/install
 
-SPU_CFLAGS=-W -Wall -Winline -Wno-main -I. -I /usr/spu/include -I /opt/cell/sdk/usr/spu/include -finline-limit=10000 -Winline -ftree-vectorize -funroll-loops -fmodulo-sched -ffast-math -fPIC -O2
+SPU_CFLAGS=-g -W -Wall -Winline -Wno-main -I. -I /usr/spu/include -I /opt/cell/sdk/usr/spu/include -finline-limit=10000 -Winline -ftree-vectorize -funroll-loops -fmodulo-sched -ffast-math -fPIC -O2
 
 # Usually /usr/lib, depending on your distribution
 PREFIX=/usr/lib

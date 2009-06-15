@@ -128,7 +128,7 @@ PS3_VideoInit(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayMode mode;
 
-#if 0
+#if 1
     /* Use a fake 32-bpp desktop mode */
     mode.format = SDL_PIXELFORMAT_RGB888;
     mode.w = 1920;
@@ -140,8 +140,8 @@ PS3_VideoInit(_THIS)
 
     //SDL_zero(mode);
     SDL_AddDisplayMode(0, &mode);
-    display.desktop_mode = mode;
-    display.current_mode = mode;
+    //display.desktop_mode = mode;
+    //display.current_mode = mode;
 #endif
 
     /* 
@@ -199,9 +199,11 @@ PS3_VideoInit(_THIS)
     /* Blank screen */
     memset(data->frame_buffer, 0x00, fb_finfo.smem_len);
 
+#if 0
     PS3_InitModes(_this);
 
     SDL_AddRenderDriver(0, &SDL_PS3_RenderDriver);
+#endif
 
     /* We're done! */
     return 0;
