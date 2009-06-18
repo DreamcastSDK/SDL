@@ -36,7 +36,7 @@
  * 2: SPE debug messages
  * 3: Memory adresses
  */
-#define DEBUG_LEVEL 2
+#define DEBUG_LEVEL 1
 
 #ifdef DEBUG_LEVEL
 #define deprintf( level, fmt, args... ) \
