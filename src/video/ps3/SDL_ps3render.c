@@ -40,6 +40,7 @@
 
 /* Stores the executable name */
 extern spe_program_handle_t yuv2rgb_spu;
+extern spe_program_handle_t bilin_scaler_spu;
 
 /* SDL surface based renderer implementation */
 
@@ -103,9 +104,13 @@ typedef struct
     unsigned int double_buffering;
 
     /* SPE threading stuff */
-    spu_data_t * converter_thread_data;
+    spu_data_t *converter_thread_data;
+    spu_data_t *scaler_thread_data;
+
     /* YUV converting transfer data */
     volatile struct yuv2rgb_parms_t * converter_parms __attribute__((aligned(128)));
+    /* Scaler transfer data */
+    volatile struct scale_parms_t * scaler_parms __attribute__((aligned(128)));
 } SDL_PS3_RenderData;
 
 typedef struct
@@ -207,7 +212,8 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     /* Create SPU parms structure */
     data->converter_parms = (struct yuv2rgb_parms_t *) memalign(16, sizeof(struct yuv2rgb_parms_t));
-    if (data->converter_parms == NULL) {
+    data->scaler_parms = (struct scale_parms_t *) memalign(16, sizeof(struct scale_parms_t));
+    if (data->converter_parms == NULL || data->scaler_parms == NULL) {
         SDL_PS3_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;
@@ -215,11 +221,17 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     /* Set up the SPEs */
     data->converter_thread_data = (spu_data_t *) malloc(sizeof(spu_data_t));
-    if (data->converter_thread_data == NULL) {
+    data->scaler_thread_data = (spu_data_t *) malloc(sizeof(spu_data_t));
+    if (data->converter_thread_data == NULL || data->scaler_thread_data == NULL) {
         SDL_PS3_DestroyRenderer(renderer);
         SDL_OutOfMemory();
         return NULL;
     }
+
+    data->scaler_thread_data->program = bilin_scaler_spu;
+    data->scaler_thread_data->program_name = "bilin_scaler_spu";
+    data->scaler_thread_data->keepalive = 0;
+    data->scaler_thread_data->booted = 0;
 
     data->converter_thread_data->program = yuv2rgb_spu;
     data->converter_thread_data->program_name = "yuv2rgb_spu";
@@ -289,7 +301,7 @@ PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
                 break;
         }
         if ((texture->format & SDL_PIXELFORMAT_YV12 || texture->format & SDL_PIXELFORMAT_IYUV)
-                && texture->w % 8 == 0 && texture->h % 8 == 0) {
+                && texture->w % 16 == 0 && texture->h % 16 == 0) {
             data->accelerated = 1;
         }
     } else {
@@ -337,17 +349,16 @@ PS3_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         Uint8 *src, *dst;
         int row;
         size_t length;
-        int dstpitch;
         Uint8 *dstpixels;
 
         src = (Uint8 *) pixels;
-        dst = (Uint8 *) dstpixels + rect->y * dstpitch + rect->x
+        dst = (Uint8 *) dstpixels + rect->y * data->pitch + rect->x
                         * SDL_BYTESPERPIXEL(texture->format);
         length = rect->w * SDL_BYTESPERPIXEL(texture->format);
         for (row = 0; row < rect->h; ++row) {
             SDL_memcpy(dst, src, length);
             src += pitch;
-            dst += dstpitch;
+            dst += data->pitch;
         }
     }
     deprintf(1, "-PS3_UpdateTexture()\n");
@@ -495,16 +506,18 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     deprintf(1, "dstrect->x = %u\n", dstrect->x);
     deprintf(1, "dstrect->y = %u\n", dstrect->y);
 
+    deprintf(1, "texture->w = %u\n", texture->w);
+    deprintf(1, "texture->h = %u\n", texture->h);
+
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         deprintf(1, "SDL_ISPIXELFORMAT_FOURCC = true\n");
         if (txdata->accelerated) {
             deprintf(1, "Use SPE for scaling/converting\n");
-            if (srcrect-> != dstrect->w || srcrect->h != dstrect->h) {
-                // do scaling
-            }
 
-            Uint8 *lum, *Cr, *Cb;
             SDL_SW_YUVTexture *swdata = (SDL_SW_YUVTexture *) txdata->yuv;
+            Uint8 *lum, *Cr, *Cb;
+            Uint8 *scaler_out = NULL;
+            Uint8 *dstpixels;
             switch (swdata->format) {
                 case SDL_PIXELFORMAT_YV12:
                     lum = swdata->planes[0];
@@ -520,23 +533,62 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                     return -1;
             }
 
-            data->converter_parms->y_plane = lum;
-            data->converter_parms->v_plane = Cr;
-            data->converter_parms->u_plane = Cb;
-            data->converter_parms->src_pixel_width = swdata->w;
-            data->converter_parms->src_pixel_height = swdata->h;
-            data->converter_parms->dstBuffer = (Uint8 *)data->screen->pixels;
+            if (srcrect->w != dstrect->w || srcrect->h != dstrect->h) {
+                /* Alloc mem for scaled YUV picture */
+                scaler_out = (Uint8 *) memalign(16, dstrect->w * dstrect->h + ((dstrect->w * dstrect->h) >> 1));
+                if (scaler_out == NULL) {
+                    SDL_OutOfMemory();
+                    return -1;
+                }
+
+                /* Set parms for scaling */
+                data->scaler_parms->src_pixel_width = srcrect->w;
+                data->scaler_parms->src_pixel_height = srcrect->h;
+                data->scaler_parms->dst_pixel_width = dstrect->w;
+                data->scaler_parms->dst_pixel_height = dstrect->h;
+                data->scaler_parms->y_plane = lum;
+                data->scaler_parms->v_plane = Cr;
+                data->scaler_parms->u_plane = Cb;
+                data->scaler_parms->dstBuffer = scaler_out;
+                data->scaler_thread_data->argp = (void *)data->scaler_parms;
+
+                /* Scale the YUV overlay to given size */
+                SPE_Start(data->scaler_thread_data);
+                SPE_Stop(data->scaler_thread_data);
+
+                /* Set parms for converting after scaling */
+                data->converter_parms->y_plane = scaler_out;
+                data->converter_parms->v_plane = scaler_out + dstrect->w * dstrect->h;
+                data->converter_parms->u_plane = scaler_out + dstrect->w * dstrect->h + ((dstrect->w * dstrect->h) >> 2);
+            } else {
+                data->converter_parms->y_plane = lum;
+                data->converter_parms->v_plane = Cr;
+                data->converter_parms->u_plane = Cb;
+            }
+
+            dstpixels = (Uint8 *) data->screen->pixels + dstrect->y * data->screen->pitch + dstrect->x
+                            * SDL_BYTESPERPIXEL(texture->format);
+            data->converter_parms->src_pixel_width = dstrect->w;
+            data->converter_parms->src_pixel_height = dstrect->h;
+            data->converter_parms->dstBuffer = dstpixels/*(Uint8 *)data->screen->pixels*/;
             data->converter_thread_data->argp = (void *)data->converter_parms;
 
-            /* Convert YUV overlay to RGB */
+            /* Convert YUV texture to RGB */
             SPE_SendMsg(data->converter_thread_data, SPU_START);
             SPE_SendMsg(data->converter_thread_data, (unsigned int)data->converter_thread_data->argp);
 
             SPE_WaitForMsg(data->converter_thread_data, SPU_FIN);
+            if (scaler_out) {
+                free(scaler_out);
+            }
         } else {
             deprintf(1, "Use software for scaling/converting\n");
+            Uint8 *dst;
+            /* FIXME: Not good */
+            dst = (Uint8 *) data->screen->pixels + dstrect->y * data->screen->pitch + dstrect->x
+                            * SDL_BYTESPERPIXEL(texture->format);
             return SDL_SW_CopyYUVToRGB(txdata->yuv, srcrect, display->current_mode.format,
-                                   dstrect->w, dstrect->h, data->screen->pixels,
+                                   dstrect->w, dstrect->h, dst/*data->screen->pixels*/,
                                    data->screen->pitch);
         }
     } else {
@@ -545,18 +597,16 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         Uint8 *src, *dst;
         int row;
         size_t length;
-        int dstpitch;
         Uint8 *dstpixels;
 
         src = (Uint8 *) txdata->pixels;
-        dst = (Uint8 *) data->screen->pixels + dstrect->y * dstpitch + dstrect->x
+        dst = (Uint8 *) data->screen->pixels + dstrect->y * data->screen->pitch + dstrect->x
                         * SDL_BYTESPERPIXEL(texture->format);
         length = dstrect->w * SDL_BYTESPERPIXEL(texture->format);
         for (row = 0; row < dstrect->h; ++row) {
-            //deprintf(1, "Copying texture to screen...\n");
             SDL_memcpy(dst, src, length);
-            src += dstpitch;
-            dst += dstpitch;
+            src += txdata->pitch;
+            dst += data->screen->pitch;
         }
     }
 
@@ -664,6 +714,12 @@ SDL_PS3_DestroyRenderer(SDL_Renderer * renderer)
         }
 
         /* Shutdown SPE and related resources */
+        if (data->scaler_thread_data) {
+            free((void *)data->scaler_thread_data);
+        }
+        if (data->scaler_parms) {
+            free((void *)data->scaler_parms);
+        }
         if (data->converter_thread_data) {
             SPE_Shutdown(data->converter_thread_data);
             free((void *)data->converter_thread_data);
