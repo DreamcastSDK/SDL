@@ -14,7 +14,7 @@ TESTS_ALL := rwops/rwops
 
 all: $(TESTS_ALL)
 
-test:
+test: all
 	@./rwops/rwops
 
 rwops/rwops: rwops/rwops.c $(COMMON_INCLUDE)
