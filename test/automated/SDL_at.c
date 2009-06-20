@@ -71,7 +71,7 @@ int SDL_ATfinish( int verbose )
    if (verbose) {
       if (at_failure > 0) {
          SDL_ATprint( "%s : Failed %d out of %d testcases!\n",
-               at_suite_msg, at_failure, at_success );
+               at_suite_msg, at_failure, at_failure+at_success );
       }
       else {
          SDL_ATprint( "%s : All tests successful (%d)\n",
@@ -94,12 +94,12 @@ void SDL_ATbegin( const char *testcase )
 {
    /* Do not open twice. */
    if (at_test_msg) {
-      SDL_ATprint( "AT testcase '%s' not closed before opening testcase '%s'",
+      SDL_ATprint( "AT testcase '%s' not closed before opening testcase '%s'\n",
             at_test_msg, testcase );
    }
    /* Must have a name. */
    if (testcase == NULL) {
-      SDL_ATprint( "AT testcase does not have a name.");
+      SDL_ATprint( "AT testcase does not have a name.\n");
    }
    at_test_msg = testcase;
 }
@@ -112,7 +112,7 @@ static void SDL_ATendWith( int success )
 {
    /* Make sure initialized. */
    if (at_test_msg == NULL) {
-      SDL_ATprint("Ended testcase without initializing.");
+      SDL_ATprint("Ended testcase without initializing.\n");
       return;
    }
 
@@ -134,7 +134,7 @@ int SDL_ATassert( const char *msg, int condition )
 {
    /* Condition failed. */
    if (!condition) {
-      SDL_ATprint( "%s [%s] : %s", at_suite_msg, at_test_msg, msg );
+      SDL_ATprint( "%s [%s] : %s\n", at_suite_msg, at_test_msg, msg );
       SDL_ATendWith(0);
    }
    return !condition;
