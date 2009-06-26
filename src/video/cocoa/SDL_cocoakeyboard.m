@@ -59,11 +59,18 @@
     NSString *_markedText;
     NSRange   _markedRange;
     NSRange   _selectedRange;
+    SDL_Rect inputRect;
 }
 - (void) doCommandBySelector:(SEL)myselector;
+- (void) setInputRect:(SDL_Rect *) rect;
 @end
 
 @implementation SDLTranslatorResponder
+
+- (void) setInputRect:(SDL_Rect *) rect
+{
+    inputRect = *rect;
+}
 
 - (void) insertText:(id) aString
 {
@@ -135,11 +142,20 @@
 
 - (NSRect) firstRectForCharacterRange: (NSRange) theRange
 {
-    return NSMakeRect(0, 0, 0, 0);
+    float windowHeight = [[self window] frame].size.height;
+    NSRect rect = NSMakeRect(inputRect.x, windowHeight - inputRect.y, inputRect.w, inputRect.h);
+
+    NSLog(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
+            theRange.location, theRange.length, windowHeight,
+            NSStringFromRect(rect));
+    rect.origin = [[self window] convertBaseToScreen: rect.origin];
+
+    return rect;
 }
 
 - (NSAttributedString *) attributedSubstringFromRange: (NSRange) theRange
 {
+    NSLog(@"attributedSubstringFromRange: (%d, %d)", theRange.location, theRange.length);
     return nil;
 }
 
@@ -152,6 +168,7 @@
 // nearest to thePoint.  thPoint is in screen coordinate system.
 - (NSUInteger) characterIndexForPoint:(NSPoint) thePoint
 {
+    NSLog(@"characterIndexForPoint: (%g, %g)", thePoint.x, thePoint.y);
     return 0;
 }
 
@@ -575,6 +592,15 @@ Cocoa_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_LGUI, "Left Command");
     SDL_SetScancodeName(SDL_SCANCODE_RALT, "Right Option");
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
+}
+
+void
+Cocoa_StartTextInput(_THIS, SDL_Rect *rect)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    NSLog(@"StartTextInput: (%d, %d) (w=%d, h=%d)", rect->x, rect->y, rect->w, rect->h);
+    [data->fieldEdit setInputRect: rect];
 }
 
 void

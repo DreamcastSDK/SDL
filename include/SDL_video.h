@@ -1467,6 +1467,12 @@ extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_WindowID windowID);
  */
 extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
+/**
+ * \fn void SDL_StartTextInput(SDL_rect *rect)
+ *
+ * \brief Start Unicode text input within the given rectangle.
+ */
+extern DECLSPEC void SDLCALL SDL_StartTextInput(SDL_Rect *rect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
