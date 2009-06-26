@@ -28,6 +28,8 @@ extern void Cocoa_InitKeyboard(_THIS);
 extern void Cocoa_HandleKeyEvent(_THIS, NSEvent * event);
 extern void Cocoa_QuitKeyboard(_THIS);
 
+extern void Cocoa_StartTextInput(_THIS, SDL_Rect *rect);
+
 #endif /* _SDL_cocoakeyboard_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

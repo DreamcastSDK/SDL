@@ -102,6 +102,8 @@ Cocoa_CreateDevice(int devindex)
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
 #endif
 
+    device->StartTextInput = Cocoa_StartTextInput;
+
     device->free = Cocoa_DeleteDevice;
 
     return device;

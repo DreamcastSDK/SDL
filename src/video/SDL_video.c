@@ -3067,4 +3067,12 @@ SDL_GetWindowWMInfo(SDL_WindowID windowID, struct SDL_SysWMinfo *info)
     return (_this->GetWindowWMInfo(_this, window, info));
 }
 
+void
+SDL_StartTextInput(SDL_Rect *rect)
+{
+    if (_this->StartTextInput) {
+        _this->StartTextInput(_this, rect);
+    }
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
