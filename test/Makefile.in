@@ -147,7 +147,8 @@ testmmousetablet$(EXE): $(srcdir)/testmmousetablet.c
 	$(CC) -o $@ $? $(CFLAGS) $(LIBS)
 
 testime$(EXE): $(srcdir)/testime.c
-	$(CC) -o $@ $? $(CFLAGS) -L../build/.libs $(LIBS) -lSDL_ttf
+	$(CC) -o $@ $? -I../include $(CFLAGS) -L../build/.libs $(LIBS) -lSDL_ttf
+	install_name_tool -change /usr/local/lib/libSDL-1.3.0.dylib ../build/.libs/libSDL-1.3.0.dylib $@
 
 clean:
 	rm -f $(TARGETS)

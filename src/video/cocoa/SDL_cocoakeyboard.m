@@ -130,6 +130,8 @@
     _selectedRange = selRange;
     _markedRange = NSMakeRange(0, [aString length]);
 
+    SDL_SendEditingText([aString UTF8String], selRange.location, selRange.length);
+
     NSLog(@"setMarkedText: %@, (%d, %d)", _markedText,
           selRange.location, selRange.length);
 }
