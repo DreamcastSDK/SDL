@@ -111,6 +111,15 @@ int main(int argc, char *argv[])
             SDL_StartTextInput(&markedRect);
             break;
 
+        case SDL_TEXTEDITING:
+            fprintf(stderr, "text editing \"%s\", selected range (%d, %d)\n",
+                    event.edit.text, event.edit.start, event.edit.length);
+
+            SDL_FillRect(screen, &markedRect, backColor);
+            render_text(screen, font, event.edit.text, markedRect.x, markedRect.y, textColor);
+            SDL_Flip(screen);
+            break;
+
         case SDL_QUIT:
             done = 1;
             break;

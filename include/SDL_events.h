@@ -74,9 +74,10 @@ typedef enum
     SDL_SYSWMEVENT,             /**< System specific event */
     SDL_PROXIMITYIN,            /**< Proximity In event */
     SDL_PROXIMITYOUT,           /**< Proximity Out event */
-    SDL_EVENT_RESERVED1,        /**< Reserved for future use... */
+    SDL_EVENT_RESERVED1,
     SDL_EVENT_RESERVED2,
     SDL_EVENT_RESERVED3,
+    SDL_TEXTEDITING,            /**< Reserved for future use... */
     /* Events SDL_USEREVENT through SDL_MAXEVENTS-1 are for your use */
     SDL_USEREVENT = 24,
     /* This last event is only for bounding internal arrays
@@ -116,7 +117,8 @@ typedef enum
     SDL_QUITMASK = SDL_EVENTMASK(SDL_QUIT),
     SDL_SYSWMEVENTMASK = SDL_EVENTMASK(SDL_SYSWMEVENT),
     SDL_PROXIMITYINMASK = SDL_EVENTMASK(SDL_PROXIMITYIN),
-    SDL_PROXIMITYOUTMASK = SDL_EVENTMASK(SDL_PROXIMITYOUT)
+    SDL_PROXIMITYOUTMASK = SDL_EVENTMASK(SDL_PROXIMITYOUT),
+    SDL_TEXTEDITINGMASK = SDL_EVENTMASK(SDL_TEXTEDITING)
 } SDL_EventMask;
 #define SDL_ALLEVENTS		0xFFFFFFFF
 
@@ -161,6 +163,20 @@ typedef struct SDL_TextInputEvent
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
     SDL_WindowID windowID;                    /**< The window with keyboard focus, if any */
 } SDL_TextInputEvent;
+
+/**
+ * \struct SDL_TextEditingEvent
+ *
+ * \brief Keyboard text editing event structure (event.edit.*)
+ */
+#define SDL_TEXTEDITINGEVENT_TEXT_SIZE (32)
+typedef struct SDL_TextEditingEvent
+{
+    Uint8 type;                                 /**< SDL_TEXTEDITING */
+    char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
+    int start;                                  /**< The start cursor of selected editing text */
+    int length;                                 /**< The length of selected editing text */
+} SDL_TextEditingEvent;
 
 /**
  * \struct SDL_MouseMotionEvent
@@ -358,6 +374,7 @@ typedef union SDL_Event
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */
     SDL_ProximityEvent proximity;   /**< Proximity In or Out event */
+    SDL_TextEditingEvent edit;      /**< Text editing event data */
 
     /* Temporarily here for backwards compatibility */
     SDL_ActiveEvent active;
