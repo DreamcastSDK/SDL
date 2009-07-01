@@ -21,11 +21,11 @@
  *
  * SDL_ATbegin( "My first testcase" );
  * if (!SDL_ATassert( "Trying '1+1=2'.", (1+1)==2))
- *    SDL_ATend();
+ *    return;
  *
  * SDL_ATbegin( "My second testcase" );
  * if (!SDL_ATassert( "Trying '4/2=2'.", (4/2)==2))
- *    SDL_ATend();
+ *    return;
  *
  * f = SDL_ATend();
  * @endcode
