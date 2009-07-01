@@ -63,8 +63,9 @@ int main(int argc, char *argv[])
     }
 
     /* Prepare a rect for text input */
-    SDL_Rect textRect = { 100, 80, 300, 50 }, markedRect;
+    SDL_Rect textRect = { 100, 80, 300, 50 }, markedRect, underlineRect, cursorRect;
     Uint32 backColor = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
+    Uint32 lineColor = SDL_MapRGB(screen->format, 0x0, 0x0, 0x0);
     SDL_Color textColor = { 0, 0, 0 };
     SDL_FillRect(screen, &textRect, backColor);
 
@@ -106,6 +107,11 @@ int main(int argc, char *argv[])
             render_text(screen, font, text, textRect.x, textRect.y, textColor);
             TTF_SizeUTF8(font, text, &w, &h);
             markedRect.x = textRect.x + w;
+
+            cursorRect = markedRect;
+            cursorRect.w = 2;
+            cursorRect.h = h;
+            SDL_FillRect(screen, &cursorRect, lineColor);
             SDL_Flip(screen);
 
             SDL_StartTextInput(&markedRect);
@@ -117,6 +123,13 @@ int main(int argc, char *argv[])
 
             SDL_FillRect(screen, &markedRect, backColor);
             render_text(screen, font, event.edit.text, markedRect.x, markedRect.y, textColor);
+            TTF_SizeUTF8(font, event.edit.text, &w, &h);
+            underlineRect = markedRect;
+            underlineRect.y += (h - 2);
+            underlineRect.h = 2;
+            underlineRect.w = w;
+            SDL_FillRect(screen, &underlineRect, lineColor);
+
             SDL_Flip(screen);
             break;
 
