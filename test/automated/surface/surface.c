@@ -325,22 +325,12 @@ static void surface_testBlit (void)
 
    SDL_ATbegin( "Blit Test" );
 
-   /* Create the blit surface. */
-   face = SDL_LoadBMP("../icon.bmp");
-   if (SDL_ATassert( "SDL_CreateLoadBmp", face != NULL))
-      return;
-
-   /* Set transparent pixel as the pixel at (0,0) */
-   if (face->format->palette)
-      SDL_SetColorKey(face, (SDL_SRCCOLORKEY | SDL_RLEACCEL),
-            *(Uint8 *) face->pixels);
-   /*
+   /* Create face surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
          img_face.width, img_face.height, 32, img_face.width*4,
          RMASK, GMASK, BMASK, AMASK );
    if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
       return;
-   */
 
    /* Create the test surface. */
    testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
