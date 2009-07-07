@@ -1,11 +1,11 @@
 
 
-#CFLAGS  := -I. `sdl-config --cflags`
-#LDFLAGS := `sdl-config --libs`
+CFLAGS  := -I. `sdl-config --cflags`
+LDFLAGS := `sdl-config --libs`
 
 # If it doesn't pick up defaults
-CFLAGS  := -I. -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/local/include/SDL
-LDFLAGS := -lm -ldl -lesd -lpthread
+#CFLAGS  := -I. -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/local/include/SDL
+#LDFLAGS := -lm -ldl -lesd -lpthread
 
 COMMON_SRC     := SDL_at.c /usr/local/lib/libSDL.a
 COMMON_INCLUDE := SDL_at.h
