@@ -546,8 +546,8 @@ static void surface_testBlitBlend (void)
       return;
 
    /* Loop blit. */
-   for (j=0; j <= testsur->h - face->h; j+=4) {
-      for (i=0; i <= testsur->w - face->w; i+=4) {
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
 
          /* Set colour mod. */
          ret = SDL_SetSurfaceColorMod( face, (255/nj)*j, (255/ni)*i, (255/nj)*j );
@@ -555,17 +555,16 @@ static void surface_testBlitBlend (void)
             return;
 
          /* Set alpha mod. */
-         ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
+         ret = SDL_SetSurfaceAlphaMod( face, (100/ni)*i );
          if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
             return;
 
          /* Crazy blending mode magic. */
-         mode = (i*j)%5;
-         if      (mode==0) mode = SDL_BLENDMODE_NONE;
-         else if (mode==1) mode = SDL_BLENDMODE_MASK;
-         else if (mode==2) mode = SDL_BLENDMODE_BLEND;
-         else if (mode==3) mode = SDL_BLENDMODE_ADD;
-         else if (mode==4) mode = SDL_BLENDMODE_MOD;
+         mode = (i/4*j/4) % 4;
+         if (mode==0) mode = SDL_BLENDMODE_MASK;
+         else if (mode==1) mode = SDL_BLENDMODE_BLEND;
+         else if (mode==2) mode = SDL_BLENDMODE_ADD;
+         else if (mode==3) mode = SDL_BLENDMODE_MOD;
          ret = SDL_SetSurfaceBlendMode( face, mode );
          if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
             return;
@@ -579,7 +578,10 @@ static void surface_testBlitBlend (void)
       }
    }
 
-   SDL_SaveBMP( testsur, "blit.bmp" );
+   /* Check to see if matches. */
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLEND_*).",
+            surface_compare( testsur, &img_blendAll )==0 ))
+      return;
 
    /* Clean up. */
    SDL_FreeSurface( face );
