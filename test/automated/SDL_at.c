@@ -63,7 +63,7 @@ int SDL_ATfinish( int verbose )
    /* Make sure initialized. */
    if (at_suite_msg == NULL) {
       SDL_ATprint("Ended testcase without initializing.\n");
-      return;
+      return 1;
    }
 
    /* Display message if verbose on failed. */
@@ -160,7 +160,7 @@ int SDL_ATprint( const char *msg, ... )
 
    /* Make sure there is something to print. */
    if (msg == NULL)
-      return;
+      return 0;
    else {
       va_start(ap, msg);
       ret = vprintf(msg, ap);

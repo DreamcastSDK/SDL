@@ -25,8 +25,8 @@
 
 
 typedef struct SurfaceImage_s {
-   unsigned int  width;
-   unsigned int  height;
+   int width;
+   int height;
    unsigned int  bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
    const unsigned char pixel_data[];
 } SurfaceImage_t;
@@ -53,7 +53,6 @@ static int surface_compare( SDL_Surface *sur, const SurfaceImage_t *img )
 {
    int ret;
    int i,j;
-   Uint32 pix;
    int bpp;
    Uint8 *p, *pd;
 
@@ -268,7 +267,7 @@ static void surface_testPrimitivesBlend (void)
       ret = SDL_BlendLine( testsur, 0, 0, i, 59,
             (((i/2)%3)==0) ? SDL_BLENDMODE_BLEND :
                (((i/2)%3)==1) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_MOD,
-            60+2*j, 240-2*j, 50, 3*j );
+            60+2*i, 240-2*i, 50, 3*i );
       if (SDL_ATassert( "SDL_BlendLine", ret == 0))
          return;
    }
@@ -276,7 +275,7 @@ static void surface_testPrimitivesBlend (void)
       ret = SDL_BlendLine( testsur, 0, 0, 79, i,
             (((i/2)%3)==0) ? SDL_BLENDMODE_BLEND :
                (((i/2)%3)==1) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_MOD,
-            60+2*j, 240-2*j, 50, 3*j );
+            60+2*i, 240-2*i, 50, 3*i );
       if (SDL_ATassert( "SDL_BlendLine", ret == 0))
          return;
    }
@@ -314,7 +313,6 @@ static void surface_testBlit (void)
    SDL_Rect rect;
    SDL_Surface *face, *testsur;
    int i, j, ni, nj;
-   int mode;
 
    SDL_ATbegin( "Blit Tests" );
 
@@ -498,6 +496,14 @@ static void surface_testBlitBlend (void)
    if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
       return;
 
+   /* Steps to take. */
+   ni     = testsur->w - face->w;
+   nj     = testsur->h - face->h;
+
+   /* Constant values. */
+   rect.w = face->w;
+   rect.h = face->h;
+
    /* Test None. */
    if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_NONE ))
       return;
@@ -588,6 +594,9 @@ static void surface_testBlitBlend (void)
  */
 int main( int argc, const char *argv[] )
 {
+   (void) argc;
+   (void) argv;
+
    SDL_ATinit( "SDL_Surface" );
 
    /* Initializes the SDL subsystems. */
