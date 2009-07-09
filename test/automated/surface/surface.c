@@ -72,18 +72,10 @@ static int surface_compare( SDL_Surface *sur, const SurfaceImage_t *img )
          pd = (Uint8 *)img->pixel_data + (j*img->width + i) * img->bytes_per_pixel;
          switch (bpp) {
             case 1:
-               /* Paletted not supported atm. */
-               ret += 1;
-               break;
-
             case 2:
-               /* 16 BPP not supported atm. */
-               ret += 1;
-               break;
-
             case 3:
-               /* 24 BPP not supported atm. */
                ret += 1;
+               printf("%d BPP not supported yet.\n",bpp);
                break;
 
             case 4:
@@ -94,7 +86,7 @@ static int surface_compare( SDL_Surface *sur, const SurfaceImage_t *img )
          }
       }
    }
-  
+
    SDL_UnlockSurface( sur );
 
    return ret;
@@ -229,14 +221,14 @@ static void surface_testPrimitives (void)
 /**
  * @brief Tests the SDL primitives with alpha for rendering.
  */
-static void surface_testPrimitivesAlpha (void)
+static void surface_testPrimitivesBlend (void)
 {
    int ret;
    int i, j;
    SDL_Rect rect;
    SDL_Surface *testsur;
 
-   SDL_ATbegin( "Primitives Alpha Test" );
+   SDL_ATbegin( "Primitives Blend Test" );
 
    /* Create the surface. */
    testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
@@ -323,7 +315,7 @@ static void surface_testBlit (void)
    int i, j, ni, nj;
    int mode;
 
-   SDL_ATbegin( "Blit Test" );
+   SDL_ATbegin( "Blit Tests" );
 
    /* Create face surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
@@ -338,17 +330,15 @@ static void surface_testBlit (void)
    if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
       return;
 
-   /* Steps to take. */
-   ni = 40;
-   nj = 30;
-
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
+   ni     = testsur->w - face->w;
+   nj     = testsur->h - face->h;
 
    /* Loop blit. */
-   for (j=0; j <= testsur->h - face->h; j+=4) {
-      for (i=0; i <= testsur->w - face->w; i+=4) {
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
          /* Blitting. */
          rect.x = i;
          rect.y = j;
@@ -359,8 +349,69 @@ static void surface_testBlit (void)
    }
 
    /* See if it's the same. */
-   if (SDL_ATassert( "Blitting output not the same.",
+   if (SDL_ATassert( "Blitting output not the same (normal blit).",
             surface_compare( testsur, &img_blit )==0 ))
+      return;
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
+
+   /* Test blitting with colour mod. */
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
+         /* Set colour mod. */
+         ret = SDL_SetSurfaceColorMod( face, (255/nj)*j, (255/ni)*i, (255/nj)*j );
+         if (SDL_ATassert( "SDL_SetSurfaceColorMod", ret == 0))
+            return;
+
+         /* Blitting. */
+         rect.x = i;
+         rect.y = j;
+         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
+         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+            return;
+      }
+   }
+
+   /* See if it's the same. */
+   if (SDL_ATassert( "Blitting output not the same (using SDL_SetSurfaceColorMod).",
+            surface_compare( testsur, &img_blitColour )==0 ))
+      return;
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
+
+   /* Restore colour. */
+   ret = SDL_SetSurfaceColorMod( face, 255, 255, 255 );
+   if (SDL_ATassert( "SDL_SetSurfaceColorMod", ret == 0))
+      return;
+
+   /* Test blitting with colour mod. */
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
+         /* Set alpha mod. */
+         ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
+         if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
+            return;
+
+         /* Blitting. */
+         rect.x = i;
+         rect.y = j;
+         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
+         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+            return;
+      }
+   }
+
+   /* See if it's the same. */
+   if (SDL_ATassert( "Blitting output not the same (using SDL_SetSurfaceAlphaMod).",
+            surface_compare( testsur, &img_blitAlpha )==0 ))
       return;
 
    /* Clean up. */
@@ -374,7 +425,7 @@ static void surface_testBlit (void)
 /**
  * @brief Tests some more blitting routines.
  */
-static void surface_testBlitAlpha (void)
+static void surface_testBlitBlend (void)
 {
    int ret;
    SDL_Rect rect;
@@ -382,7 +433,7 @@ static void surface_testBlitAlpha (void)
    int i, j, ni, nj;
    int mode;
 
-   SDL_ATbegin( "Blit Alpha Test" );
+   SDL_ATbegin( "Blit Blending Tests" );
 
    /* Create the blit surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
@@ -404,6 +455,25 @@ static void surface_testBlitAlpha (void)
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
+
+   /* Test blitting with colour mod. */
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
+         /* Set alpha mod. */
+         ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
+         if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
+            return;
+
+         /* Blitting. */
+         rect.x = i;
+         rect.y = j;
+         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
+         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+            return;
+      }
+   }
+
+   SDL_SaveBMP( testsur, "testsur.bmp" );
 
    /* Loop blit. */
    for (j=0; j <= testsur->h - face->h; j+=4) {
@@ -461,9 +531,9 @@ int main( int argc, const char *argv[] )
 
    surface_testLoad();
    surface_testPrimitives();
-   surface_testPrimitivesAlpha();
+   surface_testPrimitivesBlend();
    surface_testBlit();
-   /*surface_testBlitAlpha();*/
+   /*surface_testBlitBlend();*/
 
    /* Exit SDL. */
    SDL_Quit();
