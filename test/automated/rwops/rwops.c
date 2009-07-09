@@ -155,7 +155,6 @@ static void rwops_testFP (void)
 #ifdef HAVE_STDIO_H
    FILE *fp;
    SDL_RWops *rw;
-   int i;
 
    /* Begin testcase. */
    SDL_ATbegin( "SDL_RWFromFP" );
@@ -189,6 +188,9 @@ static void rwops_testFP (void)
  */
 int main( int argc, const char *argv[] )
 {
+   (void) argc;
+   (void) argv;
+
    SDL_ATinit( "SDL_RWops" );
 
    rwops_testMem();
