@@ -39,6 +39,7 @@ typedef struct SurfaceImage_s {
 #include "blend.c"
 #include "face.c"
 #include "blit.c"
+#include "blitblend.c"
 
 
 /**
@@ -423,6 +424,50 @@ static void surface_testBlit (void)
 
 
 /**
+ * @brief Tests a blend mode.
+ */
+static int surface_testBlitBlendMode( SDL_Surface *testsur, SDL_Surface *face, int mode )
+{
+   int ret;
+   int i, j, ni, nj;
+   SDL_Rect rect;
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return 1;
+
+   /* Steps to take. */
+   ni     = testsur->w - face->w;
+   nj     = testsur->h - face->h;
+
+   /* Constant values. */
+   rect.w = face->w;
+   rect.h = face->h;
+
+   /* Test blend mode. */
+   for (j=0; j <= nj; j+=4) {
+      for (i=0; i <= ni; i+=4) {
+         /* Set blend mode. */
+         ret = SDL_SetSurfaceBlendMode( face, mode );
+         if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+            return 1;
+
+         /* Blitting. */
+         rect.x = i;
+         rect.y = j;
+         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
+         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+            return 1;
+      }
+   }
+
+   return 0;
+}
+
+
+/**
  * @brief Tests some more blitting routines.
  */
 static void surface_testBlitBlend (void)
@@ -448,32 +493,51 @@ static void surface_testBlitBlend (void)
    if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
       return;
 
-   /* Steps to take. */
-   ni = 40;
-   nj = 30;
+   /* Set alpha mod. */
+   ret = SDL_SetSurfaceAlphaMod( face, 100 );
+   if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
+      return;
 
-   /* Constant values. */
-   rect.w = face->w;
-   rect.h = face->h;
+   /* Test None. */
+   if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_NONE ))
+      return;
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLENDMODE_NONE).",
+            surface_compare( testsur, &img_blendNone )==0 ))
+      return;
 
-   /* Test blitting with colour mod. */
-   for (j=0; j <= nj; j+=4) {
-      for (i=0; i <= ni; i+=4) {
-         /* Set alpha mod. */
-         ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
-         if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
-            return;
+   /* Test Mask. */
+   if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_MASK ))
+      return;
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLENDMODE_MASK).",
+            surface_compare( testsur, &img_blendMask )==0 ))
+      return;
 
-         /* Blitting. */
-         rect.x = i;
-         rect.y = j;
-         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
-         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
-            return;
-      }
-   }
+   /* Test Blend. */
+   if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_BLEND ))
+      return;
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLENDMODE_BLEND).",
+            surface_compare( testsur, &img_blendBlend )==0 ))
+      return;
 
-   SDL_SaveBMP( testsur, "testsur.bmp" );
+   /* Test Add. */
+   if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_ADD ))
+      return;
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLENDMODE_ADD).",
+            surface_compare( testsur, &img_blendAdd )==0 ))
+      return;
+
+   /* Test Mod. */
+   if (surface_testBlitBlendMode( testsur, face, SDL_BLENDMODE_MOD ))
+      return;
+   if (SDL_ATassert( "Blitting blending output not the same (using SDL_BLENDMODE_MOD).",
+            surface_compare( testsur, &img_blendMod )==0 ))
+      return;
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
 
    /* Loop blit. */
    for (j=0; j <= testsur->h - face->h; j+=4) {
@@ -533,7 +597,7 @@ int main( int argc, const char *argv[] )
    surface_testPrimitives();
    surface_testPrimitivesBlend();
    surface_testBlit();
-   /*surface_testBlitBlend();*/
+   surface_testBlitBlend();
 
    /* Exit SDL. */
    SDL_Quit();
