@@ -96,12 +96,18 @@ static int surface_compare( SDL_Surface *sur, const SurfaceImage_t *img )
 /**
  * @brief Tests sprite loading.
  */
-static void surface_testLoad (void)
+static void surface_testLoad( SDL_Surface *testsur )
 {
    int ret;
-   SDL_Surface *face, *rface, *testsur;
+   SDL_Surface *face, *rface;
 
    SDL_ATbegin( "Load Test" );
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
 
    /* Create the blit surface. */
    face = SDL_LoadBMP("../icon.bmp");
@@ -116,12 +122,6 @@ static void surface_testLoad (void)
          return;
    }
 
-   /* Create the test surface. */
-   testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
-         RMASK, GMASK, BMASK, AMASK );
-   if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
-      return;
-
    /* Convert to 32 bit to compare. */
    rface = SDL_ConvertSurface( face, testsur->format, 0 );
    if (SDL_ATassert( "SDL_ConvertSurface", rface != NULL))
@@ -133,7 +133,6 @@ static void surface_testLoad (void)
       return;
 
    /* Clean up. */
-   SDL_FreeSurface( testsur );
    SDL_FreeSurface( rface );
    SDL_FreeSurface( face );
 
@@ -144,14 +143,19 @@ static void surface_testLoad (void)
 /**
  * @brief Tests the SDL primitives for rendering.
  */
-static void surface_testPrimitives (void)
+static void surface_testPrimitives( SDL_Surface *testsur )
 {
    int ret;
    int x, y;
    SDL_Rect rect;
-   SDL_Surface *testsur;
 
    SDL_ATbegin( "Primitives Test" );
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
 
    /* Create the surface. */
    testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
@@ -211,9 +215,6 @@ static void surface_testPrimitives (void)
             surface_compare( testsur, &img_primitives )==0 ))
       return;
 
-   /* Clean up. */
-   SDL_FreeSurface( testsur );
-
    SDL_ATend();
 }
 
@@ -221,19 +222,18 @@ static void surface_testPrimitives (void)
 /**
  * @brief Tests the SDL primitives with alpha for rendering.
  */
-static void surface_testPrimitivesBlend (void)
+static void surface_testPrimitivesBlend( SDL_Surface *testsur )
 {
    int ret;
    int i, j;
    SDL_Rect rect;
-   SDL_Surface *testsur;
 
    SDL_ATbegin( "Primitives Blend Test" );
 
-   /* Create the surface. */
-   testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
-         RMASK, GMASK, BMASK, AMASK );
-   if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
       return;
 
    /* Create some rectangles for each blend mode. */
@@ -297,9 +297,6 @@ static void surface_testPrimitivesBlend (void)
             surface_compare( testsur, &img_blend )==0 ))
       return;
 
-   /* Clean up. */
-   SDL_FreeSurface( testsur );
-
    SDL_ATend();
 }
 
@@ -307,26 +304,26 @@ static void surface_testPrimitivesBlend (void)
 /**
  * @brief Tests some blitting routines.
  */
-static void surface_testBlit (void)
+static void surface_testBlit( SDL_Surface *testsur )
 {
    int ret;
    SDL_Rect rect;
-   SDL_Surface *face, *testsur;
+   SDL_Surface *face;
    int i, j, ni, nj;
 
    SDL_ATbegin( "Blit Tests" );
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
 
    /* Create face surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
          img_face.width, img_face.height, 32, img_face.width*4,
          RMASK, GMASK, BMASK, AMASK );
    if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
-      return;
-
-   /* Create the test surface. */
-   testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
-         RMASK, GMASK, BMASK, AMASK );
-   if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
       return;
 
    /* Constant values. */
@@ -415,7 +412,6 @@ static void surface_testBlit (void)
 
    /* Clean up. */
    SDL_FreeSurface( face );
-   SDL_FreeSurface( testsur );
 
    SDL_ATend();
 }
@@ -468,27 +464,27 @@ static int surface_testBlitBlendMode( SDL_Surface *testsur, SDL_Surface *face, i
 /**
  * @brief Tests some more blitting routines.
  */
-static void surface_testBlitBlend (void)
+static void surface_testBlitBlend( SDL_Surface *testsur )
 {
    int ret;
    SDL_Rect rect;
-   SDL_Surface *face, *testsur;
+   SDL_Surface *face;
    int i, j, ni, nj;
    int mode;
 
    SDL_ATbegin( "Blit Blending Tests" );
+
+   /* Clear surface. */
+   ret = SDL_FillRect( testsur, NULL,
+         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
+   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+      return;
 
    /* Create the blit surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
          img_face.width, img_face.height, 32, img_face.width*4,
          RMASK, GMASK, BMASK, AMASK );
    if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
-      return;
-
-   /* Create the test surface. */
-   testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
-         RMASK, GMASK, BMASK, AMASK );
-   if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
       return;
 
    /* Set alpha mod. */
@@ -585,7 +581,6 @@ static void surface_testBlitBlend (void)
 
    /* Clean up. */
    SDL_FreeSurface( face );
-   SDL_FreeSurface( testsur );
 
    SDL_ATend();
 }
@@ -598,17 +593,30 @@ int main( int argc, const char *argv[] )
 {
    (void) argc;
    (void) argv;
+   SDL_Surface *testsur;
 
    SDL_ATinit( "SDL_Surface" );
 
    /* Initializes the SDL subsystems. */
    SDL_Init(0);
 
-   surface_testLoad();
-   surface_testPrimitives();
-   surface_testPrimitivesBlend();
-   surface_testBlit();
-   surface_testBlitBlend();
+   SDL_ATbegin( "Creating Testsurface" );
+   /* Create the test surface. */
+   testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
+         RMASK, GMASK, BMASK, AMASK );
+   if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
+      return -1;
+   SDL_ATend();
+
+   /* Software blitting. */
+   surface_testLoad( testsur );
+   surface_testPrimitives( testsur );
+   surface_testPrimitivesBlend( testsur );
+   surface_testBlit( testsur );
+   surface_testBlitBlend( testsur );
+
+   /* Clean up. */
+   SDL_FreeSurface( testsur );
 
    /* Exit SDL. */
    SDL_Quit();
