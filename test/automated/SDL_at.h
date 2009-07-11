@@ -20,11 +20,11 @@
  * SDL_ATinit( "My testsuite" );
  *
  * SDL_ATbegin( "My first testcase" );
- * if (!SDL_ATassert( "Trying '1+1=2'.", (1+1)==2))
+ * if (!SDL_ATassert( (1+1)==2, "Trying '1+1=2'."))
  *    return;
  *
  * SDL_ATbegin( "My second testcase" );
- * if (!SDL_ATassert( "Trying '4/2=2'.", (4/2)==2))
+ * if (!SDL_ATassert( (4/2)==2, "Trying '4/2=2'."))
  *    return;
  *
  * f = SDL_ATend();
@@ -69,11 +69,21 @@ void SDL_ATbegin( const char *testcase );
  *
  * Will automatically call SDL_ATend if the condition isn't met.
  *
- *    @param msg Message to display for failure.
  *    @param condition Condition to make sure is true.
+ *    @param msg Message to display for failure.
  *    @return Returns 1 if the condition isn't met.
  */
 int SDL_ATassert( const char *msg, int condition );
+/**
+ * @brief Checks a condition in the testcase.
+ *
+ * Will automatically call SDL_ATend if the condition isn't met.
+ *
+ *    @param condition Condition to make sure is true.
+ *    @param msg Message to display for failure with printf style formatting.
+ *    @return Returns 1 if the condition isn't met.
+ */
+int SDL_ATvassert( int condition, const char *msg, ... );
 /**
  * @brief Ends a testcase.
  */
