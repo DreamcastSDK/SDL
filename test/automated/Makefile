@@ -1,13 +1,13 @@
 
 
-CFLAGS  := -W -Wall -Wextra -I. `sdl-config --cflags`
+CFLAGS  := -W -Wall -Wextra -g -I. `sdl-config --cflags`
 LDFLAGS := `sdl-config --libs`
 
 # If it doesn't pick up defaults
 #CFLAGS  := -I. -D_GNU_SOURCE=1 -D_REENTRANT -I/usr/local/include/SDL
 #LDFLAGS := -lm -ldl -lesd -lpthread
 
-COMMON_SRC     := SDL_at.c /usr/local/lib/libSDL.a
+COMMON_SRC     := SDL_at.c common/common.c
 COMMON_INCLUDE := SDL_at.h
 
 TESTS_ALL := rwops/rwops surface/surface

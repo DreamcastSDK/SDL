@@ -8,89 +8,29 @@
 
 
 #include "SDL.h"
+#include "SDL_surface.h"
+#include "SDL_video.h"
 #include "SDL_at.h"
 
-
-#if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-#  define RMASK   0xff000000 /**< Red bit mask. */
-#  define GMASK   0x00ff0000 /**< Green bit mask. */
-#  define BMASK   0x0000ff00 /**< Blue bit mask. */
-#  define AMASK   0x000000ff /**< Alpha bit mask. */
-#else
-#  define RMASK   0x000000ff /**< Red bit mask. */
-#  define GMASK   0x0000ff00 /**< Green bit mask. */
-#  define BMASK   0x00ff0000 /**< Blue bit mask. */
-#  define AMASK   0xff000000 /**< Alpha bit mask. */
-#endif
-
-
-typedef struct SurfaceImage_s {
-   int width;
-   int height;
-   unsigned int  bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
-   const unsigned char pixel_data[];
-} SurfaceImage_t;
+#include "common/common.h"
 
 
 /*
  * Pull in images for testcases.
  */
-#include "primitives.c"
-#include "blend.c"
-#include "face.c"
-#include "blit.c"
-#include "blitblend.c"
+#include "common/images.h"
 
 
-/**
- * @brief Compares a surface and a surface image for equality.
- *
- *    @param sur Surface to compare.
- *    @param img Image to compare against.
- *    @return 0 if they are the same, -1 on error and positive if different.
+/*
+ * Prototypes.
  */
-static int surface_compare( SDL_Surface *sur, const SurfaceImage_t *img )
-{
-   int ret;
-   int i,j;
-   int bpp;
-   Uint8 *p, *pd;
-
-   /* Make sure size is the same. */
-   if ((sur->w != img->width) || (sur->h != img->height))
-      return -1;
-
-   SDL_LockSurface( sur );
-
-   ret = 0;
-   bpp = sur->format->BytesPerPixel;
-
-   /* Compare image - should be same format. */
-   for (j=0; j<sur->h; j++) {
-      for (i=0; i<sur->w; i++) {
-         p  = (Uint8 *)sur->pixels + j * sur->pitch + i * bpp;
-         pd = (Uint8 *)img->pixel_data + (j*img->width + i) * img->bytes_per_pixel;
-         switch (bpp) {
-            case 1:
-            case 2:
-            case 3:
-               ret += 1;
-               printf("%d BPP not supported yet.\n",bpp);
-               break;
-
-            case 4:
-               ret += !( (p[0] == pd[0]) &&
-                         (p[1] == pd[1]) &&
-                         (p[2] == pd[2]) );
-               break;
-         }
-      }
-   }
-
-   SDL_UnlockSurface( sur );
-
-   return ret;
-}
+/* Testcases. */
+static void surface_testLoad( SDL_Surface *testsur );
+static void surface_testPrimitives( SDL_Surface *testsur );
+static void surface_testPrimitivesBlend( SDL_Surface *testsur );
+static void surface_testBlit( SDL_Surface *testsur );
+static int surface_testBlitBlendMode( SDL_Surface *testsur, SDL_Surface *face, int mode );
+static void surface_testBlitBlend( SDL_Surface *testsur );
 
 
 /**
@@ -587,34 +527,55 @@ static void surface_testBlitBlend( SDL_Surface *testsur )
 
 
 /**
+ * @brief Runs all the tests on the surface.
+ *
+ *    @param testsur Surface to run tests on.
+ */
+void surface_runTests( SDL_Surface *testsur )
+{
+   /* Software surface blitting. */
+   surface_testPrimitives( testsur );
+   surface_testPrimitivesBlend( testsur );
+   surface_testBlit( testsur );
+   surface_testBlitBlend( testsur );
+}
+
+
+/**
  * @brief Entry point.
  */
 int main( int argc, const char *argv[] )
 {
    (void) argc;
    (void) argv;
+   int ret;
    SDL_Surface *testsur;
 
    SDL_ATinit( "SDL_Surface" );
 
+   SDL_ATbegin( "Initializing" );
    /* Initializes the SDL subsystems. */
-   SDL_Init(0);
+   ret = SDL_Init(0);
+   if (SDL_ATassert( "SDL_Init(0)", ret == 0))
+      goto err;
 
-   SDL_ATbegin( "Creating Testsurface" );
+   /* Now run on the video mode. */
+   ret = SDL_InitSubSystem( SDL_INIT_VIDEO );
+   if (SDL_ATassert( "SDL_InitSubSystem( SDL_INIT_VIDEO )", ret == 0))
+      goto err;
+
+   /*
+    * Surface on surface tests.
+    */
    /* Create the test surface. */
    testsur = SDL_CreateRGBSurface( 0, 80, 60, 32, 
          RMASK, GMASK, BMASK, AMASK );
    if (SDL_ATassert( "SDL_CreateRGBSurface", testsur != NULL))
-      return -1;
+      goto err;
    SDL_ATend();
-
-   /* Software blitting. */
+   /* Run surface on surface tests. */
    surface_testLoad( testsur );
-   surface_testPrimitives( testsur );
-   surface_testPrimitivesBlend( testsur );
-   surface_testBlit( testsur );
-   surface_testBlitBlend( testsur );
-
+   surface_runTests( testsur );
    /* Clean up. */
    SDL_FreeSurface( testsur );
 
@@ -622,4 +583,8 @@ int main( int argc, const char *argv[] )
    SDL_Quit();
 
    return SDL_ATfinish(1);
+
+err:
+   return SDL_ATfinish(1);
 }
+
