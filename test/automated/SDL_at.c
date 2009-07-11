@@ -66,6 +66,12 @@ int SDL_ATfinish( int verbose )
       return 1;
    }
 
+   /* Finished without closing testcase. */
+   if (at_test_msg) {
+      SDL_ATprint( "AT suite '%s' finished without closing testcase '%s'\n",
+            ac_suite_msg, ac_test_msg );
+   }
+
    /* Display message if verbose on failed. */
    failed = at_failure;
    if (verbose) {
@@ -134,7 +140,32 @@ int SDL_ATassert( const char *msg, int condition )
 {
    /* Condition failed. */
    if (!condition) {
+      /* Print. */
       SDL_ATprint( "%s [%s] : %s\n", at_suite_msg, at_test_msg, msg );
+      /* End. */
+      SDL_ATendWith(0);
+   }
+   return !condition;
+}
+
+
+/**
+ * @brief Testcase test.
+ */
+int SDL_ATvassert( int condition, const char *msg, ... )
+{
+   va_list args;
+   char buf[256];
+
+   /* Condition failed. */
+   if (!condition) {
+      /* Get message. */
+      va_start( args, msg );
+      vsnprintf( buf, sizeof(buf), msg, args );
+      va_end( args );
+      /* Print. */
+      SDL_ATprint( "%s [%s] : %s\n", at_suite_msg, at_test_msg, buf );
+      /* End. */
       SDL_ATendWith(0);
    }
    return !condition;
