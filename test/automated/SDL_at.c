@@ -69,7 +69,7 @@ int SDL_ATfinish( int verbose )
    /* Finished without closing testcase. */
    if (at_test_msg) {
       SDL_ATprint( "AT suite '%s' finished without closing testcase '%s'\n",
-            ac_suite_msg, ac_test_msg );
+            at_suite_msg, at_test_msg );
    }
 
    /* Display message if verbose on failed. */
