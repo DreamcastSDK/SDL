@@ -129,11 +129,12 @@ static void surface_testPrimitives( SDL_Surface *testsur )
     * X.X.X.X.. */
    for (y=0; y<3; y++) {
       x = y % 2;
-      for (; x<80; x+=2)
+      for (; x<80; x+=2) {
          ret = SDL_DrawPoint( testsur, x, y,
                SDL_MapRGB( testsur->format, x*y, x*y/2, x*y/3 ) );
-      if (SDL_ATassert( "SDL_DrawPoint", ret == 0))
-         return;
+         if (SDL_ATassert( "SDL_DrawPoint", ret == 0))
+            return;
+      }
    }
 
    /* Draw some lines. */
