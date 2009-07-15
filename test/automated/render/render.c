@@ -94,6 +94,14 @@ static int render_clearScreen (void)
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
       return -1;
 
+   /* Set defaults. */
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
+   if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
+      return -1;
+   ret = SDL_SetRenderDrawColor( 255, 255, 255, SDL_ALPHA_OPAQUE );
+   if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
+      return -1;
+
    return 0;
 }
 
@@ -190,12 +198,21 @@ static void render_testPrimitivesBlend (void)
    if (render_clearScreen())
       return;
 
+   /* See if we can actually run the test. */
+   ret  = 0;
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
+   if (ret != 0)
+      return;
+
    /* Create some rectangles for each blend mode. */
    ret = SDL_SetRenderDrawColor( 255, 255, 255, 0 );
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return;
    ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
-   if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+   if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
       return;
    ret = SDL_RenderFill( NULL );
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
@@ -208,7 +225,7 @@ static void render_testPrimitivesBlend (void)
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return;
    ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
-   if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+   if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
       return;
    ret = SDL_RenderFill( &rect );
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
@@ -221,7 +238,7 @@ static void render_testPrimitivesBlend (void)
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return;
    ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
-   if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+   if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
       return;
    ret = SDL_RenderFill( &rect );
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
@@ -234,7 +251,7 @@ static void render_testPrimitivesBlend (void)
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return;
    ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
-   if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+   if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
       return;
    ret = SDL_RenderFill( &rect );
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
@@ -247,7 +264,7 @@ static void render_testPrimitivesBlend (void)
          return;
       ret = SDL_SetRenderDrawBlendMode((((i/2)%3)==0) ? SDL_BLENDMODE_BLEND :
             (((i/2)%3)==1) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_MOD );
-      if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+      if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
          return;
       ret = SDL_RenderLine( 0, 0, i, 59 );
       if (SDL_ATassert( "SDL_RenderLine", ret == 0))
@@ -259,7 +276,7 @@ static void render_testPrimitivesBlend (void)
          return;
       ret = SDL_SetRenderDrawBlendMode((((i/2)%3)==0) ? SDL_BLENDMODE_BLEND :
             (((i/2)%3)==1) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_MOD );
-      if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+      if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
          return;
       ret = SDL_RenderLine( 0, 0, 79, i );
       if (SDL_ATassert( "SDL_RenderLine", ret == 0))
@@ -274,7 +291,7 @@ static void render_testPrimitivesBlend (void)
             return;
          ret = SDL_SetRenderDrawBlendMode( ((((i+j)/3)%3)==0) ? SDL_BLENDMODE_BLEND :
                ((((i+j)/3)%3)==1) ? SDL_BLENDMODE_ADD : SDL_BLENDMODE_MOD );
-         if (SDL_ATassert( "SDL_SetSurfaceBlendMode", ret == 0))
+         if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
             return;
          ret = SDL_RenderPoint( i, j );
          if (SDL_ATassert( "SDL_RenderPoint", ret == 0))
@@ -286,7 +303,6 @@ static void render_testPrimitivesBlend (void)
    if (render_compare( "Blended primitives output not the same.", &img_primitives ))
       return;
 }
-#if 0
 
 
 /**
@@ -297,14 +313,11 @@ static void render_testBlit (void)
    int ret;
    SDL_Rect rect;
    SDL_Surface *face;
+   SDL_TextureID tface;
    int i, j, ni, nj;
 
-   SDL_ATbegin( "Blit Tests" );
-
    /* Clear surface. */
-   ret = SDL_FillRect( testsur, NULL,
-         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
-   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+   if (render_clearScreen())
       return;
 
    /* Create face surface. */
@@ -313,12 +326,18 @@ static void render_testBlit (void)
          RMASK, GMASK, BMASK, AMASK );
    if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
       return;
+   tface = SDL_CreateTextureFromSurface( 0, face );
+   if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
+      return;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
 
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
-   ni     = testsur->w - face->w;
-   nj     = testsur->h - face->h;
+   ni     = SCREEN_W - face->w;
+   nj     = SCREEN_H - face->h;
 
    /* Loop blit. */
    for (j=0; j <= nj; j+=4) {
@@ -326,83 +345,77 @@ static void render_testBlit (void)
          /* Blitting. */
          rect.x = i;
          rect.y = j;
-         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
-         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+         ret = SDL_RenderCopy( tface, NULL, &rect );
+         if (SDL_ATassert( "SDL_RenderCopy", ret == 0))
             return;
       }
    }
 
    /* See if it's the same. */
-   if (SDL_ATassert( "Blitting output not the same (normal blit).",
-            render_compare( testsur, &img_blit )==0 ))
+   if (render_compare( "Blit output not the same.", &img_blit ))
       return;
 
    /* Clear surface. */
-   ret = SDL_FillRect( testsur, NULL,
-         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
-   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+   if (render_clearScreen())
       return;
 
    /* Test blitting with colour mod. */
    for (j=0; j <= nj; j+=4) {
       for (i=0; i <= ni; i+=4) {
          /* Set colour mod. */
-         ret = SDL_SetSurfaceColorMod( face, (255/nj)*j, (255/ni)*i, (255/nj)*j );
-         if (SDL_ATassert( "SDL_SetSurfaceColorMod", ret == 0))
+         ret = SDL_SetTextureColorMod( tface, (255/nj)*j, (255/ni)*i, (255/nj)*j );
+         if (SDL_ATassert( "SDL_SetTextureColorMod", ret == 0))
             return;
 
          /* Blitting. */
          rect.x = i;
          rect.y = j;
-         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
-         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+         ret = SDL_RenderCopy( tface, NULL, &rect );
+         if (SDL_ATassert( "SDL_RenderCopy", ret == 0))
             return;
       }
    }
 
    /* See if it's the same. */
-   if (SDL_ATassert( "Blitting output not the same (using SDL_SetSurfaceColorMod).",
-            render_compare( testsur, &img_blitColour )==0 ))
+   if (render_compare( "Blit output not the same (using SDL_SetTextureColorMod).",
+            &img_blitColour ))
       return;
 
    /* Clear surface. */
-   ret = SDL_FillRect( testsur, NULL,
-         SDL_MapRGB( testsur->format, 0, 0, 0 ) );
-   if (SDL_ATassert( "SDL_FillRect", ret == 0))
+   if (render_clearScreen())
       return;
 
    /* Restore colour. */
-   ret = SDL_SetSurfaceColorMod( face, 255, 255, 255 );
-   if (SDL_ATassert( "SDL_SetSurfaceColorMod", ret == 0))
+   ret = SDL_SetTextureColorMod( tface, 255, 255, 255 );
+   if (SDL_ATassert( "SDL_SetTextureColorMod", ret == 0))
       return;
 
    /* Test blitting with colour mod. */
    for (j=0; j <= nj; j+=4) {
       for (i=0; i <= ni; i+=4) {
          /* Set alpha mod. */
-         ret = SDL_SetSurfaceAlphaMod( face, (255/ni)*i );
-         if (SDL_ATassert( "SDL_SetSurfaceAlphaMod", ret == 0))
+         ret = SDL_SetTextureAlphaMod( tface, (255/ni)*i );
+         if (SDL_ATassert( "SDL_SetTextureAlphaMod", ret == 0))
             return;
 
          /* Blitting. */
          rect.x = i;
          rect.y = j;
-         ret = SDL_BlitSurface( face, NULL, testsur, &rect );
-         if (SDL_ATassert( "SDL_BlitSurface", ret == 0))
+         ret = SDL_RenderCopy( tface, NULL, &rect );
+         if (SDL_ATassert( "SDL_RenderCopy", ret == 0))
             return;
       }
    }
 
    /* See if it's the same. */
-   if (SDL_ATassert( "Blitting output not the same (using SDL_SetSurfaceAlphaMod).",
-            render_compare( testsur, &img_blitAlpha )==0 ))
+   if (render_compare( "Blit output not the same (using SDL_SetSurfaceAlphaMod).",
+            &img_blitAlpha ))
       return;
 
    /* Clean up. */
-   SDL_FreeSurface( face );
-
-   SDL_ATend();
+   SDL_DestroyTexture( tface );
 }
+#if 0
 
 
 /**
@@ -584,9 +597,9 @@ void render_runTests (void)
 {
    /* Software surface blitting. */
    render_testPrimitives();
-   /*
    render_testPrimitivesBlend();
    render_testBlit();
+   /*
    render_testBlitBlend();
    */
 }
