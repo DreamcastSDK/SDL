@@ -23,13 +23,13 @@ test: all
 	@./surface/surface
 	@./render/render
 
-rwops/rwops: rwops/rwops.c $(COMMON_INCLUDE)
+rwops/rwops: rwops/rwops.c $(COMMON_INCLUDE) $(COMMON_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ rwops/rwops.c $(COMMON_SRC)
 
-surface/surface: surface/surface.c $(COMMON_INCLUDE)
+surface/surface: surface/surface.c $(COMMON_INCLUDE) $(COMMON_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ surface/surface.c $(COMMON_SRC)
 
-render/render: render/render.c $(COMMON_INCLUDE)
+render/render: render/render.c $(COMMON_INCLUDE) $(COMMON_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ render/render.c $(COMMON_SRC)
 
 clean:
