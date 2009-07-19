@@ -28,20 +28,27 @@
 #ifndef _SDL_ps3spe_h
 #define _SDL_ps3spe_h
 
-/* SPU thread data */
+/* SPU handling data */
 typedef struct spu_data {
+    /* Context to be executed */
     spe_context_ptr_t ctx;
     spe_program_handle_t program;
+    /* Thread running the context */
     pthread_t thread;
+    /* For debugging */
     char * program_name;
+    /* SPE_Start() or SPE_Boot() called */
     unsigned int booted;
+    /* Runs the program in an infinite loop? */
     unsigned int keepalive;
     unsigned int entry;
+    /* Exit code of the program */
     int error_code;
+    /* Arguments passed to the program */
     void * argp;
 } spu_data_t;
 
-/* SPU specific functions */
+/* SPU specific API functions */
 int SPE_Start(spu_data_t * spe_data);
 int SPE_Stop(spu_data_t * spe_data);
 int SPE_Boot(spu_data_t * spe_data);

@@ -144,8 +144,8 @@ PS3_VideoInit(_THIS)
     //display.current_mode = mode;
 #endif
 
-    /* 
-     *PS3 stuff 
+    /*
+     *PS3 stuff
      */
 
     /* Create SPU fb_parms and thread structure */

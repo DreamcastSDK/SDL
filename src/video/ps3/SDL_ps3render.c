@@ -74,7 +74,12 @@ SDL_RenderDriver SDL_PS3_RenderDriver = {
      "ps3",
      (SDL_RENDERER_SINGLEBUFFER | SDL_RENDERER_PRESENTVSYNC |
       SDL_RENDERER_PRESENTFLIP2 | SDL_RENDERER_PRESENTDISCARD |
-      SDL_RENDERER_ACCELERATED)
+      SDL_RENDERER_ACCELERATED),
+     (SDL_TEXTUREMODULATE_NONE),
+     (SDL_BLENDMODE_NONE),
+     /* We use bilinear scaling on the SPE for YV12 & IYUV
+      * (width and height % 8 = 0) */
+     (SDL_TEXTURESCALEMODE_SLOW)
      }
 };
 
@@ -83,6 +88,7 @@ typedef struct
     int current_screen;
     SDL_Surface *screen;
     SDL_VideoDisplay *display;
+    /* adress of the centered image in the framebuffer (double buffered) */
     uint8_t *center[2];
 
     /* width of input (bounded by writeable width) */
@@ -115,9 +121,10 @@ typedef struct
 
 typedef struct
 {
-    //SDL_PixelFormat * format;
     int pitch;
-    volatile void *pixels;// __attribute__((aligned(128))); we don't need alignment here
+    /* Image data */
+    volatile void *pixels;
+    /* Use software renderer for not supported formats */
     SDL_SW_YUVTexture *yuv;
     /* Can we use the SPE to process this texture? */
     unsigned int accelerated;
@@ -155,14 +162,12 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
     SDL_zerop(data);
 
-#if 1
     renderer->CreateTexture = PS3_CreateTexture;
     renderer->DestroyTexture = PS3_DestroyTexture;
     renderer->QueryTexturePixels = PS3_QueryTexturePixels;
     renderer->UpdateTexture = PS3_UpdateTexture;
     renderer->LockTexture = PS3_LockTexture;
     renderer->UnlockTexture = PS3_UnlockTexture;
-#endif
     renderer->ActivateRenderer = SDL_PS3_ActivateRenderer;
     renderer->RenderPoint = SDL_PS3_RenderPoint;
     renderer->RenderLine = SDL_PS3_RenderLine;
@@ -228,11 +233,13 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    /* Set up the SPE scaler */
     data->scaler_thread_data->program = bilin_scaler_spu;
     data->scaler_thread_data->program_name = "bilin_scaler_spu";
     data->scaler_thread_data->keepalive = 0;
     data->scaler_thread_data->booted = 0;
 
+    /* Set up the SPE converter */
     data->converter_thread_data->program = yuv2rgb_spu;
     data->converter_thread_data->program_name = "yuv2rgb_spu";
     data->converter_thread_data->keepalive = 1;
@@ -277,6 +284,10 @@ PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
         /* but align pixels */
         SDL_free(data->yuv->pixels);
         data->yuv->pixels = (Uint8 *)memalign(16, texture->w * texture->h * 2);
+        if (!data->yuv->pixels) {
+            SDL_OutOfMemory();
+            return -1;
+        }
 
         /* Redo: Find the pitch and offset values for the overlay */
         SDL_SW_YUVTexture *swdata = (SDL_SW_YUVTexture *) data->yuv;
@@ -497,6 +508,7 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     PS3_TextureData *txdata = (PS3_TextureData *) texture->driverdata;
     SDL_VideoData *devdata = display->device->driverdata;
 
+    /* Debug info */
     deprintf(1, "srcrect->w = %u\n", srcrect->w);
     deprintf(1, "srcrect->h = %u\n", srcrect->h);
     deprintf(1, "srcrect->x = %u\n", srcrect->x);
@@ -505,7 +517,6 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     deprintf(1, "dstrect->h = %u\n", dstrect->h);
     deprintf(1, "dstrect->x = %u\n", dstrect->x);
     deprintf(1, "dstrect->y = %u\n", dstrect->y);
-
     deprintf(1, "texture->w = %u\n", texture->w);
     deprintf(1, "texture->h = %u\n", texture->h);
 
@@ -577,6 +588,7 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
             SPE_SendMsg(data->converter_thread_data, SPU_START);
             SPE_SendMsg(data->converter_thread_data, (unsigned int)data->converter_thread_data->argp);
 
+            /* We can probably move that to RenderPresent() */
             SPE_WaitForMsg(data->converter_thread_data, SPU_FIN);
             if (scaler_out) {
                 free(scaler_out);
@@ -625,16 +637,6 @@ SDL_PS3_RenderPresent(SDL_Renderer * renderer)
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     SDL_VideoData *devdata = display->device->driverdata;
 
-#if 0
-    /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_PS3_SAVE_FRAMES")) {
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     renderer->window, ++frame_number);
-        SDL_SaveBMP(data->screen[data->current_screen], file);
-    }
-#endif
-
     /* Send the data to the screen */
     /* Get screeninfo */
     struct fb_fix_screeninfo fb_finfo;
@@ -645,6 +647,7 @@ SDL_PS3_RenderPresent(SDL_Renderer * renderer)
     if (ioctl(devdata->fbdev, FBIOGET_VSCREENINFO, &fb_vinfo)) {
         SDL_SetError("[PS3] Can't get VSCREENINFO");
     }
+
     /* 16 and 15 bpp is reported as 16 bpp */
     //txdata->bpp = fb_vinfo.bits_per_pixel;
     //if (txdata->bpp == 16)
@@ -673,11 +676,11 @@ SDL_PS3_RenderPresent(SDL_Renderer * renderer)
     devdata->fb_parms->fb_pixel_size = 4;//SDL_BYTESPERPIXEL(window->format);
 
     deprintf(3, "[PS3->SPU] fb_thread_data->argp = 0x%x\n", devdata->fb_thread_data->argp);
-    
+
     /* Copying.. */
     SPE_SendMsg(devdata->fb_thread_data, SPU_START);
     SPE_SendMsg(devdata->fb_thread_data, (unsigned int)devdata->fb_thread_data->argp);
-    
+
     SPE_WaitForMsg(devdata->fb_thread_data, SPU_FIN);
 
     /* Wait for vsync */
@@ -713,7 +716,7 @@ SDL_PS3_DestroyRenderer(SDL_Renderer * renderer)
             }
         }
 
-        /* Shutdown SPE and related resources */
+        /* Shutdown SPE and release related resources */
         if (data->scaler_thread_data) {
             free((void *)data->scaler_thread_data);
         }
