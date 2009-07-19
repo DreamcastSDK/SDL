@@ -61,8 +61,8 @@ typedef struct SDL_VideoData
     /* Framebuffer device descriptor */
     int fbdev;
     /* mmap'd access to fbdev */
-    uint8_t * frame_buffer; 
-    /* SPE threading stuff */
+    uint8_t * frame_buffer;
+    /* SPE threading stuff of the framebuffer */
     spu_data_t * fb_thread_data;
     /* Framebuffer transfer data */
     volatile struct fb_writer_parms_t * fb_parms __attribute__((aligned(128)));
