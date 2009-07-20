@@ -30,17 +30,27 @@
  * Prototypes.
  */
 static int render_compare( const char *msg, const SurfaceImage_t *s );
+static int render_hasDrawColor (void);
+static int render_hasBlendModes (void);
+static int render_hasTexColor (void);
+static int render_hasTexAlpha (void);
 static int render_clearScreen (void);
 /* Testcases. */
 static int render_testPrimitives (void);
 static int render_testPrimitivesBlend (void);
 static int render_testBlit (void);
+static int render_testBlitColour (void);
+static int render_testBlitAlpha (void);
 static int render_testBlitBlendMode( SDL_TextureID tface, int mode );
 static int render_testBlitBlend (void);
 
 
 /**
- * Compares screen pixels with image pixels.
+ * @brief Compares screen pixels with image pixels.
+ *
+ *    @param msg Message on failure.
+ *    @param s Image to compare against.
+ *    @return 0 on success.
  */
 static int render_compare( const char *msg, const SurfaceImage_t *s )
 {
@@ -75,14 +85,147 @@ static int render_compare( const char *msg, const SurfaceImage_t *s )
    /* Clean up. */
    SDL_FreeSurface( testsur );
    free(pix);
-
 #endif
 
    return 0;
 }
 
+
+/**
+ * @brief Test to see if we can vary the draw colour.
+ */
+static int render_hasDrawColor (void)
+{
+   int ret;
+   Uint8 r, g, b, a;
+
+   /* Set colour. */
+   ret  = SDL_SetRenderDrawColor( 100, 100, 100, 100 );
+   ret |= SDL_GetRenderDrawColor( &r, &g, &b, &a );
+   /* Restore natural. */
+   ret |= SDL_SetRenderDrawColor( 0, 0, 0, SDL_ALPHA_OPAQUE );
+
+   /* Something failed, consider not available. */
+   if (ret != 0)
+      return 0;
+   /* Not set properly, consider failed. */
+   else if ((r != 100) || (g != 100) || (b != 100) || (a != 100))
+      return 0;
+   return 1;
+}
+
+
+/**
+ * @brief Test to see if we can vary the blend mode.
+ */
+static int render_hasBlendModes (void)
+{
+   int ret;
+   int mode;
+
+   ret  = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
+   ret |= SDL_GetRenderDrawBlendMode( &mode );
+   ret |= (mode != SDL_BLENDMODE_BLEND);
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
+   ret |= SDL_GetRenderDrawBlendMode( &mode );
+   ret |= (mode != SDL_BLENDMODE_ADD);
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
+   ret |= SDL_GetRenderDrawBlendMode( &mode );
+   ret |= (mode != SDL_BLENDMODE_MOD);
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MASK );
+   ret |= SDL_GetRenderDrawBlendMode( &mode );
+   ret |= (mode != SDL_BLENDMODE_MASK);
+   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
+   ret |= SDL_GetRenderDrawBlendMode( &mode );
+   ret |= (mode != SDL_BLENDMODE_NONE);
+
+   return !ret;
+}
+
+
+/**
+ * @brief Loads the test face.
+ */
+static SDL_TextureID render_loadTestFace (void)
+{
+   SDL_Surface *face;
+   SDL_TextureID tface;
+
+   /* Create face surface. */
+   face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
+         img_face.width, img_face.height, 32, img_face.width*4,
+         RMASK, GMASK, BMASK, AMASK );
+   if (face == NULL)
+      return 0;
+   tface = SDL_CreateTextureFromSurface( 0, face );
+   SDL_FreeSurface(face);
+
+   return tface;
+}
+
+
+/**
+ * @brief Test to see if can set texture colour mode.
+ */
+static int render_hasTexColor (void)
+{
+   int ret;
+   SDL_TextureID tface;
+   Uint8 r, g, b;
+
+   /* Get test face. */
+   tface = render_loadTestFace();
+   if (tface == 0)
+      return 0;
+
+   /* See if supported. */
+   ret  = SDL_SetTextureColorMod( tface, 100, 100, 100 );
+   ret |= SDL_GetTextureColorMod( tface, &r, &g, &b );
+
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
+   if (ret)
+      return 0;
+   else if ((r != 100) || (g != 100) || (b != 100))
+      return 0;
+   return 1;
+}
+
+
+/**
+ * @brief Test to see if we can vary the alpha of the texture.
+ */
+static int render_hasTexAlpha (void)
+{
+   int ret;
+   SDL_TextureID tface;
+   Uint8 a;
+
+   /* Get test face. */
+   tface = render_loadTestFace();
+   if (tface == 0)
+      return 0;
+
+   /* See if supported. */
+   ret  = SDL_SetTextureAlphaMod( tface, 100 );
+   ret |= SDL_GetTextureAlphaMod( tface, &a );
+
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
+   if (ret)
+      return 0;
+   else if (a != 100)
+      return 0;
+   return 1;
+}
+
+
 /**
  * @brief Clears the screen.
+ *
+ * @note We don't test for errors, but they shouldn't happen.
  */
 static int render_clearScreen (void)
 {
@@ -90,21 +233,29 @@ static int render_clearScreen (void)
 
    /* Set colour. */
    ret = SDL_SetRenderDrawColor( 0, 0, 0, SDL_ALPHA_OPAQUE );
+   /*
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return -1;
+   */
 
    /* Clear screen. */
    ret = SDL_RenderFill( NULL );
+   /*
    if (SDL_ATassert( "SDL_RenderFill", ret == 0))
       return -1;
+   */
 
    /* Set defaults. */
    ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
+   /*
    if (SDL_ATassert( "SDL_SetRenderDrawBlendMode", ret == 0))
       return -1;
+   */
    ret = SDL_SetRenderDrawColor( 255, 255, 255, SDL_ALPHA_OPAQUE );
+   /*
    if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
       return -1;
+   */
 
    return 0;
 }
@@ -122,6 +273,10 @@ static int render_testPrimitives (void)
    /* Clear surface. */
    if (render_clearScreen())
       return -1;
+
+   /* Need drawcolour or just skip test. */
+   if (!render_hasDrawColor())
+      return 0;
 
    /* Draw a rectangle. */
    rect.x = 40;
@@ -204,16 +359,9 @@ static int render_testPrimitivesBlend (void)
    if (render_clearScreen())
       return -1;
 
-   /* See if we can actually run the test. */
-#if 0
-   ret  = 0;
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
-   if (ret != 0)
-      return -1;
-#endif
+   /* Need drawcolour and blendmode or just skip test. */
+   if (!render_hasDrawColor() || !render_hasBlendModes())
+      return 0;
 
    /* Create some rectangles for each blend mode. */
    ret = SDL_SetRenderDrawColor( 255, 255, 255, 0 );
@@ -330,6 +478,10 @@ static int render_testBlit (void)
    if (render_clearScreen())
       return -1;
 
+   /* Need drawcolour or just skip test. */
+   if (!render_hasDrawColor())
+      return 0;
+
    /* Create face surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
          img_face.width, img_face.height, 32, img_face.width*4,
@@ -361,13 +513,54 @@ static int render_testBlit (void)
       }
    }
 
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
    /* See if it's the same. */
    if (render_compare( "Blit output not the same.", &img_blit ))
       return -1;
 
+   return 0;
+}
+
+
+/**
+ * @brief Blits doing colour tests.
+ */
+static int render_testBlitColour (void)
+{
+   int ret;
+   SDL_Rect rect;
+   SDL_Surface *face;
+   SDL_TextureID tface;
+   int i, j, ni, nj;
+
    /* Clear surface. */
    if (render_clearScreen())
       return -1;
+
+   /* Need drawcolour or just skip test. */
+   if (!render_hasTexColor())
+      return 0;
+
+   /* Create face surface. */
+   face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
+         img_face.width, img_face.height, 32, img_face.width*4,
+         RMASK, GMASK, BMASK, AMASK );
+   if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
+      return -1;
+   tface = SDL_CreateTextureFromSurface( 0, face );
+   if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
+      return -1;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
+
+   /* Constant values. */
+   rect.w = face->w;
+   rect.h = face->h;
+   ni     = SCREEN_W - face->w;
+   nj     = SCREEN_H - face->h;
 
    /* Test blitting with colour mod. */
    for (j=0; j <= nj; j+=4) {
@@ -386,21 +579,61 @@ static int render_testBlit (void)
       }
    }
 
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
    /* See if it's the same. */
    if (render_compare( "Blit output not the same (using SDL_SetTextureColorMod).",
             &img_blitColour ))
       return -1;
 
+   return 0;
+}
+
+
+/**
+ * @brief Tests blitting with alpha.
+ */
+static int render_testBlitAlpha (void)
+{
+   int ret;
+   SDL_Rect rect;
+   SDL_Surface *face;
+   SDL_TextureID tface;
+   int i, j, ni, nj;
+
    /* Clear surface. */
    if (render_clearScreen())
       return -1;
 
-   /* Restore colour. */
-   ret = SDL_SetTextureColorMod( tface, 255, 255, 255 );
-   if (SDL_ATassert( "SDL_SetTextureColorMod", ret == 0))
+   /* Need alpha or just skip test. */
+   if (!render_hasTexAlpha())
+      return 0;
+
+   /* Create face surface. */
+   face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
+         img_face.width, img_face.height, 32, img_face.width*4,
+         RMASK, GMASK, BMASK, AMASK );
+   if (SDL_ATassert( "SDL_CreateRGBSurfaceFrom", face != NULL))
+      return -1;
+   tface = SDL_CreateTextureFromSurface( 0, face );
+   if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
       return -1;
 
-   /* Test blitting with colour mod. */
+   /* Clean up. */
+   SDL_FreeSurface( face );
+
+   /* Constant values. */
+   rect.w = face->w;
+   rect.h = face->h;
+   ni     = SCREEN_W - face->w;
+   nj     = SCREEN_H - face->h;
+
+   /* Clear surface. */
+   if (render_clearScreen())
+      return -1;
+
+   /* Test blitting with alpha mod. */
    for (j=0; j <= nj; j+=4) {
       for (i=0; i <= ni; i+=4) {
          /* Set alpha mod. */
@@ -417,13 +650,13 @@ static int render_testBlit (void)
       }
    }
 
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
    /* See if it's the same. */
    if (render_compare( "Blit output not the same (using SDL_SetSurfaceAlphaMod).",
             &img_blitAlpha ))
       return -1;
-
-   /* Clean up. */
-   SDL_DestroyTexture( tface );
 
    return 0;
 }
@@ -486,6 +719,10 @@ static int render_testBlitBlend (void)
    /* Clear surface. */
    if (render_clearScreen())
       return -1;
+
+   /* Need drawcolour and blendmode or just skip test. */
+   if (!render_hasBlendModes() || !render_hasTexColor() || !render_hasTexAlpha())
+      return 0;
 
    /* Create face surface. */
    face = SDL_CreateRGBSurfaceFrom( (void*)img_face.pixel_data,
@@ -581,13 +818,13 @@ static int render_testBlitBlend (void)
       }
    }
 
+   /* Clean up. */
+   SDL_DestroyTexture( tface );
+
    /* Check to see if matches. */
    if (render_compare( "Blit blending output not the same (using SDL_BLENDMODE_*).",
             &img_blendAll ))
       return -1;
-
-   /* Clean up. */
-   SDL_DestroyTexture( tface );
 
    return 0;
 }
@@ -606,16 +843,23 @@ int render_runTests (void)
    ret = 0;
 
    /* Software surface blitting. */
-   ret |= render_testPrimitives();
+   ret = render_testPrimitives();
    if (ret)
       return -1;
-   ret |= render_testPrimitivesBlend();
+   ret = render_testPrimitivesBlend();
    if (ret)
       return -1;
-   ret |= render_testBlit();
+   ret = render_testBlit();
    if (ret)
       return -1;
-   ret |= render_testBlitBlend();
+   ret = render_testBlitColour();
+   if (ret)
+      return -1;
+   ret = render_testBlitAlpha();
+   if (ret)
+      return -1;
+   ret = render_testBlitBlend();
+
 
    return ret;
 }
