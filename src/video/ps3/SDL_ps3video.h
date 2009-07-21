@@ -72,7 +72,7 @@ typedef struct
 {
     unsigned long mode;
     struct ps3fb_ioctl_res res;
-} SDL_DisplayData;
+} PS3_DisplayModeData;
 
 #endif /* _SDL_ps3video_h */
 
