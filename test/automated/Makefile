@@ -24,10 +24,7 @@ TESTS_ALL := testsdl rwops/rwops platform/platform surface/surface render/render
 all: $(TESTS_ALL)
 
 test: all
-	@./rwops/rwops
-	@./platform/platform
-	@./surface/surface
-	@./render/render
+	@./testsdl
 
 testsdl: $(SRC) $(COMMON_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(COMMON_SRC)
