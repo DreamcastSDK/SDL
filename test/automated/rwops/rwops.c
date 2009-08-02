@@ -249,10 +249,15 @@ static void rwops_testFP (void)
 /**
  * @brief Entry point.
  */
+#ifdef TEST_STANDALONE
 int main( int argc, const char *argv[] )
 {
    (void) argc;
    (void) argv;
+#else /* TEST_STANDALONE */
+int test_rwops (void)
+{
+#endif /* TEST_STANDALONE */
 
    SDL_ATinit( "SDL_RWops" );
 
