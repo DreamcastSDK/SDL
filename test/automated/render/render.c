@@ -56,7 +56,6 @@ static int render_compare( const char *msg, const SurfaceImage_t *s )
 {
    (void) msg;
    (void) s;
-#if 0
    int ret;
    void *pix;
    SDL_Surface *testsur;
@@ -67,9 +66,26 @@ static int render_compare( const char *msg, const SurfaceImage_t *s )
       return 1;
 
    /* Read pixels. */
+#if 0
    ret = SDL_RenderReadPixels( NULL, pix, 80*4 );
    if (SDL_ATassert( "SDL_RenderReadPixels", ret==0) )
       return 1;
+#else
+   int i, j;
+   Uint8 *buf = pix;
+   const Uint8 *read_pix;
+   Uint8 *write_pix;
+   for (j=0; j<s->height; j++) {
+      for (i=0; i<s->width; i++) {
+         read_pix  = &s->pixel_data[ (j*80 + i) * s->bytes_per_pixel ];
+         write_pix = &buf[ (j*80 + i) * 4 ];
+         write_pix[0] = read_pix[0];
+         write_pix[1] = read_pix[1];
+         write_pix[2] = read_pix[2];
+         write_pix[3] = SDL_ALPHA_OPAQUE;
+      }
+   }
+#endif
 
    /* Create surface. */
    testsur = SDL_CreateRGBSurfaceFrom( pix, 80, 60, 32, 80*4,
@@ -85,7 +101,6 @@ static int render_compare( const char *msg, const SurfaceImage_t *s )
    /* Clean up. */
    SDL_FreeSurface( testsur );
    free(pix);
-#endif
 
    return 0;
 }
