@@ -588,9 +588,9 @@ int test_surface (void)
    /* Exit SDL. */
    SDL_Quit();
 
-   return SDL_ATfinish(1);
+   return SDL_ATfinish();
 
 err:
-   return SDL_ATfinish(1);
+   return SDL_ATfinish();
 }
 

@@ -267,5 +267,5 @@ int test_rwops (void)
    rwops_testFile();
    rwops_testFP();
 
-   return SDL_ATfinish(1);
+   return SDL_ATfinish();
 }
