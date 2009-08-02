@@ -131,10 +131,18 @@ static void plat_testEndian (void)
 }
 
 
-int main(int argc, char *argv[])
+/**
+ * @brief Platform test entrypoint.
+ */
+#ifdef TEST_STANDALONE
+int main( int argc, const char *argv[] )
 {
    (void) argc;
    (void) argv;
+#else /* TEST_STANDALONE */
+int test_platform (void)
+{
+#endif /* TEST_STANDALONE */
 
    SDL_ATinit( "Platform" );
 

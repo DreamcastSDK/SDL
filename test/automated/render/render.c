@@ -951,10 +951,15 @@ int render_runTests (void)
  *  give issues. Don't like that very much, but no way around without creating
  *  superfluous testsuites.
  */
+#ifdef TEST_STANDALONE
 int main( int argc, const char *argv[] )
 {
    (void) argc;
    (void) argv;
+#else /* TEST_STANDALONE */
+int test_render (void)
+{
+#endif /* TEST_STANDALONE */
    int i, j, nd, nr;
    int ret;
    const char *driver, *str;
