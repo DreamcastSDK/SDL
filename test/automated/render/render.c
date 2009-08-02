@@ -30,6 +30,7 @@
  * Prototypes.
  */
 static int render_compare( const char *msg, const SurfaceImage_t *s );
+static int render_isSupported( int code );
 static int render_hasDrawColor (void);
 static int render_hasBlendModes (void);
 static int render_hasTexColor (void);
@@ -107,21 +108,38 @@ static int render_compare( const char *msg, const SurfaceImage_t *s )
 
 
 /**
+ * @brief Checks to see if functionality is supported.
+ */
+static int render_isSupported( int code )
+{
+   return (code == 0);
+}
+
+
+/**
  * @brief Test to see if we can vary the draw colour.
  */
 static int render_hasDrawColor (void)
 {
-   int ret;
+   int ret, fail;
    Uint8 r, g, b, a;
 
+   fail = 0;
+
    /* Set colour. */
-   ret  = SDL_SetRenderDrawColor( 100, 100, 100, 100 );
-   ret |= SDL_GetRenderDrawColor( &r, &g, &b, &a );
+   ret = SDL_SetRenderDrawColor( 100, 100, 100, 100 );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawColor( &r, &g, &b, &a );
+   if (!render_isSupported(ret))
+      fail = 1;
    /* Restore natural. */
-   ret |= SDL_SetRenderDrawColor( 0, 0, 0, SDL_ALPHA_OPAQUE );
+   ret = SDL_SetRenderDrawColor( 0, 0, 0, SDL_ALPHA_OPAQUE );
+   if (!render_isSupported(ret))
+      fail = 1;
 
    /* Something failed, consider not available. */
-   if (ret != 0)
+   if (fail)
       return 0;
    /* Not set properly, consider failed. */
    else if ((r != 100) || (g != 100) || (b != 100) || (a != 100))
@@ -135,26 +153,59 @@ static int render_hasDrawColor (void)
  */
 static int render_hasBlendModes (void)
 {
+   int fail;
    int ret;
    int mode;
 
-   ret  = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
-   ret |= SDL_GetRenderDrawBlendMode( &mode );
-   ret |= (mode != SDL_BLENDMODE_BLEND);
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
-   ret |= SDL_GetRenderDrawBlendMode( &mode );
-   ret |= (mode != SDL_BLENDMODE_ADD);
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
-   ret |= SDL_GetRenderDrawBlendMode( &mode );
-   ret |= (mode != SDL_BLENDMODE_MOD);
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MASK );
-   ret |= SDL_GetRenderDrawBlendMode( &mode );
-   ret |= (mode != SDL_BLENDMODE_MASK);
-   ret |= SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
-   ret |= SDL_GetRenderDrawBlendMode( &mode );
-   ret |= (mode != SDL_BLENDMODE_NONE);
+   fail = 0;
 
-   return !ret;
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_BLEND );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode( &mode );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_BLEND);
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_ADD );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode( &mode );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_ADD);
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MOD );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode( &mode );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_MOD);
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_MASK );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode( &mode );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_MASK);
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_SetRenderDrawBlendMode( SDL_BLENDMODE_NONE );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetRenderDrawBlendMode( &mode );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = (mode != SDL_BLENDMODE_NONE);
+   if (!render_isSupported(ret))
+      fail = 1;
+
+   return !fail;
 }
 
 
@@ -184,6 +235,7 @@ static SDL_TextureID render_loadTestFace (void)
  */
 static int render_hasTexColor (void)
 {
+   int fail;
    int ret;
    SDL_TextureID tface;
    Uint8 r, g, b;
@@ -194,13 +246,18 @@ static int render_hasTexColor (void)
       return 0;
 
    /* See if supported. */
-   ret  = SDL_SetTextureColorMod( tface, 100, 100, 100 );
-   ret |= SDL_GetTextureColorMod( tface, &r, &g, &b );
+   fail = 0;
+   ret = SDL_SetTextureColorMod( tface, 100, 100, 100 );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetTextureColorMod( tface, &r, &g, &b );
+   if (!render_isSupported(ret))
+      fail = 1;
 
    /* Clean up. */
    SDL_DestroyTexture( tface );
 
-   if (ret)
+   if (fail)
       return 0;
    else if ((r != 100) || (g != 100) || (b != 100))
       return 0;
@@ -213,6 +270,7 @@ static int render_hasTexColor (void)
  */
 static int render_hasTexAlpha (void)
 {
+   int fail;
    int ret;
    SDL_TextureID tface;
    Uint8 a;
@@ -223,13 +281,18 @@ static int render_hasTexAlpha (void)
       return 0;
 
    /* See if supported. */
-   ret  = SDL_SetTextureAlphaMod( tface, 100 );
-   ret |= SDL_GetTextureAlphaMod( tface, &a );
+   fail = 0;
+   ret = SDL_SetTextureAlphaMod( tface, 100 );
+   if (!render_isSupported(ret))
+      fail = 1;
+   ret = SDL_GetTextureAlphaMod( tface, &a );
+   if (!render_isSupported(ret))
+      fail = 1;
 
    /* Clean up. */
    SDL_DestroyTexture( tface );
 
-   if (ret)
+   if (fail)
       return 0;
    else if (a != 100)
       return 0;
