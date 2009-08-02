@@ -11,7 +11,43 @@
 #include "SDL_at.h"
 
 
+#define RWOPS_READ      "rwops/read"
+#define RWOPS_WRITE     "rwops/write"
+
 static const char hello_world[] = "Hello World!";
+
+
+/**
+ * @brief Makes sure parameters work properly.
+ */
+static void rwops_testParam (void)
+{
+   SDL_RWops *rwops;
+
+   /* Begin testcase. */
+   SDL_ATbegin( "RWops Parameters" );
+
+   /* These should all fail. */
+   rwops = SDL_RWFromFile(NULL, NULL);
+   if (SDL_ATassert( "SDL_RWFromFile(NULL, NULL) worked", rwops == NULL ))
+      return;
+   rwops = SDL_RWFromFile(NULL, "ab+");
+   if (SDL_ATassert( "SDL_RWFromFile(NULL, \"ab+\") worked", rwops == NULL ))
+      return;
+   rwops = SDL_RWFromFile(NULL, "sldfkjsldkfj");
+   if (SDL_ATassert( "SDL_RWFromFile(NULL, \"sldfkjsldkfj\") worked", rwops == NULL ))
+      return;
+   rwops = SDL_RWFromFile("something", "");
+   if (SDL_ATassert( "SDL_RWFromFile(\"something\", \"\") worked", rwops == NULL ))
+      return;
+   rwops = SDL_RWFromFile("something", NULL);
+   if (SDL_ATassert( "SDL_RWFromFile(\"something\", NULL) worked", rwops == NULL ))
+      return;
+
+
+   /* End testcase. */
+   SDL_ATend();
+}
 
 
 /**
@@ -27,31 +63,56 @@ static int rwops_testGeneric( SDL_RWops *rw, int write )
    char buf[sizeof(hello_world)];
    int i;
 
+   /* Set to start. */
+   i = SDL_RWseek( rw, 0, RW_SEEK_SET );
+   if (SDL_ATvassert( i == 0,
+            "Seeking with SDL_RWseek (RW_SEEK_SET): got %d, expected %d",
+            i, 0 ))
+      return 1;
+
+   /* Test write. */
+   i = SDL_RWwrite( rw, hello_world, sizeof(hello_world)-1, 1 );
    if (write) {
-      /* Test write. */
-      i = SDL_RWwrite( rw, hello_world, sizeof(hello_world)-1, 1 );
-      if (SDL_ATassert( "Writing with SDL_RWwrite", i == 1 ))
+      if (SDL_ATassert( "Writing with SDL_RWwrite (failed to write)", i == 1 ))
+         return 1;
+   }
+   else {
+      if (SDL_ATassert( "Writing with SDL_RWwrite (wrote when shouldn't have)", i <= 0 ))
          return 1;
    }
 
    /* Test seek. */
    i = SDL_RWseek( rw, 6, RW_SEEK_SET );
-   if (SDL_ATassert( "Seeking with SDL_RWseek", i == 6 ))
-      return 1;
+   if (SDL_ATvassert( i == 6,
+            "Seeking with SDL_RWseek (RW_SEEK_SET): got %d, expected %d",
+            i, 0 ))
+       return 1;
 
    /* Test seek. */
    i = SDL_RWseek( rw, 0, RW_SEEK_SET );
-   if (SDL_ATassert( "Seeking with SDL_RWseek", i == 0 ))
+   if (SDL_ATvassert( i == 0,
+            "Seeking with SDL_RWseek (RW_SEEK_SET): got %d, expected %d",
+            i, 0 ))
       return 1;
 
    /* Test read. */
    i = SDL_RWread( rw, buf, 1, sizeof(hello_world)-1 );
-   if (i != sizeof(hello_world)-1)
-      printf("%s\n", SDL_GetError());
    if (SDL_ATassert( "Reading with SDL_RWread", i == sizeof(hello_world)-1 ))
       return 1;
    if (SDL_ATassert( "Memory read does not match memory written",
             memcmp( buf, hello_world, sizeof(hello_world)-1 ) == 0 ))
+      return 1;
+
+   /* More seek tests. */
+   i = SDL_RWseek( rw, -4, RW_SEEK_CUR );
+   if (SDL_ATvassert( i == sizeof(hello_world)-5,
+            "Seeking with SDL_RWseek (RW_SEEK_CUR): got %d, expected %d",
+            i, sizeof(hello_world)-5 ))
+      return 1;
+   i = SDL_RWseek( rw, -1, RW_SEEK_END );
+   if (SDL_ATvassert( i == sizeof(hello_world)-2,
+            "Seeking with SDL_RWseek (RW_SEEK_END): got %d, expected %d",
+            i, sizeof(hello_world)-2 ))
       return 1;
 
    return 0;
@@ -70,7 +131,7 @@ static void rwops_testMem (void)
    SDL_ATbegin( "SDL_RWFromMem" );
 
    /* Open. */
-   rw = SDL_RWFromMem( mem, sizeof(mem) );
+   rw = SDL_RWFromMem( mem, sizeof(hello_world)-1 );
    if (SDL_ATassert( "Opening memory with SDL_RWFromMem", rw != NULL ))
       return;
 
@@ -98,7 +159,7 @@ static void rwops_testConstMem (void)
    SDL_ATbegin( "SDL_RWFromConstMem" );
 
    /* Open. */
-   rw = SDL_RWFromConstMem( const_mem, sizeof(const_mem) );
+   rw = SDL_RWFromConstMem( const_mem, sizeof(const_mem)-1 );
    if (SDL_ATassert( "Opening memory with SDL_RWFromConstMem", rw != NULL ))
       return;
 
@@ -120,26 +181,24 @@ static void rwops_testConstMem (void)
 static void rwops_testFile (void)
 {
    SDL_RWops *rw;
-   int i;
 
    /* Begin testcase. */
    SDL_ATbegin( "SDL_RWFromFile" );
 
-   /* Open. */
-   rw = SDL_RWFromFile( "rwops/read", "r" );
-   if (SDL_ATassert( "Opening memory with SDL_RWFromFile", rw != NULL ))
+   /* Read test. */
+   rw = SDL_RWFromFile( RWOPS_READ, "r" );
+   if (SDL_ATassert( "Opening memory with SDL_RWFromFile '"RWOPS_READ"'", rw != NULL ))
       return;
-
-   /* Test writing. */
-   i = SDL_RWwrite( rw, hello_world, sizeof(hello_world), 1 );
-   if (SDL_ATassert( "Writing with SDL_RWwrite", i == 0 ))
-      return;
-
-   /* Run generic tests. */
    if (rwops_testGeneric( rw, 0 ))
       return;
+   SDL_FreeRW( rw );
 
-   /* Close. */
+   /* Write test. */
+   rw = SDL_RWFromFile( RWOPS_WRITE, "w+" );
+   if (SDL_ATassert( "Opening memory with SDL_RWFromFile '"RWOPS_WRITE"'", rw != NULL ))
+      return;
+   if (rwops_testGeneric( rw, 1 ))
+      return;
    SDL_FreeRW( rw );
 
    /* End testcase. */
@@ -159,22 +218,26 @@ static void rwops_testFP (void)
    /* Begin testcase. */
    SDL_ATbegin( "SDL_RWFromFP" );
 
-   /* Open. */
-   fp = fopen( "rwops/write", "w+" );
-   if (fp == NULL) {
-      SDL_ATprint("Failed to open file rwops/write");
-      SDL_ATend();
+   /* Run read tests. */
+   fp = fopen( RWOPS_READ, "r" );
+   if (SDL_ATassert( "Failed to open file '"RWOPS_READ"'", fp != NULL))
       return;
-   }
    rw = SDL_RWFromFP( fp, 1 );
    if (SDL_ATassert( "Opening memory with SDL_RWFromFP", rw != NULL ))
       return;
+   if (rwops_testGeneric( rw, 0 ))
+      return;
+   SDL_FreeRW( rw );
 
-   /* Run generic tests. */
+   /* Run write tests. */
+   fp = fopen( RWOPS_WRITE, "w+" );
+   if (SDL_ATassert( "Failed to open file '"RWOPS_WRITE"'", fp != NULL))
+      return;
+   rw = SDL_RWFromFP( fp, 1 );
+   if (SDL_ATassert( "Opening memory with SDL_RWFromFP", rw != NULL ))
+      return;
    if (rwops_testGeneric( rw, 1 ))
       return;
-
-   /* Close. */
    SDL_FreeRW( rw );
 
    /* End testcase. */
@@ -193,6 +256,7 @@ int main( int argc, const char *argv[] )
 
    SDL_ATinit( "SDL_RWops" );
 
+   rwops_testParam();
    rwops_testMem();
    rwops_testConstMem();
    rwops_testFile();
