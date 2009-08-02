@@ -15,13 +15,13 @@ SRC         	:= testsdl.c \
 COMMON_SRC     := SDL_at.c common/common.c
 COMMON_INCLUDE := SDL_at.h
 
-TESTS_ALL := rwops/rwops platform/platform surface/surface render/render
+TESTS_ALL := testsdl rwops/rwops platform/platform surface/surface render/render
 
 
 .PHONY: all clean test
 
 
-all: testsdl $(TESTS_ALL)
+all: $(TESTS_ALL)
 
 test: all
 	@./rwops/rwops
@@ -29,7 +29,7 @@ test: all
 	@./surface/surface
 	@./render/render
 
-testsdl:
+testsdl: $(SRC) $(COMMON_SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(COMMON_SRC)
 
 rwops/rwops: rwops/rwops.c $(COMMON_INCLUDE) $(COMMON_SRC)

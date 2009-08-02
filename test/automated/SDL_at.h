@@ -38,6 +38,13 @@
 #  define _SDL_AT_H
 
 
+
+enum {
+   SDL_AT_VERBOSE,
+   SDL_AT_QUIET
+};
+
+
 /*
  * Suite level actions.
  */
@@ -52,7 +59,21 @@ void SDL_ATinit( const char *suite );
  *
  *    @param verbose Displays global results.
  */
-int SDL_ATfinish( int verbose );
+int SDL_ATfinish (void);
+/**
+ * @brief Sets a global property value.
+ *
+ *    @param property Property to set.
+ *    @param value Value to set property to.
+ */
+void SDL_ATseti( int property, int value );
+/**
+ * @brief Gets a global property value.
+ *
+ *    @param property Property to get.
+ *    @param[out] value Value of the property.
+ */
+void SDL_ATgeti( int property, int *value );
 
 
 /*
@@ -94,12 +115,27 @@ void SDL_ATend (void);
  * Misc functions.
  */
 /**
+ * @brief Prints an error.
+ *
+ *    @param msg printf formatted string to display.
+ *    @return Number of character printed.
+ */
+int SDL_ATprintErr( const char *msg, ... );
+/**
  * @brief Prints some text.
  *
  *    @param msg printf formatted string to display.
  *    @return Number of character printed.
  */
 int SDL_ATprint( const char *msg, ... );
+/**
+ * @brief Prints some verbose text.
+ *
+ *    @param level Level of verbosity to print at.
+ *    @param msg printf formatted string to display.
+ *    @return Number of character printed.
+ */
+int SDL_ATprintVerbose( int level, const char *msg, ... );
 
 
 #endif /* _SDL_AT_H */

@@ -22,6 +22,13 @@ static int at_success = 0; /**< Number of successful testcases. */
 static int at_failure = 0; /**< Number of failed testcases. */
 
 
+/*
+ * Global properties.
+ */
+static int at_verbose = 0; /**< Verbosity. */
+static int at_quiet = 0; /**< Quietness. */
+
+
 /**
  * @brief Cleans up the automated testsuite state.
  */
@@ -41,48 +48,52 @@ void SDL_ATinit( const char *suite )
 {
    /* Do not open twice. */
    if (at_suite_msg) {
-      SDL_ATprint( "AT suite '%s' not closed before opening suite '%s'\n",
+      SDL_ATprintErr( "AT suite '%s' not closed before opening suite '%s'\n",
             at_suite_msg, suite );
    }
    /* Must have a name. */
    if (suite == NULL) {
-      SDL_ATprint( "AT testsuite does not have a name.\n");
+      SDL_ATprintErr( "AT testsuite does not have a name.\n");
    }
    SDL_ATcleanup();
    at_suite_msg = suite;
+
+   /* Verbose message. */
+   SDL_ATprintVerbose( 2, "--+---> Started Test Suite '%s'\n", suite );
 }
 
 
 /**
  * @brief Finish testsuite.
  */
-int SDL_ATfinish( int verbose )
+int SDL_ATfinish (void)
 {
    int failed;
 
    /* Make sure initialized. */
    if (at_suite_msg == NULL) {
-      SDL_ATprint("Ended testcase without initializing.\n");
+      SDL_ATprintErr("Ended testcase without initializing.\n");
       return 1;
    }
 
    /* Finished without closing testcase. */
    if (at_test_msg) {
-      SDL_ATprint( "AT suite '%s' finished without closing testcase '%s'\n",
+      SDL_ATprintErr( "AT suite '%s' finished without closing testcase '%s'\n",
             at_suite_msg, at_test_msg );
    }
 
+   /* Verbose message. */
+   SDL_ATprintVerbose( 2, "<-+---- Finished Test Suite '%s'\n", at_suite_msg );
+
    /* Display message if verbose on failed. */
    failed = at_failure;
-   if (verbose) {
-      if (at_failure > 0) {
-         SDL_ATprint( "%s : Failed %d out of %d testcases!\n",
-               at_suite_msg, at_failure, at_failure+at_success );
-      }
-      else {
-         SDL_ATprint( "%s : All tests successful (%d)\n",
-               at_suite_msg, at_success );
-      }
+   if (at_failure > 0) {
+      SDL_ATprintErr( "%s : Failed %d out of %d testcases!\n",
+            at_suite_msg, at_failure, at_failure+at_success );
+   }
+   else {
+      SDL_ATprint( "%s : All tests successful (%d)\n",
+            at_suite_msg, at_success );
    }
 
    /* Clean up. */
@@ -94,20 +105,57 @@ int SDL_ATfinish( int verbose )
 
 
 /**
+ * @brief Sets a property.
+ */
+void SDL_ATseti( int property, int value )
+{
+   switch (property) {
+      case SDL_AT_VERBOSE:
+         at_verbose = value;
+         break;
+
+      case SDL_AT_QUIET:
+         at_quiet = value;
+         break;
+   }
+}
+
+
+/**
+ * @brief Gets a property.
+ */
+void SDL_ATgeti( int property, int *value )
+{
+   switch (property) {
+      case SDL_AT_VERBOSE:
+         *value = at_verbose;
+         break;
+
+      case SDL_AT_QUIET:
+         *value = at_quiet;
+         break;
+   }
+}
+
+
+/**
  * @brief Begin testcase.
  */
 void SDL_ATbegin( const char *testcase )
 {
    /* Do not open twice. */
    if (at_test_msg) {
-      SDL_ATprint( "AT testcase '%s' not closed before opening testcase '%s'\n",
+      SDL_ATprintErr( "AT testcase '%s' not closed before opening testcase '%s'\n",
             at_test_msg, testcase );
    }
    /* Must have a name. */
    if (testcase == NULL) {
-      SDL_ATprint( "AT testcase does not have a name.\n");
+      SDL_ATprintErr( "AT testcase does not have a name.\n");
    }
    at_test_msg = testcase;
+
+   /* Verbose message. */
+   SDL_ATprintVerbose( 2, "  +---> StartedTest Case '%s'\n", testcase );
 }
 
 
@@ -118,7 +166,7 @@ static void SDL_ATendWith( int success )
 {
    /* Make sure initialized. */
    if (at_test_msg == NULL) {
-      SDL_ATprint("Ended testcase without initializing.\n");
+      SDL_ATprintErr("Ended testcase without initializing.\n");
       return;
    }
 
@@ -127,6 +175,9 @@ static void SDL_ATendWith( int success )
       at_success++;
    else
       at_failure++;
+
+   /* Verbose message. */
+   SDL_ATprintVerbose( 2, "  +---- Finished Test Case '%s'\n", at_test_msg );
 
    /* Clean up. */
    at_test_msg = NULL;
@@ -141,7 +192,7 @@ int SDL_ATassert( const char *msg, int condition )
    /* Condition failed. */
    if (!condition) {
       /* Print. */
-      SDL_ATprint( "%s [%s] : %s\n", at_suite_msg, at_test_msg, msg );
+      SDL_ATprintErr( "%s [%s] : %s\n", at_suite_msg, at_test_msg, msg );
       /* End. */
       SDL_ATendWith(0);
    }
@@ -164,7 +215,7 @@ int SDL_ATvassert( int condition, const char *msg, ... )
       vsnprintf( buf, sizeof(buf), msg, args );
       va_end( args );
       /* Print. */
-      SDL_ATprint( "%s [%s] : %s\n", at_suite_msg, at_test_msg, buf );
+      SDL_ATprintErr( "%s [%s] : %s\n", at_suite_msg, at_test_msg, buf );
       /* End. */
       SDL_ATendWith(0);
    }
@@ -182,9 +233,9 @@ void SDL_ATend (void)
 
 
 /**
- * @brief Displays a message.
+ * @brief Displays an error.
  */
-int SDL_ATprint( const char *msg, ... )
+int SDL_ATprintErr( const char *msg, ... )
 {
    va_list ap;
    int ret;
@@ -194,11 +245,62 @@ int SDL_ATprint( const char *msg, ... )
       return 0;
    else {
       va_start(ap, msg);
-      ret = vprintf(msg, ap);
+      ret = vfprintf( stderr, msg, ap );
       va_end(ap);
    }
 
    return ret;
 }
+
+
+/**
+ * @brief Displays a message.
+ */
+int SDL_ATprint( const char *msg, ... )
+{
+   va_list ap;
+   int ret;
+
+   /* Only print if not quiet. */
+   if (at_quiet)
+      return 0;
+
+   /* Make sure there is something to print. */
+   if (msg == NULL)
+      return 0;
+   else {
+      va_start(ap, msg);
+      ret = vfprintf( stdout, msg, ap );
+      va_end(ap);
+   }
+
+   return ret;
+}
+
+
+/**
+ * @brief Displays a verbose message.
+ */
+int SDL_ATprintVerbose( int level, const char *msg, ... )
+{
+   va_list ap;
+   int ret;
+
+   /* Only print if not quiet. */
+   if (at_quiet || (at_verbose < level))
+      return 0;
+
+   /* Make sure there is something to print. */
+   if (msg == NULL)
+      return 0;
+   else {
+      va_start(ap, msg);
+      ret = vfprintf( stdout, msg, ap );
+      va_end(ap);
+   }
+
+   return ret;
+}
+
 
 

@@ -1056,7 +1056,7 @@ int test_render (void)
       /*
        * Finish testsuite.
        */
-      SDL_ATfinish(1);
+      SDL_ATfinish();
    }
 
 

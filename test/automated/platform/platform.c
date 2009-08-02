@@ -149,5 +149,5 @@ int test_platform (void)
    plat_testTypes();
    plat_testEndian();
 
-   return SDL_ATfinish(1);
+   return SDL_ATfinish();
 }
