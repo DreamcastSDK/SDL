@@ -146,6 +146,75 @@ int test_platform (void)
 
    SDL_ATinit( "Platform" );
 
+   /* Debug information. */
+   SDL_ATprintVerbose( 1, "%s System detected\n",
+#if __AIX__   
+         "AIX"
+#elif __BEOS__
+         "BeOS"
+#elif __BSDI__
+         "BSDI"
+#elif __DREAMCAST__
+         "Dreamcast"
+#elif __FREEBSD__
+
+         "FreeBSD"
+#elif __HPUX__ 
+         "HP-UX"
+#elif __IRIX__ 
+         "Irix"
+#elif __LINUX__
+         "Linux"
+#elif __MINT__
+         "Atari MiNT"
+#elif __MACOS__
+         "MacOS Classic"
+#elif __MACOSX__
+         "Mac OS X"
+#elif __NETBSD__
+         "NetBSD"
+#elif __OPENBSD__
+         "OpenBSD"
+#elif __OS2__ 
+         "OS/2"
+#elif __OSF__ 
+         "OSF/1"
+#elif __QNXNTO__
+         "QNX Neutrino"
+#elif __RISCOS__
+         "RISC OS"
+#elif __SOLARIS__
+         "Solaris"
+#elif __WIN32__
+#ifdef _WIN32_WCE
+         "Windows CE"
+#else         
+         "Windows"
+#endif
+#elif __IPHONEOS__
+         "iPhone OS"
+#else         
+         "an unknown operating system! (see SDL_platform.h)"
+#endif     
+         );
+   SDL_ATprintVerbose( 1, "System is %s endian\n",
+#ifdef SDL_LIL_ENDIAN
+         "little"
+#else
+         "big"
+#endif
+         );
+   SDL_ATprintVerbose( 1, "Available extensions:\n" );
+   SDL_ATprintVerbose( 1, "   RDTSC %s\n", SDL_HasRDTSC()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   MMX %s\n", SDL_HasMMX()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   MMX Ext %s\n", SDL_HasMMXExt()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   3DNow %s\n", SDL_Has3DNow()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   3DNow Ext %s\n",
+         SDL_Has3DNowExt()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   SSE %s\n", SDL_HasSSE()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   SSE2 %s\n", SDL_HasSSE2()? "detected" : "not detected" );
+   SDL_ATprintVerbose( 1, "   AltiVec %s\n", SDL_HasAltiVec()? "detected" : "not detected" );
+
    plat_testTypes();
    plat_testEndian();
 
