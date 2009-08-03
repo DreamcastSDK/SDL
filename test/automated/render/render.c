@@ -920,6 +920,16 @@ int render_runTests (void)
    /* No error. */
    ret = 0;
 
+   /* Test functionality first. */
+   if (render_hasDrawColor())
+      SDL_ATprintVerbose( 1, "      Draw Color supported\n" );
+   if (render_hasBlendModes())
+      SDL_ATprintVerbose( 1, "      Blend Modes supported\n" );
+   if (render_hasTexColor())
+      SDL_ATprintVerbose( 1, "      Texture Color Mod supported\n" );
+   if (render_hasTexAlpha())
+      SDL_ATprintVerbose( 1, "      Texture Alpha Mod supported\n" );
+
    /* Software surface blitting. */
    ret = render_testPrimitives();
    if (ret)
@@ -974,8 +984,9 @@ int test_render (void)
 
    /* Get number of drivers. */
    nd = SDL_GetNumVideoDrivers();
-   if (ret < 0)
+   if (nd < 0)
       goto err;
+   SDL_ATprintVerbose( 1, "%d Video Drivers found\n", nd );
 
    /* Now run on the video mode. */
    ret = SDL_InitSubSystem( SDL_INIT_VIDEO );
@@ -991,6 +1002,7 @@ int test_render (void)
       driver = SDL_GetVideoDriver(i);
       if (driver == NULL)
          goto err;
+      SDL_ATprintVerbose( 1, " %d) %s\n", i+1, driver );
       /* Hack to avoid dummy driver. */
       if (strcmp(driver,"dummy")==0)
          continue;
@@ -1026,6 +1038,7 @@ int test_render (void)
       nr = SDL_GetNumRenderDrivers();
       if (SDL_ATassert("SDL_GetNumRenderDrivers", nr>=0))
          goto err;
+      SDL_ATprintVerbose( 1, "   %d Render Drivers\n", nr );
       SDL_ATend();
       for (j=0; j<nr; j++) {
 
@@ -1035,6 +1048,7 @@ int test_render (void)
             goto err;
          /* Set testcase name. */
          snprintf( msg, sizeof(msg), "Renderer %s", renderer.name );
+         SDL_ATprintVerbose( 1, "    %d) %s\n", j+1, renderer.name );
          SDL_ATbegin( msg );
          /* Set renderer. */
          ret = SDL_CreateRenderer( wid, j, 0 );
