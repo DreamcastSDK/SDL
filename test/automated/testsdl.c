@@ -18,7 +18,16 @@
 #include <stdlib.h> /* exit */
 #include <unistd.h> /* getopt */
 #include <getopt.h> /* getopt_long */
+#include <string.h> /* strcmp */
 
+
+/*
+ * Tests to run.
+ */
+static int run_platform    = 1;
+static int run_rwops       = 1;
+static int run_surface     = 1;
+static int run_render      = 1;
 
 /*
  * Prototypes.
@@ -34,6 +43,10 @@ static void print_usage( const char *name )
 {
    printf("Usage: %s [OPTIONS]\n", name);
    printf("Options are:\n");
+   printf("   --noplatform    do not run the platform tests\n");
+   printf("   --norwops       do not run the rwops tests\n");
+   printf("   --nosurface     do not run the surface tests\n");
+   printf("   --norender      do not run the render tests\n");
    printf("   -v, --verbose   increases verbosity level by 1 for each -v\n");
    printf("   -q, --quiet     only displays errors\n");
    printf("   -h, --help      display this message and exit\n");
@@ -46,6 +59,10 @@ static void print_usage( const char *name )
 static void parse_options( int argc, char *argv[] )
 {
    static struct option long_options[] = {
+      { "noplatform", no_argument, 0, 0 },
+      { "norwops", no_argument, 0, 0 },
+      { "nosurface", no_argument, 0, 0 },
+      { "norender", no_argument, 0, 0 },
       { "verbose", no_argument, 0, 'v' },
       { "quiet", no_argument, 0, 'q' },
       { "help", no_argument, 0, 'h' },
@@ -54,6 +71,7 @@ static void parse_options( int argc, char *argv[] )
    int option_index = 0;
    int c = 0;
    int i;
+   const char *str;
 
    /* Iterate over options. */
    while ((c = getopt_long( argc, argv,
@@ -62,6 +80,18 @@ static void parse_options( int argc, char *argv[] )
 
       /* Handle options. */
       switch (c) {
+         case 0:
+            str = long_options[option_index].name;
+            if (strcmp(str,"noplatform")==0)
+               run_platform = 0;
+            else if (strcmp(str,"norwops")==0)
+               run_rwops = 0;
+            else if (strcmp(str,"nosurface")==0)
+               run_surface = 0;
+            else if (strcmp(str,"norender")==0)
+               run_render = 0;
+            break;
+
 
          /* Verbosity. */
          case 'v':
@@ -91,10 +121,14 @@ int main( int argc, char *argv[] )
 {
    parse_options( argc, argv );
 
-   test_platform();
-   test_rwops();
-   test_surface();
-   test_render();
+   if (run_platform)
+      test_platform();
+   if (run_rwops)
+      test_rwops();
+   if (run_surface)
+      test_surface();
+   if (run_render)
+      test_render();
 
    return 0;
 }
