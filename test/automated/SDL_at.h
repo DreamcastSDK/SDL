@@ -127,9 +127,16 @@ int SDL_ATprintErr( const char *msg, ... );
  *    @param msg printf formatted string to display.
  *    @return Number of character printed.
  */
-int SDL_ATprint( const char *msg, ... );
+#define SDL_ATprint(msg, args...) \
+   SDL_ATprintVerbose( 0, msg, ## args)
 /**
  * @brief Prints some verbose text.
+ *
+ * Verbosity levels are as follows:
+ *
+ *  - 0 standard stdout, enabled by default
+ *  - 1 additional information
+ *  - 2 detailed information (spammy)
  *
  *    @param level Level of verbosity to print at.
  *    @param msg printf formatted string to display.
