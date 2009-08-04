@@ -46,7 +46,7 @@ static void print_usage( const char *name )
 {
    printf("Usage: %s [OPTIONS]\n", name);
    printf("Options are:\n");
-   printf("   --manual        enables tests that require user interaction\n");
+   printf("   -m, --manual    enables tests that require user interaction\n");
    printf("   --noplatform    do not run the platform tests\n");
    printf("   --norwops       do not run the rwops tests\n");
    printf("   --nosurface     do not run the surface tests\n");
@@ -63,7 +63,7 @@ static void print_usage( const char *name )
 static void parse_options( int argc, char *argv[] )
 {
    static struct option long_options[] = {
-      { "manual", no_argument, 0, 0 },
+      { "manual", no_argument, 0, 'm' },
       { "noplatform", no_argument, 0, 0 },
       { "norwops", no_argument, 0, 0 },
       { "nosurface", no_argument, 0, 0 },
@@ -97,6 +97,10 @@ static void parse_options( int argc, char *argv[] )
                run_render = 0;
             break;
 
+         /* Manual. */
+         case 'm':
+            run_manual = 1;
+            break;
 
          /* Verbosity. */
          case 'v':
