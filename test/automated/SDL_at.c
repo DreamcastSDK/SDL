@@ -262,31 +262,6 @@ int SDL_ATprintErr( const char *msg, ... )
 
 
 /**
- * @brief Displays a message.
- */
-int SDL_ATprint( const char *msg, ... )
-{
-   va_list ap;
-   int ret;
-
-   /* Only print if not quiet. */
-   if (at_quiet)
-      return 0;
-
-   /* Make sure there is something to print. */
-   if (msg == NULL)
-      return 0;
-   else {
-      va_start(ap, msg);
-      ret = vfprintf( stdout, msg, ap );
-      va_end(ap);
-   }
-
-   return ret;
-}
-
-
-/**
  * @brief Displays a verbose message.
  */
 int SDL_ATprintVerbose( int level, const char *msg, ... )
