@@ -24,10 +24,13 @@
 /*
  * Tests to run.
  */
-static int run_platform    = 1;
-static int run_rwops       = 1;
-static int run_surface     = 1;
-static int run_render      = 1;
+static int run_manual      = 0; /**< Run manual tests. */
+/* Manual. */
+/* Automatic. */
+static int run_platform    = 1; /**< Run platform tests. */
+static int run_rwops       = 1; /**< Run RWops tests. */
+static int run_surface     = 1; /**< Run surface tests. */
+static int run_render      = 1; /**< Run render tests. */
 
 /*
  * Prototypes.
@@ -43,6 +46,7 @@ static void print_usage( const char *name )
 {
    printf("Usage: %s [OPTIONS]\n", name);
    printf("Options are:\n");
+   printf("   --manual        enables tests that require user interaction\n");
    printf("   --noplatform    do not run the platform tests\n");
    printf("   --norwops       do not run the rwops tests\n");
    printf("   --nosurface     do not run the surface tests\n");
@@ -59,6 +63,7 @@ static void print_usage( const char *name )
 static void parse_options( int argc, char *argv[] )
 {
    static struct option long_options[] = {
+      { "manual", no_argument, 0, 0 },
       { "noplatform", no_argument, 0, 0 },
       { "norwops", no_argument, 0, 0 },
       { "nosurface", no_argument, 0, 0 },
@@ -121,6 +126,7 @@ int main( int argc, char *argv[] )
 {
    parse_options( argc, argv );
 
+   /* Automatic tests. */
    if (run_platform)
       test_platform();
    if (run_rwops)
@@ -129,6 +135,10 @@ int main( int argc, char *argv[] )
       test_surface();
    if (run_render)
       test_render();
+
+   /* Manual tests. */
+   if (run_manual) {
+   }
 
    return 0;
 }
