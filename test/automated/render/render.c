@@ -570,14 +570,14 @@ static int render_testBlit (void)
    if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
       return -1;
 
-   /* Clean up. */
-   SDL_FreeSurface( face );
-
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
    ni     = SCREEN_W - face->w;
    nj     = SCREEN_H - face->h;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
 
    /* Loop blit. */
    for (j=0; j <= nj; j+=4) {
@@ -631,14 +631,14 @@ static int render_testBlitColour (void)
    if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
       return -1;
 
-   /* Clean up. */
-   SDL_FreeSurface( face );
-
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
    ni     = SCREEN_W - face->w;
    nj     = SCREEN_H - face->h;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
 
    /* Test blitting with colour mod. */
    for (j=0; j <= nj; j+=4) {
@@ -698,14 +698,14 @@ static int render_testBlitAlpha (void)
    if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
       return -1;
 
-   /* Clean up. */
-   SDL_FreeSurface( face );
-
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
    ni     = SCREEN_W - face->w;
    nj     = SCREEN_H - face->h;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
 
    /* Clear surface. */
    if (render_clearScreen())
@@ -812,14 +812,6 @@ static int render_testBlitBlend (void)
    if (SDL_ATassert( "SDL_CreateTextureFromSurface", tface != 0))
       return -1;
 
-   /* Clean up. */
-   SDL_FreeSurface( face );
-
-   /* Set alpha mod. */
-   ret = SDL_SetRenderDrawColor( 255, 255, 255, 100 );
-   if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
-      return -1;
-
    /* Steps to take. */
    ni     = SCREEN_W - FACE_W;
    nj     = SCREEN_H - FACE_H;
@@ -827,6 +819,14 @@ static int render_testBlitBlend (void)
    /* Constant values. */
    rect.w = face->w;
    rect.h = face->h;
+
+   /* Clean up. */
+   SDL_FreeSurface( face );
+
+   /* Set alpha mod. */
+   ret = SDL_SetRenderDrawColor( 255, 255, 255, 100 );
+   if (SDL_ATassert( "SDL_SetRenderDrawColor", ret == 0))
+      return -1;
 
    /* Test None. */
    if (render_testBlitBlendMode( tface, SDL_BLENDMODE_NONE ))
