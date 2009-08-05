@@ -12,22 +12,31 @@
  *
  * @brief Handles automatic testing functionality.
  *
- * You create a testsuite and then run multiple testcases within that suite.
+ * The basic approach with SDL_AT is to divide the tests into what are called
+ *  test suites and test cases. Each test suite should have multiple test
+ *  cases, each test case can have multiple asserts.
+ *
+ * To actually test for conditions within the testcase you check asserts, if
+ *  the asserts fail the failures will be logged in the testsuite and
+ *  displayed.
+ *
  *  Syntax is similar to OpenGL. An example would be:
  *
  * @code
- * int f;
+ * int f; // Number failed
  * SDL_ATinit( "My testsuite" );
  *
  * SDL_ATbegin( "My first testcase" );
  * if (!SDL_ATassert( (1+1)==2, "Trying '1+1=2'."))
- *    return;
+ *    return; // Implicitly calls SDL_ATend if assert fails
+ * SDL_ATend(); // Finish testcase
  *
  * SDL_ATbegin( "My second testcase" );
  * if (!SDL_ATassert( (4/2)==2, "Trying '4/2=2'."))
- *    return;
+ *    return; // Implicitly calls SDL_ATend if assert fails
+ * SDL_ATend(); // Finish testcase
  *
- * f = SDL_ATend();
+ * f = SDL_ATfinish();
  * @endcode
  *
  * @author Edgar Simo "bobbens"
@@ -40,8 +49,8 @@
 
 
 enum {
-   SDL_AT_VERBOSE,
-   SDL_AT_QUIET
+   SDL_AT_VERBOSE, /**< Sets the verbose level. */
+   SDL_AT_QUIET /**< Sets quietness. */
 };
 
 
@@ -57,7 +66,7 @@ void SDL_ATinit( const char *suite );
 /**
  * @brief Finishes the testsuite printing out global results if verbose.
  *
- *    @param verbose Displays global results.
+ *    @return 0 if no errors occurred, otherwise number of failures.
  */
 int SDL_ATfinish (void);
 /**
