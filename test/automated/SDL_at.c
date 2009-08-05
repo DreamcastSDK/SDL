@@ -31,6 +31,14 @@ static int at_verbose = 0; /**< Verbosity. */
 static int at_quiet = 0; /**< Quietness. */
 
 
+/*
+ * Prototypes.
+ */
+static void SDL_ATcleanup (void);
+static void SDL_ATendWith( int success );
+static void SDL_ATassertFailed( const char *msg );
+
+
 /**
  * @brief Cleans up the automated testsuite state.
  */
@@ -193,16 +201,29 @@ static void SDL_ATendWith( int success )
 
 
 /**
+ * @brief Display failed assert message.
+ */
+static void SDL_ATassertFailed( const char *msg )
+{
+   /* Print. */
+   SDL_ATprintErr( "Assert Failed!\n" );
+   SDL_ATprintErr( "   %s\n", msg );
+   SDL_ATprintErr( "   Test Case '%s'\n", at_test_msg );
+   SDL_ATprintErr( "   Test Suite '%s'\n", at_suite_msg );
+   /* End. */
+   SDL_ATendWith(0);
+}
+
+
+/**
  * @brief Testcase test.
  */
 int SDL_ATassert( const char *msg, int condition )
 {
    /* Condition failed. */
    if (!condition) {
-      /* Print. */
-      SDL_ATprintErr( "%s [%s] : %s\n", at_suite_msg, at_test_msg, msg );
-      /* End. */
-      SDL_ATendWith(0);
+      /* Failed message. */
+      SDL_ATassertFailed(msg);
    }
    return !condition;
 }
@@ -222,10 +243,8 @@ int SDL_ATvassert( int condition, const char *msg, ... )
       va_start( args, msg );
       vsnprintf( buf, sizeof(buf), msg, args );
       va_end( args );
-      /* Print. */
-      SDL_ATprintErr( "%s [%s] : %s\n", at_suite_msg, at_test_msg, buf );
-      /* End. */
-      SDL_ATendWith(0);
+      /* Failed message. */
+      SDL_ATassertFailed( buf );
    }
    return !condition;
 }
