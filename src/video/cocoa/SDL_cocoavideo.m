@@ -103,6 +103,8 @@ Cocoa_CreateDevice(int devindex)
 #endif
 
     device->StartTextInput = Cocoa_StartTextInput;
+    device->StopTextInput = Cocoa_StopTextInput;
+    device->SetTextInputRect = Cocoa_SetTextInputRect;
 
     device->free = Cocoa_DeleteDevice;
 

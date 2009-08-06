@@ -59,17 +59,24 @@
     NSString *_markedText;
     NSRange   _markedRange;
     NSRange   _selectedRange;
-    SDL_Rect inputRect;
+    SDL_Rect  _inputRect;
+    int       _keyboard;
 }
 - (void) doCommandBySelector:(SEL)myselector;
 - (void) setInputRect:(SDL_Rect *) rect;
+- (void) setKeyboard:(int) keyboard;
 @end
 
 @implementation SDLTranslatorResponder
 
+- (void) setKeyboard:(int) keyboard
+{
+    _keyboard = keyboard;
+}
+
 - (void) setInputRect:(SDL_Rect *) rect
 {
-    inputRect = *rect;
+    _inputRect = *rect;
 }
 
 - (void) insertText:(id) aString
@@ -85,7 +92,7 @@
     else
         str = [aString UTF8String];
 
-    SDL_SendKeyboardText(0, str);
+    SDL_SendKeyboardText(_keyboard, str);
 }
 
 - (void) doCommandBySelector:(SEL) myselector
@@ -145,7 +152,7 @@
 - (NSRect) firstRectForCharacterRange: (NSRange) theRange
 {
     float windowHeight = [[self window] frame].size.height;
-    NSRect rect = NSMakeRect(inputRect.x, windowHeight - inputRect.y, inputRect.w, inputRect.h);
+    NSRect rect = NSMakeRect(_inputRect.x, windowHeight - _inputRect.y, _inputRect.w, _inputRect.h);
 
     NSLog(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
             theRange.location, theRange.length, windowHeight,
@@ -585,6 +592,7 @@ Cocoa_InitKeyboard(_THIS)
     
     SDL_zero(keyboard);
     data->keyboard = SDL_AddKeyboard(&keyboard, -1);
+    [data->fieldEdit setKeyboard: data->keyboard];
     UpdateKeymap(data);
     
     /* Set our own names for the platform-dependent but layout-independent keys */
@@ -597,12 +605,40 @@ Cocoa_InitKeyboard(_THIS)
 }
 
 void
-Cocoa_StartTextInput(_THIS, SDL_Rect *rect)
+Cocoa_StartTextInput(_THIS, SDL_Window *window)
+{
+    SDL_VideoData *videoData = (SDL_VideoData *) _this->driverdata;
+    SDL_WindowData *windowData = (SDL_WindowData *) window->driverdata;
+    NSView *parentView = [windowData->window contentView];
+
+    if (! [[videoData->fieldEdit superview] isEqual: parentView])
+    {
+        NSLog(@"add fieldEdit to window contentView");
+        [videoData->fieldEdit removeFromSuperview];
+        [parentView addSubview: videoData->fieldEdit];
+        [windowData->window makeFirstResponder: videoData->fieldEdit];
+    }
+
+    SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
+    SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+}
+
+void
+Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    NSLog(@"StartTextInput: (%d, %d) (w=%d, h=%d)", rect->x, rect->y, rect->w, rect->h);
     [data->fieldEdit setInputRect: rect];
+}
+
+void
+Cocoa_StopTextInput(_THIS)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    [data->fieldEdit removeFromSuperview];
+    SDL_EventState(SDL_TEXTINPUT, SDL_IGNORE);
+    SDL_EventState(SDL_TEXTEDITING, SDL_IGNORE);
 }
 
 void
@@ -641,13 +677,6 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
             NSLog(@"interpretKeyEvents");
-            if (! [[data->fieldEdit superview] isEqual: [[event window] contentView]])
-            {
-                NSLog(@"add fieldEdit to window contentView");
-                [data->fieldEdit removeFromSuperview];
-                [[[event window] contentView] addSubview: data->fieldEdit];
-                [[event window] makeFirstResponder: data->fieldEdit];
-            }
             [data->fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
 #if 0
             text = [[event characters] UTF8String];

@@ -3068,10 +3068,28 @@ SDL_GetWindowWMInfo(SDL_WindowID windowID, struct SDL_SysWMinfo *info)
 }
 
 void
-SDL_StartTextInput(SDL_Rect *rect)
+SDL_StartTextInput(SDL_WindowID windowID)
 {
+    SDL_Window *window = SDL_GetWindowFromID(windowID);
+
     if (_this->StartTextInput) {
-        _this->StartTextInput(_this, rect);
+        _this->StartTextInput(_this, window);
+    }
+}
+
+void
+SDL_StopTextInput(void)
+{
+    if (_this->StopTextInput) {
+        _this->StopTextInput(_this);
+    }
+}
+
+void
+SDL_SetTextInputRect(SDL_Rect *rect)
+{
+    if (_this->SetTextInputRect) {
+        _this->SetTextInputRect(_this, rect);
     }
 }
 

@@ -1468,11 +1468,32 @@ extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_WindowID windowID);
 extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
 /**
- * \fn void SDL_StartTextInput(SDL_rect *rect)
+ * \fn void SDL_StartTextInput(SDL_WindowID windowID)
  *
- * \brief Start Unicode text input within the given rectangle.
+ * \brief Start accepting Unicode text input events in given window.
+ *
+ * \sa SDL_StopTextInput()
+ * \sa SDL_SetTextInputRect()
  */
-extern DECLSPEC void SDLCALL SDL_StartTextInput(SDL_Rect *rect);
+extern DECLSPEC void SDLCALL SDL_StartTextInput(SDL_WindowID windowID);
+
+/**
+ * \fn void SDL_StopTextInput(void)
+ *
+ * \brief Stop receiving any text input events.
+ *
+ * \sa SDL_StartTextInput()
+ */
+extern DECLSPEC void SDLCALL SDL_StopTextInput(void);
+
+/**
+ * \fn void SDL_SetTextInputRect(SDL_Rect *rect)
+ *
+ * \brief Set the rectangle used to type Unicode text inputs.
+ *
+ * \sa SDL_StartTextInput()
+ */
+extern DECLSPEC void SDLCALL SDL_SetTextInputRect(SDL_Rect *rect);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
