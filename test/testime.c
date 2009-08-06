@@ -8,7 +8,7 @@
 #include <SDL/SDL_ttf.h>
  
 #define DEFAULT_PTSIZE  30
-#define DEFAULT_FONT    "DroidSansFallback.ttf"
+#define DEFAULT_FONT    "/System/Library/Fonts/华文细黑.ttf"
 #define MAX_TEXT_LENGTH 256
 
 SDL_Surface *screen;
@@ -18,9 +18,38 @@ Uint32 lineColor, backColor;
 SDL_Color textColor = { 0, 0, 0 };
 char text[MAX_TEXT_LENGTH], *markedText;
 
+void usage()
+{
+    printf("usage: testime [--font fontfile] [--fullscreen]\n");
+    exit(0);
+}
+
 void InitVideo(int argc, char *argv[])
 {
     int width = 500, height = 250;
+    int flags = SDL_HWSURFACE;
+    const char *fontname = DEFAULT_FONT;
+    int fullscreen = 0;
+
+    for (argc--, argv++; argc > 0; argc--, argv++)
+    {
+        if (strcmp(argv[0], "--help") == 0)
+            usage();
+
+        else if (strcmp(argv[0], "--fullscreen") == 0)
+            fullscreen = 1;
+
+        else if (strcmp(argv[0], "--font") == 0)
+        {
+            argc--;
+            argv++;
+
+            if (argc > 0)
+                fontname = argv[0];
+            else
+                usage();
+        }
+    }
 
     SDL_putenv("SDL_VIDEO_WINDOW_POS=center");
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -32,17 +61,17 @@ void InitVideo(int argc, char *argv[])
     /* Initialize fonts */
     TTF_Init();
 
-    font = TTF_OpenFont(DEFAULT_FONT, DEFAULT_PTSIZE);
+    font = TTF_OpenFont(fontname, DEFAULT_PTSIZE);
     if (! font)
     {
         fprintf(stderr, "Failed to find font: %s\n", SDL_GetError());
         exit(-1);
     }
 
+    printf("Using font: %s\n", fontname);
     atexit(SDL_Quit);
 
-    int flags = SDL_HWSURFACE;
-    if (argc > 1 && strcmp(argv[1], "--fullscreen") == 0)
+    if (fullscreen)
     {
         SDL_DisplayMode mode;
         SDL_GetDesktopDisplayMode(&mode);
@@ -123,8 +152,11 @@ void Redraw()
         return;
     }
 
-    SDL_FillRect(screen, &markedRect, backColor);
+    cursorRect = markedRect;
+    cursorRect.w = 2;
+    cursorRect.h = h;
 
+    SDL_FillRect(screen, &markedRect, backColor);
     if (markedText)
     {
         RenderText(screen, font, markedText, markedRect.x, markedRect.y, textColor);
@@ -134,12 +166,12 @@ void Redraw()
         underlineRect.y += (h - 2);
         underlineRect.h = 2;
         underlineRect.w = w;
+
+        cursorRect.x += w + 1;
+
         SDL_FillRect(screen, &underlineRect, lineColor);
     }
 
-    cursorRect = markedRect;
-    cursorRect.w = 2;
-    cursorRect.h = h;
     SDL_FillRect(screen, &cursorRect, lineColor);
 
     SDL_Flip(screen);
