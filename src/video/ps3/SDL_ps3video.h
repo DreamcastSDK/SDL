@@ -36,7 +36,7 @@
  * 2: SPE debug messages
  * 3: Memory adresses
  */
-#define DEBUG_LEVEL 1
+#define DEBUG_LEVEL 0
 
 #ifdef DEBUG_LEVEL
 #define deprintf( level, fmt, args... ) \
@@ -68,10 +68,10 @@ typedef struct SDL_VideoData
     volatile struct fb_writer_parms_t * fb_parms __attribute__((aligned(128)));
 } SDL_VideoData;
 
-typedef struct
+typedef struct SDL_DisplayModeData
 {
     unsigned long mode;
-    struct ps3fb_ioctl_res res;
+    //struct ps3fb_ioctl_res res;
 } PS3_DisplayModeData;
 
 #endif /* _SDL_ps3video_h */
