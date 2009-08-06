@@ -278,7 +278,9 @@ struct SDL_VideoDevice
     void (*SuspendScreenSaver) (_THIS);
 
     /* Text input */
-    void (*StartTextInput) (_THIS, SDL_Rect *rect);
+    void (*StartTextInput) (_THIS, SDL_Window *window);
+    void (*StopTextInput) (_THIS);
+    void (*SetTextInputRect) (_THIS, SDL_Rect *rect);
 
     /* * * */
     /* Data common to all drivers */
