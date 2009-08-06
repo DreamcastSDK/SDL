@@ -54,7 +54,7 @@
     #define NX_DEVICERCTLKEYMASK    0x00002000
 #endif
 
-@interface SDLTranslatorResponder : NSTextView
+@interface SDLTranslatorResponder : NSView <NSTextInput>
 {
     NSString *_markedText;
     NSRange   _markedRange;
@@ -97,7 +97,6 @@
 
 - (void) doCommandBySelector:(SEL) myselector
 {
-    NSLog(@"doCommandBySelector, passed down");
     [super doCommandBySelector: myselector];
 }
 
@@ -152,7 +151,8 @@
 - (NSRect) firstRectForCharacterRange: (NSRange) theRange
 {
     float windowHeight = [[self window] frame].size.height;
-    NSRect rect = NSMakeRect(_inputRect.x, windowHeight - _inputRect.y, _inputRect.w, _inputRect.h);
+    NSRect rect = NSMakeRect(_inputRect.x, windowHeight - _inputRect.y - _inputRect.h,
+                             _inputRect.w, _inputRect.h);
 
     NSLog(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
             theRange.location, theRange.length, windowHeight,
@@ -584,15 +584,9 @@ Cocoa_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_Keyboard keyboard;
-    NSAutoreleasePool *pool;
 
-    pool = [[NSAutoreleasePool alloc] init];
-    data->fieldEdit = [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
-    [pool release];
-    
     SDL_zero(keyboard);
     data->keyboard = SDL_AddKeyboard(&keyboard, -1);
-    [data->fieldEdit setKeyboard: data->keyboard];
     UpdateKeymap(data);
     
     /* Set our own names for the platform-dependent but layout-independent keys */
@@ -605,19 +599,24 @@ Cocoa_InitKeyboard(_THIS)
 }
 
 void
-Cocoa_StartTextInput(_THIS, SDL_Window *window)
+Cocoa_StartTextInput(_THIS)
 {
-    SDL_VideoData *videoData = (SDL_VideoData *) _this->driverdata;
-    SDL_WindowData *windowData = (SDL_WindowData *) window->driverdata;
-    NSView *parentView = [windowData->window contentView];
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    NSView *parentView = [[NSApp keyWindow] contentView];
 
-    if (! [[videoData->fieldEdit superview] isEqual: parentView])
+    data->fieldEdit = [[SDLTranslatorResponder alloc] initWithFrame:NSMakeRect(0.0, 0.0, 0.0, 0.0)];
+    [data->fieldEdit setKeyboard: data->keyboard];
+
+    if (! [[data->fieldEdit superview] isEqual: parentView])
     {
         NSLog(@"add fieldEdit to window contentView");
-        [videoData->fieldEdit removeFromSuperview];
-        [parentView addSubview: videoData->fieldEdit];
-        [windowData->window makeFirstResponder: videoData->fieldEdit];
+        [data->fieldEdit removeFromSuperview];
+        [parentView addSubview: data->fieldEdit];
+        [[NSApp keyWindow] makeFirstResponder: data->fieldEdit];
     }
+
+    [pool release];
 
     SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
     SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
@@ -636,7 +635,12 @@ Cocoa_StopTextInput(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [data->fieldEdit removeFromSuperview];
+    [data->fieldEdit release];
+    data->fieldEdit = nil;
+    [pool release];
+
     SDL_EventState(SDL_TEXTINPUT, SDL_IGNORE);
     SDL_EventState(SDL_TEXTEDITING, SDL_IGNORE);
 }
@@ -676,7 +680,6 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         }
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             /* FIXME CW 2007-08-16: only send those events to the field editor for which we actually want text events, not e.g. esc or function keys. Arrow keys in particular seem to produce crashes sometimes. */
-            NSLog(@"interpretKeyEvents");
             [data->fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
 #if 0
             text = [[event characters] UTF8String];
@@ -706,10 +709,6 @@ Cocoa_QuitKeyboard(_THIS)
     NSAutoreleasePool *pool;
 
     SDL_DelKeyboard(data->keyboard);
-
-    pool = [[NSAutoreleasePool alloc] init];
-    [data->fieldEdit release];
-    [pool release];
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -278,7 +278,7 @@ struct SDL_VideoDevice
     void (*SuspendScreenSaver) (_THIS);
 
     /* Text input */
-    void (*StartTextInput) (_THIS, SDL_Window *window);
+    void (*StartTextInput) (_THIS);
     void (*StopTextInput) (_THIS);
     void (*SetTextInputRect) (_THIS, SDL_Rect *rect);
 
@@ -428,7 +428,6 @@ extern void SDL_OnWindowHidden(SDL_Window * window);
 extern void SDL_OnWindowResized(SDL_Window * window);
 extern void SDL_OnWindowFocusGained(SDL_Window * window);
 extern void SDL_OnWindowFocusLost(SDL_Window * window);
-extern SDL_WindowID SDL_GetFocusWindow(void);
 
 #endif /* _SDL_sysvideo_h */
 
