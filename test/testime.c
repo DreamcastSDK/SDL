@@ -11,33 +11,22 @@
 #define DEFAULT_FONT    "DroidSansFallback.ttf"
 #define MAX_TEXT_LENGTH 256
 
-static void render_text(SDL_Surface *sur,
-                        TTF_Font *font,
-                        const char *text,
-                        int x, int y,
-                        SDL_Color color)
+SDL_Surface *screen;
+TTF_Font *font;
+SDL_Rect textRect, markedRect;
+Uint32 lineColor, backColor;
+SDL_Color textColor = { 0, 0, 0 };
+char text[MAX_TEXT_LENGTH], *markedText;
+
+void InitVideo(int argc, char *argv[])
 {
-    SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, text, color);
-    SDL_Rect dest = { x, y, textSur->w, textSur->h };
-
-    SDL_BlitSurface(textSur, NULL, sur, &dest);
-    SDL_FreeSurface(textSur);
-}
-
-int main(int argc, char *argv[])
-{
-    int width, height;
-    SDL_Surface *screen;
-    TTF_Font *font;
-
-    width = 500, height = 250;
+    int width = 500, height = 250;
 
     SDL_putenv("SDL_VIDEO_WINDOW_POS=center");
-
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
-        return -1;
+        exit(-1);
     }
 
     /* Initialize fonts */
@@ -52,38 +41,140 @@ int main(int argc, char *argv[])
 
     atexit(SDL_Quit);
 
+    int flags = SDL_HWSURFACE;
+    if (argc > 1 && strcmp(argv[1], "--fullscreen") == 0)
+    {
+        SDL_DisplayMode mode;
+        SDL_GetDesktopDisplayMode(&mode);
+
+        width = mode.w;
+        height = mode.h;
+        fprintf(stderr, "%dx%d\n", width, height);
+        flags |= SDL_FULLSCREEN;
+    }
+
     /* Create window */
-    screen = SDL_SetVideoMode(width, height, 32,
-                              SDL_HWSURFACE | SDL_DOUBLEBUF);
+    screen = SDL_SetVideoMode(width, height, 32, flags);
     if (screen == NULL)
     {
         fprintf(stderr, "Unable to set %dx%d video: %s\n",
                 width, height, SDL_GetError());
-        return -1;
+        exit(-1);
     }
+}
+
+void CleanupVideo()
+{
+    TTF_CloseFont(font);
+    TTF_Quit();
+}
+
+void InitInput()
+{
+    backColor = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
+    lineColor = SDL_MapRGB(screen->format, 0x0, 0x0, 0x0);
 
     /* Prepare a rect for text input */
-    SDL_Rect textRect = { 100, 80, 300, 50 }, markedRect, underlineRect, cursorRect;
-    Uint32 backColor = SDL_MapRGB(screen->format, 0xFF, 0xFF, 0xFF);
-    Uint32 lineColor = SDL_MapRGB(screen->format, 0x0, 0x0, 0x0);
-    SDL_Color textColor = { 0, 0, 0 };
+    textRect.x = textRect.y = 100;
+    textRect.w = screen->w - 2 * textRect.x;
+    textRect.h = 50;
+
+    text[0] = 0;
+    markedRect = textRect;
+    markedText = NULL;
+}
+
+static void RenderText(SDL_Surface *sur,
+                        TTF_Font *font,
+                        const char *text,
+                        int x, int y,
+                        SDL_Color color)
+{
+    SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, text, color);
+    SDL_Rect dest = { x, y, textSur->w, textSur->h };
+
+    SDL_BlitSurface(textSur, NULL, sur, &dest);
+    SDL_FreeSurface(textSur);
+}
+
+void Redraw()
+{
+    int w = 0, h = textRect.h;
+    SDL_Rect cursorRect, underlineRect;
+
     SDL_FillRect(screen, &textRect, backColor);
 
-    markedRect = textRect;
-    SDL_StartTextInput(&markedRect);
+    if (strlen(text))
+    {
+        RenderText(screen, font, text, textRect.x, textRect.y, textColor);
+        TTF_SizeUTF8(font, text, &w, &h);
+    }
+
+    markedRect.x = textRect.x + w;
+    markedRect.w = textRect.w - w;
+    if (markedRect.w < 0)
+    {
+        SDL_Flip(screen);
+        return;
+    }
+
+    SDL_FillRect(screen, &markedRect, backColor);
+
+    if (markedText)
+    {
+        RenderText(screen, font, markedText, markedRect.x, markedRect.y, textColor);
+        TTF_SizeUTF8(font, markedText, &w, &h);
+
+        underlineRect = markedRect;
+        underlineRect.y += (h - 2);
+        underlineRect.h = 2;
+        underlineRect.w = w;
+        SDL_FillRect(screen, &underlineRect, lineColor);
+    }
+
+    cursorRect = markedRect;
+    cursorRect.w = 2;
+    cursorRect.h = h;
+    SDL_FillRect(screen, &cursorRect, lineColor);
 
     SDL_Flip(screen);
 
+    SDL_StartTextInput(&markedRect);
+}
+
+void
+HotKey_ToggleFullScreen(void)
+{
+    SDL_Surface *screen;
+
+    screen = SDL_GetVideoSurface();
+    if (SDL_WM_ToggleFullScreen(screen)) {
+        printf("Toggled fullscreen mode - now %s\n",
+               (screen->flags & SDL_FULLSCREEN) ? "fullscreen" : "windowed");
+    } else {
+        printf("Unable to toggle fullscreen mode\n");
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    InitVideo(argc, argv);
+    InitInput();
+    Redraw();
+
     SDL_Event event;
-    int done = 0, inputed = 0;
-    int w, h;
-    char text[MAX_TEXT_LENGTH];
+    int done = 0;
 
     while (! done && SDL_WaitEvent(&event))
     {
         switch (event.type)
         {
         case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                done = 1;
+                break;
+            }
+
             fprintf(stderr,
                     "Keyboard %d: scancode 0x%08X = %s, keycode 0x%08X = %s\n",
                     event.key.which, event.key.keysym.scancode,
@@ -92,45 +183,30 @@ int main(int argc, char *argv[])
             break;
 
         case SDL_TEXTINPUT:
+            if (strlen(event.text.text) == 0 || event.text.text[0] == '\n' ||
+                markedRect.w < 0)
+                break;
+
             fprintf(stderr, "Keyboard %d: text input \"%s\"\n",
                     event.text.which, event.text.text);
 
-            if (inputed < sizeof(text))
-            {
-                strcpy(text + inputed, event.text.text);
-                inputed += strlen(event.text.text);
-            }
+            if (strlen(text) + strlen(event.text.text) < sizeof(text))
+                strcpy(text + strlen(text), event.text.text);
 
             fprintf(stderr, "text inputed: %s\n", text);
-            SDL_FillRect(screen, &textRect, backColor);
 
-            render_text(screen, font, text, textRect.x, textRect.y, textColor);
-            TTF_SizeUTF8(font, text, &w, &h);
-            markedRect.x = textRect.x + w;
-
-            cursorRect = markedRect;
-            cursorRect.w = 2;
-            cursorRect.h = h;
-            SDL_FillRect(screen, &cursorRect, lineColor);
-            SDL_Flip(screen);
-
-            SDL_StartTextInput(&markedRect);
+            // After text inputed, we can clear up markedText because it
+            // is committed
+            markedText = NULL;
+            Redraw();
             break;
 
         case SDL_TEXTEDITING:
             fprintf(stderr, "text editing \"%s\", selected range (%d, %d)\n",
                     event.edit.text, event.edit.start, event.edit.length);
 
-            SDL_FillRect(screen, &markedRect, backColor);
-            render_text(screen, font, event.edit.text, markedRect.x, markedRect.y, textColor);
-            TTF_SizeUTF8(font, event.edit.text, &w, &h);
-            underlineRect = markedRect;
-            underlineRect.y += (h - 2);
-            underlineRect.h = 2;
-            underlineRect.w = w;
-            SDL_FillRect(screen, &underlineRect, lineColor);
-
-            SDL_Flip(screen);
+            markedText = event.edit.text;
+            Redraw();
             break;
 
         case SDL_QUIT:
@@ -142,9 +218,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    TTF_CloseFont(font);
-    TTF_Quit();
-
+    CleanupVideo();
     return 0;
 }
 
