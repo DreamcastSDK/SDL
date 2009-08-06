@@ -36,6 +36,10 @@ problem.
 
    Advanced
 
+   By passing the "-h" or "--help" parameter to testsdl you can get an overview
+of all the possible options you can set to furthur tweak the testing. A sample
+of the options would be the following:
+
    Usage: ./testsdl [OPTIONS]
    Options are:
       -m, --manual    enables tests that require user interaction
@@ -46,4 +50,10 @@ problem.
       -v, --verbose   increases verbosity level by 1 for each -v
       -q, --quiet     only displays errors
       -h, --help      display this message and exit
+
+
+  
+  Developers
+
+  See SDL_at.h for developer information.
 
