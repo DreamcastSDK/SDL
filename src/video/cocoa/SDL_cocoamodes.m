@@ -248,6 +248,11 @@ Cocoa_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
         CGReleaseDisplayFadeReservation(fade_token);
     }
 
+    NSRect frame = [[NSScreen mainScreen] frame];
+    NSLog(@"mainScreen frame: %gx%g", frame.size.width, frame.size.height);
+
+    [[NSApp mainWindow] makeKeyAndOrderFront: nil];
+
     /* 
         There is a bug in Cocoa where NSScreen doesn't synchronize
         with CGDirectDisplay, so the main screen's frame is wrong.

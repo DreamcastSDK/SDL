@@ -65,6 +65,7 @@ void InitVideo(int argc, char *argv[])
 
 void CleanupVideo()
 {
+    SDL_StopTextInput();
     TTF_CloseFont(font);
     TTF_Quit();
 }
@@ -82,6 +83,8 @@ void InitInput()
     text[0] = 0;
     markedRect = textRect;
     markedText = NULL;
+
+    SDL_StartTextInput();
 }
 
 static void RenderText(SDL_Surface *sur,
@@ -115,6 +118,8 @@ void Redraw()
     if (markedRect.w < 0)
     {
         SDL_Flip(screen);
+        // Stop text input because we cannot hold any more characters
+        SDL_StopTextInput();
         return;
     }
 
@@ -139,7 +144,7 @@ void Redraw()
 
     SDL_Flip(screen);
 
-    SDL_StartTextInput(&markedRect);
+    SDL_SetTextInputRect(&markedRect);
 }
 
 void
