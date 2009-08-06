@@ -7,6 +7,7 @@
  */
 
 
+#include "SDL.h"
 #include "SDL_at.h"
 
 #include "platform/platform.h"
@@ -128,22 +129,50 @@ static void parse_options( int argc, char *argv[] )
  */
 int main( int argc, char *argv[] )
 {
+   int failed;
+   int rev;
+   SDL_version ver;
+
+   /* Get options. */
    parse_options( argc, argv );
+
+   /* Defaults. */
+   failed = 0;
+
+   /* Print some text if verbose. */
+   SDL_GetVersion( &ver );
+   rev = SDL_GetRevision();
+   SDL_ATprintVerbose( 1, "Running tests with SDL %d.%d.%d revision %d\n",
+         ver.major, ver.minor, ver.patch, rev );
 
    /* Automatic tests. */
    if (run_platform)
-      test_platform();
+      failed += test_platform();
    if (run_rwops)
-      test_rwops();
+      failed += test_rwops();
    if (run_surface)
-      test_surface();
+      failed += test_surface();
    if (run_render)
-      test_render();
+      failed += test_render();
 
    /* Manual tests. */
    if (run_manual) {
    }
 
-   return 0;
+   /* Display more information if failed. */
+   if (failed > 0) {
+      SDL_ATprintErr( "Tests run with SDL %d.%d.%d revision %d\n",
+            ver.major, ver.minor, ver.patch, rev );
+      SDL_ATprintErr( "System is running %s and is %s endian\n",
+            platform_getPlatform(),
+#ifdef SDL_LIL_ENDIAN
+            "little"
+#else
+            "big"
+#endif
+            );
+   }
+
+   return failed;
 }
 
