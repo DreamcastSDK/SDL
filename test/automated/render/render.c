@@ -970,6 +970,7 @@ int main( int argc, const char *argv[] )
 int test_render (void)
 {
 #endif /* TEST_STANDALONE */
+   int failed;
    int i, j, nd, nr;
    int ret;
    const char *driver, *str;
@@ -997,6 +998,7 @@ int test_render (void)
     * Surface on video mode tests.
     */
    /* Run for all video modes. */
+   failed = 0;
    for (i=0; i<nd; i++) {
       /* Get video mode. */
       driver = SDL_GetVideoDriver(i);
@@ -1058,7 +1060,8 @@ int test_render (void)
          /*
           * Run tests.
           */
-         if (render_runTests())
+         ret = render_runTests();
+         if (ret)
             continue;
 
          SDL_ATend();
@@ -1070,16 +1073,16 @@ int test_render (void)
       /*
        * Finish testsuite.
        */
-      SDL_ATfinish();
+      failed += SDL_ATfinish();
    }
 
 
    /* Exit SDL. */
    SDL_Quit();
 
-   return 0;
+   return failed;
 
 err:
-   return -1;
+   return 1;
 }
 

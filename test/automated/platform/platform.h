@@ -11,6 +11,7 @@
 #  define _TEST_PLATFORM
 
 
+const char *platform_getPlatform (void);
 int test_platform (void);
 
 
