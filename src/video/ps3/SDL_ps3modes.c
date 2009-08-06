@@ -34,7 +34,7 @@ PS3_InitModes(_THIS)
     unsigned long vid = 0;
 
     modedata = (PS3_DisplayModeData *) SDL_malloc(sizeof(*modedata));
-    if (!displaydata) {
+    if (!modedata) {
         return;
     }
 
@@ -64,22 +64,53 @@ PS3_InitModes(_THIS)
     deprintf(1, "-PS3_InitModes()\n");
 }
 
+static SDL_DisplayMode ps3fb_modedb[] = {
+    /* VESA */
+    {SDL_PIXELFORMAT_RGB888, 1280, 768, 0, NULL}, // WXGA
+    {SDL_PIXELFORMAT_RGB888, 1280, 1024, 0, NULL}, // SXGA
+    {SDL_PIXELFORMAT_RGB888, 1920, 1200, 0, NULL}, // WUXGA
+    /* Native resolutions (progressive, "fullscreen") */
+    {SDL_PIXELFORMAT_RGB888, 720, 480, 0, NULL}, // 480p
+    {SDL_PIXELFORMAT_RGB888, 1280, 720, 0, NULL}, // 720p
+    {SDL_PIXELFORMAT_RGB888, 1920, 1080, 0, NULL} // 1080p
+};
+
+static PS3_DisplayModeData ps3fb_data[] = {
+    {11}, {12}, {13}, {130}, {131}, {133}, 
+};
+
 void
 PS3_GetDisplayModes(_THIS) {
     deprintf(1, "+PS3_GetDisplayModes()\n");
+    SDL_DisplayMode mode;
+    unsigned int nummodes;
+
+    nummodes = sizeof(ps3fb_modedb) / sizeof(SDL_DisplayMode);
+
+    int n;
+    for (n=0; n<nummodes; ++n) {
+        /* Get driver specific mode data */
+        ps3fb_modedb[n].driverdata = &ps3fb_data[n];
+
+        /* Add DisplayMode to list */
+        deprintf(2, "Adding resolution %u x %u\n", ps3fb_modedb[n].w, ps3fb_modedb[n].h);
+        SDL_AddDisplayMode(_this->current_display, &ps3fb_modedb[n]);
+    }
     deprintf(1, "-PS3_GetDisplayModes()\n");
 }
 
-static int
+int
 PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 {
     deprintf(1, "+PS3_SetDisplayMode()\n");
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    SDL_DisplayData *dispdata = (SDL_DisplayData *) mode->driverdata;
+    PS3_DisplayModeData *dispdata = (PS3_DisplayModeData *) mode->driverdata;
 
-    /* We don't care about the current DisplayMode for now */
+    /* Set the new DisplayMode */
+    deprintf(2, "Setting PS3FB_MODE to %u\n", dispdata->mode);
     if (ioctl(data->fbdev, PS3FB_IOCTL_SETMODE, (unsigned long)&dispdata->mode)) {
-        SDL_SetError("Could not set videomode\n");
+        deprintf(2, "Could not set PS3FB_MODE\n");
+        SDL_SetError("Could not set PS3FB_MODE\n");
         return -1;
     }
 
@@ -90,6 +121,16 @@ PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
 void
 PS3_QuitModes(_THIS) {
     deprintf(1, "+PS3_QuitModes()\n");
+
+    /* There was no mem allocated for driverdata */
+    int i, j;
+    for (i = _this->num_displays; i--;) {
+        SDL_VideoDisplay *display = &_this->displays[i];
+        for (j = display->num_display_modes; j--;) {
+            display->display_modes[j].driverdata = NULL;
+        }
+    }
+
     deprintf(1, "-PS3_QuitModes()\n");
 }
 

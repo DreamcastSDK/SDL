@@ -59,27 +59,29 @@ extern spe_program_handle_t fb_writer_spu;
 static int
 PS3_Available(void)
 {
-    deprintf(1, "PS3_Available()\n");
+    deprintf(1, "+PS3_Available()\n");
     const char *envr = SDL_getenv("SDL_VIDEODRIVER");
     if ((envr) && (SDL_strcmp(envr, PS3VID_DRIVER_NAME) == 0)) {
         return (1);
     }
 
+    deprintf(1, "-PS3_Available()\n");
     return (0);
 }
 
 static void
 PS3_DeleteDevice(SDL_VideoDevice * device)
 {
-    deprintf(1, "PS3_DeleteDevice()\n");
+    deprintf(1, "+PS3_DeleteDevice()\n");
     SDL_free(device->driverdata);
     SDL_free(device);
+    deprintf(1, "-PS3_DeleteDevice()\n");
 }
 
 static SDL_VideoDevice *
 PS3_CreateDevice(int devindex)
 {
-    deprintf(1, "PS3_CreateDevice()\n");
+    deprintf(1, "+PS3_CreateDevice()\n");
     SDL_VideoDevice *device;
     SDL_VideoData *data;
 
@@ -109,6 +111,7 @@ PS3_CreateDevice(int devindex)
 
     device->free = PS3_DeleteDevice;
 
+    deprintf(1, "-PS3_CreateDevice()\n");
     return device;
 }
 
@@ -213,6 +216,8 @@ PS3_VideoQuit(_THIS)
     deprintf(1, "PS3_VideoQuit()\n");
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    PS3_QuitModes(_this);
+
     /* Unmap framebuffer */
     if (data->frame_buffer) {
         struct fb_fix_screeninfo fb_finfo;
@@ -231,7 +236,7 @@ PS3_VideoQuit(_THIS)
     }
 
     /* Close device */
-    if (data->fbdev > 0) {
+    if (data->fbdev) {
         /* Give control of frame buffer back to kernel */
         ioctl(data->fbdev, PS3FB_IOCTL_OFF, 0);
         close(data->fbdev);

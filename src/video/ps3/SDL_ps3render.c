@@ -46,6 +46,7 @@ extern spe_program_handle_t bilin_scaler_spu;
 
 static SDL_Renderer *SDL_PS3_CreateRenderer(SDL_Window * window,
                                               Uint32 flags);
+static int SDL_PS3_DisplayModeChanged(SDL_Renderer * renderer);
 static int SDL_PS3_ActivateRenderer(SDL_Renderer * renderer);
 static int SDL_PS3_RenderPoint(SDL_Renderer * renderer, int x, int y);
 static int SDL_PS3_RenderLine(SDL_Renderer * renderer, int x1, int y1,
@@ -126,8 +127,6 @@ typedef struct
     volatile void *pixels;
     /* Use software renderer for not supported formats */
     SDL_SW_YUVTexture *yuv;
-    /* Can we use the SPE to process this texture? */
-    unsigned int accelerated;
 } PS3_TextureData;
 
 SDL_Renderer *
@@ -136,8 +135,10 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     deprintf(1, "+SDL_PS3_CreateRenderer()\n");
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     SDL_DisplayMode *displayMode = &display->current_mode;
+    SDL_VideoData *devdata = display->device->driverdata;
     SDL_Renderer *renderer;
     SDL_PS3_RenderData *data;
+    struct ps3fb_ioctl_res res;
     int i, n;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
@@ -169,6 +170,7 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->LockTexture = PS3_LockTexture;
     renderer->UnlockTexture = PS3_UnlockTexture;
     renderer->ActivateRenderer = SDL_PS3_ActivateRenderer;
+    renderer->DisplayModeChanged = SDL_PS3_DisplayModeChanged;
     renderer->RenderPoint = SDL_PS3_RenderPoint;
     renderer->RenderLine = SDL_PS3_RenderLine;
     renderer->RenderFill = SDL_PS3_RenderFill;
@@ -179,14 +181,20 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info.flags = 0;
     renderer->window = window->id;
     renderer->driverdata = data;
-    //Setup_SoftwareRenderer(renderer);
 
     deprintf(1, "window->w = %u\n", window->w);
     deprintf(1, "window->h = %u\n", window->h);
 
     data->double_buffering = 0;
 
-    if (flags & SDL_RENDERER_PRESENTFLIP2) {
+    /* Get ps3 screeninfo */
+    if (ioctl(devdata->fbdev, PS3FB_IOCTL_SCREENINFO, (unsigned long)&res) < 0) {
+        SDL_SetError("[PS3] PS3FB_IOCTL_SCREENINFO failed");
+    }
+    deprintf(2, "res.num_frames = %d\n", res.num_frames);
+
+    /* Only use double buffering if enough fb memory is available */
+    if (res.num_frames > 1) {
         renderer->info.flags |= SDL_RENDERER_PRESENTFLIP2;
         n = 2;
         data->double_buffering = 1;
@@ -233,13 +241,13 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    /* Set up the SPE scaler */
+    /* Set up the SPE scaler (booted) */
     data->scaler_thread_data->program = bilin_scaler_spu;
     data->scaler_thread_data->program_name = "bilin_scaler_spu";
     data->scaler_thread_data->keepalive = 0;
     data->scaler_thread_data->booted = 0;
 
-    /* Set up the SPE converter */
+    /* Set up the SPE converter (always running) */
     data->converter_thread_data->program = yuv2rgb_spu;
     data->converter_thread_data->program_name = "yuv2rgb_spu";
     data->converter_thread_data->keepalive = 1;
@@ -261,6 +269,14 @@ SDL_PS3_ActivateRenderer(SDL_Renderer * renderer)
     return 0;
 }
 
+static int SDL_PS3_DisplayModeChanged(SDL_Renderer * renderer) {
+    deprintf(1, "+PS3_DisplayModeChanged()\n");
+    SDL_PS3_RenderData *data = (SDL_PS3_RenderData *) renderer->driverdata;
+
+    deprintf(1, "-PS3_DisplayModeChanged()\n");
+    return 0;
+}
+
 static int
 PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
     deprintf(1, "+PS3_CreateTexture()\n");
@@ -271,7 +287,6 @@ PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
         return -1;
     }
     data->pitch = (texture->w * SDL_BYTESPERPIXEL(texture->format));
-    data->accelerated = 0;
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         /* Use SDLs SW_YUVTexture */
@@ -313,7 +328,6 @@ PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
         }
         if ((texture->format & SDL_PIXELFORMAT_YV12 || texture->format & SDL_PIXELFORMAT_IYUV)
                 && texture->w % 16 == 0 && texture->h % 16 == 0) {
-            data->accelerated = 1;
         }
     } else {
         data->pixels = NULL;
@@ -385,15 +399,16 @@ PS3_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     PS3_TextureData *data = (PS3_TextureData *) texture->driverdata;
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        deprintf(1, "-PS3_LockTexture()\n");
         return SDL_SW_LockYUVTexture(data->yuv, rect, markDirty, pixels, pitch);
     } else {
         *pixels =
             (void *) ((Uint8 *) data->pixels + rect->y * data->pitch +
                       rect->x * SDL_BYTESPERPIXEL(texture->format));
         *pitch = data->pitch;
+        deprintf(1, "-PS3_LockTexture()\n");
         return 0;
     }
-    deprintf(1, "-PS3_LockTexture()\n");
 }
 
 static void
@@ -522,7 +537,9 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         deprintf(1, "SDL_ISPIXELFORMAT_FOURCC = true\n");
-        if (txdata->accelerated) {
+        if ((texture->format & SDL_PIXELFORMAT_YV12 || texture->format & SDL_PIXELFORMAT_IYUV)
+                && texture->w % 8 == 0 && texture->h % 8 == 0
+                && dstrect->w % 8 == 0 && dstrect->h % 8 == 0) {
             deprintf(1, "Use SPE for scaling/converting\n");
 
             SDL_SW_YUVTexture *swdata = (SDL_SW_YUVTexture *) txdata->yuv;
@@ -630,7 +647,6 @@ static void
 SDL_PS3_RenderPresent(SDL_Renderer * renderer)
 {
     deprintf(1, "+SDL_PS3_RenderPresent()\n");
-    static int frame_number;
     SDL_PS3_RenderData *data =
         (SDL_PS3_RenderData *) renderer->driverdata;
     SDL_Window *window = SDL_GetWindowFromID(renderer->window);
@@ -656,6 +672,7 @@ SDL_PS3_RenderPresent(SDL_Renderer * renderer)
     /* Adjust centering */
     data->bounded_width = window->w < fb_vinfo.xres ? window->w : fb_vinfo.xres;
     data->bounded_height = window->h < fb_vinfo.yres ? window->h : fb_vinfo.yres;
+    /* We could use SDL's CENTERED flag for centering */
     data->offset_left = (fb_vinfo.xres - data->bounded_width) >> 1;
     data->offset_top = (fb_vinfo.yres - data->bounded_height) >> 1;
     data->center[0] = devdata->frame_buffer + data->offset_left * /*txdata->bpp/8*/ 4 +
@@ -695,7 +712,7 @@ SDL_PS3_RenderPresent(SDL_Renderer * renderer)
     ioctl(devdata->fbdev, PS3FB_IOCTL_FSEL, (unsigned long)&data->current_screen);
 
     /* Update the flipping chain, if any */
-    if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2 && data->double_buffering) {
+    if (data->double_buffering) {
         data->current_screen = (data->current_screen + 1) % 2;
     }
     deprintf(1, "-SDL_PS3_RenderPresent()\n");
