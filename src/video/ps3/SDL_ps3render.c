@@ -326,9 +326,6 @@ PS3_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture) {
                 /* We should never get here (caught above) */
                 break;
         }
-        if ((texture->format & SDL_PIXELFORMAT_YV12 || texture->format & SDL_PIXELFORMAT_IYUV)
-                && texture->w % 16 == 0 && texture->h % 16 == 0) {
-        }
     } else {
         data->pixels = NULL;
         data->pixels = SDL_malloc(texture->h * data->pitch);
@@ -536,8 +533,8 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     deprintf(1, "texture->h = %u\n", texture->h);
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
-        deprintf(1, "SDL_ISPIXELFORMAT_FOURCC = true\n");
-        if ((texture->format & SDL_PIXELFORMAT_YV12 || texture->format & SDL_PIXELFORMAT_IYUV)
+        deprintf(1, "Texture is in a FOURCC format\n");
+        if ((texture->format == SDL_PIXELFORMAT_YV12 || texture->format == SDL_PIXELFORMAT_IYUV)
                 && texture->w % 8 == 0 && texture->h % 8 == 0
                 && dstrect->w % 8 == 0 && dstrect->h % 8 == 0) {
             deprintf(1, "Use SPE for scaling/converting\n");
@@ -546,7 +543,7 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
             Uint8 *lum, *Cr, *Cb;
             Uint8 *scaler_out = NULL;
             Uint8 *dstpixels;
-            switch (swdata->format) {
+            switch (texture->format) {
                 case SDL_PIXELFORMAT_YV12:
                     lum = swdata->planes[0];
                     Cr = swdata->planes[1];
@@ -558,10 +555,13 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                     Cb = swdata->planes[1];
                     break;
                 default:
+                    /* We should never get here (caught above) */
                     return -1;
             }
 
             if (srcrect->w != dstrect->w || srcrect->h != dstrect->h) {
+                deprintf(1, "We need to scale the texture from %u x %u to %u x %u\n",
+                        srcrect->w, srcrect->h, dstrect->w, dstrect->h);
                 /* Alloc mem for scaled YUV picture */
                 scaler_out = (Uint8 *) memalign(16, dstrect->w * dstrect->h + ((dstrect->w * dstrect->h) >> 1));
                 if (scaler_out == NULL) {
