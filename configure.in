@@ -1523,6 +1523,7 @@ CheckPS3()
       SOURCES="$SOURCES $srcdir/src/video/ps3/*.c"
       EXTRA_CFLAGS="$EXTRA_CFLAGS -I/opt/cell/sdk/usr/include"
       EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/cell/sdk/usr/lib -lspe2 -lfb_writer_spu -lyuv2rgb_spu -lbilin_scaler_spu"
+	  echo "*** Before building SDL please run make ps3libs"
       have_video=yes
     fi   
   fi
