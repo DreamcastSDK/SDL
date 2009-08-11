@@ -2,9 +2,6 @@
 # libfb_writer_spu.so, libyuv2rgb_spu.so, libbilin_scaler_spu.so
 
 # Toolchain
-SPU_GCC=/usr/bin/spu-gcc
-PPU_EMBEDSPU=/usr/bin/embedspu
-PPU_AR=/usr/bin/ar
 PPU_LD=/usr/bin/ld
 SPU_SRCDIR=$(srcdir)/src/video/ps3/spulibs
 SPU_LIBDIR=$(srcdir)/src/video/ps3/spulibs/libs
@@ -21,10 +18,10 @@ $(SPU_LIBDIR):
 # fb_writer (basically copying from a to b)
 $(SPU_LIBDIR)/fb_writer_spu-embed.o: $(SPU_LIBDIR) $(SPU_SRCDIR)/fb_writer.c $(SPU_SRCDIR)/spu_common.h
 	$(SPU_GCC) $(SPU_CFLAGS) -o $(SPU_LIBDIR)/fb_writer_spu $(SPU_SRCDIR)/fb_writer.c -lm
-	$(PPU_EMBEDSPU) -m32 fb_writer_spu $(SPU_LIBDIR)/fb_writer_spu $(SPU_LIBDIR)/fb_writer_spu-embed.o
+	$(EMBEDSPU) -m32 fb_writer_spu $(SPU_LIBDIR)/fb_writer_spu $(SPU_LIBDIR)/fb_writer_spu-embed.o
 
 $(SPU_LIBDIR)/libfb_writer_spu.a: $(SPU_LIBDIR)/fb_writer_spu-embed.o
-	$(PPU_AR) -qcs $(SPU_LIBDIR)/libfb_writer_spu.a $(SPU_LIBDIR)/fb_writer_spu-embed.o
+	$(AR) -qcs $(SPU_LIBDIR)/libfb_writer_spu.a $(SPU_LIBDIR)/fb_writer_spu-embed.o
 
 $(SPU_LIBDIR)/libfb_writer_spu.so: $(SPU_LIBDIR)/fb_writer_spu-embed.o
 	$(PPU_LD) -o $(SPU_LIBDIR)/libfb_writer_spu.so -shared -soname=libfb_writer_spu.so $(SPU_LIBDIR)/fb_writer_spu-embed.o
@@ -33,10 +30,10 @@ $(SPU_LIBDIR)/libfb_writer_spu.so: $(SPU_LIBDIR)/fb_writer_spu-embed.o
 # yuv2rgb_converter (converting YV12/IYUV to RGB)
 $(SPU_LIBDIR)/yuv2rgb_spu-embed.o: $(SPU_LIBDIR) $(SPU_SRCDIR)/yuv2rgb_converter.c $(SPU_SRCDIR)/spu_common.h
 	$(SPU_GCC) $(SPU_CFLAGS) -o $(SPU_LIBDIR)/yuv2rgb_spu $(SPU_SRCDIR)/yuv2rgb_converter.c -lm
-	$(PPU_EMBEDSPU) -m32 yuv2rgb_spu $(SPU_LIBDIR)/yuv2rgb_spu $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
+	$(EMBEDSPU) -m32 yuv2rgb_spu $(SPU_LIBDIR)/yuv2rgb_spu $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
 
 $(SPU_LIBDIR)/libyuv2rgb_spu.a: $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
-	$(PPU_AR) -qcs $(SPU_LIBDIR)/libyuv2rgb_spu.a $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
+	$(AR) -qcs $(SPU_LIBDIR)/libyuv2rgb_spu.a $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
 
 $(SPU_LIBDIR)/libyuv2rgb_spu.so: $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
 	$(PPU_LD) -o $(SPU_LIBDIR)/libyuv2rgb_spu.so -shared -soname=libyuv2rgb_spu.so $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
@@ -45,10 +42,10 @@ $(SPU_LIBDIR)/libyuv2rgb_spu.so: $(SPU_LIBDIR)/yuv2rgb_spu-embed.o
 # bilin_scaler (scaling bilinear YV12/IYUV pictures with resolutions /16)
 $(SPU_LIBDIR)/bilin_scaler_spu-embed.o: $(SPU_LIBDIR) $(SPU_SRCDIR)/bilin_scaler.c $(SPU_SRCDIR)/spu_common.h
 	$(SPU_GCC) $(SPU_CFLAGS) -o $(SPU_LIBDIR)/bilin_scaler_spu $(SPU_SRCDIR)/bilin_scaler.c -lm
-	$(PPU_EMBEDSPU) -m32 bilin_scaler_spu $(SPU_LIBDIR)/bilin_scaler_spu $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
+	$(EMBEDSPU) -m32 bilin_scaler_spu $(SPU_LIBDIR)/bilin_scaler_spu $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
 
 $(SPU_LIBDIR)/libbilin_scaler_spu.a: $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
-	$(PPU_AR) -qcs $(SPU_LIBDIR)/libbilin_scaler_spu.a $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
+	$(AR) -qcs $(SPU_LIBDIR)/libbilin_scaler_spu.a $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
 
 $(SPU_LIBDIR)/libbilin_scaler_spu.so: $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
 	$(PPU_LD) -o $(SPU_LIBDIR)/libbilin_scaler_spu.so -shared -soname=libbilin_scaler_spu.so $(SPU_LIBDIR)/bilin_scaler_spu-embed.o
