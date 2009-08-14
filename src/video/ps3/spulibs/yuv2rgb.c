@@ -31,7 +31,10 @@
 #include <spu_mfcio.h>
 
 // Debugging
-//#define DEBUG
+#define DEBUG
+
+// Test environment for /2 resolutions
+#define TESTING
 
 #ifdef DEBUG
 #define deprintf(fmt, args... ) \
@@ -61,7 +64,7 @@ static const vector float vec_0_1 = { 0.1f, 0.1f, 0.1f, 0.1f };
 void yuv_to_rgb_w16();
 void yuv_to_rgb_w32();
 
-void yuv_to_rgb_w16_line(unsigned char* y_addr, unsigned char* v_addr, unsigned char* u_addr, unsigned char* bgra_addr, unsigned int width);
+void yuv_to_rgb_w2_line(unsigned char* y_addr, unsigned char* v_addr, unsigned char* u_addr, unsigned char* bgra_addr, unsigned int width);
 void yuv_to_rgb_w32_line(unsigned char* y_addr, unsigned char* v_addr, unsigned char* u_addr, unsigned char* bgra_addr_, unsigned int width);
 
 
@@ -78,7 +81,7 @@ int main(unsigned long long spe_id __attribute__((unused)), unsigned long long a
 		deprintf("[SPU] Message is %u\n", mbox);
 		switch (mbox) {
 			case SPU_EXIT:
-				deprintf("[SPU] fb_writer goes down...\n");
+				deprintf("[SPU] yuv2rgb_converter goes down...\n");
 				return 0;
 			case SPU_START:
 				break;
@@ -106,7 +109,7 @@ int main(unsigned long long spe_id __attribute__((unused)), unsigned long long a
 		 * --> choose the proper handling to optimize the performance
 		 */
 		deprintf("[SPU] Convert %ix%i from YUV to RGB\n", parms_converter.src_pixel_width, parms_converter.src_pixel_height);
-		if (parms_converter.src_pixel_width & 0x1f) {
+		if (!(parms_converter.src_pixel_width & 0x1f)) {
 			deprintf("[SPU] Using yuv_to_rgb_w16\n");
 			yuv_to_rgb_w16();
 		} else {
@@ -229,6 +232,7 @@ void yuv_to_rgb_w16() {
 
 
 		// Convert YUV to BGRA, store it back (first two lines)
+#ifndef TESTING
 		yuv_to_rgb_w16_line(y_plane[buf_idx], v_plane[buf_idx], u_plane[buf_idx], bgra, width);
 
 		// Next two lines
@@ -237,6 +241,16 @@ void yuv_to_rgb_w16() {
 				u_plane[buf_idx] + stride_vu,
 				bgra + size_2lines_bgra,
 				width);
+#else
+		yuv_to_rgb_w2_line(y_plane[buf_idx], v_plane[buf_idx], u_plane[buf_idx], bgra, width);
+
+		// Next two lines
+		yuv_to_rgb_w2_line(y_plane[buf_idx] + size_2lines_y,
+				v_plane[buf_idx] + stride_vu,
+				u_plane[buf_idx] + stride_vu,
+				bgra + size_2lines_bgra,
+				width);
+#endif
 
 		// Wait for previous storing transfer to be completed
 		DMA_WAIT_TAG(STR_BUF);
@@ -255,6 +269,7 @@ void yuv_to_rgb_w16() {
 		buf_idx^=1;
 	}
 
+#ifndef TESTING
 	// Convert YUV to BGRA, store it back (first two lines)
 	yuv_to_rgb_w16_line(y_plane[buf_idx], v_plane[buf_idx], u_plane[buf_idx], bgra, width);
 
@@ -264,6 +279,17 @@ void yuv_to_rgb_w16() {
 			u_plane[buf_idx] + stride_vu,
 			bgra + size_2lines_bgra,
 			width);
+#else
+	// Convert YUV to BGRA, store it back (first two lines)
+	yuv_to_rgb_w2_line(y_plane[buf_idx], v_plane[buf_idx], u_plane[buf_idx], bgra, width);
+
+	// Next two lines
+	yuv_to_rgb_w2_line(y_plane[buf_idx] + size_2lines_y,
+			v_plane[buf_idx] + stride_vu,
+			u_plane[buf_idx] + stride_vu,
+			bgra + size_2lines_bgra,
+			width);
+#endif
 
 	// Wait for previous storing transfer to be completed
 	DMA_WAIT_TAG(STR_BUF);
@@ -404,25 +430,28 @@ const vector unsigned char vec_select_floats_upper = { 0x00, 0x01, 0x02, 0x03, 0
 const vector unsigned char vec_select_floats_lower = { 0x08, 0x09, 0x0A, 0x0B, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x0C, 0x0D, 0x0E, 0x0F };
 
 
+#ifdef TESTING
 /*
- * yuv_to_rgb_w16()
+ * yuv_to_rgb_w2()
  *
- * processes to line of yuv-input, width has to be a multiple of 16
- * two lines of yuv are taken as input
+ * - converts x * 4 pixels from YUV to RGB
+ * - two lines of YUV are taken as input.
+ * - width has to be a multiple of 2 (= 4 pixel)
  *
- * @param y_addr address of the y plane in local store
- * @param v_addr address of the v plane in local store
- * @param u_addr address of the u plane in local store
- * @param bgra_addr_ address of the bgra output buffer
- * @param width the width in pixel
+ * @param y_addr address of the y plane (local store)
+ * @param v_addr address of the v plane (local store)
+ * @param u_addr address of the u plane (local store)
+ * @param bgra_addr_char address of the bgra output buffer (local store)
+ * @param width the width of a line in pixel
  */
-void yuv_to_rgb_w16_line(unsigned char* y_addr, unsigned char* v_addr, unsigned char* u_addr, unsigned char* bgra_addr_, unsigned int width) {
+void yuv_to_rgb_w2_line(unsigned char* y_addr, unsigned char* v_addr, unsigned char* u_addr, unsigned char* bgra_addr_char, unsigned int width) {
 	// each pixel is stored as an integer
-	unsigned int* bgra_addr = (unsigned int*) bgra_addr_;
+	unsigned int* bgra_addr = (unsigned int*) bgra_addr_char;
 
 	unsigned int x;
+	// Go through each line in steps of 2, because every U and V value is connected to 4 pixels Y (YUV 4:2:0)
 	for(x = 0; x < width; x+=2) {
-		// Gehe zweischrittig durch die zeile, da jeder u und v wert fuer 4 pixel(zwei hoch, zwei breit) gilt
+		// Get the 4 Y, 1 U and 1 V values
 		const unsigned char Y_1 = *(y_addr + x);
 		const unsigned char Y_2 = *(y_addr + x + 1);
 		const unsigned char Y_3 = *(y_addr + x + width);
@@ -430,6 +459,7 @@ void yuv_to_rgb_w16_line(unsigned char* y_addr, unsigned char* v_addr, unsigned 
 		const unsigned char U = *(u_addr + (x >> 1));
 		const unsigned char V = *(v_addr + (x >> 1));
 
+		// Start converting
 		float V_minus_128 = (float)((float)V - 128.0f);
 		float U_minus_128 = (float)((float)U - 128.0f);
 
@@ -437,6 +467,7 @@ void yuv_to_rgb_w16_line(unsigned char* y_addr, unsigned char* v_addr, unsigned 
 		float G_precalculate = -(0.344f * U_minus_128 + 0.714f * V_minus_128);
 		float B_precalculate = 1.773f * U_minus_128;
 
+		// Cast the results
 		const unsigned char R_1 = float_to_char((Y_1 + R_precalculate));
 		const unsigned char R_2 = float_to_char((Y_2 + R_precalculate));
 		const unsigned char R_3 = float_to_char((Y_3 + R_precalculate));
@@ -450,12 +481,14 @@ void yuv_to_rgb_w16_line(unsigned char* y_addr, unsigned char* v_addr, unsigned 
 		const unsigned char B_3 = float_to_char((Y_3 + B_precalculate));
 		const unsigned char B_4 = float_to_char((Y_4 + B_precalculate));
 
+		// Write back
 		*(bgra_addr + x) = (B_1 << 0)| (G_1 << 8) | (R_1 << 16) | (255 << 24);
 		*(bgra_addr + x + 1) = (B_2 << 0)| (G_2 << 8) | (R_2 << 16) | (255 << 24);
 		*(bgra_addr + x + width) = (B_3 << 0)| (G_3 << 8) | (R_3 << 16) | (255 << 24);
 		*(bgra_addr + x + width + 1) = (B_4 << 0)| (G_4 << 8) | (R_4 << 16) | (255 << 24);
 	}
 }
+#endif
 
 
 /*
