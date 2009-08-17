@@ -14,6 +14,7 @@
 #include "rwops/rwops.h"
 #include "surface/surface.h"
 #include "render/render.h"
+#include "audio/audio.h"
 
 #include <stdio.h> /* printf */
 #include <stdlib.h> /* exit */
@@ -32,6 +33,7 @@ static int run_platform    = 1; /**< Run platform tests. */
 static int run_rwops       = 1; /**< Run RWops tests. */
 static int run_surface     = 1; /**< Run surface tests. */
 static int run_render      = 1; /**< Run render tests. */
+static int run_audio       = 1; /**< Run audio tests. */
 
 /*
  * Prototypes.
@@ -52,6 +54,7 @@ static void print_usage( const char *name )
    printf("   --norwops       do not run the rwops tests\n");
    printf("   --nosurface     do not run the surface tests\n");
    printf("   --norender      do not run the render tests\n");
+   printf("   --noaudio       do not run the audio tests\n");
    printf("   -v, --verbose   increases verbosity level by 1 for each -v\n");
    printf("   -q, --quiet     only displays errors\n");
    printf("   -h, --help      display this message and exit\n");
@@ -69,6 +72,7 @@ static void parse_options( int argc, char *argv[] )
       { "norwops", no_argument, 0, 0 },
       { "nosurface", no_argument, 0, 0 },
       { "norender", no_argument, 0, 0 },
+      { "noaudio", no_argument, 0, 0 },
       { "verbose", no_argument, 0, 'v' },
       { "quiet", no_argument, 0, 'q' },
       { "help", no_argument, 0, 'h' },
@@ -96,6 +100,8 @@ static void parse_options( int argc, char *argv[] )
                run_surface = 0;
             else if (strcmp(str,"norender")==0)
                run_render = 0;
+            else if (strcmp(str,"noaudio")==0)
+               run_audio = 0;
             break;
 
          /* Manual. */
@@ -154,6 +160,8 @@ int main( int argc, char *argv[] )
       failed += test_surface();
    if (run_render)
       failed += test_render();
+   if (run_audio)
+      failed += test_audio();
 
    /* Manual tests. */
    if (run_manual) {
