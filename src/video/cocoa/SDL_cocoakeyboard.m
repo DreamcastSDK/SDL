@@ -610,7 +610,7 @@ Cocoa_StartTextInput(_THIS)
 
     if (! [[data->fieldEdit superview] isEqual: parentView])
     {
-        NSLog(@"add fieldEdit to window contentView");
+        // NSLog(@"add fieldEdit to window contentView");
         [data->fieldEdit removeFromSuperview];
         [parentView addSubview: data->fieldEdit];
         [[NSApp keyWindow] makeFirstResponder: data->fieldEdit];
