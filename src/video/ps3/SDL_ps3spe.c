@@ -27,31 +27,6 @@
 #include "SDL_ps3video.h"
 #include "SDL_ps3render_c.h"
 
-
-/* This SPE API basically provides 3 ways to run and control a program
- * on the SPE:
- * - Start and stop the program (keepalive=0).
- *   SPE_Start() will implicitly boot up the program, create a thread and run
- *   the context.
- *   SPE_Stop() will join the (terminated) thread (may block) and return.
- * - Boot the program and run it (keepalive=0).
- *   SPE_Boot() will create a context and load the program and finally start
- *   the context with SPE_Start().
- *   SPE_Stop() will savely end the program.
- * - Boot, Run and send messages to the program (keepalive=1).
- *   Start the program by using one of the methods described above. When
- *   received the READY-message the program is in its infinite loop waiting
- *   for new messages.
- *   Every time you run the program, send SPU_START and the address of the
- *   according struct using SPE_SendMsg().
- *   SPE_WaitForMsg() will than wait for SPU_FIN and is blocking.
- *   SPE_Shutdown() sends SPU_EXIT and finally stops the program.
- *
- * Therefor the SPE program
- * - either runs once and returns
- * - or runs in an infinite loop and is controlled by messages.
- */
-
 /* Start the SPE thread */
 int SPE_Start(spu_data_t * spe_data)
 {

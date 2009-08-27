@@ -31,10 +31,10 @@
 #include <spu_mfcio.h>
 
 // Debugging
-#define DEBUG
+//#define DEBUG
 
 // Test environment for /2 resolutions
-#define TESTING
+//#define TESTING
 
 #ifdef DEBUG
 #define deprintf(fmt, args... ) \

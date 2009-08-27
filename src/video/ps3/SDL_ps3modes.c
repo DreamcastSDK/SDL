@@ -38,7 +38,7 @@ PS3_InitModes(_THIS)
         return;
     }
 
-    /* Setting up the DisplayMode */
+    /* Setting up the DisplayMode based on current settings */
     struct ps3fb_ioctl_res res;
     if (ioctl(data->fbdev, PS3FB_IOCTL_SCREENINFO, &res)) {
         SDL_SetError("Can't get PS3FB_IOCTL_SCREENINFO");
@@ -48,7 +48,8 @@ PS3_InitModes(_THIS)
     mode.w = res.xres;
     mode.h = res.yres;
 
-    /* Setting up driver specific mode data */
+    /* Setting up driver specific mode data,
+     * Get the current ps3 specific videmode number */
     if (ioctl(data->fbdev, PS3FB_IOCTL_GETMODE, (unsigned long)&vid)) {
         SDL_SetError("Can't get PS3FB_IOCTL_GETMODE");
     }
@@ -56,6 +57,7 @@ PS3_InitModes(_THIS)
     modedata->mode = vid;
     mode.driverdata = modedata;
 
+    /* Set display's videomode and add it */
     SDL_zero(display);
     display.desktop_mode = mode;
     display.current_mode = mode;
@@ -64,6 +66,7 @@ PS3_InitModes(_THIS)
     deprintf(1, "-PS3_InitModes()\n");
 }
 
+/* DisplayModes available on the PS3 */
 static SDL_DisplayMode ps3fb_modedb[] = {
     /* VESA */
     {SDL_PIXELFORMAT_RGB888, 1280, 768, 0, NULL}, // WXGA
@@ -75,6 +78,7 @@ static SDL_DisplayMode ps3fb_modedb[] = {
     {SDL_PIXELFORMAT_RGB888, 1920, 1080, 0, NULL} // 1080p
 };
 
+/* PS3 videomode number according to ps3fb_modedb */
 static PS3_DisplayModeData ps3fb_data[] = {
     {11}, {12}, {13}, {130}, {131}, {133}, 
 };
