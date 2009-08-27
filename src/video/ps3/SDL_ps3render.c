@@ -43,7 +43,6 @@ extern spe_program_handle_t yuv2rgb_spu;
 extern spe_program_handle_t bilin_scaler_spu;
 
 /* SDL surface based renderer implementation */
-
 static SDL_Renderer *SDL_PS3_CreateRenderer(SDL_Window * window,
                                               Uint32 flags);
 static int SDL_PS3_DisplayModeChanged(SDL_Renderer * renderer);
@@ -107,7 +106,8 @@ typedef struct
     /* size of a screen line: width * bpp/8 */
     unsigned int line_length;
 
-    /* Use two buffers in fb? res < 720p */
+    /* Is the kernels fb size bigger than ~12MB
+     * double buffering will work for 1080p */
     unsigned int double_buffering;
 
     /* SPE threading stuff */
@@ -232,7 +232,7 @@ SDL_PS3_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    /* Set up the SPEs */
+    /* Set up the SPE threading data */
     data->converter_thread_data = (spu_data_t *) malloc(sizeof(spu_data_t));
     data->scaler_thread_data = (spu_data_t *) malloc(sizeof(spu_data_t));
     if (data->converter_thread_data == NULL || data->scaler_thread_data == NULL) {
@@ -377,6 +377,7 @@ PS3_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         dst = (Uint8 *) dstpixels + rect->y * data->pitch + rect->x
                         * SDL_BYTESPERPIXEL(texture->format);
         length = rect->w * SDL_BYTESPERPIXEL(texture->format);
+        /* Update the texture */
         for (row = 0; row < rect->h; ++row) {
             SDL_memcpy(dst, src, length);
             src += pitch;
@@ -519,18 +520,6 @@ SDL_PS3_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_VideoDisplay *display = SDL_GetDisplayFromWindow(window);
     PS3_TextureData *txdata = (PS3_TextureData *) texture->driverdata;
     SDL_VideoData *devdata = display->device->driverdata;
-
-    /* Debug info */
-    deprintf(1, "srcrect->w = %u\n", srcrect->w);
-    deprintf(1, "srcrect->h = %u\n", srcrect->h);
-    deprintf(1, "srcrect->x = %u\n", srcrect->x);
-    deprintf(1, "srcrect->y = %u\n", srcrect->y);
-    deprintf(1, "dstrect->w = %u\n", dstrect->w);
-    deprintf(1, "dstrect->h = %u\n", dstrect->h);
-    deprintf(1, "dstrect->x = %u\n", dstrect->x);
-    deprintf(1, "dstrect->y = %u\n", dstrect->y);
-    deprintf(1, "texture->w = %u\n", texture->w);
-    deprintf(1, "texture->h = %u\n", texture->h);
 
     if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
         deprintf(1, "Texture is in a FOURCC format\n");
