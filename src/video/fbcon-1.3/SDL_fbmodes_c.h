@@ -21,14 +21,14 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_ps3modes_h
-#define _SDL_ps3modes_h
+#ifndef _SDL_fbmodes_h
+#define _SDL_fbmodes_h
 
-extern void PS3_InitModes(_THIS);
-extern void PS3_GetDisplayModes(_THIS);
-extern int PS3_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
-extern void PS3_QuitModes(_THIS);
+extern void FB_InitModes(_THIS);
+extern void FB_GetDisplayModes(_THIS);
+extern int FB_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
+extern void FB_QuitModes(_THIS);
 
-#endif /* SDL_ps3modes_h */
+#endif /* SDL_fbmodes_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
