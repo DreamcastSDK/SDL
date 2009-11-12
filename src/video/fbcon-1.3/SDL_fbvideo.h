@@ -58,6 +58,10 @@ typedef struct SDL_VideoData
     int console_fd;
     /* hardware surface lock mutex */
     SDL_mutex *hw_lock;
+    /* Framebuffer */
+    char *mapped_mem;
+    int mapped_memlen;
+    int mapped_offset;
 } SDL_VideoData;
 
 #endif /* _SDL_fbvideo_h */

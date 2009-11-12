@@ -232,14 +232,6 @@ SDL_FB_RenderPresent(SDL_Renderer * renderer)
     SDL_FB_RenderData *data =
         (SDL_FB_RenderData *) renderer->driverdata;
 
-    /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_FB_SAVE_FRAMES")) {
-        char file[128];
-        SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
-                     renderer->window, ++frame_number);
-        SDL_SaveBMP(data->screens[data->current_screen], file);
-    }
-
     /* Update the flipping chain, if any */
     if (renderer->info.flags & SDL_RENDERER_PRESENTFLIP2) {
         data->current_screen = (data->current_screen + 1) % 2;

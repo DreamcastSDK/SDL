@@ -54,8 +54,36 @@
 
 /* Initialization/Query functions */
 static int FB_VideoInit(_THIS);
-static int FB_SetDisplayMode(_THIS, SDL_DisplayMode * mode);
 static void FB_VideoQuit(_THIS);
+
+static int
+SDL_getpagesize(void)
+{
+#ifdef HAVE_GETPAGESIZE
+    return getpagesize();
+#elif defined(PAGE_SIZE)
+    return PAGE_SIZE;
+#else
+#error Can not determine system page size.
+    /* this is what it USED to be in Linux... */
+    return 4096;
+#endif
+}
+
+
+/* Small wrapper for mmap() so we can play nicely with no-mmu hosts
+ * (non-mmu hosts disallow the MAP_SHARED flag) */
+static void *
+do_mmap(void *start, size_t length, int prot, int flags, int fd, off_t offset)
+{
+    void *ret;
+    ret = mmap(start, length, prot, flags, fd, offset);
+    if (ret == (char *) -1 && (flags & MAP_SHARED)) {
+        ret = mmap(start, length, prot,
+                   (flags & ~MAP_SHARED) | MAP_PRIVATE, fd, offset);
+    }
+    return ret;
+}
 
 /* bootstrap functions */
 static int
@@ -133,7 +161,7 @@ FB_CreateDevice(int devindex)
     return device;
 }
 
-VideoBootStrap FB_bootstrap = {
+VideoBootStrap FBCON_bootstrap = {
 	FBVID_DRIVER_NAME, "Linux framebuffer video driver",
 	FB_Available, FB_CreateDevice
 };
@@ -146,12 +174,14 @@ FB_VideoInit(_THIS)
 	SDL_DisplayMode mode;
     struct fb_fix_screeninfo finfo;
     const char *SDL_fbdev;
+    const int pagesize = SDL_getpagesize();
 
     /* Initialize the library */
     SDL_fbdev = SDL_getenv("SDL_FBDEV");
     if (SDL_fbdev == NULL) {
         SDL_fbdev = "/dev/fb0";
     }
+    /* Open the device */
     data->console_fd = open(SDL_fbdev, O_RDWR, 0);
     if (data->console_fd < 0) {
         SDL_SetError("Unable to open %s", SDL_fbdev);
@@ -174,6 +204,41 @@ FB_VideoInit(_THIS)
         return -1;
     }
 
+    switch (finfo.visual) {
+		case FB_VISUAL_TRUECOLOR:
+		case FB_VISUAL_PSEUDOCOLOR:
+		case FB_VISUAL_STATIC_PSEUDOCOLOR:
+		case FB_VISUAL_DIRECTCOLOR:
+			break;
+		default:
+			SDL_SetError("Unsupported console hardware");
+			FB_VideoQuit(_this);
+			return -1;
+    }
+
+    /* Check if the user wants to disable hardware acceleration
+	 * FIXME: Maybe better in fbrenderer? */
+    {
+        const char *fb_accel;
+        fb_accel = SDL_getenv("SDL_FBACCEL");
+        if (fb_accel) {
+            finfo.accel = SDL_atoi(fb_accel);
+        }
+    }
+
+    /* Memory map the device, compensating for buggy PPC mmap() */
+    data->mapped_offset = (((long) finfo.smem_start) -
+                     (((long) finfo.smem_start) & ~(pagesize - 1)));
+    data->mapped_memlen = finfo.smem_len + data->mapped_offset;
+    data->mapped_mem = (char*) do_mmap(NULL, data->mapped_memlen,
+                         PROT_READ | PROT_WRITE, MAP_SHARED, data->console_fd, 0);
+    if (data->mapped_mem == (char *) -1) {
+        SDL_SetError("Unable to memory map the video hardware");
+        data->mapped_mem = NULL;
+        FB_VideoQuit(_this);
+        return -1;
+    }
+
 	/* Use a fake 32-bpp desktop mode */
 	mode.format = SDL_PIXELFORMAT_RGB888;
 	mode.w = 1024;
@@ -191,18 +256,31 @@ FB_VideoInit(_THIS)
 	return 0;
 }
 
-static int
-FB_SetDisplayMode(_THIS, SDL_DisplayMode * mode)
-{
-    deprintf(1, "+FB_SetDisplayMode()\n");
-    deprintf(1, "-FB_SetDisplayMode()\n");
-	return 0;
-}
-
 void
 FB_VideoQuit(_THIS)
 {
     deprintf(1, "+FB_VideoQuit()\n");
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+    /* Clear the lock mutex */
+    if (data->hw_lock) {
+        SDL_DestroyMutex(data->hw_lock);
+        data->hw_lock = NULL;
+    }
+
+    /* Close console and input file descriptors */
+    if (data->console_fd > 0) {
+        /* Unmap the video framebuffer and I/O registers */
+        if (data->mapped_mem) {
+            munmap(data->mapped_mem, data->mapped_memlen);
+            data->mapped_mem = NULL;
+        }
+
+        /* We're all done with the framebuffer */
+        close(data->console_fd);
+        data->console_fd = -1;
+    }
+
     deprintf(1, "-FB_VideoQuit()\n");
 }
 
