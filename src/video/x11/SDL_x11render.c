@@ -32,7 +32,7 @@
 #include "../SDL_yuv_sw_c.h"
 #include "SDL_surface.h"
 
-//#define EXPT
+#define EXPT
 
 /* X11 renderer implementation */
 
@@ -1059,7 +1059,7 @@ X11_RenderDrawPoints(SDL_Renderer * renderer, const SDL_Point * points,
         }
         SDL_AddDirtyRect(&data->dirty, &rect);
     }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
 #ifndef NO_SHARED_MEMORY
 #ifdef EXPT
@@ -1078,7 +1078,7 @@ X11_RenderDrawPoints(SDL_Renderer * renderer, const SDL_Point * points,
 #endif
 #endif
 #endif
-*/
+
     {
         xpoint = xpoints = SDL_stack_alloc(XPoint, count);
         xcount = 0;
@@ -1093,7 +1093,7 @@ X11_RenderDrawPoints(SDL_Renderer * renderer, const SDL_Point * points,
             ++xpoint;
             ++xcount;
         }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
         if (data->use_xrender) {
             XSetForeground(data->display, data->stencil_gc, 0x00);
@@ -1103,9 +1103,9 @@ X11_RenderDrawPoints(SDL_Renderer * renderer, const SDL_Point * points,
             XDrawPoints(data->display, data->stencil, data->stencil_gc, xpoints, xcount,
                         CoordModeOrigin);
         }
-#endif*/
+#endif
     }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
     if (data->use_xrender) {
         XRenderColor foreground;
@@ -1118,7 +1118,7 @@ X11_RenderDrawPoints(SDL_Renderer * renderer, const SDL_Point * points,
     }
     else
 #endif
-*/
+
     {
         unsigned long foreground = renderdrawcolor(renderer, 1);
         XSetForeground(data->display, data->gc, foreground);
@@ -1152,7 +1152,7 @@ X11_RenderDrawLines(SDL_Renderer * renderer, const SDL_Point * points,
     clip.y = 0;
     clip.w = window->w;
     clip.h = window->h;
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
 #ifndef NO_SHARED_MEMORY
 #ifdef EXPT
@@ -1171,11 +1171,11 @@ X11_RenderDrawLines(SDL_Renderer * renderer, const SDL_Point * points,
 #endif
 #endif
 #endif
-*/
+
     {
         Pixmap drawable;
         GC gc;
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
         if (data->use_xrender) {
             drawable = data->stencil;
@@ -1187,7 +1187,7 @@ X11_RenderDrawLines(SDL_Renderer * renderer, const SDL_Point * points,
         }
         else
 #endif
-*/
+
         {
             drawable = data->drawable;
             gc = data->gc;
@@ -1310,7 +1310,7 @@ X11_RenderDrawLines(SDL_Renderer * renderer, const SDL_Point * points,
             }
         }
     }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
     if (data->use_xrender) {
         XRenderColor xrforeground = xrenderdrawcolor(renderer);
@@ -1321,7 +1321,7 @@ X11_RenderDrawLines(SDL_Renderer * renderer, const SDL_Point * points,
                          0, 0, 0, 0, 0, 0, window->w, window->h);
     }
 #endif
-*/
+
     SDL_stack_free(xpoints);
 
     return 0;
@@ -1342,7 +1342,7 @@ X11_RenderDrawRects(SDL_Renderer * renderer, const SDL_Rect ** rects, int count)
     clip.y = 0;
     clip.w = window->w;
     clip.h = window->h;
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
 #ifndef NO_SHARED_MEMORY
 #ifdef EXPT
@@ -1362,7 +1362,7 @@ X11_RenderDrawRects(SDL_Renderer * renderer, const SDL_Rect ** rects, int count)
 #endif
 #endif
 #endif
-*/
+
     {
 
         for (i = 0; i < count; ++i) {
@@ -1381,7 +1381,7 @@ X11_RenderDrawRects(SDL_Renderer * renderer, const SDL_Rect ** rects, int count)
                 SDL_AddDirtyRect(&data->dirty, &rect);
             }
         }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
         if (data->use_xrender) {
             XSetForeground(data->display, data->stencil_gc, 0x00);
@@ -1392,9 +1392,9 @@ X11_RenderDrawRects(SDL_Renderer * renderer, const SDL_Rect ** rects, int count)
             XDrawRectangles(data->display, data->stencil, data->stencil_gc, xrects, xcount);
         }
 #endif
-*/
+
     }
-/*
+
 #ifdef SDL_VIDEO_DRIVER_X11_XRENDER
     if (data->use_xrender) {
         XRenderColor foreground;
@@ -1408,7 +1408,7 @@ X11_RenderDrawRects(SDL_Renderer * renderer, const SDL_Rect ** rects, int count)
     }
     else
 #endif
-*/
+
     {
         unsigned long foreground;
         
