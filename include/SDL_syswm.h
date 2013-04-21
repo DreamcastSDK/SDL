@@ -58,6 +58,10 @@ struct SDL_SysWMinfo;
 #include <windows.h>
 #endif
 
+#if defined(SDL_VIDEO_DRIVER_WINRT)
+#include <Unknwn.h>
+#endif
+
 /* This is the structure for custom window manager events */
 #if defined(SDL_VIDEO_DRIVER_X11)
 #if defined(__APPLE__) && defined(__MACH__)
@@ -92,6 +96,7 @@ typedef struct _NSWindow NSWindow;
 #include <UIKit/UIKit.h>
 #else
 typedef struct _UIWindow UIWindow;
+typedef struct _UIViewController UIViewController;
 #endif
 #endif
 
@@ -102,6 +107,7 @@ typedef enum
 {
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
+    SDL_SYSWM_WINDOWSRT,
     SDL_SYSWM_X11,
     SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
@@ -170,6 +176,12 @@ struct SDL_SysWMinfo
             HWND window;                /**< The window handle */
         } win;
 #endif
+#if defined(SDL_VIDEO_DRIVER_WINRT)
+        struct
+        {
+            IUnknown * window;          /**< The Windows RT CoreWindow */
+        } winrt;
+#endif
 #if defined(SDL_VIDEO_DRIVER_X11)
         struct
         {
@@ -195,6 +207,7 @@ struct SDL_SysWMinfo
         struct
         {
             UIWindow *window;           /* The UIKit window */
+            UIViewController *viewcontroller;   /* The UIKit view controller */
         } uikit;
 #endif
         /* Can't have an empty union */
