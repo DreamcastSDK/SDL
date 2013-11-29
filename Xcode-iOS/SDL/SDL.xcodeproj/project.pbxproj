@@ -551,6 +551,7 @@
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		56C181E017C44D6900406AE3 /* filesystem */ = {
 			isa = PBXGroup;
