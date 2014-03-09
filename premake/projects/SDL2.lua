@@ -1,4 +1,4 @@
--- Copyright (C) 1997-2011 Sam Lantinga <slouken@libsdl.org>
+-- Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 --
 -- This software is provided 'as-is', without any express or implied
 -- warranty.  In no event will the authors be held liable for any damages
@@ -69,6 +69,7 @@ SDL_project "SDL2"
 		"/audio/disk/",
 		"/audio/dummy/",
 		"/cpuinfo/",
+		"/dynapi/",
 		"/events/",
 		"/file/",
 		"/haptic/",

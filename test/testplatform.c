@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2013 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -153,6 +153,7 @@ TestCPUInfo(SDL_bool verbose)
         SDL_Log("SSE3 %s\n", SDL_HasSSE3()? "detected" : "not detected");
         SDL_Log("SSE4.1 %s\n", SDL_HasSSE41()? "detected" : "not detected");
         SDL_Log("SSE4.2 %s\n", SDL_HasSSE42()? "detected" : "not detected");
+        SDL_Log("AVX %s\n", SDL_HasAVX()? "detected" : "not detected");
         SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
     }
     return (0);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2013 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
@@ -204,7 +204,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
     if (external) {
         [uiwindow setScreen:data->uiscreen];
     }
-    
+
     if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
         [uiwindow release];
         return -1;
@@ -303,12 +303,10 @@ SDL_bool
 UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
-    UIViewController *uiviewcontroller = ((SDL_WindowData *) window->driverdata)->viewcontroller;
 
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_UIKIT;
         info->info.uikit.window = uiwindow;
-        info->info.uikit.viewcontroller = uiviewcontroller;
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d\n",
