@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2013 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "../SDL_internal.h"
 
 /* This file contains portable stdlib functions for SDL */
 
@@ -44,6 +44,42 @@ SDL_atan2(double x, double y)
 #else
     return SDL_uclibc_atan2(x, y);
 #endif /* HAVE_ATAN2 */
+}
+
+double
+SDL_acos(double val)
+{
+#if defined(HAVE_ACOS)
+    return acos(val);
+#else
+    double result;
+    if (val == -1.0) {
+        result = M_PI;
+    } else {
+        result = SDL_atan(SDL_sqrt(1.0 - val * val) / val);
+        if (result < 0.0)
+        {
+            result += M_PI;
+        }
+    }
+    return result;
+#endif
+}
+
+double
+SDL_asin(double val)
+{
+#if defined(HAVE_ASIN)
+    return asin(val);
+#else
+    double result;
+    if (val == -1.0) {
+        result = -(M_PI / 2.0);
+    } else {
+        result = (M_PI / 2.0) - SDL_acos(val);
+    }
+    return result;
+#endif
 }
 
 double
@@ -245,12 +281,6 @@ void * memcpy ( void * destination, const void * source, size_t num )
 #endif /* _MSC_VER == 1600 && defined(_WIN64) && !defined(_DEBUG) */
 
 #ifdef _M_IX86
-
-void
-__declspec(naked)
-_chkstk()
-{
-}
 
 /* Float to long */
 void

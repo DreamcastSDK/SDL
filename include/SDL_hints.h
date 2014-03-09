@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2013 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -106,6 +106,19 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D_THREADSAFE "SDL_RENDER_DIRECT3D_THREADSAFE"
 
 /**
+ *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
+ *
+ *  This variable does not have any effect on the Direct3D 9 based renderer.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable Debug Layer use
+ *    "1"       - Enable Debug Layer use
+ *
+ *  By default, SDL does not use Direct3D Debug Layer.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_HINT_RENDER_DIRECT3D11_DEBUG"
+
+/**
  *  \brief  A variable controlling the scaling quality
  *
  *  This variable can be set to the following values:
@@ -129,18 +142,15 @@ extern "C" {
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
 /**
- *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
- *
- *  This variable does not have any effect on the Direct3D 9 based renderer,
- *  which is used in Win32-based (aka Windows Desktop) apps.
+ *  \brief  A variable controlling whether the screensaver is enabled. 
  *
  *  This variable can be set to the following values:
- *    "0"       - Disable Debug Layer use
- *    "1"       - Enable Debug Layer use
+ *    "0"       - Disable screensaver
+ *    "1"       - Enable screensaver
  *
- *  By default, SDL does not use Direct3D Debug Layer.
+ *  By default SDL will disable the screensaver.
  */
-#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_HINT_RENDER_DIRECT3D11_DEBUG"
+#define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
 
 /**
  *  \brief  A variable controlling whether the X11 VidMode extension should be used.
@@ -187,21 +197,21 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
- *  \brief Minimize your SDL_Window if it loses key focus when in Fullscreen mode. Defaults to true.
+*  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
+*
+*  This variable can be set to the following values:
+*    "0"       - Relative mouse mode uses raw input
+*    "1"       - Relative mouse mode uses mouse warping
+*
+*  By default SDL will use raw input for relative mouse mode
+*/
+#define SDL_HINT_MOUSE_RELATIVE_MODE_WARP    "SDL_MOUSE_RELATIVE_MODE_WARP"
+
+/**
+ *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
  *
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
-
-/**
- *  \brief Set whether windows go fullscreen in their own spaces on Mac OS X
- *
- *  This variable can be set to the following values:
- *    "0"       - Fullscreen windows will use the classic fullscreen mode
- *    "1"       - Fullscreen windows will use fullscreen spaces
- *
- *  By default SDL will use the classic fullscreen mode.
- */
-#define SDL_HINT_VIDEO_FULLSCREEN_SPACES   "SDL_VIDEO_FULLSCREEN_SPACES"
 
 /**
  *  \brief  A variable controlling whether the idle timer is disabled on iOS.
@@ -236,15 +246,15 @@ extern "C" {
  *    "0"       - List only real joysticks and accept input from them
  *    "1"       - List real joysticks along with the accelerometer as if it were a 3 axis joystick (the default).
  */
-#define SDL_HINT_ACCEL_AS_JOY "SDL_ACCEL_AS_JOY"
+#define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
 
 
 /**
  *  \brief  A variable that lets you disable the detection and use of Xinput gamepad devices
  *
  *  The variable can be set to the following values:
- *    "0"       - Disable XInput timer (only uses direct input)
- *    "1"       - Enable XInput timer (the default)
+ *    "0"       - Disable XInput detection (only uses direct input)
+ *    "1"       - Enable XInput detection (the default)
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
@@ -267,7 +277,7 @@ extern "C" {
  *    "0"       - Disable joystick & gamecontroller input events when the
  *                application is in the background.
  *    "1"       - Enable joystick & gamecontroller input events when the
- *                application is in the backgroumd.
+ *                application is in the background.
  *
  *  The default value is "0".  This hint may be set at any time.
  */
@@ -321,7 +331,7 @@ extern "C" {
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It
 *  can use two different sets of binaries, those compiled by the user from source
 *  or those provided by the Chrome browser. In the later case, these binaries require
-*  that SDL loads 
+*  that SDL loads a DLL providing the shader compiler.
 *
 *  This variable can be set to the following values:
 *    "d3dcompiler_46.dll" - default, best for Vista or later.
@@ -332,6 +342,25 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
+*  \brief  A variable that is the address of another SDL_Window* (as a hex string formatted with "%p").
+*  
+*  If this hint is set before SDL_CreateWindowFrom() and the SDL_Window* it is set to has
+*  SDL_WINDOW_OPENGL set (and running on WGL only, currently), then two things will occur on the newly 
+*  created SDL_Window:
+*
+*  1. Its pixel format will be set to the same pixel format as this SDL_Window.  This is
+*  needed for example when sharing an OpenGL context across multiple windows.
+*
+*  2. The flag SDL_WINDOW_OPENGL will be set on the new window so it can be used for
+*  OpenGL rendering.
+*
+*  This variable can be set to the following values:
+*    The address (as a string "%p") of the SDL_Window* that new windows created with SDL_CreateWindowFrom() should
+*    share a pixel format with.
+*/
+#define SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
+
+/*
  *  \brief A URL to a WinRT app's privacy policy
  *
  *  All network-enabled WinRT apps must make a privacy policy available to its
@@ -386,6 +415,26 @@ extern "C" {
  *  http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj247550(v=vs.105).aspx
  */
 #define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_HINT_WINRT_HANDLE_BACK_BUTTON"
+
+/**
+ *  \brief  A variable that dictates policy for fullscreen Spaces on Mac OS X.
+ *
+ *  This hint only applies to Mac OS X.
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Disable Spaces support (FULLSCREEN_DESKTOP won't use them and
+ *                SDL_WINDOW_RESIZABLE windows won't offer the "fullscreen"
+ *                button on their titlebars).
+ *    "1"       - Enable Spaces support (FULLSCREEN_DESKTOP will use them and
+ *                SDL_WINDOW_RESIZABLE windows will offer the "fullscreen"
+ *                button on their titlebars.
+ *
+ *  The default value is "1". Spaces are disabled regardless of this hint if
+ *   the OS isn't at least Mac OS X Lion (10.7). This hint must be set before
+ *   any windows are created.
+ */
+#define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
+
 
 /**
  *  \brief  An enumeration of hint priorities

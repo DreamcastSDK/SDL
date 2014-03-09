@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2013 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -98,6 +98,11 @@ typedef struct _UIViewController UIViewController;
 #endif
 #endif
 
+#if defined(SDL_VIDEO_DRIVER_MIR)
+#include <mir_toolkit/mir_client_library.h>
+#endif
+
+
 /**
  *  These are the various supported windowing subsystems
  */
@@ -110,6 +115,8 @@ typedef enum
     SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
+    SDL_SYSWM_WAYLAND,
+    SDL_SYSWM_MIR,
 } SDL_SYSWM_TYPE;
 
 /**
@@ -205,9 +212,24 @@ struct SDL_SysWMinfo
         struct
         {
             UIWindow *window;           /* The UIKit window */
-            UIViewController *viewcontroller;   /* The UIKit view controller */
         } uikit;
 #endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+        struct
+        {
+            struct wl_display *display;            /**< Wayland display */
+            struct wl_surface *surface;            /**< Wayland surface */
+            struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
+        } wl;
+#endif
+#if defined(SDL_VIDEO_DRIVER_MIR)
+        struct
+        {
+            MirConnection *connection;  /**< Mir display server connection */
+            MirSurface *surface;  /**< Mir surface */
+        } mir;
+#endif
+
         /* Can't have an empty union */
         int dummy;
     } info;
