@@ -192,7 +192,7 @@ public class SDLActivity extends Activity {
         if (SDLActivity.mIsPaused && SDLActivity.mIsSurfaceReady && SDLActivity.mHasFocus) {
             SDLActivity.mIsPaused = false;
             SDLActivity.nativeResume();
-            mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+            mSurface.handleResume();
         }
     }
         
@@ -300,24 +300,37 @@ public class SDLActivity extends Activity {
     public static native int nativeRemoveJoystick(int device_id);
     public static native String nativeGetHint(String name);
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void flipBuffers() {
         SDLActivity.nativeFlipBuffers();
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean setActivityTitle(String title) {
         // Called from SDLMain() thread and can't directly affect the view
         return mSingleton.sendCommand(COMMAND_CHANGE_TITLE, title);
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean sendMessage(int command, int param) {
         return mSingleton.sendCommand(command, Integer.valueOf(param));
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static Context getContext() {
         return mSingleton;
     }
 
     /**
+     * This method is called by SDL using JNI.
      * @return result of getSystemService(name) but executed on UI thread.
      */
     public Object getSystemServiceFromUiThread(final String name) {
@@ -383,16 +396,26 @@ public class SDLActivity extends Activity {
         }
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean showTextInput(int x, int y, int w, int h) {
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(x, y, w, h));
     }
-            
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static Surface getNativeSurface() {
         return SDLActivity.mSurface.getNativeSurface();
     }
 
     // Audio
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static int audioInit(int sampleRate, boolean is16Bit, boolean isStereo, int desiredFrames) {
         int channelConfig = isStereo ? AudioFormat.CHANNEL_CONFIGURATION_STEREO : AudioFormat.CHANNEL_CONFIGURATION_MONO;
         int audioFormat = is16Bit ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT;
@@ -426,7 +449,10 @@ public class SDLActivity extends Activity {
         
         return 0;
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioWriteShortBuffer(short[] buffer) {
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
@@ -444,7 +470,10 @@ public class SDLActivity extends Activity {
             }
         }
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioWriteByteBuffer(byte[] buffer) {
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
@@ -463,6 +492,9 @@ public class SDLActivity extends Activity {
         }
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioQuit() {
         if (mAudioTrack != null) {
             mAudioTrack.stop();
@@ -473,6 +505,7 @@ public class SDLActivity extends Activity {
     // Input
 
     /**
+     * This method is called by SDL using JNI.
      * @return an array which may be empty but is never null.
      */
     public static int[] inputGetInputDeviceIds(int sources) {
@@ -487,12 +520,15 @@ public class SDLActivity extends Activity {
         }
         return Arrays.copyOf(filtered, used);
     }
-            
+
     // Joystick glue code, just a series of stubs that redirect to the SDLJoystickHandler instance
     public static boolean handleJoystickMotionEvent(MotionEvent event) {
         return mJoystickHandler.handleMotionEvent(event);
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void pollInputDevices() {
         if (SDLActivity.mSDLThread != null) {
             mJoystickHandler.pollInputDevices();
@@ -597,6 +633,15 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Some arbitrary defaults to avoid a potential division by zero
         mWidth = 1.0f;
         mHeight = 1.0f;
+    }
+     
+    public void handleResume() {
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        requestFocus();
+        setOnKeyListener(this);
+        setOnTouchListener(this);
+        enableSensor(Sensor.TYPE_ACCELEROMETER, true);
     }
     
     public Surface getNativeSurface() {
@@ -789,6 +834,16 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 SDLActivity.onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
                 break;
             
+            case MotionEvent.ACTION_CANCEL:
+                for (i = 0; i < pointerCount; i++) {
+                    pointerFingerId = event.getPointerId(i);
+                    x = event.getX(i) / mWidth;
+                    y = event.getY(i) / mHeight;
+                    p = event.getPressure(i);
+                    SDLActivity.onNativeTouch(touchDevId, pointerFingerId, MotionEvent.ACTION_UP, x, y, p);
+                }
+                break;
+
             default:
                 break;
         }
@@ -976,25 +1031,32 @@ class SDLInputConnection extends BaseInputConnection {
 /* A null joystick handler for API level < 12 devices (the accelerometer is handled separately) */
 class SDLJoystickHandler {
     
+    /**
+     * Handles given MotionEvent.
+     * @param event the event to be handled.
+     * @return if given event was processed.
+     */
     public boolean handleMotionEvent(MotionEvent event) {
         return false;
     }
-    
+
+    /**
+     * Handles adding and removing of input devices.
+     */
     public void pollInputDevices() {
     }
 }
 
 /* Actual joystick functionality available for API >= 12 devices */
 class SDLJoystickHandler_API12 extends SDLJoystickHandler {
-  
-    class SDLJoystick {
+
+    static class SDLJoystick {
         public int device_id;
         public String name;
         public ArrayList<InputDevice.MotionRange> axes;
         public ArrayList<InputDevice.MotionRange> hats;
     }
-    class RangeComparator implements Comparator<InputDevice.MotionRange>
-    {
+    static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
         public int compare(InputDevice.MotionRange arg0, InputDevice.MotionRange arg1) {
             return arg0.getAxis() - arg1.getAxis();
@@ -1057,12 +1119,12 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                 if (device_id == deviceIds[j]) break;
             }
             if (j == deviceIds.length) {
-                removedDevices.add(device_id);
+                removedDevices.add(Integer.valueOf(device_id));
             }
         }
             
         for(int i=0; i < removedDevices.size(); i++) {
-            int device_id = removedDevices.get(i);
+            int device_id = removedDevices.get(i).intValue();
             SDLActivity.nativeRemoveJoystick(device_id);
             for (int j=0; j < mJoysticks.size(); j++) {
                 if (mJoysticks.get(j).device_id == device_id) {
