@@ -76,6 +76,8 @@ typedef unsigned int uintptr_t;
 # define SIZEOF_VOIDP 4
 #endif
 
+#define HAVE_DXGI_H 1
+
 /* This is disabled by default to avoid C runtime dependencies and manifest requirements */
 #ifdef HAVE_LIBC
 /* Useful headers */
@@ -130,6 +132,9 @@ typedef unsigned int uintptr_t;
 #define HAVE_SIN 1
 #define HAVE_SINF 1
 #define HAVE_SQRT 1
+#define HAVE_SQRTF 1
+#define HAVE_TAN 1
+#define HAVE_TANF 1
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
 #define HAVE_VSSCANF 1

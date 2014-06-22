@@ -48,6 +48,8 @@
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET @HAVE_GCC_SYNC_LOCK_TEST_AND_SET@
 #cmakedefine HAVE_PTHREAD_SPINLOCK @HAVE_PTHREAD_SPINLOCK@
 
+#cmakedefine HAVE_DXGI_H @HAVE_DXGI_H@
+
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
 #if HAVE_LIBC
@@ -143,6 +145,9 @@
 #cmakedefine HAVE_SIN 1
 #cmakedefine HAVE_SINF 1
 #cmakedefine HAVE_SQRT 1
+#cmakedefine HAVE_SQRTF 1
+#cmakedefine HAVE_TAN 1
+#cmakedefine HAVE_TANF 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
 #cmakedefine HAVE_SIGACTION 1

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
       <Configuration>Debug</Configuration>
@@ -25,198 +25,6 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
-    <ClCompile Include="..\..\src\atomic\SDL_spinlock.c" />
-    <ClCompile Include="..\..\src\audio\disk\SDL_diskaudio.c" />
-    <ClCompile Include="..\..\src\audio\dummy\SDL_dummyaudio.c" />
-    <ClCompile Include="..\..\src\audio\SDL_audio.c" />
-    <ClCompile Include="..\..\src\audio\SDL_audiocvt.c" />
-    <ClCompile Include="..\..\src\audio\SDL_audiodev.c" />
-    <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
-    <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
-    <ClCompile Include="..\..\src\audio\SDL_wave.c" />
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c" />
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_common.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
-    <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c" />
-    <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
-    <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
-    <ClCompile Include="..\..\src\events\SDL_events.c" />
-    <ClCompile Include="..\..\src\events\SDL_gesture.c" />
-    <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
-    <ClCompile Include="..\..\src\events\SDL_mouse.c" />
-    <ClCompile Include="..\..\src\events\SDL_quit.c" />
-    <ClCompile Include="..\..\src\events\SDL_touch.c" />
-    <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
-    <ClCompile Include="..\..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\file\SDL_rwops.c" />
-    <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
-    <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
-    <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c" />
-    <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
-    <ClCompile Include="..\..\src\joystick\winrt\SDL_xinputjoystick.c" />
-    <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
-    <ClCompile Include="..\..\src\power\SDL_power.c" />
-    <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp" />
-    <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c" />
-    <ClCompile Include="..\..\src\render\direct3d11\SDL_render_winrt.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\render\opengles2\SDL_render_gles2.c" />
-    <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
-    <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
-    <ClCompile Include="..\..\src\render\SDL_render.c" />
-    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c" />
-    <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_blendfillrect.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_blendline.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_blendpoint.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_drawline.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_drawpoint.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_render_sw.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_rotate.c" />
-    <ClCompile Include="..\..\src\SDL.c" />
-    <ClCompile Include="..\..\src\SDL_assert.c" />
-    <ClCompile Include="..\..\src\SDL_error.c" />
-    <ClCompile Include="..\..\src\SDL_hints.c" />
-    <ClCompile Include="..\..\src\SDL_log.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
-    <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
-    <ClCompile Include="..\..\src\thread\generic\SDL_syssem.c" />
-    <ClCompile Include="..\..\src\thread\SDL_thread.c" />
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_syscond.cpp" />
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_sysmutex.cpp" />
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_systhread.cpp" />
-    <ClCompile Include="..\..\src\timer\SDL_timer.c" />
-    <ClCompile Include="..\..\src\timer\windows\SDL_systimer.c" />
-    <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
-    <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
-    <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_1.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_A.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_auto.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_copy.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_N.c" />
-    <ClCompile Include="..\..\src\video\SDL_blit_slow.c" />
-    <ClCompile Include="..\..\src\video\SDL_bmp.c" />
-    <ClCompile Include="..\..\src\video\SDL_clipboard.c" />
-    <ClCompile Include="..\..\src\video\SDL_egl.c" />
-    <ClCompile Include="..\..\src\video\SDL_fillrect.c" />
-    <ClCompile Include="..\..\src\video\SDL_pixels.c" />
-    <ClCompile Include="..\..\src\video\SDL_rect.c" />
-    <ClCompile Include="..\..\src\video\SDL_RLEaccel.c" />
-    <ClCompile Include="..\..\src\video\SDL_shape.c" />
-    <ClCompile Include="..\..\src\video\SDL_stretch.c" />
-    <ClCompile Include="..\..\src\video\SDL_surface.c" />
-    <ClCompile Include="..\..\src\video\SDL_video.c" />
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtevents.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtmessagebox.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtmouse.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtopengles.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtvideo.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h" />
@@ -344,48 +152,243 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtopengles.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
+    <ClCompile Include="..\..\src\atomic\SDL_spinlock.c" />
+    <ClCompile Include="..\..\src\audio\disk\SDL_diskaudio.c" />
+    <ClCompile Include="..\..\src\audio\dummy\SDL_dummyaudio.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audio.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audiocvt.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audiodev.c" />
+    <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
+    <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
+    <ClCompile Include="..\..\src\audio\SDL_wave.c" />
+    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c" />
+    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_common.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
+    <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c" />
+    <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
+    <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
+    <ClCompile Include="..\..\src\events\SDL_events.c" />
+    <ClCompile Include="..\..\src\events\SDL_gesture.c" />
+    <ClCompile Include="..\..\src\events\SDL_keyboard.c" />
+    <ClCompile Include="..\..\src\events\SDL_mouse.c" />
+    <ClCompile Include="..\..\src\events\SDL_quit.c" />
+    <ClCompile Include="..\..\src\events\SDL_touch.c" />
+    <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
+    <ClCompile Include="..\..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\file\SDL_rwops.c" />
+    <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c" />
+    <ClCompile Include="..\..\src\haptic\SDL_haptic.c" />
+    <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c" />
+    <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c" />
+    <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="..\..\src\joystick\winrt\SDL_xinputjoystick.c" />
+    <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
+    <ClCompile Include="..\..\src\power\SDL_power.c" />
+    <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp" />
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c" />
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_render_winrt.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\opengles2\SDL_render_gles2.c" />
+    <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
+    <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
+    <ClCompile Include="..\..\src\render\SDL_render.c" />
+    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c" />
+    <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_blendfillrect.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_blendline.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_blendpoint.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_drawline.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_drawpoint.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_render_sw.c" />
+    <ClCompile Include="..\..\src\render\software\SDL_rotate.c" />
+    <ClCompile Include="..\..\src\SDL.c" />
+    <ClCompile Include="..\..\src\SDL_assert.c" />
+    <ClCompile Include="..\..\src\SDL_error.c" />
+    <ClCompile Include="..\..\src\SDL_hints.c" />
+    <ClCompile Include="..\..\src\SDL_log.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
+    <ClCompile Include="..\..\src\thread\generic\SDL_syssem.c" />
+    <ClCompile Include="..\..\src\thread\SDL_thread.c" />
+    <ClCompile Include="..\..\src\thread\stdcpp\SDL_syscond.cpp" />
+    <ClCompile Include="..\..\src\thread\stdcpp\SDL_sysmutex.cpp" />
+    <ClCompile Include="..\..\src\thread\stdcpp\SDL_systhread.cpp" />
+    <ClCompile Include="..\..\src\timer\SDL_timer.c" />
+    <ClCompile Include="..\..\src\timer\windows\SDL_systimer.c" />
+    <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
+    <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
+    <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_0.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_1.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_A.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_auto.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_copy.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_N.c" />
+    <ClCompile Include="..\..\src\video\SDL_blit_slow.c" />
+    <ClCompile Include="..\..\src\video\SDL_bmp.c" />
+    <ClCompile Include="..\..\src\video\SDL_clipboard.c" />
+    <ClCompile Include="..\..\src\video\SDL_egl.c" />
+    <ClCompile Include="..\..\src\video\SDL_fillrect.c" />
+    <ClCompile Include="..\..\src\video\SDL_pixels.c" />
+    <ClCompile Include="..\..\src\video\SDL_rect.c" />
+    <ClCompile Include="..\..\src\video\SDL_RLEaccel.c" />
+    <ClCompile Include="..\..\src\video\SDL_shape.c" />
+    <ClCompile Include="..\..\src\video\SDL_stretch.c" />
+    <ClCompile Include="..\..\src\video\SDL_surface.c" />
+    <ClCompile Include="..\..\src\video\SDL_video.c" />
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtevents.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtmessagebox.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtmouse.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtopengles.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtvideo.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{aeaea3a2-d4e6-45b1-8ec6-53d84287fc14}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
-    <ProjectName>SDL2-WinRT</ProjectName>
-    <RootNamespace>SDL_VS2012_WinRT</RootNamespace>
+    <ProjectGuid>{c8df6173-06a1-4f56-a9bc-2002596b30e9}</ProjectGuid>
+    <RootNamespace>SDL_WinRT81</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+    <ConvergedProjectType>CodeSharingDll</ConvergedProjectType>
+    <ProjectName>SDL2-WinRT81</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -407,35 +410,40 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <IntDir>Objs\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>SDL2</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

@@ -494,7 +494,7 @@ if(LIBC)
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos
-            cosf fabs floor log pow scalbn sin sinf sqrt)
+            cosf fabs floor log pow scalbn sin sinf sqrt sqrtf tan tanf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -541,7 +541,7 @@ if(LIBC)
       set(CMAKE_REQUIRED_LIBRARIES m)
       foreach(_FN
               atan atan2 ceil copysign cos cosf fabs floor log pow scalbn sin
-              sinf sqrt)
+              sinf sqrt sqrtf tan tanf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
         check_function_exists("${_FN}" ${_HAVEVAR})
@@ -804,6 +804,7 @@ elseif(WINDOWS)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
     check_include_file(xaudio2.h HAVE_XAUDIO2_H)
+    check_include_file(dxgi.h HAVE_DXGI_H)
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H OR HAVE_XAUDIO2_H)
       set(HAVE_DIRECTX TRUE)
       # TODO: change $ENV{DXSDL_DIR} to get the path from the include checks
@@ -1307,3 +1308,12 @@ else()
   install(TARGETS SDL2 RUNTIME DESTINATION bin)
 endif()
 
+##### Uninstall target #####
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
