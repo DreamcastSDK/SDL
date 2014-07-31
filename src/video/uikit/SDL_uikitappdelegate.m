@@ -44,7 +44,6 @@ static UIWindow *launch_window;
 int main(int argc, char **argv)
 {
     int i;
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     /* store arguments */
     forward_argc = argc;
@@ -56,7 +55,9 @@ int main(int argc, char **argv)
     forward_argv[i] = NULL;
 
     /* Give over control to run loop, SDLUIKitDelegate will handle most things from here */
-    UIApplicationMain(argc, argv, NULL, [SDLUIKitDelegate getAppDelegateClassName]);
+    @autoreleasepool {
+        UIApplicationMain(argc, argv, NULL, [SDLUIKitDelegate getAppDelegateClassName]);
+    }
 
     /* free the memory we used to hold copies of argc and argv */
     for (i = 0; i < forward_argc; i++) {
@@ -64,7 +65,6 @@ int main(int argc, char **argv)
     }
     free(forward_argv);
 
-    [pool release];
     return exit_status;
 }
 
@@ -75,16 +75,17 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
-@interface SDL_splashviewcontroller : UIViewController {
+@interface SDL_splashviewcontroller : UIViewController
+
+- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation;
+
+@end
+
+@implementation SDL_splashviewcontroller {
     UIImageView *splash;
     UIImage *splashPortrait;
     UIImage *splashLandscape;
 }
-
-- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation;
-@end
-
-@implementation SDL_splashviewcontroller
 
 - (id)init
 {
@@ -151,8 +152,8 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     } else {
         image = self->splashPortrait;
     }
-    if (image)
-    {
+
+    if (image) {
         splash.image = image;
     }
 }
@@ -165,7 +166,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 /* convenience method */
 + (id) sharedAppDelegate
 {
-    /* the delegate is set in UIApplicationMain(), which is garaunteed to be called before this method */
+    /* the delegate is set in UIApplicationMain(), which is guaranteed to be called before this method */
     return [[UIApplication sharedApplication] delegate];
 }
 
@@ -205,12 +206,18 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     /* Keep the launch image up until we set a video mode */
-    launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    /* This is disabled temporarily because the splash viewcontroller is
+     * interfering with rotation once a regular window is created: the view's
+     * orientations are incorrect and the status bar rotates without the view.
+     * Additionally, the splash viewcontroller doesn't load the correct launch
+     * images on iOS 7 and modern devices. */
+    /*launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
     UIViewController *splashViewController = [[SDL_splashviewcontroller alloc] init];
     launch_window.rootViewController = splashViewController;
     [launch_window addSubview:splashViewController.view];
-    [launch_window makeKeyAndVisible];
+    [launch_window makeKeyAndVisible];*/
 
     /* Set working directory to resource path */
     [[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
@@ -233,6 +240,35 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
+}
+
+- (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
+{
+    BOOL isLandscape = UIInterfaceOrientationIsLandscape(application.statusBarOrientation);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (_this && _this->num_displays > 0) {
+        SDL_DisplayMode *desktopmode = &_this->displays[0].desktop_mode;
+        SDL_DisplayMode *currentmode = &_this->displays[0].current_mode;
+
+        /* The desktop display mode should be kept in sync with the screen
+         * orientation so that updating a window's fullscreen state to
+         * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
+         * correct orientation.
+         */
+        if (isLandscape != (desktopmode->w > desktopmode->h)) {
+            int height = desktopmode->w;
+            desktopmode->w = desktopmode->h;
+            desktopmode->h = height;
+        }
+
+        /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
+        if (isLandscape != (currentmode->w > currentmode->h)) {
+            int height = currentmode->w;
+            currentmode->w = currentmode->h;
+            currentmode->h = height;
+        }
+    }
 }
 
 - (void) applicationWillResignActive:(UIApplication*)application

@@ -35,23 +35,10 @@
 #else
 @interface SDL_uikitview : UIView {
 #endif
-
-    SDL_TouchID touchId;
-    UITouch *leftFingerDown;
-#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-    UITouch *finger[MAX_SIMULTANEOUS_TOUCHES];
-#endif
-
-#if SDL_IPHONE_KEYBOARD
-    UITextField *textField;
-    BOOL keyboardVisible;
-    SDL_Rect textInputRect;
-    int keyboardHeight;
-#endif
-
 @public
     SDL_uikitviewcontroller *viewcontroller;
 }
+
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
@@ -61,9 +48,10 @@
 - (void)showKeyboard;
 - (void)hideKeyboard;
 - (void)initializeKeyboard;
-@property (readonly) BOOL keyboardVisible;
-@property (nonatomic,assign) SDL_Rect textInputRect;
-@property (nonatomic,assign) int keyboardHeight;
+
+@property (nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
+@property (nonatomic, assign) SDL_Rect textInputRect;
+@property (nonatomic, assign) int keyboardHeight;
 
 SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);

@@ -35,27 +35,34 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 
-void _uikit_keyboard_init() ;
+void _uikit_keyboard_init();
 
-@implementation SDL_uikitview
+@implementation SDL_uikitview {
 
-- (void)dealloc
-{
-    [super dealloc];
+    SDL_TouchID touchId;
+    UITouch *leftFingerDown;
+#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
+    UITouch *finger[MAX_SIMULTANEOUS_TOUCHES];
+#endif
+
+#if SDL_IPHONE_KEYBOARD
+    UITextField *textField;
+#endif
+
 }
 
 - (id)initWithFrame:(CGRect)frame
 {
-    self = [super initWithFrame: frame];
-
+    if (self = [super initWithFrame: frame]) {
 #if SDL_IPHONE_KEYBOARD
-    [self initializeKeyboard];
+        [self initializeKeyboard];
 #endif
 
-    self.multipleTouchEnabled = YES;
+        self.multipleTouchEnabled = YES;
 
-    touchId = 1;
-    SDL_AddTouch(touchId, "");
+        touchId = 1;
+        SDL_AddTouch(touchId, "");
+    }
 
     return self;
 
@@ -65,36 +72,26 @@ void _uikit_keyboard_init() ;
 {
     CGPoint point = [touch locationInView: self];
 
-    /* Get the display scale and apply that to the input coordinates */
-    SDL_Window *window = self->viewcontroller.window;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
-
     if (normalize) {
-        CGRect bounds = [self bounds];
+        CGRect bounds = self.bounds;
         point.x /= bounds.size.width;
         point.y /= bounds.size.height;
-    } else {
-        point.x *= displaymodedata->scale;
-        point.y *= displaymodedata->scale;
     }
+
     return point;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while (touch) {
+    for (UITouch *touch in touches) {
         if (!leftFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(self->viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
 
             /* send mouse down event */
-            SDL_SendMouseButton(self->viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
 
             leftFingerDown = touch;
         }
@@ -118,25 +115,21 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while(touch) {
+    for (UITouch *touch in touches) {
         if (touch == leftFingerDown) {
             /* send mouse up */
-            SDL_SendMouseButton(self->viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
             leftFingerDown = nil;
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
 #ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-        SDL_SendTouch(touchId, (long)touch,
+        SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
                       SDL_FALSE, locationInView.x, locationInView.y, 1.0f);
 #else
         int i;
@@ -149,7 +142,6 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
@@ -165,20 +157,17 @@ void _uikit_keyboard_init() ;
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while (touch) {
+    for (UITouch *touch in touches) {
         if (touch == leftFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(self->viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
 #ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-        SDL_SendTouchMotion(touchId, (long)touch,
+        SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch),
                             locationInView.x, locationInView.y, 1.0f);
 #else
         int i;
@@ -190,7 +179,6 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
@@ -199,14 +187,9 @@ void _uikit_keyboard_init() ;
 */
 #if SDL_IPHONE_KEYBOARD
 
-@synthesize textInputRect = textInputRect;
-@synthesize keyboardHeight = keyboardHeight;
-
-/* Is the iPhone virtual keyboard visible onscreen? */
-- (BOOL)keyboardVisible
-{
-    return keyboardVisible;
-}
+@synthesize textInputRect;
+@synthesize keyboardHeight;
+@synthesize keyboardVisible;
 
 /* Set ourselves up as a UITextFieldDelegate */
 - (void)initializeKeyboard
@@ -335,28 +318,34 @@ SDL_bool UIKit_HasScreenKeyboardSupport(_THIS)
 
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view != nil) {
-        [view showKeyboard];
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view != nil) {
+            [view showKeyboard];
+        }
     }
 }
 
 void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view != nil) {
-        [view hideKeyboard];
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view != nil) {
+            [view hideKeyboard];
+        }
     }
 }
 
 SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view == nil) {
-        return 0;
-    }
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view == nil) {
+            return 0;
+        }
 
-    return view.keyboardVisible;
+        return view.isKeyboardVisible;
+    }
 }
 
 
@@ -372,7 +361,6 @@ void _uikit_keyboard_update() {
     int height = view.keyboardHeight;
     int offsetx = 0;
     int offsety = 0;
-    float scale = [UIScreen mainScreen].scale;
     if (height) {
         int sw,sh;
         SDL_GetWindowSize(window,&sw,&sh);
@@ -394,18 +382,16 @@ void _uikit_keyboard_update() {
         offsety = -offsety;
     }
 
-    offsetx /= scale;
-    offsety /= scale;
-
     view.frame = CGRectMake(offsetx,offsety,view.frame.size.width,view.frame.size.height);
 }
 
 void _uikit_keyboard_set_height(int height) {
     SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
     if (view == nil) {
-        return ;
+        return;
     }
-    
+
+    view.keyboardVisible = height > 0;
     view.keyboardHeight = height;
     _uikit_keyboard_update();
 }
@@ -418,13 +404,12 @@ void _uikit_keyboard_init() {
                          queue:queue
                     usingBlock:^(NSNotification *notification) {
                         int height = 0;
-                        CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+                        CGSize keyboardSize = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
                         height = keyboardSize.height;
                         UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
                         if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {
                             height = keyboardSize.width;
                         }
-                        height *= [UIScreen mainScreen].scale;
                         _uikit_keyboard_set_height(height);
                     }
      ];
@@ -444,13 +429,15 @@ UIKit_SetTextInputRect(_THIS, SDL_Rect *rect)
         SDL_InvalidParamError("rect");
         return;
     }
-    
-    SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
-    if (view == nil) {
-        return ;
-    }
 
-    view.textInputRect = *rect;
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
+        if (view == nil) {
+            return;
+        }
+
+        view.textInputRect = *rect;
+    }
 }
 
 
