@@ -1,0 +1,8 @@
+*.o
+*.a
+*.elf
+*.map
+*.log
+*~
+.*.swp
+.DS_Store

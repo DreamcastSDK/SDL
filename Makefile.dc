@@ -13,21 +13,22 @@ endif
 ifndef INSTALL_PATH
   INSTALL_PATH:=/usr/local
 endif
+
 DEFINES:= \
         -D_arch_$(PLATFORM) \
         -DPLATFORM="$(PLATFORM)" \
-	-D__DREAMCAST__
+	-D__DREAMCAST__ \
+	-DNO_SIGNAL_H \
+	-DENABLE_DC
 
-ifeq ("$(wildcard $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/GL)", "")
-  TARGET:=libSDL.a
-else
-  TARGET:=libSDL_gl.a
-  DEFINES+=-DSDL_VIDEO_OPENGL=1
+ifneq ("$(wildcard $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/GL)", "")
+#  DEFINES+=-DSDL_VIDEO_OPENGL=1
 endif
+
+TARGET:=libSDL.a
 
 OBJS:=	src/audio/dc/SDL_dcaudio.o \
 	src/audio/dc/aica.o \
-	src/audio/dummy/SDL_dummyaudio.o \
 	src/audio/SDL_audio.o \
 	src/audio/SDL_audiocvt.o \
 	src/audio/SDL_audiodev.o \
@@ -35,6 +36,7 @@ OBJS:=	src/audio/dc/SDL_dcaudio.o \
 	src/audio/SDL_wave.o \
 	src/cdrom/dc/SDL_syscdrom.o \
 	src/cdrom/SDL_cdrom.o \
+	src/cpuinfo/SDL_cpuinfo.o \
 	src/events/SDL_active.o \
 	src/events/SDL_events.o \
 	src/events/SDL_expose.o \
@@ -63,10 +65,8 @@ OBJS:=	src/audio/dc/SDL_dcaudio.o \
 	src/timer/dc/SDL_systimer.o \
 	src/timer/SDL_timer.o \
 	src/video/dc/SDL_dcevents.o \
+	src/video/dc/SDL_dcmouse.o \
 	src/video/dc/SDL_dcvideo.o \
-	src/video/dummy/SDL_nullevents.o \
-	src/video/dummy/SDL_nullmouse.o \
-	src/video/dummy/SDL_nullvideo.o \
 	src/video/SDL_blit.o \
 	src/video/SDL_blit_0.o \
 	src/video/SDL_blit_1.o \
@@ -94,6 +94,18 @@ CFLAGS=$(DEFINES) \
 
 CFLAGS+=-Iinclude \
 	-I$(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include
+
+# out-of-band includes
+CFLAGS+=-Isrc \
+	-Isrc/audio \
+	-Isrc/cdrom \
+	-Isrc/endian \
+	-Isrc/events \
+	-Isrc/joystick \
+	-Isrc/thread/dc \
+	-Isrc/thread \
+	-Isrc/timer \
+	-Isrc/video
 
 GCCPREFIX:=$(shell echo $(ARCH) | cut -d '-' -f 1)-$(PLATFORM)
 
