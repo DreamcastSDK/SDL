@@ -13,8 +13,10 @@ endif
 ifndef INSTALL_PATH
   INSTALL_PATH:=/usr/local
 endif
-
-DEFINES:=-D__DREAMCAST__
+DEFINES:= \
+        -D_arch_$(PLATFORM) \
+        -DPLATFORM="$(PLATFORM)" \
+	-D__DREAMCAST__
 
 ifeq ("$(wildcard $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/GL)", "")
   TARGET:=libSDL.a
