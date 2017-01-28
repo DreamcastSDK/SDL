@@ -1,6 +1,6 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2012 Sam Lantinga
+    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002  Sam Lantinga
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -19,6 +19,11 @@
     Sam Lantinga
     slouken@libsdl.org
 */
-#include "SDL_config.h"
 
+/* Stub until we implement threads on this platform */
 typedef struct kthread* SYS_ThreadHandle;
+/*
+#ifndef DISABLE_THREADS
+#define DISABLE_THREADS
+#endif
+*/

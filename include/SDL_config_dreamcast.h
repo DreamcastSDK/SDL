@@ -26,16 +26,8 @@
 #include "SDL_platform.h"
 
 /* This is a set of defines to configure the SDL features */
+#include <stdint.h>
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed long long int64_t;
-typedef unsigned long long uint64_t;
-typedef unsigned long uintptr_t;
 #define SDL_HAS_64BIT_TYPE	1
 
 /* Useful headers */
@@ -81,8 +73,6 @@ typedef unsigned long uintptr_t;
 
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_DC	1
-#define SDL_AUDIO_DRIVER_DISK	1
-#define SDL_AUDIO_DRIVER_DUMMY	1
 
 /* Enable various cdrom drivers */
 #define SDL_CDROM_DC	1
@@ -101,6 +91,5 @@ typedef unsigned long uintptr_t;
 
 /* Enable various video drivers */
 #define SDL_VIDEO_DRIVER_DC	1
-#define SDL_VIDEO_DRIVER_DUMMY	1
 
 #endif /* _SDL_config_dreamcast_h */
