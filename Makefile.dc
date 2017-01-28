@@ -1,111 +1,123 @@
-#GL=1
-
-CC = sh-elf-gcc
-AR = sh-elf-ar
-
-ifdef GL
-DEFS += -DSDL_VIDEO_OPENGL=1
-TARGET = libSDL_gl.a
-else
-TARGET = libSDL.a
+ifneq ($(DEBUG),true)
+  QUIET:=@
 endif
 
-CFLAGS=$(KOS_CFLAGS) $(DEFS) -Iinclude
+ifndef PLATFORM
+  PLATFORM:=dreamcast
+endif
 
-SRCS = \
-	src/audio/dc/SDL_dcaudio.c \
-	src/audio/dc/aica.c \
-	src/audio/dummy/SDL_dummyaudio.c \
-	src/audio/SDL_audio.c \
-	src/audio/SDL_audiocvt.c \
-	src/audio/SDL_audiodev.c \
-	src/audio/SDL_mixer.c \
-	src/audio/SDL_wave.c \
-	src/cdrom/dc/SDL_syscdrom.c \
-	src/cdrom/SDL_cdrom.c \
-	src/events/SDL_active.c \
-	src/events/SDL_events.c \
-	src/events/SDL_expose.c \
-	src/events/SDL_keyboard.c \
-	src/events/SDL_mouse.c \
-	src/events/SDL_quit.c \
-	src/events/SDL_resize.c \
-	src/file/SDL_rwops.c \
-	src/joystick/dc/SDL_sysjoystick.c \
-	src/joystick/SDL_joystick.c \
-	src/loadso/dummy/SDL_sysloadso.c \
-	src/SDL.c \
-	src/SDL_error.c \
-	src/SDL_fatal.c \
-	src/stdlib/SDL_getenv.c \
-	src/stdlib/SDL_iconv.c \
-	src/stdlib/SDL_malloc.c \
-	src/stdlib/SDL_qsort.c \
-	src/stdlib/SDL_stdlib.c \
-	src/stdlib/SDL_string.c \
-	src/thread/dc/SDL_syscond.c \
-	src/thread/dc/SDL_sysmutex.c \
-	src/thread/dc/SDL_syssem.c \
-	src/thread/dc/SDL_systhread.c \
-	src/thread/SDL_thread.c \
-	src/timer/dc/SDL_systimer.c \
-	src/timer/SDL_timer.c \
-	src/video/dc/SDL_dcevents.c \
-	src/video/dc/SDL_dcvideo.c \
-	src/video/dummy/SDL_nullevents.c \
-	src/video/dummy/SDL_nullmouse.c \
-	src/video/dummy/SDL_nullvideo.c \
-	src/video/SDL_blit.c \
-	src/video/SDL_blit_0.c \
-	src/video/SDL_blit_1.c \
-	src/video/SDL_blit_A.c \
-	src/video/SDL_blit_N.c \
-	src/video/SDL_bmp.c \
-	src/video/SDL_cursor.c \
-	src/video/SDL_gamma.c \
-	src/video/SDL_pixels.c \
-	src/video/SDL_RLEaccel.c \
-	src/video/SDL_stretch.c \
-	src/video/SDL_surface.c \
-	src/video/SDL_video.c \
-	src/video/SDL_yuv.c \
-	src/video/SDL_yuv_sw.c \
+ifndef ARCH
+  ARCH:=sh-elf
+endif
 
-OBJS = $(SRCS:.c=.o)
+ifndef INSTALL_PATH
+  INSTALL_PATH:=/usr/local
+endif
 
-TEST = \
-	test/checkkeys.c \
-	test/graywin.c \
-	test/loopwave.c \
-	test/testalpha.c \
-	test/testbitmap.c \
-	test/testcdrom.c \
-	test/testerror.c \
-	test/testgamma.c \
-	test/testgl.c \
-	test/testhread.c \
-	test/testjoystick.c \
-	test/testkeys.c \
-	test/testlock.c \
-	test/testoverlay.c \
-	test/testpalette.c \
-	test/testsem.c \
-	test/testsprite.c \
-	test/testtimer.c \
-	test/testtypes.c \
-	test/testver.c \
-	test/testvidinfo.c \
-	test/testwin.c \
-	test/testwm.c \
-	test/threadwin.c \
-	test/torturethread.c \
+DEFINES:=-D__DREAMCAST__
 
-$(TARGET): copy_config \
-	$(OBJS)
-	$(AR) rcs $(TARGET) $(OBJS) 
+ifeq ("$(wildcard $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/GL)", "")
+  TARGET:=libSDL.a
+else
+  TARGET:=libSDL_gl.a
+  DEFINES+=-DSDL_VIDEO_OPENGL=1
+endif
 
-copy_config:
-	@cp include/SDL_config.h.default include/SDL_config.h
+OBJS:=	src/audio/dc/SDL_dcaudio.o \
+	src/audio/dc/aica.o \
+	src/audio/dummy/SDL_dummyaudio.o \
+	src/audio/SDL_audio.o \
+	src/audio/SDL_audiocvt.o \
+	src/audio/SDL_audiodev.o \
+	src/audio/SDL_mixer.o \
+	src/audio/SDL_wave.o \
+	src/cdrom/dc/SDL_syscdrom.o \
+	src/cdrom/SDL_cdrom.o \
+	src/events/SDL_active.o \
+	src/events/SDL_events.o \
+	src/events/SDL_expose.o \
+	src/events/SDL_keyboard.o \
+	src/events/SDL_mouse.o \
+	src/events/SDL_quit.o \
+	src/events/SDL_resize.o \
+	src/file/SDL_rwops.o \
+	src/joystick/dc/SDL_sysjoystick.o \
+	src/joystick/SDL_joystick.o \
+	src/loadso/dummy/SDL_sysloadso.o \
+	src/SDL.o \
+	src/SDL_error.o \
+	src/SDL_fatal.o \
+	src/stdlib/SDL_getenv.o \
+	src/stdlib/SDL_iconv.o \
+	src/stdlib/SDL_malloc.o \
+	src/stdlib/SDL_qsort.o \
+	src/stdlib/SDL_stdlib.o \
+	src/stdlib/SDL_string.o \
+	src/thread/dc/SDL_syscond.o \
+	src/thread/dc/SDL_sysmutex.o \
+	src/thread/dc/SDL_syssem.o \
+	src/thread/dc/SDL_systhread.o \
+	src/thread/SDL_thread.o \
+	src/timer/dc/SDL_systimer.o \
+	src/timer/SDL_timer.o \
+	src/video/dc/SDL_dcevents.o \
+	src/video/dc/SDL_dcvideo.o \
+	src/video/dummy/SDL_nullevents.o \
+	src/video/dummy/SDL_nullmouse.o \
+	src/video/dummy/SDL_nullvideo.o \
+	src/video/SDL_blit.o \
+	src/video/SDL_blit_0.o \
+	src/video/SDL_blit_1.o \
+	src/video/SDL_blit_A.o \
+	src/video/SDL_blit_N.o \
+	src/video/SDL_bmp.o \
+	src/video/SDL_cursor.o \
+	src/video/SDL_gamma.o \
+	src/video/SDL_pixels.o \
+	src/video/SDL_RLEaccel.o \
+	src/video/SDL_stretch.o \
+	src/video/SDL_surface.o \
+	src/video/SDL_video.o \
+	src/video/SDL_yuv.o \
+	src/video/SDL_yuv_sw.o
+
+CFLAGS=$(DEFINES) \
+	-std=c11 \
+        -Wall -Wextra\
+        -fno-builtin \
+        -fno-strict-aliasing \
+        -fomit-frame-pointer \
+        -ffunction-sections \
+        -fdata-sections
+
+CFLAGS+=-Iinclude \
+	-I$(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include
+
+GCCPREFIX:=$(shell echo $(ARCH) | cut -d '-' -f 1)-$(PLATFORM)
+
+$(TARGET): include/SDL_config.h $(OBJS)
+	@echo Linking: $@
+	$(QUIET) $(GCCPREFIX)-ar rcs $@ $(OBJS)
+
+install: $(TARGET)
+	@echo "Installing..."
+	$(QUIET) cp -R include/* $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/
+	$(QUIET) cp $(TARGET)    $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/lib/
 
 clean:
-	rm -f include/SDL_config.h $(OBJS)
+	$(QUIET) rm -f $(OBJS) $(TARGET)
+
+include/SDL_config.h:
+	@cp -f include/SDL_config.h.default include/SDL_config.h
+
+%.o: %.c
+	@echo Building: $@
+	$(QUIET) $(GCCPREFIX)-gcc $(CFLAGS) -c $< -o $@
+
+%.o: %.s
+	@echo Building: $@
+	$(QUIET) $(GCCPREFIX)-as $< -o $@
+
+%.o: %.S
+	@echo Building: $@
+	$(QUIET) $(GCCPREFIX)-as $< -o $@
