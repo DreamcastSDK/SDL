@@ -107,7 +107,7 @@ CFLAGS+=-Isrc \
 	-Isrc/timer \
 	-Isrc/video
 
-GCCPREFIX:=$(shell echo $(ARCH) | cut -d '-' -f 1)-$(PLATFORM)
+GCCPREFIX:=$(PLATFORM)-$(shell echo $(ARCH) | cut -d '-' -f 1)
 
 $(TARGET): include/SDL_config.h $(OBJS)
 	@echo Linking: $@
