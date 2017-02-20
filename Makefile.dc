@@ -116,7 +116,6 @@ $(TARGET): include/SDL_config.h $(OBJS)
 install: $(TARGET)
 	@echo "Installing..."
 	$(QUIET) mkdir -p $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/SDL
-	$(QUIET) ln -sr $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/SDL  $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/SDL2
 	$(QUIET) cp -R include/* $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/include/SDL/
 	$(QUIET) cp $(TARGET)    $(INSTALL_PATH)/$(PLATFORM)/$(ARCH)/lib/
 
